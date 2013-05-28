@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" /> 
+  <!-- <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" /> -->
+
+  <title>Diathink</title>
+
+  <!-- <link href="css/jquery.mobile-1.1.1.css" rel="stylesheet"> -->
+  <link href="css/style.css" rel="stylesheet">
+  <script src="js/jquery.js"></script>
+<!-- <script src="js/jquery.mobile-1.1.1.js"></script> -->
+  <script src="js/jquery.ui.core.js"></script>
+  <script src="js/jquery.ui.widget.js"></script>
+  <script src="js/jquery.ui.mouse.js"></script>
+  <script src="js/jquery.ui.sortable.js"></script>
+  <script src="js/jquery.ui.touch-punch.js"></script>
+  <script src="js/jquery.ui.nestedSortable.js"></script>
+  <!-- jquery.placeholder.js -->
+
+  <script>
+  // $(document).bind('pageinit', function() {
+  $(function() {
+    $( "#sortable" ).nestedSortable({
+      listType: 'ul',
+      items: 'li',
+      toleranceElement: '> div',
+      handle: 'div'
+    });
+    // $( "#sortable" ).disableSelection();
+    $( "#sortable" ).bind( "sortstop", function(event, ui) {
+      // $('#sortable').listview('refresh');
+    });
+   });
+  // });
+  </script>
+
+</head>
+<body>
+<div data-role="page">
+  <div data-role="header">
+    <h1>Page Content</h1>
+  </div><!-- /header -->
+  <div data-role="content">
+    <p>Page content goes here</p>
+  <ul id="sortable" data-role="listview">
+   <li><div>Pets</div>
+     <span class="ui-li-count">6</span>
+     <ul data-role="listview" data-inset="true">
+       <li><div><a href="index.html">Canary</a></div></li>
+       <li><div><a href="index.html">Cat</a></div></li>
+       <li><div><a href="index.html">Dog</a></div></li>
+       <li><div><a href="index.html">Gerbil</a></div></li>
+       <li><div><a href="index.html">Iguana</a></div></li>
+       <li><div><a href="index.html">Mouse</a></div></li>
+     </ul>
+   </li>
+   <li><div>Farm animals</div>
+     <p class="ui-li-count">6</p>
+    </li>
+   </ul>
+  </div><!-- /content -->
+  <div data-role="footer">
+    <h4>Footer of page</h4>
+  </div><!-- /footer -->
+</div><!-- /page -->
+</body>
+</html>
