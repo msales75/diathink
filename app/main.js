@@ -23,6 +23,14 @@ var myList = [
 ];
 
 
+// Note that controllers must be defined before view.
+diathink.MyController = M.Controller.extend({
+  listObjectClicked : function(id, nameId) {
+    console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
+  }, 
+  listObject: []
+});
+
 diathink.MyListTemplate = M.ListItemView.design({
   childViews: 'name',
   events: {
@@ -34,13 +42,6 @@ diathink.MyListTemplate = M.ListItemView.design({
   name: M.LabelView.design({
     valuePattern: '<%= name %>'
   })
-});
-
-diathink.MyController = M.Controller.extend({
-  listObjectClicked : function(id, nameId) {
-    console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
-  }, 
-  listObject: []
 });
 
 
