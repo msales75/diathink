@@ -12,7 +12,7 @@
 
 (function($) {
 
-	$.widget("ui.nestedSortable", $.extend({}, $.ui.sortable.prototype, {
+	$.widget2("ui.nestedSortable", $.extend({}, $.ui.sortable.prototype, {
 
 		options: {
 			tabSize: 20,
