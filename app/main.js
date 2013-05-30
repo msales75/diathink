@@ -7,15 +7,57 @@
 
 var diathink  = diathink || {};
 
+var myList = [
+    {
+        name: "List Item 1",
+        prop: "another property"
+    },
+    {
+        name: "List Item 2",
+        prop: "another property"
+    },
+    {
+        name: "List Item 3",
+        prop: "another property"
+    }
+];
+
+
+diathink.MyListTemplate = M.ListItemView.design({
+  childViews: 'name',
+  events: {
+    tap: {
+      target: diathink.MyController,
+      action: 'listObjectClicked'
+    }
+  },
+  name: M.LabelView.design({
+    valuePattern: '<%= name %>'
+  })
+});
+
+diathink.MyController = M.Controller.extend({
+  listObjectClicked : function(id, nameId) {
+    console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
+  }, 
+  listObject: []
+});
+
 
 diathink.app = M.Application.design({
 
-    /* Define the entry/start page of your app. This property must be provided! */
-    entryPage : 'page1',
+    entryPage : 'page1', // required for start-page
 
     page1: M.PageView.design({
 
         childViews: 'header content footer',
+        events: {
+          pageshow: {
+            action: function() {
+              diathink.MyController.set('listObject', myList)
+            }
+          }
+        },
 
         header: M.ToolbarView.design({
             value: 'HEADER',
@@ -23,9 +65,19 @@ diathink.app = M.Application.design({
         }),
 
         content: M.ScrollView.design({
-            childViews: 'label',
+            childViews: 'label alist',
+
             label: M.LabelView.design({
                 value: 'Welcome to The M-Project'
+            }),
+
+            alist: M.ListView.design({
+		listItemTemplateView: diathink.MyListTemplate,
+                contentBinding: {
+                  target: diathink.MyController,
+                  property: 'listObject'
+                },
+                idName: 'name'
             })
         }),
 
@@ -33,7 +85,8 @@ diathink.app = M.Application.design({
             value: 'FOOTER',
             anchorLocation: M.BOTTOM
         })
-    
-    })
 
+    })
 });
+
+
