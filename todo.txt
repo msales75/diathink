@@ -1,0 +1,66 @@
+Next:
+----
+
+* Get ListView and ListItemView working nested.
+   Need to define controller for ListView inside ListItemView at correct time -
+    create a new branch of ListView to do this.
+* Get nestedSortable working on top of ListItems
+* Trigger ListView update to/from nestedSortable moves, in up to two lists.
+
+Outline Drag with handle
+Notice-message-slider at top
+Text edit
+Expand/Collapse
+Focus button
+Multi-page display/swipe
+Search-slider
+Vertical scrolling
+Adjacent & Inbox drag-targets
+Search-drag/page
+Reference node display
+Reference page display
+Reference page focus
+Cleanup outline-targets
+
+Home/inbox/preferences?
+Undo/Redo
+
+Localstorage
+Long partial lists
+Smart-background-loading (start with empty hooks)
+Smart-queueing
+
+Backend:
+----
+Action-log
+Search
+Autocomplete
+Contextual search
+Share/Sync
+Import/export
+
+
+Later:
+---------
+Status, Schedule, Delegation (dependency as subtask?)
+Statuses could just be reference-lists with a special UI? 
+   (unfiled/someday/later/soon/now/wait-for/wait-until/completed/scheduled-event)
+Similarly for delegation?
+ - Reference-parents can be shown as a quick-tag; UI for changing quick-tags
+ - Change-tags-on-date  (common notification-profiles)
+ - Change-tags-on-dependency
+ * Filter for tags? (#today, #soon, #later, #someday) and (@mark or @john)
+       (Same-list is 'or', different lists are 'and')
+ * Browse by calendar (outline ok)
+
+Special outline of tags: #status @person
+
+
+
+Comment-view: very different UI
+  shows children and reference-chains as conversation-threads?
+Optional-verb for references?
+Browse reverse-references as parents?
+Notices?
+Friends?
+
