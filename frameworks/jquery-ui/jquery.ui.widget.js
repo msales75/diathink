@@ -32,7 +32,7 @@ $.widget2 = function( name, base, prototype ) {
 
 	if ( !prototype ) {
 		prototype = base;
-		base = $.Widget;
+		base = $.Widget2;
 	}
 
 	// create selector for plugin
@@ -205,10 +205,10 @@ $.widget2.bridge = function( name, object ) {
 	};
 };
 
-$.Widget = function( /* options, element */ ) {};
-$.Widget._childConstructors = [];
+$.Widget2 = function( /* options, element */ ) {};
+$.Widget2._childConstructors = [];
 
-$.Widget.prototype = {
+$.Widget2.prototype = {
 	widgetName: "widget2",
 	widgetEventPrefix: "",
 	defaultElement: "<div>",
@@ -483,7 +483,7 @@ $.Widget.prototype = {
 };
 
 $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
-	$.Widget.prototype[ "_" + method ] = function( element, options, callback ) {
+	$.Widget2.prototype[ "_" + method ] = function( element, options, callback ) {
 		if ( typeof options === "string" ) {
 			options = { effect: options };
 		}
@@ -520,7 +520,7 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 
 // DEPRECATED
 if ( $.uiBackCompat !== false ) {
-	$.Widget.prototype._getCreateOptions = function() {
+	$.Widget2.prototype._getCreateOptions = function() {
 		return $.metadata && $.metadata.get( this.element[0] )[ this.widgetName ];
 	};
 }
