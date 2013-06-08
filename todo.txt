@@ -1,9 +1,57 @@
 Next:
 ----
-
 * Get ListView and ListItemView working nested.
    Need to define controller for ListView inside ListItemView at correct time -
     create a new branch of ListView to do this.
+
+Issues/todo:
+
+  Only call renderUpdate for sublists when rendering list-item templates.
+   - need to identify view-type
+  
+  Search deeper than one level for sublists - like clone.
+   - match clone code 
+
+  Is event-handler propogating to children; why is pageshow getting propogated inward?
+
+  Need content-binding to work for nested elements with the same setup-parameters, going to the corresponding model sub-object based on the view nesting.
+
+  A single controller must identify what is selected among list-outlines.
+
+  Hide open-button on right
+
+  Expand sublist to fill right
+
+  How are event-handlers getting propogated to nested lists?
+  
+  Move open-buttons onto first line
+
+  ? Should we continue to require contentBinding for lists?
+
+  
+list.js renderListItemView and cloneObject may need to be changed.
+Non-lists would be rendered right here: that.addItem(obj.render());
+Call renderUpdate() afterward to render list items?
+  But renderUpdate doesn't propogate to lists inside the list-item.
+  Make sure renderUpdate propogates - this may affect multiple widgets.
+Likely problem: data not getting passed to make renderUpdate work.
+Later: handle updating bound-list content
+
+Control-flow:
+controller-init
+view-designs
+page.render
+ renderChildViews
+   listview.render
+ registerEvents
+   listview.registerevents
+event:pageshow
+  set listObject
+   notifyObservers
+    contentDidChange
+         ListView:renderUpdate
+
+
 * Get nestedSortable working on top of ListItems
 * Trigger ListView update to/from nestedSortable moves, in up to two lists.
 
@@ -20,41 +68,117 @@ Search-drag/page
 Reference node display
 Reference page display
 Reference page focus
+Toggle drag-to-move vs. reference
 Cleanup outline-targets
 
 Home/inbox/preferences?
 Undo/Redo
-
 Localstorage
-Long partial lists
-Smart-background-loading (start with empty hooks)
-Smart-queueing
 
 Backend:
-----
+---------
 Action-log
 Search
 Autocomplete
 Contextual search
 Share/Sync
 Import/export
+  Gmail, Google-docs, Chrome-extension, Evernote
+Allocate disk space
 
+Flag for move-original-node on drag/drop?
+Preview on click; edit-name/tags on double-click
 
-Later:
----------
+How does tag-selection UI work?
+  Triggers & Inheritance-rules?
+
+Tags can permit/open-up others, or bring to top list?
+Different than references, because they are common/numerous?
+Text or Nodes?
+
+Are tags text or nodes in a list?
+  (probably nodes)
+Do some tags permit open-up others?
+Tag-management is progammatic?
+
+Later:    
+-------------
+Long partial lists
+Smart-background-loading (start with empty hooks)
+Smart-queueing
+OS attachment drag/drop
+Image cropping/tuning
+Indexing & OCR (Html, MS Word, PDF, Google-docs, Image-OCR)
+
 Status, Schedule, Delegation (dependency as subtask?)
 Statuses could just be reference-lists with a special UI? 
-   (unfiled/someday/later/soon/now/wait-for/wait-until/completed/scheduled-event)
-Similarly for delegation?
- - Reference-parents can be shown as a quick-tag; UI for changing quick-tags
- - Change-tags-on-date  (common notification-profiles)
- - Change-tags-on-dependency
- * Filter for tags? (#today, #soon, #later, #someday) and (@mark or @john)
-       (Same-list is 'or', different lists are 'and')
- * Browse by calendar (outline ok)
+ (unfiled/someday/later/soon/now/issue/wait-for/wait-until/completed/scheduled-event)
+
+* Node title/shortname automatic before colon (used for paths and abbreviations)
+
+Is ownership a tag?
+
+UI for 
+  * making a new tag 
+  * making an existing node into a tag 
+  * adding/removing tags to nodes 
+  * adding/removing filters 
+  * editing tag-triggers & constraints
+   - trigger from tag-change
+   - trigger from delegation
+   - trigger from 
+  * Adding css-styles based on tags (color; completed)
+
+Distinct from predicated references (0 vs. 1 argument)
+
+
+- Tags should be nodes, but might have syntax-constraint on content.
+  (might also impose uniqueness constraint on tag-text)
+  
+- Save Search-results vs. Save Search-filter
+- Put node-references into 'tags' lists
+- Triggers built into tags or items
+** Special ui for selecting tags
+** UI for defining tag-triggers
+- Select sane defaults; let advanced users override
+  resolved; today/inbox; switch-on-date; switch-on-reply; switch-on-completion
+  today, inbox;  later, completed
+* Distinguish Revisit-someday vs. Archived-for-search-only
+
+comment-flow:
+issue-flow:
+task-flow:
+delegation-flow:
+due-date-flow:
+appointment-flow:
+subtask-flow:
+
+- Reference-parents can be shown as a quick-tag; UI for changing quick-tags
+- Change-tags-on-date  (common notification-profiles)
+- Change-tags-on-dependency (tag-change)
+- Change tags on reply from user (edit or reference-change)
+- Should be easy to add/remove tags, and to change them and save and/or filters for them, and to support date/trigger logic 
+
+ - optional verb for references for fancier predicates (permits database/spreadsheets)
+
+ - Filter for tags? (#today #soon #later #issue #someday) and (@mark @john)
+   type? comment/issue/reference
+   bug,issue,feature,story
+
+   (Same-list is 'or', different lists are 'and')
+ - How to save searches; setup homepage?
+ - Browse by calendar (outline ok)
+
+    - ? Tag-filters for node-types? Not everything's a task?
+ - multiple-parent search is fine
+
+ used-for-x and contains-part-y (advanced search; multiple parents)
+
 
 Special outline of tags: #status @person
 
+
+Profile & friends
 
 
 Comment-view: very different UI
@@ -63,4 +187,7 @@ Optional-verb for references?
 Browse reverse-references as parents?
 Notices?
 Friends?
+
+Spreadsheet interface (from tagged properties)
+2D-UI design (from outline structure?)
 
