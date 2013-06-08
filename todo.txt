@@ -6,24 +6,20 @@ Next:
 
 Issues/todo:
 
-  Only call renderUpdate for sublists when rendering list-item templates.
-   - need to identify view-type
-  
-  Search deeper than one level for sublists - like clone.
-   - match clone code 
+  DONE Only call renderUpdate for sublists when rendering list-item templates.
+  DONE Search deeper than one level for sublists - like clone.
 
   Is event-handler propogating to children; why is pageshow getting propogated inward?
+  How are event-handlers getting propogated to nested lists?
+    A single controller must identify what is selected among list-outlines.
 
   Need content-binding to work for nested elements with the same setup-parameters, going to the corresponding model sub-object based on the view nesting.
 
-  A single controller must identify what is selected among list-outlines.
 
   Hide open-button on right
 
   Expand sublist to fill right
 
-  How are event-handlers getting propogated to nested lists?
-  
   Move open-buttons onto first line
 
   ? Should we continue to require contentBinding for lists?

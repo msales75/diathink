@@ -10,7 +10,15 @@ var diathink  = diathink || {};
 var myList = [
     {
         name: "List Item 1",
-        prop: "another property"
+        prop: "another property",
+        sublist: [
+        {
+                name: "List subitem 1a",
+                prop: "another property"
+        }, {
+                name: "List subitem 1a",
+                prop: "another property"
+        }]
     },
     {
         name: "List Item 2",
@@ -31,18 +39,44 @@ diathink.MyController = M.Controller.extend({
   listObject: []
 });
 
-diathink.MyListTemplate = M.ListItemView.design({
-  childViews: 'name',
+diathink.dummyController = M.Controller.extend({
+  listObjectClicked : function(id, nameId) {
+    console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
+  }, 
+  listObject: []
+});
+
+diathink.RecurseListTemplate =  M.ListView.design({
+                isInset: 'YES',
+		listItemTemplateView: null,
+                contentBinding: {
+                  target: diathink.dummyController,
+                  property: 'listObject'
+                },
+                idName: 'name'
+});
+
+diathink.MyListItem = M.ListItemView.design({
+  childViews: 'name sublist',
+  hasSingleAction: 'NO',
+  isSelectable: 'NO',
+/*
   events: {
     tap: {
       target: diathink.MyController,
       action: 'listObjectClicked'
     }
   },
+*/
   name: M.LabelView.design({
     valuePattern: '<%= name %>'
-  })
+  }),
+
+  sublist: diathink.RecurseListTemplate
+  
 });
+
+diathink.RecurseListTemplate.listItemTemplateView = diathink.MyListItem;
 
 
 diathink.app = M.Application.design({
@@ -73,7 +107,15 @@ diathink.app = M.Application.design({
             }),
 
             alist: M.ListView.design({
-		listItemTemplateView: diathink.MyListTemplate,
+                events: {
+                  pageshow: {
+                    action: function() {
+                      alert("Showing ListView action");
+                    }
+                  }
+                },
+                isInset: 'YES',
+		listItemTemplateView: diathink.MyListItem,
                 contentBinding: {
                   target: diathink.MyController,
                   property: 'listObject'

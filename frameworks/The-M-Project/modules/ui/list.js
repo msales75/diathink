@@ -440,7 +440,27 @@ M.ListView = M.View.extend(
             for(var i in obj.getChildViewsAsArray()) {
                 obj[childViewsArray[i]].theme();
             }
+
+            // MS -- render updated-content for any nested lists 
+            //    (must be after rendering/theming, above)
+            that.updateNestedLists(obj);
         });
+    },
+
+    updateNestedLists: function(obj) {
+            var childViewsArray = obj.getChildViewsAsArray();
+            for (var i in childViewsArray) {
+              if (obj[childViewsArray[i]].type === 'M.ListView') {
+                // set the value for the list and call renderUpdate for it; 
+                // (todo: set a content-binding instead)
+                if (obj.value[childViewsArray[i]]) {
+                  obj[childViewsArray[i]].value = obj.value[childViewsArray[i]];
+                }
+                obj[childViewsArray[i]].renderUpdate();
+              } else {  // propogate to this view's children recursively
+                this.updateNestedLists(obj[childViewsArray[i]]);
+              }
+            }
     },
 
     /**
