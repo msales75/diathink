@@ -455,8 +455,8 @@ M.ListView = M.View.extend(
                 // (todo: set a content-binding instead)
                 if (obj.value[childViewsArray[i]]) {
                   obj[childViewsArray[i]].value = obj.value[childViewsArray[i]];
+                  obj[childViewsArray[i]].renderUpdate();
                 }
-                obj[childViewsArray[i]].renderUpdate();
               } else {  // propogate to this view's children recursively
                 this.updateNestedLists(obj[childViewsArray[i]]);
               }
