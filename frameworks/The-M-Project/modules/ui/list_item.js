@@ -197,12 +197,15 @@ M.ListItemView = M.View.extend(
      * their internal events.
      */
     registerEvents: function() {
+        this.internalEvents = {};
+/*
         this.internalEvents = {
             tap: {
                 target: this.parentView,
                 action: 'setActiveListItem'
             }
         };
+*/
         if(this.swipeButton) {
             $.extend(this.internalEvents, {
                 swipeleft: {
