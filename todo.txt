@@ -8,13 +8,20 @@ Issues/todo:
 
   DONE Only call renderUpdate for sublists when rendering list-item templates.
   DONE Search deeper than one level for sublists - like clone.
+  DONE How are event-handlers getting propogated to nested lists - (they're
+not)
+  DONE Is event-handler propogating to children; why is pageshow getting propogated inward?
+  DONE A single controller must identify what is selected among list-outlines.
+   Examine pattern of controller-calls when event is fired.
+    - set breakpoint inside event-call function (generally useful for debugging)
+    ui.js 
 
-  Is event-handler propogating to children; why is pageshow getting propogated inward?
-  How are event-handlers getting propogated to nested lists?
-    A single controller must identify what is selected among list-outlines.
-
-  Need content-binding to work for nested elements with the same setup-parameters, going to the corresponding model sub-object based on the view nesting.
-
+  Need content-binding & event-delegation to work for nested view/controller/model elements with the same setup-parameters, going to the corresponding model sub-object based on the view nesting.
+ -- start with one single content-binding for list/outline
+    then add support for binding sub-models inside the list/outline model?
+    This is ok when content-changes start from DOM (we know what part to update)
+    Harder when change comes from external-database via model content-binding 
+      -- probably not needed for one-user text & sort
 
   Hide open-button on right
 
@@ -22,7 +29,7 @@ Issues/todo:
 
   Move open-buttons onto first line
 
-  ? Should we continue to require contentBinding for lists?
+  ?Should we continue to require contentBinding for lists?
 
   
 list.js renderListItemView and cloneObject may need to be changed.
@@ -30,7 +37,7 @@ Non-lists would be rendered right here: that.addItem(obj.render());
 Call renderUpdate() afterward to render list items?
   But renderUpdate doesn't propogate to lists inside the list-item.
   Make sure renderUpdate propogates - this may affect multiple widgets.
-Likely problem: data not getting passed to make renderUpdate work.
+
 Later: handle updating bound-list content
 
 Control-flow:

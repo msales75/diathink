@@ -36,11 +36,14 @@ diathink.MyController = M.Controller.extend({
   listObjectClicked : function(id, nameId) {
     console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
   }, 
+  parentObjectClicked : function(id, nameId) {
+    console.log('You clicked on the overall list with the DOM id: ', id, 'and has the name', nameId);
+  }, 
   listObject: []
 });
 
 diathink.dummyController = M.Controller.extend({
-  listObjectClicked : function(id, nameId) {
+  dummyListClicked : function(id, nameId) {
     console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
   }, 
   listObject: []
@@ -49,6 +52,14 @@ diathink.dummyController = M.Controller.extend({
 diathink.RecurseListTemplate =  M.ListView.design({
                 isInset: 'YES',
 		listItemTemplateView: null,
+/*
+                events: {
+                  tap: {
+                    target: diathink.dummyController,
+                    action: 'dummyListClicked'
+                  }
+                },
+*/
                 contentBinding: {
                   target: diathink.dummyController,
                   property: 'listObject'
@@ -90,6 +101,11 @@ diathink.app = M.Application.design({
           pageshow: {
             action: function() {
               diathink.MyController.set('listObject', myList)
+              $('#'+M.ViewManager.getView('page1', 'alist').id).nestedSortable({
+                listType: 'ul',
+                items: 'li',
+                toleranceElement: '> div > div > a'
+              });
             }
           }
         },
@@ -108,11 +124,10 @@ diathink.app = M.Application.design({
 
             alist: M.ListView.design({
                 events: {
-                  pageshow: {
-                    action: function() {
-                      alert("Showing ListView action");
+                    tap: {
+                      target: diathink.MyController,
+                      action: 'parentObjectClicked'
                     }
-                  }
                 },
                 isInset: 'YES',
 		listItemTemplateView: diathink.MyListItem,
