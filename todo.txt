@@ -1,11 +1,22 @@
 Next:
 ----
-* Get ListView and ListItemView working nested.
-   Need to define controller for ListView inside ListItemView at correct time -
-    create a new branch of ListView to do this.
+  Adjust code to permit multi-layered toleranceElement
+  
+  Restyle list after moving
+
+  Hide open-button on right
+
+  Expand sublist to fill right
+
+  Move open-buttons onto first line
+
+  ? Should we continue to require contentBinding for lists?
+
 
 Issues/todo:
 
+DONE Get ListView and ListItemView working nested.
+DONE Need to define controller for ListView inside ListItemView at correct time
   DONE Only call renderUpdate for sublists when rendering list-item templates.
   DONE Search deeper than one level for sublists - like clone.
   DONE How are event-handlers getting propogated to nested lists - (they're
@@ -16,6 +27,7 @@ not)
     - set breakpoint inside event-call function (generally useful for debugging)
     ui.js 
 
+Later:
   Need content-binding & event-delegation to work for nested view/controller/model elements with the same setup-parameters, going to the corresponding model sub-object based on the view nesting.
  -- start with one single content-binding for list/outline
     then add support for binding sub-models inside the list/outline model?
@@ -23,13 +35,6 @@ not)
     Harder when change comes from external-database via model content-binding 
       -- probably not needed for one-user text & sort
 
-  Hide open-button on right
-
-  Expand sublist to fill right
-
-  Move open-buttons onto first line
-
-  ?Should we continue to require contentBinding for lists?
 
   
 list.js renderListItemView and cloneObject may need to be changed.
