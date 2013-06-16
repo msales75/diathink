@@ -10,6 +10,28 @@
  * Copyright 2010-2011, Manuele J Sarfatti
  */
 
+// MS utility addition for finding a child/parent at a fixed-depth.
+(function($) {
+  $.fn.childDepth = function(n) {
+    var i, that = this;
+    for (i=0; i<n; ++i) {
+      that = that.children(':first');
+      if (that.length===0) {return that;}
+    }
+    return that;
+  }
+
+  $.fn.parentDepth = function(n) {
+    var i, that = this;
+    for (i=0; i<n; ++i) {
+      that = that.parent();
+      if (that.length===0) {return that;}
+    }
+    return that;
+  }
+
+})(jQuery);
+
 (function($) {
 
 	$.widget2("ui.nestedSortable", $.extend({}, $.ui.sortable.prototype, {
@@ -20,6 +42,7 @@
 			errorClass: 'ui-nestedSortable-error',
 			listType: 'ol',
 			maxLevels: 0,
+			buryDepth: 0,
 			noJumpFix: 0
 		},
 
@@ -43,8 +66,9 @@
 			}
 
 			//Do scrolling
+			var o = this.options;
 			if(this.options.scroll) {
-				var o = this.options, scrolled = false;
+				var scrolled = false;
 				if(this.scrollParent[0] != document && this.scrollParent[0].tagName != 'HTML') {
 
 					if((this.overflowOffset.top + this.scrollParent[0].offsetHeight) - event.pageY < o.scrollSensitivity)
@@ -112,7 +136,7 @@
 				}
 			}
 
-			var parentItem = (this.placeholder[0].parentNode.parentNode && $(this.placeholder[0].parentNode.parentNode).closest('.ui-sortable').length) ? $(this.placeholder[0].parentNode.parentNode) : null;
+			var parentItem = (this.placeholder.parentDepth(o.buryDepth+1).get(0) && this.placeholder.parentDepth(o.buryDepth+1).closest('.ui-sortable').length) ? this.placeholder.parentDepth(o.buryDepth+1) : null;
 			var level = this._getLevel(this.placeholder);
 			var childLevels = this._getChildLevels(this.helper);
 			var previousItem = this.placeholder[0].previousSibling ? $(this.placeholder[0].previousSibling) : null;
@@ -140,10 +164,10 @@
 			// If the item is below another one and is moved to the right, make it a children of it
 			else if (previousItem != null && this.positionAbs.left > previousItem.offset().left + o.tabSize) {
 				this._isAllowed(previousItem, level+childLevels+1);
-				if (previousItem[0].children[1] == null) {
-					previousItem[0].appendChild(newList);
+				if (previousItem.childDepth(o.buryDepth).children(o.listType).length === 0) {
+					previousItem.childDepth(o.buryDepth).get(0).appendChild(newList);
 				}
-				previousItem[0].children[1].appendChild(this.placeholder[0]);
+				previousItem.childDepth(o.buryDepth).children(o.listType).get(0).appendChild(this.placeholder[0]);
 				this._trigger("change", event, this._uiHash());
 			}
 			else {
@@ -190,7 +214,7 @@
 
 			$(items).each(function() {
 				var res = ($(o.item || this).attr(o.attribute || 'id') || '').match(o.expression || (/(.+)[-=_](.+)/));
-				var pid = ($(o.item || this).parent(o.listType).parent('li').attr(o.attribute || 'id') || '').match(o.expression || (/(.+)[-=_](.+)/));
+				var pid = ($(o.item || this).parent(o.listType).parentDepth(o.buryDepth).parent('li').attr(o.attribute || 'id') || '').match(o.expression || (/(.+)[-=_](.+)/));
 				if(res) str.push((o.key || res[1]+'['+(o.key && o.expression ? res[1] : res[2])+']')+'='+(pid ? (o.key && o.expression ? pid[1] : pid[2]) : 'root'));
 			});
 
@@ -219,9 +243,9 @@
 				var id = ($(li).attr(o.attribute || 'id') || '').match(o.expression || (/(.+)[-=_](.+)/));
 				if (id != null) {
 					var item = {"id" : id[2]};
-					if ($(li).children(o.listType).children('li').length > 0) {
+					if ($(li).childDepth(o.buryDepth).children(o.listType).children('li').length > 0) {
 						item.children = [];
-						$(li).children(o.listType).children('li').each(function () {
+						$(li).childDepth(o.buryDepth).children(o.listType).children('li').each(function () {
 							var level = _recursiveItems($(this));
 							item.children.push(level);
 						});
@@ -255,9 +279,9 @@
 
 				right = left + 1;
 
-				if ($(item).children(o.listType).children('li').length > 0) {
+				if ($(item).childDepth(o.buryDepth).children(o.listType).children('li').length > 0) {
 					depth ++;
-					$(item).children(o.listType).children('li').each(function () {
+					$(item).childDepth(o.buryDepth).children(o.listType).children('li').each(function () {
 						right = _recursiveArray($(this), depth, right);
 					});
 					depth --;
@@ -267,7 +291,7 @@
 
 				if (depth === sDepth + 1) pid = 'root';
 				else {
-					parentItem = ($(item).parent(o.listType).parent('li').attr('id')).match(o.expression || (/(.+)[-=_](.+)/));
+					parentItem = ($(item).parent(o.listType).parentDepth(o.buryDepth).parent('li').attr('id')).match(o.expression || (/(.+)[-=_](.+)/));
 					pid = parentItem[2];
 				}
 
@@ -322,7 +346,7 @@
 			    result = 0;
 			depth = depth || 0;
 
-			$(parent).children(o.listType).children(o.items).each(function (index, child) {
+			$(parent).childDepth(o.buryDepth).children(o.listType).children(o.items).each(function (index, child) {
 					result = Math.max(self._getChildLevels(child, depth + 1), result);
 			});
 
@@ -350,3 +374,6 @@
 
 	$.ui.nestedSortable.prototype.options = $.extend({}, $.ui.sortable.prototype.options, $.ui.nestedSortable.prototype.options);
 })(jQuery);
+
+
+

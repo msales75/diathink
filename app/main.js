@@ -16,7 +16,7 @@ var myList = [
                 name: "List subitem 1a",
                 prop: "another property"
         }, {
-                name: "List subitem 1a",
+                name: "List subitem 1b",
                 prop: "another property"
         }]
     },
@@ -104,7 +104,13 @@ diathink.app = M.Application.design({
               $('#'+M.ViewManager.getView('page1', 'alist').id).nestedSortable({
                 listType: 'ul',
                 items: 'li',
-                toleranceElement: '> div > div > a'
+                buryDepth: 3,
+                scroll: false,
+                change: function(e, hash) {
+                  console.log("Processed change to structure");
+                },
+                // handle: '> div > div > a > div > .handle',
+                toleranceElement: '> div > div > a > div'
               });
             }
           }
