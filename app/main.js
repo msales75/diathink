@@ -9,7 +9,7 @@ var diathink  = diathink || {};
 
 var myList = [
     {
-        name: "List Item 1",
+        name: "List Item Super Mark",
         prop: "another property",
         sublist: [
         {
