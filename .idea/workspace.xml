@@ -2,10 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="98c627ca-f6fc-4462-840d-a8984a7fbd0c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/config-adhoc.json" />
-      <change type="DELETED" beforePath="C:\Users\Mark\Desktop\diathink\frameworks\The-M-Project\modules\ui\movable_label.js" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/main.js" afterPath="$PROJECT_DIR$/app/main.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config-adhoc.json" afterPath="$PROJECT_DIR$/config-adhoc.json" />
     </list>
     <ignored path="diathink.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -115,8 +114,8 @@
     <scope name="Mark-1" pattern="file:app/main.js||file:frameworks/The-M-Project/modules/core/foundation/view.js||file:frameworks/The-M-Project/modules/core/foundation/view_manager.js||file:frameworks/The-M-Project/modules/ui/list.js||file:frameworks/The-M-Project/modules/ui/list_item.js||file:frameworks/jquery-ui/jquery.ui.nestedSortable.js||file:frameworks/jquery-ui/jquery.ui.sortable.js||file:frameworks/jquery-ui/jquery.ui.mouse.js||file:todo.txt||file:config.json" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="40" />
-    <option name="y" value="22" />
+    <option name="x" value="17" />
+    <option name="y" value="9" />
     <option name="width" value="1179" />
     <option name="height" value="697" />
   </component>
@@ -355,7 +354,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="40" y="22" width="1179" height="697" extended-state="1" />
+    <frame x="17" y="9" width="1179" height="697" extended-state="1" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3285124" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
