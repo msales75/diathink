@@ -1,20 +1,21 @@
 Next:
 ----
-  Adjust code to permit multi-layered toleranceElement
-  
+
   Restyle list after moving
-
+    Find right spot(s) to call ListView.themeUpdate()
+    Also call it for the source-location
   Hide open-button on right
-
-  Expand sublist to fill right
+  Diagnose weird drag-targetting behavior
+  Expand sublist CSS to fill right
+  Add handle to drag
 
   Move open-buttons onto first line
-
   ? Should we continue to require contentBinding for lists?
 
 
 Issues/todo:
 
+  DONE Adjust code to permit multi-layered toleranceElement
 DONE Get ListView and ListItemView working nested.
 DONE Need to define controller for ListView inside ListItemView at correct time
   DONE Only call renderUpdate for sublists when rendering list-item templates.

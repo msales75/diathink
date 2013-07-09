@@ -100,13 +100,16 @@ diathink.app = M.Application.design({
         events: {
           pageshow: {
             action: function() {
-              diathink.MyController.set('listObject', myList)
+              diathink.MyController.set('listObject', myList);
               $('#'+M.ViewManager.getView('page1', 'alist').id).nestedSortable({
                 listType: 'ul',
                 items: 'li',
                 buryDepth: 3,
                 scroll: false,
-                change: function(e, hash) {
+                stop: function(e, hash) { // (could also try 'change' or 'sort' event)
+                  if (hash.item.parents('ul').length>0) {
+                    M.ViewManager.getViewById($(hash.item.parents('ul').get(0)).attr('id')).themeUpdate();
+                  }
                   console.log("Processed change to structure");
                 },
                 // handle: '> div > div > a > div > .handle',
