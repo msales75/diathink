@@ -109,6 +109,7 @@ diathink.app = M.Application.design({
                 stop: function(e, hash) { // (could also try 'change' or 'sort' event)
                   if (hash.item.parents('ul').length>0) {
                     M.ViewManager.getViewById($(hash.item.parents('ul').get(0)).attr('id')).themeUpdate();
+                    M.ViewManager.getViewById($(hash.originalDOM.parent).attr('id')).themeUpdate();
                   }
                   console.log("Processed change to structure");
                 },

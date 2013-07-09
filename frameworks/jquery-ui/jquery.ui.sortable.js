@@ -1087,7 +1087,8 @@ $.widget2("ui.sortable", $.ui.mouse, {
 			originalPosition: inst.originalPosition,
 			offset: inst.positionAbs,
 			item: inst.currentItem,
-			sender: _inst ? _inst.element : null
+			sender: _inst ? _inst.element : null,
+            originalDOM: inst.domPosition
 		};
 	}
 
