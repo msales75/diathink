@@ -233,7 +233,7 @@ M.ListView = M.View.extend(
         }
 
         var listTagName = this.isNumberedList ? 'ol' : 'ul';
-        this.html += '<' + listTagName + ' id="' + this.id + '" data-role="listview"' + this.style() + '></' + listTagName + '>';
+        this.html += '<' + listTagName + ' id="' + this.id + '" data-role="list2view"' + this.style() + '></' + listTagName + '>';
 
         return this.html;
     },
@@ -527,7 +527,7 @@ M.ListView = M.View.extend(
      * @private
      */
     theme: function() {
-        $('#' + this.id).listview();
+        $('#' + this.id).list2view({icon: false});
         if(this.searchBar) {
             /* JQM-hack: remove multiple search bars */
             if($('#' + this.id) && $('#' + this.id).parent()) {
@@ -550,7 +550,7 @@ M.ListView = M.View.extend(
      * @private
      */
     themeUpdate: function() {
-        $('#' + this.id).listview('refresh');
+        $('#' + this.id).list2view('refresh');
     },
 
     /**

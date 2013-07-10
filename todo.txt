@@ -1,12 +1,20 @@
 Next:
 ----
 
-  Restyle list after moving
-    Find right spot(s) to call ListView.themeUpdate()
-    Also call it for the source-location
+DONE  Restyle list after moving
+DONE    Find right spot(s) to call ListView.themeUpdate()
+DONE    Also call it for the source-location
+
+IDEA: Override jquery-mobile listview widget?
+
   Hide open-button on right
-  Diagnose weird drag-targetting behavior
+  -- This may require editing jquery-mobile directly?
+     (since jquery-mobile is responsible for theming)
+  Diagnose weird drag-targeting behavior (may also be tied to jquery-mobile theme)
+  Editor doesn't handle long files well?
+
   Expand sublist CSS to fill right
+
   Add handle to drag
 
   Move open-buttons onto first line
