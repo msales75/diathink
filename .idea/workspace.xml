@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="98c627ca-f6fc-4462-840d-a8984a7fbd0c" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/doc.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/main.js" afterPath="$PROJECT_DIR$/app/main.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js" afterPath="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js" afterPath="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameworks/jquery-ui/listview.js" afterPath="$PROJECT_DIR$/frameworks/jquery-ui/listview.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/todo.txt" afterPath="$PROJECT_DIR$/todo.txt" />
     </list>
     <ignored path="diathink.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -23,90 +26,113 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="todo.txt" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/todo.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="35" selection-start="297" selection-end="297" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="jquery.ui.nestedSortable.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="133" column="42" selection-start="4727" selection-end="4735" vertical-scroll-proportion="-24.6">
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-                <element signature="e#6853#7367#0" expanded="false" />
-                <element signature="e#7395#8043#0" expanded="false" />
-                <element signature="e#8073#8812#0" expanded="false" />
-                <element signature="e#8838#10135#0" expanded="false" />
-                <element signature="e#10179#10415#0" expanded="false" />
-                <element signature="e#10448#10568#0" expanded="false" />
-                <element signature="e#10599#10893#0" expanded="false" />
-                <element signature="e#10939#11258#0" expanded="false" />
-                <element signature="e#11304#11869#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="jquery.ui.sortable.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1092" column="5" selection-start="40464" selection-end="40464" vertical-scroll-proportion="-10.28">
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="jquery.ui.mouse.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.mouse.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="4" column="52" selection-start="107" selection-end="110" vertical-scroll-proportion="-2.72">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="main.js" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/main.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="108" column="86" selection-start="2927" selection-end="2927" vertical-scroll-proportion="0.4301676">
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="view_manager.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view_manager.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="153.0">
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="list.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="13.6">
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <splitter split-orientation="horizontal" split-proportion="0.2890995">
+      <split-first>
+        <leaf>
+          <file leaf-file-name="todo.txt" pinned="false" current="true" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/todo.txt">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="5" column="0" selection-start="86" selection-end="86" vertical-scroll-proportion="0.1539855">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="doc.txt" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/doc.txt">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="18" column="0" selection-start="813" selection-end="813" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file leaf-file-name="todo.txt" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/todo.txt">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="3" column="0" selection-start="12" selection-end="12" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="listview.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/listview.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="153" column="58" selection-start="6199" selection-end="6199" vertical-scroll-proportion="0.0">
+                  <folding>
+                    <element signature="e#12446#16452#0" expanded="false" />
+                    <element signature="e#17092#18966#0" expanded="false" />
+                    <element signature="e#19045#24325#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="jquery.ui.nestedSortable.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="52" column="24" selection-start="1172" selection-end="1172" vertical-scroll-proportion="-5.64">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                    <element signature="e#1561#3238#0" expanded="false" />
+                    <element signature="e#11103#11397#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="jquery.ui.sortable.js" pinned="false" current="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="1068" column="25" selection-start="40150" selection-end="40150" vertical-scroll-proportion="0.33206832">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                    <element signature="e#923#1497#0" expanded="false" />
+                    <element signature="e#1522#1749#0" expanded="false" />
+                    <element signature="e#1785#2077#0" expanded="false" />
+                    <element signature="e#2128#3085#0" expanded="false" />
+                    <element signature="e#11848#13088#0" expanded="false" />
+                    <element signature="e#13115#13525#0" expanded="false" />
+                    <element signature="e#13550#13747#0" expanded="false" />
+                    <element signature="e#13835#14818#0" expanded="false" />
+                    <element signature="e#15615#16312#0" expanded="false" />
+                    <element signature="e#16774#16912#0" expanded="false" />
+                    <element signature="e#16955#17930#0" expanded="false" />
+                    <element signature="e#17971#18225#0" expanded="false" />
+                    <element signature="e#19626#20962#0" expanded="false" />
+                    <element signature="e#21001#22652#0" expanded="false" />
+                    <element signature="e#22692#25718#0" expanded="false" />
+                    <element signature="e#25753#26627#0" expanded="false" />
+                    <element signature="e#26670#27211#0" expanded="false" />
+                    <element signature="e#28586#28924#0" expanded="false" />
+                    <element signature="e#28954#29109#0" expanded="false" />
+                    <element signature="e#29149#29260#0" expanded="false" />
+                    <element signature="e#32131#35389#0" expanded="false" />
+                    <element signature="e#41177#41273#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="main.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/app/main.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="108" column="40" selection-start="2881" selection-end="2881" vertical-scroll-proportion="0.0">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -150,22 +176,28 @@
       <list>
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$USER_HOME$/.WebIde50/config/commandlinetools/espresso.xml" />
-        <option value="$PROJECT_DIR$/config.json" />
         <option value="$PROJECT_DIR$/config-adhoc.json" />
-        <option value="$PROJECT_DIR$/todo.txt" />
-        <option value="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js" />
         <option value="$PROJECT_DIR$/app/main.js" />
+        <option value="$PROJECT_DIR$/frameworks/The-M-Project/modules/jquery_mobile/jquery.mobile-1.3.0.js" />
+        <option value="$PROJECT_DIR$/frameworks/The-M-Project/modules/jquery_mobile/listview.js" />
+        <option value="$PROJECT_DIR$/config.json" />
+        <option value="$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js" />
+        <option value="$PROJECT_DIR$/frameworks/jquery-ui/listview.js" />
+        <option value="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js" />
+        <option value="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js" />
+        <option value="$PROJECT_DIR$/doc.txt" />
+        <option value="$PROJECT_DIR$/todo.txt" />
       </list>
     </option>
   </component>
   <component name="NamedScopeManager">
-    <scope name="Mark-1" pattern="file:app/main.js||file:frameworks/The-M-Project/modules/core/foundation/view.js||file:frameworks/The-M-Project/modules/core/foundation/view_manager.js||file:frameworks/The-M-Project/modules/ui/list.js||file:frameworks/The-M-Project/modules/ui/list_item.js||file:frameworks/jquery-ui/jquery.ui.nestedSortable.js||file:frameworks/jquery-ui/jquery.ui.sortable.js||file:frameworks/jquery-ui/jquery.ui.mouse.js||file:todo.txt||file:config.json" />
+    <scope name="Mark-1" pattern="file:app/main.js||file:frameworks/The-M-Project/modules/core/foundation/view.js||file:frameworks/The-M-Project/modules/core/foundation/view_manager.js||file:frameworks/The-M-Project/modules/ui/list.js||file:frameworks/The-M-Project/modules/ui/list_item.js||file:frameworks/jquery-ui/jquery.ui.nestedSortable.js||file:frameworks/jquery-ui/jquery.ui.sortable.js||file:frameworks/jquery-ui/jquery.ui.mouse.js||file:todo.txt||file:config.json||file:frameworks/The-M-Project/modules/jquery_mobile/jquery.mobile-1.3.0.js||file:frameworks/jquery-ui/listview.js" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="69" />
-    <option name="y" value="52" />
-    <option name="width" value="1265" />
-    <option name="height" value="662" />
+    <option name="x" value="34" />
+    <option name="y" value="-13" />
+    <option name="width" value="1305" />
+    <option name="height" value="723" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -213,18 +245,8 @@
         <subPane>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="diathink" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="diathink" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="diathink" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -233,18 +255,7 @@
         <subPane subId="Default" />
         <subPane subId="Problems" />
         <subPane subId="Tests" />
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT USER_OBJECT="diathink">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
+        <subPane subId="Project Files" />
         <subPane subId="Mark-1">
           <PATH>
             <PATH_ELEMENT USER_OBJECT="Root">
@@ -295,7 +306,25 @@
               <option name="myItemId" value="" />
               <option name="myItemType" value="" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT USER_OBJECT="core/foundation">
+            <PATH_ELEMENT USER_OBJECT="jquery_mobile">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="frameworks">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="The-M-Project/modules">
               <option name="myItemId" value="" />
               <option name="myItemType" value="" />
             </PATH_ELEMENT>
@@ -347,6 +376,12 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/reload.bat" />
     <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Mark\Desktop\diathink\frameworks\jquery-ui" />
+      <recent name="C:\Users\Mark\Desktop\diathink\frameworks" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration default="true" type="NodeJSConfigurationType" factoryName="Node.js" working-dir="$PROJECT_DIR$" coffeescript-run="false">
@@ -402,17 +437,17 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="69" y="52" width="1265" height="662" extended-state="0" />
+    <frame x="34" y="-13" width="1305" height="723" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3285124" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3264463" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24469821" sideWeight="0.812749" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.14884068" sideWeight="0.8330373" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.187251" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17288135" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -489,67 +524,11 @@
     </PATH>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://C:/Program Files (x86)/Gow/bin/espresso.bat">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view_manager.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.widget.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/jquery_mobile/jquery.mobile-1.3.0.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list_item.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="7" selection-start="7" selection-end="7" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.WebIde50/config/commandlinetools/espresso.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="0" selection-start="298" selection-end="298" vertical-scroll-proportion="0.17465754" />
-      </provider>
-    </entry>
-    <entry file="file://C:/Program Files (x86)/Gow/bin/espresso.bat">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="9" selection-start="168" selection-end="168" vertical-scroll-proportion="0.1824687">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="133" column="42" selection-start="4727" selection-end="4735" vertical-scroll-proportion="-24.6">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="153.0">
           <folding>
             <element signature="n#!!doc" expanded="true" />
-            <element signature="e#6853#7367#0" expanded="false" />
-            <element signature="e#7395#8043#0" expanded="false" />
-            <element signature="e#8073#8812#0" expanded="false" />
-            <element signature="e#8838#10135#0" expanded="false" />
-            <element signature="e#10179#10415#0" expanded="false" />
-            <element signature="e#10448#10568#0" expanded="false" />
-            <element signature="e#10599#10893#0" expanded="false" />
-            <element signature="e#10939#11258#0" expanded="false" />
-            <element signature="e#11304#11869#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -561,46 +540,144 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view_manager.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/themes/jquery_mobile/images/icons-18-black.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/themes/jquery_mobile/images/icons-18-white.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/themes/jquery_mobile/images/icons-36-black.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/themes/jquery_mobile/jquery.mobile-1.3.0.min.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="153.0">
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
+        <state line="1" column="20700" selection-start="20859" selection-end="20859" vertical-scroll-proportion="0.043701798">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/themes/jquery_mobile/images/icons-36-white.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="38" column="23" selection-start="1286" selection-end="1286" vertical-scroll-proportion="0.0">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="13.6">
+        <state line="623" column="13" selection-start="21738" selection-end="21738" vertical-scroll-proportion="-8.12">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/todo.txt">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/jquery_mobile/jquery.mobile-1.3.0.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="35" selection-start="297" selection-end="297" vertical-scroll-proportion="0.0">
-          <folding />
+        <state line="5661" column="0" selection-start="187375" selection-end="187375" vertical-scroll-proportion="-13.36">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <marker date="1371408742424" expanded="false" signature="236082:236096" placeholder="..." />
+            <element signature="e#257337#258247#0" expanded="false" />
+            <element signature="e#285852#289134#0" expanded="false" />
+            <element signature="e#310943#318473#0" expanded="false" />
+            <element signature="e#310955#311461#0" expanded="false" />
+            <element signature="e#311485#311513#0" expanded="false" />
+            <element signature="e#311549#311688#0" expanded="false" />
+            <element signature="e#320503#320761#0" expanded="false" />
+            <element signature="e#327132#327424#0" expanded="false" />
+            <element signature="e#327451#327549#0" expanded="false" />
+            <element signature="e#328648#329013#0" expanded="false" />
+            <element signature="e#329036#329067#0" expanded="false" />
+            <element signature="e#329099#330964#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/listview.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1092" column="5" selection-start="40464" selection-end="40464" vertical-scroll-proportion="-10.28">
+        <state line="153" column="58" selection-start="6199" selection-end="6199" vertical-scroll-proportion="0.0">
           <folding>
-            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#12446#16452#0" expanded="false" />
+            <element signature="e#17092#18966#0" expanded="false" />
+            <element signature="e#19045#24325#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/main.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="108" column="86" selection-start="2927" selection-end="2927" vertical-scroll-proportion="0.4301676">
+        <state line="108" column="40" selection-start="2881" selection-end="2881" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="52" column="24" selection-start="1172" selection-end="1172" vertical-scroll-proportion="-5.64">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#1561#3238#0" expanded="false" />
+            <element signature="e#11103#11397#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/doc.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="0" selection-start="813" selection-end="813" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1068" column="25" selection-start="40150" selection-end="40150" vertical-scroll-proportion="0.33206832">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+            <element signature="e#923#1497#0" expanded="false" />
+            <element signature="e#1522#1749#0" expanded="false" />
+            <element signature="e#1785#2077#0" expanded="false" />
+            <element signature="e#2128#3085#0" expanded="false" />
+            <element signature="e#11848#13088#0" expanded="false" />
+            <element signature="e#13115#13525#0" expanded="false" />
+            <element signature="e#13550#13747#0" expanded="false" />
+            <element signature="e#13835#14818#0" expanded="false" />
+            <element signature="e#15615#16312#0" expanded="false" />
+            <element signature="e#16774#16912#0" expanded="false" />
+            <element signature="e#16955#17930#0" expanded="false" />
+            <element signature="e#17971#18225#0" expanded="false" />
+            <element signature="e#19626#20962#0" expanded="false" />
+            <element signature="e#21001#22652#0" expanded="false" />
+            <element signature="e#22692#25718#0" expanded="false" />
+            <element signature="e#25753#26627#0" expanded="false" />
+            <element signature="e#26670#27211#0" expanded="false" />
+            <element signature="e#28586#28924#0" expanded="false" />
+            <element signature="e#28954#29109#0" expanded="false" />
+            <element signature="e#29149#29260#0" expanded="false" />
+            <element signature="e#32131#35389#0" expanded="false" />
+            <element signature="e#41177#41273#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/todo.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="0" selection-start="86" selection-end="86" vertical-scroll-proportion="0.1539855">
+          <folding />
         </state>
       </provider>
     </entry>
