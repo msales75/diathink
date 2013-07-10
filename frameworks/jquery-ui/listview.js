@@ -151,7 +151,7 @@
                             theme: itemTheme
                         });
 
-                        if ( ( icon !== false ) && ( a.length === 1 ) ) {
+                        if ( ( typeof icon !== "undefined" ) && ( icon !== false) && ( a.length === 1 ) ) {
                             item.addClass( "ui-li-has-arrow" );
                         }
 
