@@ -135,8 +135,9 @@
 					break;
 				}
 			}
-
-			var parentItem = (this.placeholder.parentDepth(o.buryDepth+1).get(0) && this.placeholder.parentDepth(o.buryDepth+1).closest('.ui-sortable').length) ? this.placeholder.parentDepth(o.buryDepth+1) : null;
+            // get parentItem and previousItem (element refers to the li)
+            // TODO: parentItem appears incorrect.
+			var parentItem = (this.placeholder.parentDepth(o.buryDepth+2).get(0) && this.placeholder.parentDepth(o.buryDepth+2).closest('.ui-sortable').length) ? this.placeholder.parentDepth(o.buryDepth+2) : null;
 			var level = this._getLevel(this.placeholder);
 			var childLevels = this._getChildLevels(this.helper);
 			var previousItem = this.placeholder[0].previousSibling ? $(this.placeholder[0].previousSibling) : null;
@@ -158,6 +159,9 @@
 			// If the item is moved to the left, send it to its parent level
 			if (parentItem != null && this.positionAbs.left < parentItem.offset().left) {
 				parentItem.after(this.placeholder[0]);
+                if (this.placeholder[0].parentNode.tagName.toLowerCase() !== 'ul') {
+                    console.log("ERROR 1: placeholder was placed in the wrong place");
+                }
 				this._clearEmpty(parentItem[0]);
 				this._trigger("change", event, this._uiHash());
 			}
@@ -168,6 +172,9 @@
 					previousItem.childDepth(o.buryDepth).get(0).appendChild(newList);
 				}
 				previousItem.childDepth(o.buryDepth).children(o.listType).get(0).appendChild(this.placeholder[0]);
+                if (this.placeholder[0].parentNode.tagName.toLowerCase() !== 'ul') {
+                    console.log("ERROR 3: placeholder was placed in the wrong place");
+                }
 				this._trigger("change", event, this._uiHash());
 			}
 			else {

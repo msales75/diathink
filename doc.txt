@@ -1,0 +1,18 @@
+this.position: current mouse position in relative coordinates
+this.positionAbs mouse position in absolute coordinates
+this.lastPositionAbs: position at (?previous-stop or start of mouse drag)
+this.items - list of items; item.item[0] is DOM element
+compares this.positionAbs.top + this.offset.click.top with item.top, item.height
+  returns 2 for dragged-down, 1 for dragged-up
+  note: this compares against this.lastPositionAbs (drag-start?)
+
+
+_intersectsWithPointer -- tests each item for intersection
+  (returns 1 if down, else if up).
+-- Then calls this._rearrange(event,item)
+    inserts placeholder and calls refreshPositions
+    appends placeholder-node using:
+  	item.item[0].parentNode.insertBefore(
+  	  this.placeholder[0],
+  	  (this.direction == 'down' ? item.item[0] : item.item[0].nextSibling)
+  	);

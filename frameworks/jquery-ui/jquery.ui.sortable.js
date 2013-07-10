@@ -978,8 +978,21 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 	_rearrange: function(event, i, a, hardRefresh) {
 
+        if (i.item[0].tagName.toLowerCase() !== 'li') {
+            console.log("ERROR in _rearrange: item is not a list-item");
+        }
+        if (this.placeholder[0].tagName.toLowerCase() !== 'li') {
+            console.log("ERROR in _rearrange: placeholder is not a list-item");
+        }
+        if (i.item[0].parentNode.tagName.toLowerCase() !== 'ul') {
+            console.log("ERROR in _rearrange: item-parent is not a list");
+        }
+
 		a ? a[0].appendChild(this.placeholder[0]) : i.item[0].parentNode.insertBefore(this.placeholder[0], (this.direction == 'down' ? i.item[0] : i.item[0].nextSibling));
 
+        if (this.placeholder[0].parentNode.tagName.toLowerCase() !== 'ul') {
+            console.log("ERROR: placeholder was not placed under a 'ul' element!");
+        }
 		//Various things done here to improve the performance:
 		// 1. we create a setTimeout, that calls refreshPositions
 		// 2. on the instance, we have a counter variable, that get's higher after every append
@@ -1014,6 +1027,12 @@ $.widget2("ui.sortable", $.ui.mouse, {
 		} else {
 			this.currentItem.show();
 		}
+        if (this.placeholder[0].parentNode.tagName.toLowerCase()!== 'ul') {
+            console.log("ERROR: place-holder was not added at a valid location, before currentItem addition");
+        }
+        if (this.currentItem[0].parentNode.tagName.toLowerCase()!== 'ul') {
+            console.log("ERROR: current-item was not added at a valid location");
+        }
 
 		if(this.fromOutside && !noPropagation) delayedTriggers.push(function(event) { this._trigger("receive", event, this._uiHash(this.fromOutside)); });
 		if((this.fromOutside || this.domPosition.prev != this.currentItem.prev().not(".ui-sortable-helper")[0] || this.domPosition.parent != this.currentItem.parent()[0]) && !noPropagation) delayedTriggers.push(function(event) { this._trigger("update", event, this._uiHash()); }); //Trigger update callback if the DOM position has changed
@@ -1057,6 +1076,9 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 		if(!noPropagation) this._trigger("beforeStop", event, this._uiHash());
 
+        if (this.placeholder[0].parentNode.tagName.toLowerCase() !== 'ul') {
+            console.log("ERROR: place-holder was not in correct spot before being removed");
+        }
 		//$(this.placeholder[0]).remove(); would have been the jQuery way - unfortunately, it unbinds ALL events from the original node!
 		this.placeholder[0].parentNode.removeChild(this.placeholder[0]);
 
