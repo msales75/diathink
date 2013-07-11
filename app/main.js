@@ -68,7 +68,7 @@ diathink.RecurseListTemplate =  M.ListView.design({
 });
 
 diathink.MyListItem = M.ListItemView.design({
-  childViews: 'name sublist',
+  childViews: 'header sublist',
   hasSingleAction: 'NO',
   isSelectable: 'NO',
 /*
@@ -79,8 +79,16 @@ diathink.MyListItem = M.ListItemView.design({
     }
   },
 */
-  name: M.LabelView.design({
-    valuePattern: '<%= name %>'
+  header: M.ContainerView.design({
+      cssClass: '',
+      childViews: 'handle name',
+      handle: M.ImageView.design({
+          value: 'theme/images/drag_icon.png',
+          cssClass: 'drag-handle'
+      }),
+      name: M.LabelView.design({
+          valuePattern: '<%= name %>'
+      })
   }),
 
   sublist: diathink.RecurseListTemplate
@@ -104,6 +112,7 @@ diathink.app = M.Application.design({
               $('#'+M.ViewManager.getView('page1', 'alist').id).nestedSortable({
                 listType: 'ul',
                 items: 'li',
+                handle: '> div > div > a > div > .drag-handle',
                 buryDepth: 3,
                 scroll: false,
                 stop: function(e, hash) { // (could also try 'change' or 'sort' event)

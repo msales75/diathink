@@ -136,7 +136,6 @@
 				}
 			}
             // get parentItem and previousItem (element refers to the li)
-            // TODO: parentItem appears incorrect.
 			var parentItem = (this.placeholder.parentDepth(o.buryDepth+2).get(0) && this.placeholder.parentDepth(o.buryDepth+2).closest('.ui-sortable').length) ? this.placeholder.parentDepth(o.buryDepth+2) : null;
 			var level = this._getLevel(this.placeholder);
 			var childLevels = this._getChildLevels(this.helper);

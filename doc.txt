@@ -6,6 +6,7 @@ compares this.positionAbs.top + this.offset.click.top with item.top, item.height
   returns 2 for dragged-down, 1 for dragged-up
   note: this compares against this.lastPositionAbs (drag-start?)
 
+_rearrange() moves placeholder, doesn't finalize move
 
 _intersectsWithPointer -- tests each item for intersection
   (returns 1 if down, else if up).
@@ -16,3 +17,4 @@ _intersectsWithPointer -- tests each item for intersection
   	  this.placeholder[0],
   	  (this.direction == 'down' ? item.item[0] : item.item[0].nextSibling)
   	);
+

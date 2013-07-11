@@ -1,8 +1,20 @@
 Next:
 ----
 
-  Add handle on left to drag
-  - add an element inside the list-item-view
+  DONE: Add handle on left to drag
+  DONE: - add an element inside the list-item-view
+  DONE: move handle into tolerance-element div
+
+  Add expand/collapse buttons
+
+  Change cursor outside of handle (remove button-class?)
+  Change margins on empty ul-elements - or remove empty ul's in design?
+
+  Make text editable
+
+  TEST on mobile!
+
+  Allow adding new elements
 
   Hide some of the borders?
 

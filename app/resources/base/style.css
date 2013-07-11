@@ -2,3 +2,16 @@
 .myCssClass {
     color: #FF0000;
 }
+
+.drag-handle {
+    float: left;
+    height: 24px;
+    width: 24px;
+    opacity: 0.5;
+    padding: 0 8px 0 0;
+    margin: -4px 0 0 -4px;
+    cursor: pointer;
+}
+.drag-handle:hover {
+    opacity: 1;
+}
