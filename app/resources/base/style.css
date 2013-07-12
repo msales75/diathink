@@ -15,3 +15,22 @@
 .drag-handle:hover {
     opacity: 1;
 }
+
+.disclose {
+    float: left;
+    width: 15px;
+    height: 15px;
+}
+
+li.collapsed.branch > div > div > a > div > .disclose{
+    background: #FFF center url("images/expand.png") no-repeat;
+}
+
+li.expanded.branch > div > div > a > div > .disclose {
+    background: #FFF center url("images/contract.png") no-repeat;
+}
+
+li.collapsed > div > div > a > ul {
+    display: none;
+}
+

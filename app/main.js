@@ -81,7 +81,10 @@ diathink.MyListItem = M.ListItemView.design({
 */
   header: M.ContainerView.design({
       cssClass: '',
-      childViews: 'handle name',
+      childViews: 'handle name disclose',
+      disclose: M.ContainerView.design({
+          cssClass: 'disclose'
+      }),
       handle: M.ImageView.design({
           value: 'theme/images/drag_icon.png',
           cssClass: 'drag-handle'
@@ -112,6 +115,11 @@ diathink.app = M.Application.design({
               $('#'+M.ViewManager.getView('page1', 'alist').id).nestedSortable({
                 listType: 'ul',
                 items: 'li',
+                doNotClear: true,
+                isTree: true,
+                  branchClass: 'branch',
+                collapsedClass: 'collapsed',
+                expandedClass: 'expanded',
                 handle: '> div > div > a > div > .drag-handle',
                 buryDepth: 3,
                 scroll: false,
@@ -124,6 +132,9 @@ diathink.app = M.Application.design({
                 },
                 // handle: '> div > div > a > div > .handle',
                 toleranceElement: '> div > div > a > div'
+              });
+              $('.disclose').on('click', function() {
+                    $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');
               });
             }
           }

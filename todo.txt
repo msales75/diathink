@@ -18,7 +18,6 @@ Next:
 
   Hide some of the borders?
 
-  Move open-buttons onto first line
   ? Should we continue to require contentBinding for lists?
 
 
