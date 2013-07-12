@@ -83,7 +83,7 @@
 				var self = this;
 				$(this.items).each(function() {
 					var $li = this.item;
-					if ($li.childDepth(self.options.buryDepth).children(self.options.listType).length) {
+					if ($li.childDepth(self.options.buryDepth).children(self.options.listType).children().length) {
 						$li.addClass(self.options.branchClass);
 						// expand/collapse class only if they have children
 						if (self.options.startCollapsed) $li.addClass(self.options.collapsedClass);
@@ -250,8 +250,10 @@
 							   	&& itemElement.parentNode == this.element[0]
 							) {
 
-								if ( ! $(itemElement).childDepth(o.buryDepth).children(o.listType).length) {
-									$(itemElement).childDepth(o.buryDepth).get(0).appendChild(newList);
+								if ( ! $(itemElement).childDepth(o.buryDepth).children(o.listType).children().length) {
+                                    if ( ! $(itemElement).childDepth(o.buryDepth).children(o.listType).length) {
+                                        $(itemElement).childDepth(o.buryDepth).get(0).appendChild(newList);
+                                    }
 									o.isTree && $(itemElement).removeClass(o.leafClass).addClass(o.branchClass + ' ' + o.expandedClass);
 								}
 
