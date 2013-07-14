@@ -329,8 +329,8 @@
 			else if (previousItem != null
 					 && ! previousItem.hasClass(o.disableNestingClass)
 					 &&
-						(previousItem.childDepth(o.buryDepth).children(o.listType).length && previousItem.childDepth(o.buryDepth).children(o.listType).is(':visible')
-						 || ! previousItem.childDepth(o.buryDepth).children(o.listType).length)
+						(previousItem.childDepth(o.buryDepth).children(o.listType).children().length && previousItem.childDepth(o.buryDepth).children(o.listType).is(':visible')
+						 || ! previousItem.childDepth(o.buryDepth).children(o.listType).children().length)
 					 && ! (o.protectRoot && this.currentItem[0].parentNode == this.element[0])
 					 &&
 						(o.rtl && (this.positionAbs.left + this.helper.outerWidth() < previousItem.offset().left + previousItem.outerWidth() - o.tabSize)
@@ -341,8 +341,11 @@
 
 				if (!previousItem.childDepth(o.buryDepth).children(o.listType).length) {
 					previousItem.childDepth(o.buryDepth).get(0).appendChild(newList);
-					o.isTree && previousItem.removeClass(o.leafClass).addClass(o.branchClass + ' ' + o.expandedClass);
 				}
+
+                if (!previousItem.childDepth(o.buryDepth).children(o.listType).children().length) {
+                    o.isTree && previousItem.removeClass(o.leafClass).addClass(o.branchClass + ' ' + o.expandedClass);
+                }
 
 		        // mjs - if this item is being moved from the top, add it to the top of the list.
 		        if (previousTopOffset && (previousTopOffset <= previousItem.offset().top)) {

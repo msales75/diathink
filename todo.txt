@@ -1,28 +1,34 @@
 Next:
 ----
 
-  DONE: Add handle on left to drag
-  DONE: - add an element inside the list-item-view
-  DONE: move handle into tolerance-element div
-
-  Add expand/collapse buttons
-
+  Change margins on empty ul-elements
   Change cursor outside of handle (remove button-class?)
-  Change margins on empty ul-elements - or remove empty ul's in design?
-
-  Make text editable
+  Make text editable, with special meaning to return, backspace, tab, space.
 
   TEST on mobile!
 
-  Allow adding new elements
+  Double click focuses-to-top
+  Add title-bar with breadcrumbs
+  Drag to right
+  Make lists/selections selectable
 
   Hide some of the borders?
 
   ? Should we continue to require contentBinding for lists?
+  Coming up:
+    Performance
+    Saving
+    Search
+    Horizontal swipe
+    References
 
 
 Issues/todo:
 
+  DONE: Add handle on left to drag
+  DONE: - add an element inside the list-item-view
+  DONE: move handle into tolerance-element div
+  DONE: Add expand/collapse buttons
  DONE: Diagnose weird drag-targeting behavior (may also be tied to jquery-mobile theme)
  DONE:   It seems possible to drag li directly inside of li without a ul above it.
 DONE  Restyle list after moving
