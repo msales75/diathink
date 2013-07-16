@@ -3,34 +3,59 @@
     color: #FF0000;
 }
 
-.drag-handle {
-    float: left;
-    height: 24px;
-    width: 24px;
+
+li > div > div > a > div > .drag-handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 36px;
+    width: 36px;
+    background-color: #888;
     opacity: 0.5;
-    padding: 0 8px 0 0;
-    margin: -4px 0 0 -4px;
     cursor: pointer;
+    border: solid 1px transparent;
+    border-radius: 9.6px;
+    margin: 1px;
 }
+
+.ui-content .ui-listview-inset, .ui-panel-inner .ui-listview-inset {
+    margin: 1em 0 0 0;
+}
+
+li > div > div > a > div > div {
+   cursor: text;
+   margin-left: 30px;
+}
+
 .drag-handle:hover {
     opacity: 1;
 }
-
+/*
 .disclose {
     float: left;
     width: 15px;
     height: 15px;
 }
+*/
+
+ul.ui-listview li.leaf.ui-li > div > div > a > ul.ui-listview {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
 
 li.collapsed.branch > div > div > a > div > .disclose{
-    background: #FFF center url("images/expand.png") no-repeat;
+    /* background: #FFF center url("images/expand.png") no-repeat; */
+    background-color: #888;
 }
 
 li.expanded.branch > div > div > a > div > .disclose {
-    background: #FFF center url("images/contract.png") no-repeat;
+    /* background: #FFF center url("images/contract.png") no-repeat; */
+    background-color: #DDD;
 }
 
 li.collapsed > div > div > a > ul {
     display: none;
 }
+
 

@@ -1,30 +1,43 @@
 Next:
 ----
 
+  Mouse loses drag-item when moving last child out of a parent
+  (Are the old ones contracted or expanded when removed?)
+
+  It appears to be retaining information from prior location.
+    Inspect parentItem.after() command and/or force visibility and/or clone object?
+
   Change margins on empty ul-elements
-  Change cursor outside of handle (remove button-class?)
+
   Make text editable, with special meaning to return, backspace, tab, space.
+  Highlight available drop-locations
+  Make leaf-handles into drop-targets for inside
+  Make branch-handles into open/close-targets for hovering
 
   TEST on mobile!
 
   Double click focuses-to-top
   Add title-bar with breadcrumbs
   Drag to right
-  Make lists/selections selectable
+  Saving
 
   Hide some of the borders?
 
   ? Should we continue to require contentBinding for lists?
   Coming up:
-    Performance
-    Saving
     Search
     Horizontal swipe
+    Inbox, Favorites
     References
 
+    Make lists/selections selectable
+    Performance
+    Actions, Undo
 
 Issues/todo:
 
+  DONE: ul's are not hidden after having the last li-item moved out.
+  DONE: Change cursor outside of handle (remove button-class?)
   DONE: Add handle on left to drag
   DONE: - add an element inside the list-item-view
   DONE: move handle into tolerance-element div
@@ -60,7 +73,7 @@ Later:
       -- probably not needed for one-user text & sort
 
 
-  
+
 list.js renderListItemView and cloneObject may need to be changed.
 Non-lists would be rendered right here: that.addItem(obj.render());
 Call renderUpdate() afterward to render list items?
@@ -68,21 +81,6 @@ Call renderUpdate() afterward to render list items?
   Make sure renderUpdate propogates - this may affect multiple widgets.
 
 Later: handle updating bound-list content
-
-Control-flow:
-controller-init
-view-designs
-page.render
- renderChildViews
-   listview.render
- registerEvents
-   listview.registerevents
-event:pageshow
-  set listObject
-   notifyObservers
-    contentDidChange
-         ListView:renderUpdate
-
 
 * Get nestedSortable working on top of ListItems
 * Trigger ListView update to/from nestedSortable moves, in up to two lists.

@@ -18,3 +18,16 @@ _intersectsWithPointer -- tests each item for intersection
   	  (this.direction == 'down' ? item.item[0] : item.item[0].nextSibling)
   	);
 
+Control-flow:
+controller-init
+view-designs
+page.render
+ renderChildViews
+   listview.render
+ registerEvents
+   listview.registerevents
+event:pageshow
+  set listObject
+   notifyObservers
+    contentDidChange
+         ListView:renderUpdate

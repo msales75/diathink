@@ -81,13 +81,10 @@ diathink.MyListItem = M.ListItemView.design({
 */
   header: M.ContainerView.design({
       cssClass: '',
-      childViews: 'handle name disclose',
-      disclose: M.ContainerView.design({
-          cssClass: 'disclose'
-      }),
+      childViews: 'handle name',
       handle: M.ImageView.design({
           value: 'theme/images/drag_icon.png',
-          cssClass: 'drag-handle'
+          cssClass: 'drag-handle disclose'
       }),
       name: M.LabelView.design({
           valuePattern: '<%= name %>'
@@ -123,6 +120,12 @@ diathink.app = M.Application.design({
                 expandedClass: 'expanded',
                 handle: '> div > div > a > div > .drag-handle',
                 buryDepth: 3,
+                helper: 'clone',
+                  /* function(event, currentItem) {
+                    var c = currentItem.clone();
+                    c
+                    return c;
+                } */
                 scroll: false,
                 stop: function(e, hash) { // (could also try 'change' or 'sort' event)
                   if (hash.item.parents('ul').length>0) {

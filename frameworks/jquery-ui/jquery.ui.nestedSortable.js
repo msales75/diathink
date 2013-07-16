@@ -319,8 +319,9 @@
 
 				parentItem.after(this.placeholder[0]);
 				if (o.isTree && parentItem.childDepth(o.buryDepth).children(o.listType).children('li:visible:not(.ui-sortable-helper)').length < 1) {
-					parentItem.removeClass(this.options.branchClass + ' ' + this.options.expandedClass)
+					parentItem.removeClass(this.options.branchClass)
 							  .addClass(this.options.leafClass);
+                    console.log(this.helper);
 				}
 				this._clearEmpty(parentItem[0]);
 				this._trigger("change", event, this._uiHash());
@@ -579,7 +580,9 @@
 				$(item).removeClass(o.leafClass).addClass(o.branchClass + ' ' + o.expandedClass);
 			} else if (o.isTree && emptyList.length && emptyList.children().length && !emptyList.is(':visible')) {
 				$(item).removeClass(o.leafClass).addClass(o.branchClass + ' ' + o.collapsedClass);
-			}
+			} else if (o.isTree && emptyList.length && ! emptyList.children().length ) {
+                $(item).removeClass(o.branchClass).addClass(o.leafClass).removeClass(o.collapsedClass).addClass(o.expandedClass);
+            }
 
 		},
 
