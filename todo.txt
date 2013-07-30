@@ -1,8 +1,136 @@
 Next:
 ----
+ Test whether __meta works in prototype as expected, before modifying code.
+ Later enable ReferenceList to work as a list of references
+ Get files separated out of main.js
+ Find differences from previous git-commit.
+// OK Determine source of model-ID's
+  Need import-json for model
+  Choose ID's randomly: cid, id
+
+Status parameters for model and view updates
+
+
+ Immediate goal: modify view to add/remove/indent lines
+   get changes working when calling model-object for changes.
+ Support undo for all changes
+ Add a second pane
+ Improve Drag-helper/highlighting
+ Record profiling logs (support replay?)
+ Search? (store word-pointers in 512M RAM?)
+   (can increase localstorage to 50M hmm...)
+   (images/attachments are the problem)
+
+ Support fine-grained action-queueing?
+   (UI-transitions and mouse-moves)
+ Maybe later: Incorporate drag/preview-modifications into action-model?
+
+ UI helpers vs. actions
+ Modify model too
+
+ Tags have a trigger-object with methods triggered by:
+   outlineObject.addTrigger({
+     sequence: negative to test, positive to finalize
+     'tag-added', 'tag-removed', 'tag-moved',
+     'moved'
+     'move-sort',
+   'change-parent',...}, function(action, object, rank) {
+     this points to old model-object,
+     this.obj points to view-object
+     this.parent, this.rank, this.next, this.previous,
+     this.children[],
+     this.references[], this.tags[],
+     this.referencedBy[], taggedBy[]
+     this.tagUI = ViewObject
+     (can schedule until after finalized,
+       or can return to disallow action)
+     tags may define UI for how child-tags appear
+      (what about children by reference?)
+ });
+
+For synchronizing old remote changes into timeline,
+  later need to identify commuting edit-rules,
+  (to minimize need to undo/redo user's own changes).
+
+ Do we need to deal with data-binding for the outline?
+ (Only for components within each box,
+   move/sort handled by one bound controller per outline)
+
+ Write validators for Object-ID's and timestamps, and enumearted
+  Write undo/redo functions for history
+  TODO: how to handle a parent, reference-target, or tag-target being deleted?
+    - Recursively trigger deletion, but normally disallowed in UI
+    inverse references/tags storage?
+
+  How are triggers bound to objects?
+    - managed through tags
+  Source and target-triggers should be enumerated in each instantiated object.
+  (Though storage might use query-rules?)
 
   Mouse loses drag-item when moving last child out of a parent
   (Are the old ones contracted or expanded when removed?)
+
+  Create Model scaffold for outline:
+   operations to model/DOM
+
+
+
+getTriggers()
+getRequiredResources()
+getChangedResources()
+
+Queue-structure:
+  Action
+  Priority-type
+  Dependencies
+  Resources-accessed [ID:field:ID]
+  Resources-changed [ID:field:ID]
+
+Action-types:
+  User-Feedback
+  User-Model-change
+  User-View-change
+  User-View-transition
+  User-Triggered-Model-change
+  User-Triggered-View-change
+  User-Triggered-change
+  Local-syncing-
+  ...
+
+Add global-variables:
+ * known-data
+ * current-view/data
+Add hook for view-change
+
+LATER:
+ Modify model/listview to support unknown ranges
+ Data-syncs support unknown ranges
+ Function for determining load/sync-content
+   - given known-data & visible-content
+
+
+  Queueing:
+    Urgent; freeze all others:
+      Interactive-feedback
+      Model-action-change
+      View-model-change
+      Notice-logging
+    Urgent but skippable:
+      Animation-frame
+    Background (but triggered model-changes need
+          to be finished to test for cosntraints?):
+    Triggered-model-change (high but background - if no violation)
+      (maybe tag children, check for tag constraint?)
+    Triggered-view-change (high but background - if no violation)
+    Mark lines queued by triggers?
+
+      Remote-model-change (background)
+      Remote-view-change (background?)
+      Local Syncing-log (background?)
+      Local-syncing-triggered/implied (background?)
+      Remote Syncing-log (background?)
+      Remote-syncing-triggered/implied (background?)
+
 
   It appears to be retaining information from prior location.
     Inspect parentItem.after() command and/or force visibility and/or clone object?
