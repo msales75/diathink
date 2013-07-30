@@ -10,7 +10,7 @@ li > div > div > a > div > .drag-handle {
     top: 0;
     height: 36px;
     width: 36px;
-    background-color: #888;
+    background-color: #DDD;
     opacity: 0.5;
     cursor: pointer;
     border: solid 1px transparent;
@@ -19,7 +19,7 @@ li > div > div > a > div > .drag-handle {
 }
 
 .ui-content .ui-listview-inset, .ui-panel-inner .ui-listview-inset {
-    margin: 1em 0 0 0;
+    margin: 5px 0 0 0;
 }
 
 li > div > div > a > div > div {
@@ -49,7 +49,7 @@ li.collapsed.branch > div > div > a > div > .disclose{
     background-color: #888;
 }
 
-li.expanded.branch > div > div > a > div > .disclose {
+li.expanded > div > div > a > div > .disclose {
     /* background: #FFF center url("images/contract.png") no-repeat; */
     background-color: #DDD;
 }
@@ -58,4 +58,11 @@ li.collapsed > div > div > a > ul {
     display: none;
 }
 
+/* Override default UI */
+div.ui-input-text {
+    margin: -4px 0 0 26px;
+}
 
+.ui-li .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li {
+    padding: 5px 20px;
+}
