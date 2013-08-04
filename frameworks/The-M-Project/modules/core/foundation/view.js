@@ -224,6 +224,8 @@ M.View = M.Object.extend(
 
     parentPage : null,
 
+    rootID: null, // MS which view's controller is in charge of outline-contents
+
     /**
      * This method encapsulates the 'extend' method of M.Object for better reading of code syntax.
      * It triggers the content binding for this view,
@@ -796,6 +798,26 @@ M.View = M.Object.extend(
         }
 
         return foundChildren;
-    }
+    },
+
+        // set rootID for all list-items within this list, recursively
+        setRootID: function(id) {
+            if (!id) {id = this.id;}
+            if (this.rootID && (this.rootID===this.id) && (this.id!==id)) {
+                // do not change RootID if this is a controlled-node
+                return;
+            }
+            this.rootID = id;
+            if ((this.type === 'M.ListView')&&(this.value)) {
+                var itemlist = this.value[this.items];
+                _.each(itemlist, function(item, index) {
+                    item.setRootID(id);
+                });
+            }
+            var childViewsArray = this.getChildViewsAsArray();
+            for (var i in childViewsArray) {
+                this[childViewsArray[i]].setRootID(id);
+            }
+        }
 	
 });

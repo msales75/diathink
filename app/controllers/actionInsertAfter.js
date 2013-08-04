@@ -1,9 +1,21 @@
 
 
+// OK Each view needs to know its model-ID (done)
+// OK Each model item needs to know its views
 
-M.Action = M.Object.extend({
-    name: null,
-    resources
+// TODO: New Outline-controllers need to register rootID with view
+// controller needs to be instantiated
+// view root needs to know controller instantiation
+// controller instantiation needs to know view-root
+
+
+// OutlineController handles view-execution
+// Action calls each outline-controller and the model-update
+
+diathink.Action = M.Object.extend({
+    controllers: [], // list of outline-controllers to execute view-changes
+      // (might be necessary for calling to identify each change in the view?)
+    name: null, // to override
     triggers: null,
 
     newListItem: function(parentView) {
@@ -21,9 +33,9 @@ li.parentView = parentView;
 }
 });
 
-M.InsertAfter = M.Action.extend({
+diathink.InsertAfter = diathink.Action.extend({
     type: "InsertAfter",
-    args: {"ID", "TEXT"},
+    args: ["ID", "TEXT"],
     id: null,
     previousID: null,
     lineText: null,
@@ -39,6 +51,7 @@ M.InsertAfter = M.Action.extend({
     getResources: function() {
       return {id: id, previousID: previousID, lineText: lineText}
     },
+    // model-ID list of view ID's' +
 
     // TODO: we hold a model-ID or a list of view ID's for the previousItem?
     // (figure out how we will handle that)
@@ -61,9 +74,9 @@ M.InsertAfter = M.Action.extend({
     undoView: function(view) {
         // for a specific outline, looped over views later
 
-    },
-})());
-
+    }
+});
+/*
 M.Action.add("InsertInto",function(id, x) {
 
 });
@@ -82,7 +95,7 @@ M.Action.add("MoveInto",function(id, x) {
             this.placeholder.parentDepth(o.buryDepth+2).closest('.ui-sortable').length)
             ? this.placeholder.parentDepth(o.buryDepth+2)
             : null,
-        level = this._getLevel(this.placeholder),
+        level = this._getLevel(this.placeholder);
 
 });
 
@@ -95,3 +108,4 @@ M.Action.add("MoveBefore",function(id, x) {
 
 });
 
+*/

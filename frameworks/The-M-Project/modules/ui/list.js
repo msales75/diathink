@@ -210,6 +210,18 @@ M.ListView = M.View.extend(
     useIndexAsId: NO,
 
     /**
+     * if this is the top-level list of an outline, this is the outline controller
+    */
+    rootController: null,
+
+    design: function(obj) {
+        var view = M.View.design.call(this, obj); // usual view-design
+        if (view.rootController) { // bind with outline-controller
+            view.rootController.bindView(view);
+        }
+        return view;
+    },
+    /**
      * This method renders the empty list view either as an ordered or as an unordered list. It also applies
      * some styling, if the corresponding properties where set.
      *
@@ -218,6 +230,8 @@ M.ListView = M.View.extend(
      */
     render: function() {
         /* add the list view to its surrounding page */
+
+
         if(!M.ViewManager.currentlyRenderedPage.listList) {
             M.ViewManager.currentlyRenderedPage.listList = [];
         }
@@ -327,10 +341,10 @@ M.ListView = M.View.extend(
         templateView.events = templateView.events ? templateView.events : this.events;
 
         /* If there is an items property, re-assign this to content, otherwise iterate through content itself */
+
         if(this.items) {
             content = content[this.items];
         }
-
         if(this.isDividedList) {
             /* @deprecated implementation for old-fashioned data structure */
             if(!_.isArray(content)) {
@@ -403,6 +417,13 @@ M.ListView = M.View.extend(
             obj = that.cloneObject(obj, item);
             //set the current list item value to the view value. This enables for example to get the value/contentBinding of a list item in a template view.
             obj.value = item;
+            if (that.rootID) {
+                obj.setRootID(that.rootID);
+            }
+
+            // register view.id in corresponding model
+            obj.modelType.findOrCreate(obj.modelId).addView(obj);
+
             /* If edit mode is on, render a delete button */
             if(that.inEditMode) {
                 obj.inEditMode = that.inEditMode;
@@ -452,9 +473,10 @@ M.ListView = M.View.extend(
             for (var i in childViewsArray) {
               if (obj[childViewsArray[i]].type === 'M.ListView') {
                 // set the value for the list and call renderUpdate for it; 
-                // (todo: set a content-binding instead)
-                if (obj.value[childViewsArray[i]]) {
-                  obj[childViewsArray[i]].value = obj.value[childViewsArray[i]];
+
+                  // (.value.attributes for Backbone.Model compatibility)
+                if (obj.value.attributes[childViewsArray[i]]) {
+                  obj[childViewsArray[i]].value = obj.value.attributes[childViewsArray[i]];
                   obj[childViewsArray[i]].renderUpdate();
                 }
               } else {  // propogate to this view's children recursively
@@ -462,6 +484,7 @@ M.ListView = M.View.extend(
               }
             }
     },
+
 
     /**
      * This method clones an object of the template including its sub views (recursively).
@@ -476,6 +499,7 @@ M.ListView = M.View.extend(
 
         /* If the item is a model, read the values from the 'record' property instead */
         var record = item.type === 'M.Model' ? item.record : item;
+        if (record.attributes) {record = record.attributes;} // For compatibility with Backbone.Model
 
         /* Iterate through all views defined in the template view */
         for(var i in childViewsArray) {
@@ -712,6 +736,15 @@ M.ListView = M.View.extend(
      * @param {String, Number} modelId The id to determine the list item.
      */
     getListItemViewById: function(modelId) {
+        // TODO: use model lookup instead of brute force
+        var views = this.listItemTemplateView.modelType.findOrCreate(modelId).views;
+
+        return views;
+
+        for (var i in views) { // check view-id for inclusion in this view
+            // TODO: what to do with this?
+        }
+        // which one is in our view?
         var item = _.detect(this.childViewObjects, function(item) {
             return item.modelId === modelId;
         });

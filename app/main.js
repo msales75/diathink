@@ -33,6 +33,15 @@ var myList = [
     }
 ];
 
+var myList = new diathink.OutlineNodeCollection([
+    {text: "Test 1",
+        children: [
+            {text: "Child 1 1",
+                children: [{text: "Child 1 1 - 1"}]},
+            {text: "Child 1 2"}
+        ]},
+    {text: "Test 2"}
+]);
 
 
 
@@ -104,12 +113,14 @@ diathink.app = M.Application.design({
                     }
                 },
                 isInset:'YES',
+                rootController: diathink.OutlineController.extend({}),
                 listItemTemplateView:diathink.MyListItem,
                 contentBinding:{
                     target:diathink.OutlineController,
                     property:'listObject'
                 },
-                idName:'name'
+                idName:'cid', // For Backbone.Model compatibility
+                items: 'models' // For Backbone.Model compatibility
             })
         }),
 

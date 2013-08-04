@@ -264,6 +264,7 @@ M.Model = M.Object.extend(
         var recProp = this.record[propName];
         /* return ref entity if property is a reference */
         if(metaProp && metaProp.dataType === 'Reference') {
+            // MS refEntity reference 1 -- testing for need to define
             if(metaProp.refEntity) {// if entity is already loaded and assigned here in model record
                 return metaProp.refEntity;
             } else if(recProp) { // if model record has a reference set, but it is not loaded yet
@@ -277,6 +278,7 @@ M.Model = M.Object.extend(
                         m_id: recProp
                     }], callback);
                     if(!this.dataProvider.isAsync) { // if data provider acts synchronous, we can now return the fetched entity
+                        // MS refEntity reference 2
                         return metaProp.refEntity;
                     }
                     return YES;
@@ -308,6 +310,7 @@ M.Model = M.Object.extend(
             if(this.record[propName] !== val.m_id) {
                 /* set m_id of reference in record */
                 this.record[propName] = val.m_id;
+                // MS refEntity reference 3 --- set refEntity
                 this.__meta[propName].refEntity = val;
             }
             return;
@@ -424,6 +427,7 @@ M.Model = M.Object.extend(
 
         if(obj.cascade) {
             for(var prop in this.__meta) {
+                // MS refEntity reference 4 -- for saving with cascade
                 if(this.__meta[prop] && this.__meta[prop].dataType === 'Reference' && this.__meta[prop].refEntity) {
                     this.__meta[prop].refEntity.save({cascade:YES}); // cascades recursively through all referenced model records
                 }
@@ -497,6 +501,7 @@ M.Model = M.Object.extend(
                 var ref = this.modelList[curRec.name].find({
                     key: curRec.m_id
                 });
+                // MS refEntity reference 5
                 this.__meta[curRec.prop].refEntity = ref;
 
                 this.deepFind(records, callback); // recursion
@@ -508,6 +513,7 @@ M.Model = M.Object.extend(
     },
 
     setReference: function(result, that, prop, callback) {
+        // MS refEntity reference 6
         that.__meta[prop].refEntity = result[0];    // set reference in source model defined by that
         callback();
     }

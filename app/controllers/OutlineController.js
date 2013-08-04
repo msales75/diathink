@@ -1,7 +1,26 @@
 
 // Note that controllers must be defined before view.
 // TODO later support partial-list loading?
+
+diathink.OutlineManager = M.Object.extend({
+    type: 'OutlineManager',
+    outlines: {},
+    add: function(id, controller) {
+        this.outlines[id] = controller;
+    }
+});
+
 diathink.OutlineController = M.Controller.extend({
+    rootID: null,
+    roots: [],
+    bindView: function(view) { // bind this constructor-instance to this view
+        this.rootID = view.id;
+        view.setRootID();
+        diathink.OutlineManager.add(this.rootID, this);
+    },
+    remove: function(view) {
+        // TODO
+    },
     listObject:[],
     listObjectClicked:function (id, nameId) {
         console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
@@ -64,15 +83,5 @@ diathink.dummyController = M.Controller.extend({
 
 
 // TODO: Where do we store and check for triggers?
-diathink.OutlineDataController = M.Controller.extend({
-    add:function () {
 
-        task = KitchenSink.Task.createRecord({
-            text:M.ViewManager.getView('dataLocalStorageTaskApp', 'taskField').value
-        });
-        task.save();
-        this.setTasks();
-        M.ViewManager.getView('dataLocalStorageTaskApp', 'taskField').setValue('');
-    }
-});
 

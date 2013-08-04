@@ -1,12 +1,12 @@
 Next:
 ----
- Test whether __meta works in prototype as expected, before modifying code.
- Later enable ReferenceList to work as a list of references
- Get files separated out of main.js
- Find differences from previous git-commit.
-// OK Determine source of model-ID's
-  Need import-json for model
-  Choose ID's randomly: cid, id
+
+ Include the outline-master-parent in the view-list for each model-node?
+  Or just a list of views to update?
+ Also need to have controllers linked with view-rootID
+
+
+
 
 Status parameters for model and view updates
 
@@ -25,8 +25,32 @@ Status parameters for model and view updates
    (UI-transitions and mouse-moves)
  Maybe later: Incorporate drag/preview-modifications into action-model?
 
- UI helpers vs. actions
+ Later enable ReferenceList to work as a list of references
+
+ Later: UI helpers vs. actions (optimization/refactoring issue)
  Modify model too
+
+
+* Finish Raw History management
+* Enable text-commands for new lines etc.
+* Focusing
+* Dual-pages
+* Improve drag-drop UI
+* Local/Remote Search (5-25 search-terms per line?)
+* Local/Remote Save
+* References
+* Tags & Triggers
+* Real-time collaboration
+* History merging with issue-recording
+* UI for browsing merge-issues
+
+* Partial view-display
+* Partial local-loading
+* Action-Queue prioritization
+* Partial loading
+* Index history by User/Time/Parent-list of affected nodes
+* Clone, Sync, Remaster buttons
+
 
  Tags have a trigger-object with methods triggered by:
    outlineObject.addTrigger({
@@ -164,6 +188,14 @@ LATER:
 
 Issues/todo:
 
+ OK Connect model-ID's with list-views
+ OK Extend Backbone.(relational?)Model to add/remove views to each model-item
+ OK Test whether __meta works in prototype as expected, before modifying code.
+ OK Get files separated out of main.js
+ OK Find differences from previous git-commit.
+ OK Determine source of model-ID's
+ OK Need import-json for model
+ OK Choose ID's randomly: cid, id
   DONE: ul's are not hidden after having the last li-item moved out.
   DONE: Change cursor outside of handle (remove button-class?)
   DONE: Add handle on left to drag
@@ -193,14 +225,14 @@ not)
     ui.js 
 
 Later:
-  Need content-binding & event-delegation to work for nested view/controller/model elements with the same setup-parameters, going to the corresponding model sub-object based on the view nesting.
+  Need content-binding & event-delegation to work for nested view/controller/model
+     elements with the same setup-parameters,
+     going to the corresponding model sub-object based on the view nesting.
  -- start with one single content-binding for list/outline
     then add support for binding sub-models inside the list/outline model?
     This is ok when content-changes start from DOM (we know what part to update)
     Harder when change comes from external-database via model content-binding 
       -- probably not needed for one-user text & sort
-
-
 
 list.js renderListItemView and cloneObject may need to be changed.
 Non-lists would be rendered right here: that.addItem(obj.render());

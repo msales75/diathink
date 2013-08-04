@@ -14,13 +14,16 @@ diathink.RecurseListTemplate = M.ListView.design({
         target:diathink.dummyController,
         property:'listObject'
     },
-    idName:'name'
+    items: 'models', // for Backbone.Collection compatibility
+    idName:'cid' // for Backbone.Collection compatibility
 });
 
 diathink.MyListItem = M.ListItemView.design({
-    childViews:'header sublist',
+    childViews:'header children',
     hasSingleAction:'NO',
     isSelectable:'NO',
+    modelType: diathink.OutlineNodeModel,
+
     /*
      events: {
      tap: {
@@ -37,7 +40,7 @@ diathink.MyListItem = M.ListItemView.design({
             cssClass:'drag-handle disclose'
         }),
         name:M.TextFieldView.design({
-            valuePattern:'<%= name %>',
+            valuePattern:'<%= text %>',
             events:{
                 enter:{
                     action:function (id, e) {
@@ -63,7 +66,7 @@ diathink.MyListItem = M.ListItemView.design({
         })
     }),
 
-    sublist:diathink.RecurseListTemplate
+    children:diathink.RecurseListTemplate
 
 });
 

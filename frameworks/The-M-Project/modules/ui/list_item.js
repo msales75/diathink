@@ -118,6 +118,8 @@ M.ListItemView = M.View.extend(
      */
     swipeButton: null,
 
+    modelType: null, // pointer to class of model, used with modelId
+
     /**
      * Renders a list item as an li-tag. The rendering is initiated by the parent list view.
      *

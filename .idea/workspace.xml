@@ -2,15 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="98c627ca-f6fc-4462-840d-a8984a7fbd0c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/controllers/HistoryController.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/controllers/OutlineController.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/controllers/actionInsertAfter.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/HistoryModel.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/models/OutlineNodeModel.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/views/OutlineView.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/frameworks/backbone/backbone-couchdb.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/frameworks/backbone/backbone-integration.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/frameworks/backbone/backbone-relational.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/frameworks/backbone/backbone.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/frameworks/backbone/backbone.localStorage.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/frameworks/backbone/json2.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/frameworks/backbone/todos.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/frameworks/backbone/underscore.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/OutlineController.js" afterPath="$PROJECT_DIR$/app/controllers/OutlineController.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/actionInsertAfter.js" afterPath="$PROJECT_DIR$/app/controllers/actionInsertAfter.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/main.js" afterPath="$PROJECT_DIR$/app/main.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/resources/base/style.css" afterPath="$PROJECT_DIR$/app/resources/base/style.css" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/OutlineNodeModel.js" afterPath="$PROJECT_DIR$/app/models/OutlineNodeModel.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/OutlineView.js" afterPath="$PROJECT_DIR$/app/views/OutlineView.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.json" afterPath="$PROJECT_DIR$/config.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/model.js" afterPath="$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/model.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view.js" afterPath="$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js" afterPath="$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list_item.js" afterPath="$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list_item.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/todo.txt" afterPath="$PROJECT_DIR$/todo.txt" />
     </list>
     <ignored path="diathink.iws" />
@@ -30,40 +40,22 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.43868396">
+    <splitter split-orientation="horizontal" split-proportion="0.5437693">
       <split-first>
         <leaf>
-          <file leaf-file-name="todo.txt" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/todo.txt">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="5" column="43" selection-start="226" selection-end="226" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="actionInsertAfter.js" pinned="false" current="true" current-in-tab="true">
+          <file leaf-file-name="actionInsertAfter.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/app/controllers/actionInsertAfter.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+                <state line="71" column="45" selection-start="2351" selection-end="2351" vertical-scroll-proportion="-6.44">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="OutlineNodeModel.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/app/models/OutlineNodeModel.js">
+          <file leaf-file-name="controller.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/controller.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="1" column="44" selection-start="45" selection-end="45" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="model.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/model.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="267" column="41" selection-start="9036" selection-end="9045" vertical-scroll-proportion="-7.48">
+                <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="12.92">
                   <folding>
                     <element signature="n#!!doc" expanded="true" />
                   </folding>
@@ -74,40 +66,7 @@
           <file leaf-file-name="object.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/object.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="72" column="7" selection-start="2043" selection-end="2043" vertical-scroll-proportion="-11.48">
-                  <folding>
-                    <element signature="n#!!doc" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="model_attribute.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/datastore/model_attribute.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="104" column="18" selection-start="3423" selection-end="3423" vertical-scroll-proportion="-3.44">
-                  <folding>
-                    <element signature="n#!!doc" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="phone_validator.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/datastore/validators/phone_validator.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-                  <folding>
-                    <element signature="n#!!doc" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="list_item.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list_item.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="11" column="26" selection-start="647" selection-end="647" vertical-scroll-proportion="-7.28">
+                <state line="70" column="6" selection-start="2034" selection-end="2034" vertical-scroll-proportion="-11.32">
                   <folding>
                     <element signature="n#!!doc" expanded="true" />
                   </folding>
@@ -118,7 +77,51 @@
           <file leaf-file-name="view.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="124" column="11" selection-start="3616" selection-end="3623" vertical-scroll-proportion="229.8">
+                <state line="812" column="56" selection-start="27131" selection-end="27131" vertical-scroll-proportion="-4.12">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="list.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="216" column="27" selection-start="5974" selection-end="5974" vertical-scroll-proportion="-5.2">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="event_dispatcher.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/event_dispatcher.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="view_manager.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view_manager.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+                  <folding>
+                    <element signature="n#!!doc" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="backbone-relational.js" pinned="false" current="true" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/frameworks/backbone/backbone-relational.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="1637" column="59" selection-start="69746" selection-end="69746" vertical-scroll-proportion="0.11632653">
                   <folding>
                     <element signature="n#!!doc" expanded="true" />
                   </folding>
@@ -133,19 +136,10 @@
           <file leaf-file-name="main.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/app/main.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="137" column="2" selection-start="4095" selection-end="4095" vertical-scroll-proportion="0.0">
+                <state line="115" column="70" selection-start="3726" selection-end="3726" vertical-scroll-proportion="-28.12">
                   <folding>
                     <element signature="n#!!doc" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="config.json" pinned="false" current="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/config.json">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="7" column="16" selection-start="158" selection-end="158" vertical-scroll-proportion="0.2895377">
-                  <folding />
                 </state>
               </provider>
             </entry>
@@ -153,65 +147,52 @@
           <file leaf-file-name="OutlineView.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/app/views/OutlineView.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="1" column="50" selection-start="51" selection-end="51" vertical-scroll-proportion="0.0">
+                <state line="2" column="11" selection-start="60" selection-end="63" vertical-scroll-proportion="-0.68">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="OutlineController.js" pinned="false" current="false" current-in-tab="false">
+          <file leaf-file-name="todo.txt" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/todo.txt">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="258" column="22" selection-start="8423" selection-end="8423" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="backbone-integration.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/frameworks/backbone/backbone-integration.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="1" column="12" selection-start="13" selection-end="13" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="config.json" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/config.json">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="57" column="44" selection-start="1850" selection-end="1850" vertical-scroll-proportion="0.0">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="OutlineController.js" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/app/controllers/OutlineController.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="78" column="0" selection-start="2321" selection-end="2321" vertical-scroll-proportion="0.0">
+                <state line="11" column="0" selection-start="276" selection-end="276" vertical-scroll-proportion="0.38163266">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="HistoryController.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/app/controllers/HistoryController.js">
+          <file leaf-file-name="list_item.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list_item.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="14" column="3" selection-start="240" selection-end="240" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="HistoryModel.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/app/models/HistoryModel.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="2" column="23" selection-start="113" selection-end="113" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="page.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/page.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="146" column="20" selection-start="4374" selection-end="4411" vertical-scroll-proportion="-59.48">
-                  <folding>
-                    <element signature="n#!!doc" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="list.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="398" column="13" selection-start="12973" selection-end="12973" vertical-scroll-proportion="-270.64">
-                  <folding>
-                    <element signature="n#!!doc" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="event_dispatcher.js" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/event_dispatcher.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="194" column="15" selection-start="7855" selection-end="7866" vertical-scroll-proportion="-7.04">
+                <state line="128" column="10" selection-start="4227" selection-end="4233" vertical-scroll-proportion="-5.36">
                   <folding>
                     <element signature="n#!!doc" expanded="true" />
                   </folding>
@@ -272,22 +253,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/frameworks/The-M-Project/modules/jquery_mobile/listview.js" />
-        <option value="$PROJECT_DIR$/config.json" />
-        <option value="$PROJECT_DIR$/frameworks/jquery-ui/listview.js" />
-        <option value="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js" />
-        <option value="$PROJECT_DIR$/doc.txt" />
-        <option value="$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js" />
-        <option value="$PROJECT_DIR$/app/resources/base/style.css" />
-        <option value="$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js" />
-        <option value="$PROJECT_DIR$/app/resources/base/actionInsertAfter.js" />
-        <option value="$PROJECT_DIR$/todo.txt" />
+        <option value="$PROJECT_DIR$/frameworks/backbone/json2.js" />
+        <option value="$PROJECT_DIR$/frameworks/backbone/todos.js" />
+        <option value="$PROJECT_DIR$/frameworks/backbone/backbone-couchdb.js" />
+        <option value="$PROJECT_DIR$/frameworks/backbone/underscore.js" />
         <option value="$PROJECT_DIR$/app/models/OutlineNodeModel.js" />
-        <option value="$PROJECT_DIR$/app/models/HistoryModel.js" />
-        <option value="$PROJECT_DIR$/app/controllers/HistoryController.js" />
-        <option value="$PROJECT_DIR$/app/controllers/OutlineController.js" />
+        <option value="$PROJECT_DIR$/frameworks/backbone/backbone-relational.js" />
+        <option value="$PROJECT_DIR$/config.json" />
+        <option value="$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list_item.js" />
+        <option value="$PROJECT_DIR$/app/controllers/actionInsertAfter.js" />
+        <option value="$PROJECT_DIR$/frameworks/backbone/backbone-integration.js" />
         <option value="$PROJECT_DIR$/app/views/OutlineView.js" />
+        <option value="$PROJECT_DIR$/todo.txt" />
         <option value="$PROJECT_DIR$/app/main.js" />
+        <option value="$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js" />
+        <option value="$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view.js" />
+        <option value="$PROJECT_DIR$/app/controllers/OutlineController.js" />
       </list>
     </option>
   </component>
@@ -295,10 +276,10 @@
     <scope name="Mark-1" pattern="file:app/main.js||file:frameworks/The-M-Project/modules/core/foundation/view.js||file:frameworks/The-M-Project/modules/core/foundation/view_manager.js||file:frameworks/The-M-Project/modules/ui/list.js||file:frameworks/The-M-Project/modules/ui/list_item.js||file:frameworks/jquery-ui/jquery.ui.nestedSortable.js||file:frameworks/jquery-ui/jquery.ui.sortable.js||file:frameworks/jquery-ui/jquery.ui.mouse.js||file:todo.txt||file:config.json||file:frameworks/The-M-Project/modules/jquery_mobile/jquery.mobile-1.3.0.js||file:frameworks/jquery-ui/listview.js" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="23" />
-    <option name="y" value="6" />
-    <option name="width" value="1324" />
-    <option name="height" value="727" />
+    <option name="x" value="3" />
+    <option name="y" value="28" />
+    <option name="width" value="1331" />
+    <option name="height" value="706" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -353,6 +334,160 @@
               <option name="myItemType" value="" />
             </PATH_ELEMENT>
             <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="frameworks">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="The-M-Project">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="frameworks">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="The-M-Project">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="modules">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="frameworks">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="The-M-Project">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="modules">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="ui">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="frameworks">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="The-M-Project">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="modules">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="core">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="frameworks">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="The-M-Project">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="modules">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="core">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="foundation">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="frameworks">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="diathink">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="frameworks">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="backbone">
               <option name="myItemId" value="" />
               <option name="myItemType" value="" />
             </PATH_ELEMENT>
@@ -592,17 +727,17 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="23" y="6" width="1324" height="727" extended-state="0" />
+    <frame x="3" y="28" width="1331" height="706" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3285124" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3264463" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21945526" sideWeight="0.82323235" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24845201" sideWeight="0.8289703" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17676768" sideWeight="0.99903756" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17102967" sideWeight="0.99913347" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -679,7 +814,7 @@
     </PATH>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/datastore/data_provider.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/observable.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding>
@@ -688,25 +823,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/object.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/backbone/underscore.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="72" column="7" selection-start="2043" selection-end="2043" vertical-scroll-proportion="-11.48">
+        <state line="795" column="6" selection-start="30519" selection-end="30519" vertical-scroll-proportion="-11.08">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/model.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/backbone/backbone.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="267" column="41" selection-start="9036" selection-end="9045" vertical-scroll-proportion="-7.48">
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
+        <state line="997" column="12" selection-start="41224" selection-end="41230" vertical-scroll-proportion="29.160715">
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/datastore/validators/phone_validator.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view_manager.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding>
@@ -715,91 +848,99 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/datastore/model_attribute.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/button.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="104" column="18" selection-start="3423" selection-end="3423" vertical-scroll-proportion="-3.44">
+        <state line="63" column="63" selection-start="1931" selection-end="1933" vertical-scroll-proportion="0.33163264">
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/todo.txt">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="43" selection-start="226" selection-end="226" vertical-scroll-proportion="0.0">
-          <folding />
+        <state line="216" column="27" selection-start="5974" selection-end="5974" vertical-scroll-proportion="-5.2">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/HistoryModel.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/core/foundation/view.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="23" selection-start="113" selection-end="113" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/HistoryController.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="3" selection-start="240" selection-end="240" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/OutlineController.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="78" column="0" selection-start="2321" selection-end="2321" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/listview.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="359" column="37" selection-start="16240" selection-end="16240" vertical-scroll-proportion="0.0">
-          <folding />
+        <state line="812" column="56" selection-start="27131" selection-end="27131" vertical-scroll-proportion="-4.12">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/views/OutlineView.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="50" selection-start="51" selection-end="51" vertical-scroll-proportion="0.0">
+        <state line="2" column="11" selection-start="60" selection-end="63" vertical-scroll-proportion="-0.68">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/main.js">
+    <entry file="file://$PROJECT_DIR$/todo.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="137" column="2" selection-start="4095" selection-end="4095" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
+        <state line="258" column="22" selection-start="8423" selection-end="8423" vertical-scroll-proportion="0.0">
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.sortable.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/backbone/backbone-integration.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="574" column="17" selection-start="18230" selection-end="18242" vertical-scroll-proportion="11.28">
+        <state line="1" column="12" selection-start="13" selection-end="13" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="16" selection-start="158" selection-end="158" vertical-scroll-proportion="0.2895377">
+        <state line="57" column="44" selection-start="1850" selection-end="1850" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/OutlineNodeModel.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.ui.nestedSortable.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="44" selection-start="45" selection-end="45" vertical-scroll-proportion="0.0">
+        <state line="57" column="0" selection-start="1278" selection-end="1278" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/actionInsertAfter.js">
+    <entry file="file://$PROJECT_DIR$/frameworks/The-M-Project/modules/ui/list_item.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+        <state line="128" column="10" selection-start="4227" selection-end="4233" vertical-scroll-proportion="-5.36">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/main.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="115" column="70" selection-start="3726" selection-end="3726" vertical-scroll-proportion="-28.12">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/OutlineController.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="0" selection-start="276" selection-end="276" vertical-scroll-proportion="0.38163266">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameworks/backbone/backbone-relational.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1637" column="59" selection-start="69746" selection-end="69746" vertical-scroll-proportion="0.11632653">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
