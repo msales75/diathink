@@ -7,33 +7,13 @@
 
 var diathink = diathink || {};
 
-
-var myList = [
-    {
-        name:"List Item Super Mark",
-        prop:"another property",
-        sublist:[
-            {
-                name:"List subitem 1a",
-                prop:"another property"
-            },
-            {
-                name:"List subitem 1b",
-                prop:"another property"
-            }
-        ]
-    },
-    {
-        name:"List Item 2",
-        prop:"another property"
-    },
-    {
-        name:"List Item 3",
-        prop:"another property"
+M.assert = function(test) {
+    if (!test) {
+        throw "Assertion failed";
     }
-];
+}
 
-var myList = new diathink.OutlineNodeCollection([
+diathink.data = new diathink.OutlineNodeCollection([
     {text: "Test 1",
         children: [
             {text: "Child 1 1",
@@ -42,10 +22,6 @@ var myList = new diathink.OutlineNodeCollection([
         ]},
     {text: "Test 2"}
 ]);
-
-
-
-
 
 diathink.app = M.Application.design({
 
@@ -57,7 +33,7 @@ diathink.app = M.Application.design({
         events:{
             pageshow:{
                 action:function () {
-                    diathink.OutlineController.set('listObject', myList);
+                    diathink.OutlineController.set('listObject', diathink.data);
                     $('#' + M.ViewManager.getView('page1', 'alist').id).nestedSortable({
                         listType:'ul',
                         items:'li',

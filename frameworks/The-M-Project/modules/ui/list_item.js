@@ -52,10 +52,10 @@ M.ListItemView = M.View.extend(
      *
      * @type M.ButtonView
      */
-    deleteButton: M.ButtonView.design({
-        icon: 'delete',
-        value: ''
-    }),
+    // deleteButton: M.ButtonView.design({
+        //icon: 'delete',
+        //value: ''
+    // }),
 
     /**
      * This property determines whether the list item is a divider or not.
@@ -141,7 +141,7 @@ M.ListItemView = M.View.extend(
                 this.renderChildViews();
                 this.html += '</a>';
 
-                this.html += this.deleteButton.render();
+                // this.html += this.deleteButton.render();
             } else {
                 if(this.isSelectable) {
                     this.html += '<a href="#">';
@@ -207,7 +207,6 @@ M.ListItemView = M.View.extend(
                 action: 'setActiveListItem'
             }
         };
-*/
         if(this.swipeButton) {
             $.extend(this.internalEvents, {
                 swipeleft: {
@@ -220,6 +219,7 @@ M.ListItemView = M.View.extend(
                 }
             })
         }
+ */
         this.bindToCaller(this, M.View.registerEvents)();
     },
 

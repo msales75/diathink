@@ -1,5 +1,6 @@
 
-diathink.RecurseListTemplate = M.ListView.design({
+diathink.RecurseListTemplate = M.ListView.extend({
+    isTemplate: true,
     isInset:'YES',
     listItemTemplateView:null,
     /*
@@ -18,28 +19,27 @@ diathink.RecurseListTemplate = M.ListView.design({
     idName:'cid' // for Backbone.Collection compatibility
 });
 
-diathink.MyListItem = M.ListItemView.design({
+diathink.MyListItem = M.ListItemView.extend({
+    isTemplate: true,
     childViews:'header children',
     hasSingleAction:'NO',
     isSelectable:'NO',
     modelType: diathink.OutlineNodeModel,
 
-    /*
-     events: {
+    /* events: {
      tap: {
      target: diathink.OutlineController,
      action: 'listObjectClicked'
-     }
-     },
-     */
-    header:M.ContainerView.design({
+     }}, */
+
+    header:M.ContainerView.extend({
         cssClass:'',
         childViews:'handle name',
-        handle:M.ImageView.design({
+        handle:M.ImageView.extend({
             value:'theme/images/drag_icon.png',
             cssClass:'drag-handle disclose'
         }),
-        name:M.TextFieldView.design({
+        name:M.TextFieldView.extend({
             valuePattern:'<%= text %>',
             events:{
                 enter:{
@@ -57,7 +57,9 @@ diathink.MyListItem = M.ListItemView.design({
                         } else if (e.which === 8) { // backspace
 
                         } else if (e.which === 13) { // enter
-
+                            diathink.InsertAfterAction.createAndExec({
+                                targetID: M.ViewManager.findViewById(id).parentView.parentView.modelId
+                            });
                         }
                         console.log("Processed keyup with which=" + e.which + " and keycode=" + e.keyCode);
                     }

@@ -427,6 +427,7 @@ M.ListView = M.View.extend(
             /* If edit mode is on, render a delete button */
             if(that.inEditMode) {
                 obj.inEditMode = that.inEditMode;
+                /*
                 obj.deleteButton = obj.deleteButton.design({
                     modelId: obj.modelId,
                     events: {
@@ -442,6 +443,7 @@ M.ListView = M.View.extend(
                         }
                     }
                 });
+                 */
             }
 
             /* set the list view as 'parent' for the current list item view */
@@ -452,9 +454,9 @@ M.ListView = M.View.extend(
 
             /* register events */
             obj.registerEvents();
-            if(obj.deleteButton) {
-                obj.deleteButton.registerEvents();
-            }
+            // if(obj.deleteButton) {
+                // obj.deleteButton.registerEvents();
+            // }
 
             /* ... once it is in the DOM, make it look nice */
             var childViewsArray = obj.getChildViewsAsArray();

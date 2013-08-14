@@ -1,6 +1,36 @@
 Next:
 ----
 
+Check Constraints on these parmeters:
+
+diathink.OutlineManager.outlines;
+Backbone.Relational.store._collections[0]._byId;
+M.ViewManager.viewList;
+
+outlines (M.OutlineController)
+  type
+  rootID
+  views {}
+
+models (OutlineNodeModel)
+  cid
+  attributes.parent
+  attributes.children
+  attributes.text
+  views
+
+Views (M.View, ListView, ListItemView)
+  id
+  isView
+  type
+  parentView
+  childViews
+  rootID
+  modelId
+  value (collection or model)
+  rootController
+
+
  Include the outline-master-parent in the view-list for each model-node?
   Or just a list of views to update?
  Also need to have controllers linked with view-rootID

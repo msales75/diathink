@@ -239,7 +239,7 @@ M.View = M.Object.extend(
         M.ViewManager.register(view);
 
         view.attachToObservable();
-        
+
         return view;
     },
 

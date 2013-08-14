@@ -11,8 +11,8 @@ diathink.OutlineManager = M.Object.extend({
 });
 
 diathink.OutlineController = M.Controller.extend({
+    type: 'diathink.OutlineController',
     rootID: null,
-    roots: [],
     bindView: function(view) { // bind this constructor-instance to this view
         this.rootID = view.id;
         view.setRootID();
