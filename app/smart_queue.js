@@ -9,9 +9,19 @@ diathink.QueueManager= M.Object.extend({
 
 });
 
+
+// give warnings for queue-items with no path?
+//   require guaranteed path for high-priority items?
+
+// possible bugs: ambiguous dependencies/fulfillments
+// ambiguity between data-source-path and data-instantiation-path
+// forgetting to use frees
+
+
 // DISALLOW any function from ever offering a redundant resource
 // Resources can be destroyed via 'frees'
-// Hopefully won't need 'temporarily unavailable' resources
+// 'temporarily unavailable' resources can be done with frees,
+//    but should be used very rarely
 
 // determine next event
 diathink.QueueEvent = M.Object.extend({

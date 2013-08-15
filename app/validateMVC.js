@@ -312,6 +312,16 @@ diathink.validateMVC = function () {
                         M.test(models[views[v].value._byId[i].cid] === views[v].value._byId[i],
                             "ListView "+v+" child-model "+views[v].value._byId[i].cid+" is not in the models list");
                     }
+                    for (var i in views[v].value.models) {
+                        // rank is i
+                        var vid = $($('#'+v).children().get(i)).attr('id');
+                        M.test(typeof vid === 'string',
+                            "Unable to find id of DOM-child "+i+" of view "+v);
+                        M.test(views[vid] !== undefined,
+                            "DOM-child "+i+" of view "+v+" is not in the views list: "+vid);
+                        M.test(views[vid].modelId === views[v].value.models[i].cid,
+                            "Parent-view "+v+" with DOMm-child id="+vid+" does not have the same modelId");
+                    }
                 } else if (views[v].type === 'M.ListItemView') {
                     M.test(views[v].modelId != null,
                         "ListItemView "+v+" has a null modelId");

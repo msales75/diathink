@@ -49,16 +49,17 @@ diathink.MyListItem = M.ListItemView.extend({
                     }
                 },
                 keyup:{
-                    action:function (id, e) {
+                    action: function (id, e) {
                         if (e.which === 32) { // spacebar
-
+                          // check if cursor is on far right of textbox
                         } else if (e.which === 9) { // tab
                             // NOTE: tab not always received with default browser behavior
                         } else if (e.which === 8) { // backspace
 
                         } else if (e.which === 13) { // enter
                             diathink.InsertAfterAction.createAndExec({
-                                targetID: M.ViewManager.findViewById(id).parentView.parentView.modelId
+                                referenceID: M.ViewManager.findViewById(id).parentView.parentView.modelId,
+                                focusView: M.ViewManager.findViewById(id).parentView.parentView.rootID
                             });
                         }
                         console.log("Processed keyup with which=" + e.which + " and keycode=" + e.keyCode);

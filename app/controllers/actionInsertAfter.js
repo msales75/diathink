@@ -17,9 +17,22 @@ diathink.Action = M.Object.extend({
     type:"Action",
     options:{},
     triggers:null,
+    targetID: null,
+    modelStatus: 0,
+    viewStatus: {},
+    init: function(options) {
+        _.extend(this, {
+            options: _.extend({}, this.options, options),
+            targetID: null,
+            triggers: null,
+            modelStatus: 0,
+            viewStatus: {}
+        });
+        return this;
+    },
     createAndExec:function (options) { // create a new action object
         var action = this.extend({});
-        _.extend(action.options, options);
+        action.init(options);
         action.exec();
         return action;
     },
@@ -42,9 +55,13 @@ diathink.Action = M.Object.extend({
         if (!o.excludeAllViews) {
             for (i in outlines) {
                 if (o.excludeView) {
-                    if (options.excludeView === o) continue;
+                    if (o.excludeView === i) continue;
                 }
-                this.execView(outlines[i]);
+                var focus = false;
+                if (o.focusView === i) {
+                    focus = true;
+                }
+                this.execView(outlines[i], focus);
             }
         }
     },
@@ -61,19 +78,25 @@ diathink.Action = M.Object.extend({
         return Backbone.RelationalModel.findOrCreate(modelId).views[outline];
     },
     // utility functions
-    newListItemView:function (parentView, id) { // (id only if known)
+    newListItemView:function (parentView) { // (id only if known)
+        // todo: should more of this be in cloneObject?
         var templateView = parentView.listItemTemplateView;
         M.assert(templateView != null);
         templateView.events = templateView.events ? templateView.events : parentView.events;
 
-        var li = templateView.design({});
-        var item = {text:this.options.lineText}; // from list
+        var li = templateView.design({cssClass: 'leaf'}); // todo -- merge with nestedsortable
+        if (this.targetID) {
+            li.modelId = this.targetID;
+            var item = diathink.OutlineNodeModel.findOrCreate(this.targetID);
+        } else {
+            // if view is rendered without a model
+            // {text: this.options.lineText}; // from list
+        }
         li = parentView.cloneObject(li, item);
         li.value = item; // enables getting the value/contentBinding of a list item in a template view.
         li.parentView = parentView;
-        if (id) { // if the model-id is known
-            li.modelId = id;
-        }
+        li.setRootID(parentView.rootID);
+        parentView.updateNestedLists(li);
         return li;
     },
 
@@ -105,7 +128,7 @@ diathink.Action = M.Object.extend({
     },
     _showKeystroke:function () {
         // for tutorials
-    },
+    }
 
 
     /*
@@ -130,39 +153,54 @@ diathink.Action = M.Object.extend({
 
 diathink.InsertAfterAction = diathink.Action.extend({
     type:"InsertAfterAction",
-    options: {targetID: null, lineText: "", transition: false}, // visual candy options
+    options: {referenceID: null, lineText: "", transition: false},
+    targetID: null,
     triggers:null,
     modelStatus:0,
     viewStatus:{},
-    execModel:function () {
+    execModel: function () {
         if (this.modelStatus !== 0) {
             return;
         }
         this.modelStatus = -1;
-        // insert to collection
-        new diathink.OutlineNodeModel({
+        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
+        var collection = reference.parentCollection();
+        var refrank = reference.rank();
+        collection.add({
             text: this.options.lineText,
-            children: [],
-            parent: diathink.OutlineNodeModel.findOrCreate(this.options.targetID)
+            children: null
+        },{
+            at: refrank+1
         });
-        // parentCollection.unshift();
+        this.targetID = collection.at(refrank+1).cid;
         this.modelStatus = 1;
     },
-    execView:function (outline) {
+    execView:function (outline, focus) {
         // var c = diathink.app.getConfig('outlineView');
         if (this.viewStatus[outline.rootID] !== undefined) {
             return;
         }
+        if (typeof this.targetID !== 'string') {
+            return;
+        }
         this.viewStatus[outline.rootID] = 1;
-        var viewID = diathink.OutlineNodeModel.findOrCreate(outline.rootID).views[outline.rootID];
+        var viewID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
+
         var parentView = M.ViewManager.getViewById(viewID).parentView;
 
-        var li = this.newListItem(parentView);
+        var li = this.newListItemView(parentView);
         $('#' + viewID).after(li.render());
         li.registerEvents();
         li.theme();
+        if (typeof diathink.OutlineNodeModel.findOrCreate(this.targetID).views != 'object') {
+            diathink.OutlineNodeModel.findOrCreate(this.targetID).views = {};
+        }
+        diathink.OutlineNodeModel.findOrCreate(this.targetID).views[outline.rootID] = li;
         this.viewStatus[outline.rootID] = 2;
-        // parentView.themeUpdate(); // is this necessary?
+        parentView.themeUpdate(); // is this necessary?
+        if (focus) {
+            $('#' + li.header.name.id).focus();
+        }
     },
     undoView:function (view) {},
     validateView:function (view) {},

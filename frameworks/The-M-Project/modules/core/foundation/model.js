@@ -128,7 +128,7 @@ M.Model = M.Object.extend(
         delete obj.state;
 
         /* set timestamps if new */
-        if(rec.state === M.STATE_NEW) {
+        if (rec.state === M.STATE_NEW) {
             rec.record[M.META_CREATED_AT] = +new Date();
             rec.record[M.META_UPDATED_AT] = +new Date();
         }

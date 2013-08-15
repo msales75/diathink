@@ -429,7 +429,7 @@ M.TextFieldView = M.View.extend(
     theme: function() {
         /* trigger keyup event to make the text field autogrow */
         var jDom = $('#'  + this.id);
-        if(this.value) {
+        if(typeof this.value === 'string') { // MS edit for theming empty fields
             jDom.trigger('keyup').textinput();
             if(!this.isEnabled){
 	            jDom.textinput('disable');

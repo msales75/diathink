@@ -14,6 +14,22 @@ diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
     ],
     initialize: function() {
       // do whatever you want :)
+    },
+    parentCollection: function() {
+        if (this.attributes.parent == null) {
+            return diathink.data;
+        } else {
+            return this.attributes.parent.attributes.children;
+        }
+    },
+    rank: function() {
+        var c = this.parentCollection();
+        for (var i=0; i< c.models.length; ++i) {
+            if (c.models[i] === this) {
+                return i;
+            }
+        }
+        return null;
     }
 });
 diathink.OutlineNodeCollection = Backbone.Collection.extend({
