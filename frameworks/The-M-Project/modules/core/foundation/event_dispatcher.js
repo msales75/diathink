@@ -130,7 +130,7 @@ M.EventDispatcher = M.Object.extend(
                     killEvent = NO;
                 }
             }
-            if(killEvent) {
+            if(killEvent && (! handler.manualPropogation)) {
                 event.preventDefault();
                 event.stopPropagation();
             }

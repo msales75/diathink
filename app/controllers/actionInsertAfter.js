@@ -17,13 +17,11 @@ diathink.Action = M.Object.extend({
     type:"Action",
     options:{},
     triggers:null,
-    targetID: null,
     modelStatus: 0,
     viewStatus: {},
     init: function(options) {
         _.extend(this, {
             options: _.extend({}, this.options, options),
-            targetID: null,
             triggers: null,
             modelStatus: 0,
             viewStatus: {}
@@ -85,9 +83,9 @@ diathink.Action = M.Object.extend({
         templateView.events = templateView.events ? templateView.events : parentView.events;
 
         var li = templateView.design({cssClass: 'leaf'}); // todo -- merge with nestedsortable
-        if (this.targetID) {
-            li.modelId = this.targetID;
-            var item = diathink.OutlineNodeModel.findOrCreate(this.targetID);
+        if (this.options.targetID) {
+            li.modelId = this.options.targetID;
+            var item = diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
         } else {
             // if view is rendered without a model
             // {text: this.options.lineText}; // from list
@@ -153,11 +151,7 @@ diathink.Action = M.Object.extend({
 
 diathink.InsertAfterAction = diathink.Action.extend({
     type:"InsertAfterAction",
-    options: {referenceID: null, lineText: "", transition: false},
-    targetID: null,
-    triggers:null,
-    modelStatus:0,
-    viewStatus:{},
+    options: {targetID: null, referenceID: null, lineText: "", transition: false},
     execModel: function () {
         if (this.modelStatus !== 0) {
             return;
@@ -172,7 +166,7 @@ diathink.InsertAfterAction = diathink.Action.extend({
         },{
             at: refrank+1
         });
-        this.targetID = collection.at(refrank+1).cid;
+        this.options.targetID = collection.at(refrank+1).cid;
         this.modelStatus = 1;
     },
     execView:function (outline, focus) {
@@ -180,7 +174,7 @@ diathink.InsertAfterAction = diathink.Action.extend({
         if (this.viewStatus[outline.rootID] !== undefined) {
             return;
         }
-        if (typeof this.targetID !== 'string') {
+        if (typeof this.options.targetID !== 'string') {
             return;
         }
         this.viewStatus[outline.rootID] = 1;
@@ -192,10 +186,10 @@ diathink.InsertAfterAction = diathink.Action.extend({
         $('#' + viewID).after(li.render());
         li.registerEvents();
         li.theme();
-        if (typeof diathink.OutlineNodeModel.findOrCreate(this.targetID).views != 'object') {
-            diathink.OutlineNodeModel.findOrCreate(this.targetID).views = {};
+        if (typeof diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views != 'object') {
+            diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views = {};
         }
-        diathink.OutlineNodeModel.findOrCreate(this.targetID).views[outline.rootID] = li;
+        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID] = li;
         this.viewStatus[outline.rootID] = 2;
         parentView.themeUpdate(); // is this necessary?
         if (focus) {
@@ -205,6 +199,36 @@ diathink.InsertAfterAction = diathink.Action.extend({
     undoView:function (view) {},
     validateView:function (view) {},
     validateModel: function() {}
+});
+
+// make it the last child of its previous sibling
+
+diathink.IndentAction = diathink.Action.extend({
+    type:"IndentAction",
+    options: {targetID: null, referenceID: null, lineText: "", transition: false},
+    execModel: function () {
+        // validate targetID & referenceID?
+        var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
+        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
+        // remove target from parentCollection
+        // insert target into reference's children-collection
+        target.parentCollection().remove(target);
+        reference.attributes.children.push(target);
+        // parent should change automatically (check this)
+    },
+    execView:function (outline, focus) {
+        var targetID = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].id;
+        var referenceID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
+        $('#'+targetID).detach().appendTo($('#'+referenceID).children().children().children().children('ul'));
+        M.ViewManager.getViewById(referenceID).children.themeUpdate();
+        M.ViewManager.getViewById(referenceID).parentView.themeUpdate();
+        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView =
+            diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].children;
+        if (focus) {
+            $('#' + targetID + ' input').focus();
+        }
+    },
+    undoView:function (view) {}
 });
 
 /*
