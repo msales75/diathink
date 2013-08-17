@@ -70,11 +70,36 @@ diathink.MyListItem = M.ListItemView.extend({
                                 }
                             }
                         } else if (e.which === 9) { // tab
-                            // NOTE: tab not always received with default browser behavior
+                            var collection = liView.parentView.value;
+                            var rank = _.indexOf(collection.models, liView.value);
+                            // validate rank >=0
+                            if (rank>0) { // indent the line
+                                // make it the last child of its previous sibling
+                                diathink.IndentAction.createAndExec({
+                                    referenceID: collection.models[rank-1].cid,
+                                    targetID: liView.modelId,
+                                    focusView: liView.rootID
+                                });
+                                e.preventDefault();
+                            }
                         } else if (e.which === 8) { // backspace
-                            // check if cursor is at far left
-                            // if it is the last item in its collection
-                            // otherwise delete
+                            var sel = $('#'+id).selection();
+                            if (sel && (sel[0] === 0) && (sel[1] === 0)) {
+                                // get parent-collection and rank
+                                var collection = liView.parentView.value;
+                                var rank = _.indexOf(collection.models, liView.value);
+                                // if it is the last item in its collection
+                                if ((liView.value.attributes.parent)&&(rank===collection.models.length-1)) {
+                                    // make it the next child of its parent
+                                    diathink.OutdentAction.createAndExec({
+                                        referenceID: liView.value.attributes.parent.cid,
+                                        targetID: liView.modelId,
+                                        focusView: liView.rootID
+                                    });
+                                    e.preventDefault();
+                                }
+                                // otherwise delete or merge-lines?
+                            }
                         } else if (e.which === 13) { // enter
                             // split line if in middle of text
                             diathink.InsertAfterAction.createAndExec({

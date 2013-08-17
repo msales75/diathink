@@ -205,7 +205,7 @@ diathink.InsertAfterAction = diathink.Action.extend({
 
 diathink.IndentAction = diathink.Action.extend({
     type:"IndentAction",
-    options: {targetID: null, referenceID: null, lineText: "", transition: false},
+    options: {targetID: null, referenceID: null, transition: false},
     execModel: function () {
         // validate targetID & referenceID?
         var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
@@ -220,12 +220,48 @@ diathink.IndentAction = diathink.Action.extend({
         var targetID = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].id;
         var referenceID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
         $('#'+targetID).detach().appendTo($('#'+referenceID).children().children().children().children('ul'));
-        M.ViewManager.getViewById(referenceID).children.themeUpdate();
+        M.ViewManager.getViewById(referenceID).addCssClass('branch expanded');
+        M.ViewManager.getViewById(referenceID).removeCssClass('leaf');
         M.ViewManager.getViewById(referenceID).parentView.themeUpdate();
+        M.ViewManager.getViewById(referenceID).children.themeUpdate();
         diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView =
             diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].children;
         if (focus) {
             $('#' + targetID + ' input').focus();
+        }
+    },
+    undoView:function (view) {}
+});
+
+diathink.OutdentAction = diathink.Action.extend({
+    type:"OutdentAction",
+    options: {targetID: null, referenceID: null, transition: false},
+    execModel: function () {
+        // validate targetID & referenceID?
+        var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
+        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
+        // remove target from parentCollection
+        // insert target into reference's children-collection
+        reference.attributes.children.remove(target);
+        var collection = reference.parentCollection();
+        var rank = reference.rank();
+        collection.add(target, {at: rank+1});
+        // parent should change automatically (check this)
+    },
+    execView:function (outline, focus) {
+        var target = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID];
+        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID];
+        $('#'+target.id).detach().insertAfter('#'+reference.id);
+
+        if (reference.value.attributes.children.length===0) {
+            reference.removeCssClass('branch');
+            reference.addCssClass('leaf');
+        }
+        target.parentView.themeUpdate();
+        reference.parentView.themeUpdate();
+        target.parentView = reference.parentView;
+        if (focus) {
+            $('#' + target.id+ ' input').focus();
         }
     },
     undoView:function (view) {}
