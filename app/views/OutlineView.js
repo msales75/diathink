@@ -21,7 +21,7 @@ diathink.RecurseListTemplate = M.ListView.extend({
 
 diathink.MyListItem = M.ListItemView.extend({
     isTemplate: true,
-    childViews:'header children',
+    childViews:'topline header children bottomline',
     hasSingleAction:'NO',
     isSelectable:'NO',
     modelType: diathink.OutlineNodeModel,
@@ -31,6 +31,13 @@ diathink.MyListItem = M.ListItemView.extend({
      target: diathink.OutlineController,
      action: 'listObjectClicked'
      }}, */
+    topline:M.ContainerView.extend({
+        cssClass: 'topline',
+        childViews: 'dashline',
+        dashline:M.ContainerView.extend({
+            cssClass: 'dashline'
+        })
+    }),
 
     header:M.ContainerView.extend({
         cssClass:'',
@@ -116,7 +123,15 @@ diathink.MyListItem = M.ListItemView.extend({
         })
     }),
 
-    children:diathink.RecurseListTemplate
+    children: diathink.RecurseListTemplate,
+
+    bottomline: M.ContainerView.extend({
+        cssClass: 'bottomline',
+        childViews: 'dashline',
+        dashline:M.ContainerView.extend({
+            cssClass: 'dashline'
+        })
+    })
 
 });
 

@@ -13,23 +13,23 @@
 
 // MS utility addition for finding a child/parent at a fixed-depth.
 (function($) {
-  $.fn.childDepth = function(n) {
-    var i, that = this;
-    for (i=0; i<n; ++i) {
-      that = that.children(':first');
-      if (that.length===0) {return that;}
+    $.fn.childDepth = function(n) {
+        var i, that = this;
+        for (i=0; i<n; ++i) {
+            that = that.children(':first');
+            if (that.length===0) {return that;}
+        }
+        return that;
     }
-    return that;
-  }
 
-  $.fn.parentDepth = function(n) {
-    var i, that = this;
-    for (i=0; i<n; ++i) {
-      that = that.parent();
-      if (that.length===0) {return that;}
+    $.fn.parentDepth = function(n) {
+        var i, that = this;
+        for (i=0; i<n; ++i) {
+            that = that.parent();
+            if (that.length===0) {return that;}
+        }
+        return that;
     }
-    return that;
-  }
 
 })(jQuery);
 

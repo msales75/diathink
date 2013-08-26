@@ -1,28 +1,26 @@
-/* Put you custom stylings here! */
-.myCssClass {
-    color: #FF0000;
-}
 
 
-li > div > div > a > div > .drag-handle {
+li > div > div > a > div > .drag-handle { /* Image-handle for drag/drop */
     position: absolute;
     left: 0;
     top: 0;
-    height: 36px;
-    width: 36px;
+    height: 26px;
+    width: 26px;
     background-color: #DDD;
-    opacity: 0.5;
+    opacity: 0.25;
     cursor: pointer;
-    border: solid 1px transparent;
+    border: none;
     border-radius: 9.6px;
-    margin: 1px;
+    margin: 0px;
 }
 
+/* Decrease spacing for inset-list */
 .ui-content .ui-listview-inset, .ui-panel-inner .ui-listview-inset {
-    margin: 5px 0 0 0;
+    margin: 0;
 }
 
-li > div > div > a > div > div {
+/* Indentation of input-box */
+li.ui-li > div > div > a > div > div {
    cursor: text;
    margin-left: 30px;
 }
@@ -30,19 +28,54 @@ li > div > div > a > div > div {
 .drag-handle:hover {
     opacity: 1;
 }
+.drop-mode .drag-handle:hover {
+    opacity: 0.2;
+}
+
+/* use 1px margin/top offset to trim last pixel when overflow is hidden */
+ul.ui-listview > li.ui-li {
+    margin-top: -1px;
+    position: relative;
+    top: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+}
+
+/* Put a little more border at bottom since it looks crowded */
+li.ui-li > .ui-li {
+    border-top-width: 0px;
+    border-bottom-width: 1px;
+}
+
+.ui-btn-hover-c:hover {
+    border-color: #387bbe;
+}
+
+/* Only show overflow when hovering or focused */
+ul.ui-listview > li.ui-li {
+    overflow: hidden;
+}
+ul.ui-listview > li.ui-li:hover {
+    z-index: 10; /* Keep bottom border visible on hover */
+    overflow: visible; /* Keep last- */
+}
 /*
-.disclose {
-    float: left;
-    width: 15px;
-    height: 15px;
+ul.ui-listview > li.ui-li:hover > div > div > a > ul.ui-listview > li.ui-li:hover {
+    z-index: 11;
+}
+ul.ui-listview > li.ui-li:hover > div > div > a > ul.ui-listview > li.ui-li:hover div > div > a > ul.ui-listview > li.ui-li:hover{
+    z-index: 12;
 }
 */
 
-ul.ui-listview li.leaf.ui-li > div > div > a > ul.ui-listview {
-    margin: 0;
-    padding: 0;
-    border: 0;
+ul.ui-listview  {
+    overflow: hidden; /* Truncate bottom border when not focused, to
+       avoid overlaying outer elements */
 }
+ul.ui-listview:hover  {
+    overflow: visible;
+}
+
 
 li.collapsed.branch > div > div > a > div > .disclose{
     /* background: #FFF center url("images/expand.png") no-repeat; */
@@ -60,9 +93,157 @@ li.collapsed > div > div > a > ul {
 
 /* Override default UI */
 div.ui-input-text {
-    margin: -4px 0 0 26px;
+    margin: 0px 0 0 12px;
 }
 
 .ui-li .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li {
-    padding: 5px 20px;
+    padding: 0 0 0 14px;
+    position: static;
+    overflow: visible;  /* Keeps bottom-border from being clipped on hover */
 }
+
+.ui-shadow, .drop-mode .ui-shadow:hover {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.ui-shadow:hover {
+    -moz-box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.ui-btn-up-c { /* around list-element */
+    border-color: transparent;
+}
+.ui-btn-inner {
+    border-color: transparent;
+}
+.ui-body-c { /* around input-area */
+    border-color: transparent;
+}
+
+/* Only show box-shadow on hover or when in drop-mode */
+.ui-shadow-inset, .drop-mode .ui-shadow-inset:hover {
+    -moz-box-shadow:none;
+    -webkit-box-shadow:none;
+    box-shadow:none;
+}
+
+/* This hover overriding input outline on focus*/
+.ui-shadow-inset:hover {
+    -moz-box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
+    -webkit-box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
+}
+
+.ui-focus, .ui-focus:hover /* For increasing priority over other input-box hovers */
+{
+    border-color: #387bbe;
+    -moz-box-shadow: inset 0 0 1px #387bbe,0px 0 9px #387bbe;
+    -webkit-box-shadow: inset 0 0 1px #387bbe,0px 0 9px #387bbe;
+    box-shadow: inset 0 0 1px #387bbe,0px 0 9px #387bbe;
+}
+
+ul.ui-listview.ui-focus-parent {
+   overflow: visible;
+}
+
+/* Don't show bottom list-border if hovering immediately inside a focused element,
+  because the outer/wider focused border should override it.  */
+li.ui-li.ui-focus > div > div > a > ul.ui-listview:hover {
+    overflow: hidden;
+}
+
+ul.ui-listview > li.ui-li.ui-focus-parent {
+   overflow: visible;
+   z-index: 10;
+}
+
+/* Decrease top/bottom padding around input-text
+  and make height pixel-integer not em-based
+  (should probably change this back to em?)  */
+div.ui-input-text input.ui-input-text {
+    padding: 2px 0;
+    height: 22px;
+    min-height: 22px;
+    line-height: 22px;
+}
+
+.topline, .bottomline {
+    display: none;
+}
+/* topline and bottomline drop-target styling */
+.drop-mode .topline {
+    display: block;
+    position: absolute;
+    top: -16px;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    height: 30px;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    /* opacity: 0.5; */
+}
+
+.drop-mode .bottomline {
+    display: block;
+    position: absolute;
+    bottom: -16px;
+    left: 0;
+    width: 100%;
+    z-index: 99;
+    height: 30px;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    /* opacity: 0.5; */
+}
+
+.drop-mode .topline .dashline {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    width: 100%;
+    height: 0px;
+    border: dashed 1px #CF8;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+.drop-mode .bottomline .dashline {
+    position: absolute;
+    bottom: 14px;
+    left: 0;
+    width: 100%;
+    height: 0px;
+    border: dashed 1px #CF8;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+.drop-mode .topline:hover .dashline {
+    border: solid 1px #4F0;
+}
+.drop-mode .bottomline:hover .dashline {
+    border: solid 1px #4F0;
+}
+/* Mask other hover-effects when in drop-mode */
+.drop-mode .ui-btn-hover-c {
+    border-color: transparent;
+    background: #eee;
+    font-weight: bold;
+    color: #222;
+    text-shadow: 0 1px 0 #fff;
+    background-image: -webkit-gradient(linear,left top,left bottom,from( #fff ),to( #f1f1f1 ));
+    background-image: -webkit-linear-gradient( #fff,#f1f1f1 );
+    background-image: -moz-linear-gradient( #fff,#f1f1f1 );
+    background-image: -ms-linear-gradient( #fff,#f1f1f1 );
+    background-image: -o-linear-gradient( #fff,#f1f1f1 );
+    background-image: linear-gradient( #fff,#f1f1f1 );
+}
+
+

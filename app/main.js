@@ -28,11 +28,49 @@ diathink.app = M.Application.design({
     entryPage:'page1', // required for start-page
 
     page1:M.PageView.design({
+        // cssClass: 'drop-mode',
 
         childViews:'header content footer',
         events:{
             pageshow:{
                 action:function () {
+                    // todo: should bind to page on page-init
+                    $('div.ui-page').on('focusin', function(e) {
+
+                        // does this have performance issues?
+                        $('.ui-focus-parent').removeClass('ui-focus-parent');
+
+                        if (! $(e.target).hasClass('ui-input-text')) {return; }
+                        /* Add ui-focus-parent to parents that are last in the list,
+                           to help draw correct borders  */
+
+                        var that = $(e.target).parents('li.ui-li:first');
+
+                        while ($(that).next().length===0) {
+                            $(that).addClass('ui-focus-parent');
+                            $(that).parent('ul').addClass('ui-focus-parent');
+                            that = that.parents('li.ui-li:first');
+                            if (that.length===0) {
+                                break;
+                            }
+                        }
+                        if (that.length>0) {
+                            $(that).addClass('ui-focus-parent');
+                        }
+                        /*
+                        if (that === this) {
+                            return;
+                        }
+                        var next = $(that).next();
+                        if (next.length===0) {return;}
+                            if (e.type === 'mouseenter') {
+                                // next.css('border-top-color', '#387bbe');
+                            } else if (e.type === 'mouseleave') {
+                                // next.css('border-top-color', 'transparent');
+                            }
+                        */
+                    });
+
                     diathink.OutlineController.set('listObject', diathink.data);
                     $('#' + M.ViewManager.getView('page1', 'alist').id).nestedSortable({
                         listType:'ul',
@@ -52,11 +90,15 @@ diathink.app = M.Application.design({
                          return c;
                          } */
                         scroll:false,
+                        start: function(e, hash) {
+                            $('body').addClass('drop-mode');
+                        },
                         stop:function (e, hash) { // (could also try 'change' or 'sort' event)
                             if (hash.item.parents('ul').length > 0) {
                                 M.ViewManager.getViewById($(hash.item.parents('ul').get(0)).attr('id')).themeUpdate();
                                 M.ViewManager.getViewById($(hash.originalDOM.parent).attr('id')).themeUpdate();
                             }
+                            $('body').removeClass('drop-mode');
                             console.log("Processed change to structure");
                         },
                         // handle: '> div > div > a > div > .handle',

@@ -1,59 +1,72 @@
 Next:
 ----
 
-Check Constraints on these parmeters:
-
-diathink.OutlineManager.outlines;
-Backbone.Relational.store._collections[0]._byId;
-M.ViewManager.viewList;
-
-outlines (M.OutlineController)
-  type
-  rootID
-  views {}
-
-models (OutlineNodeModel)
-  cid
-  attributes.parent
-  attributes.children
-  attributes.text
-  views
-
-Views (M.View, ListView, ListItemView)
-  id
-  isView
-  type
-  parentView
-  childViews
-  rootID
-  modelId
-  value (collection or model)
-  rootController
-
-
- Include the outline-master-parent in the view-list for each model-node?
-  Or just a list of views to update?
- Also need to have controllers linked with view-rootID
-
-
-
-
-Status parameters for model and view updates
-
-
- Immediate goal: modify view to add/remove/indent lines
-   get changes working when calling model-object for changes.
+ Override jquery-mobile CSS to make it passable with and without helpers
+   Find classes responsible for borders
+   Hide borders when unselected
+   Reduce line-height
+   Position boxes above/below
+   Change icon appearance for inner-drop
+ Replace nestedsortable mouseover targeting with helpers
+ Highlight helpers on mouseover
+ Mouseover icon causes expand/reduce
+ Incorporate mouseup finalization as an appropriate action
+ Add a delayed mouseover line-insertion transition
  Support undo for all changes
- Add a second pane
- Improve Drag-helper/highlighting
+
+ Add a second pane / dual-pages
+ Support Focusing
+
+ Local Search (store word-pointers in 512M RAM?)
+ Local Saving
+ References:
+   How to access reverse-references
+     Two-panel references
+   Dragging can:
+     Creates reference to original (normal across panes)
+     Moves original (normal within panes)
+   Click can:
+     Preview contracted-children to right
+     Edit text, when there are no children, or expanded
+
+   switching original with reference
+   conversation-area with reply-references
+
+
+ Printing
+
+Reverse-references
+Dual-pane reverse-reference view
+  children mixed with reverse-references?
+Button to turn line into template (select type, optional guess)
+ (Or each list item?)
+Actions for creating/editing/deleting records via drag/drop?
+Line->Template drag/drop import
+Recursive view for fields, filters & sorts
+Line-condensing for tables
+Recursive views have constrained editing
+Search shows objects/counts separately ("and 17 other cases")
+Google-search categorizes pages about this object
+
+
  Record profiling logs (support replay?)
- Search? (store word-pointers in 512M RAM?)
+ Local/Remote Search (5-25 search-terms per line?)
+ ? Finish Raw History management
+
+ Later: move some of nestedsortable inside for fine-grained
+    action-queueing (UI-transitions and mouse-moves)
+
+
+? Use Status parameters for model and view updates
+
+DONE Include the outline-master-parent in the view-list for each model-node?
+DONE   and a list of views to update?
+DONE  Also need to have controllers linked with view-rootID
+DONE Immediate goal: modify view to add/remove/indent lines
+DONE   get changes working when calling model-object for changes.
    (can increase localstorage to 50M hmm...)
    (images/attachments are the problem)
 
- Support fine-grained action-queueing?
-   (UI-transitions and mouse-moves)
- Maybe later: Incorporate drag/preview-modifications into action-model?
 
  Later enable ReferenceList to work as a list of references
 
@@ -61,12 +74,8 @@ Status parameters for model and view updates
  Modify model too
 
 
-* Finish Raw History management
-* Enable text-commands for new lines etc.
-* Focusing
-* Dual-pages
-* Improve drag-drop UI
-* Local/Remote Search (5-25 search-terms per line?)
+
+DONE Enable text-commands for new lines etc.
 * Local/Remote Save
 * References
 * Tags & Triggers
