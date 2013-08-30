@@ -93,6 +93,12 @@
 					}
 				})
 			}
+            // MS - identify the OutlineView we are in
+            var view = M.ViewManager.findViewById(this.element.attr('id'));
+            if ((view.type != 'M.ListView') || (view.rootID != view.id)) {
+                console.log("ERROR: View rootID is not here, for view-id="+view.id);
+            }
+            this.rootView = view;
 		},
 
 		_destroy: function() {
@@ -407,12 +413,12 @@
                                 var a = this.direction === "down" ? $(itemElement).prev().childDepth(o.buryDepth).children(o.listType) : $(itemElement).childDepth(o.buryDepth).children(o.listType);
                                 if (a[0] !== undefined) {
                                     // MS - do not move item yet
-                                    this._rearrange(event, null, a);
+                                    // this._rearrange(event, null, a);
                                 }
 
                             } else {
                                 // MS - do not move item yet
-                                this._rearrange(event, item);
+                                // this._rearrange(event, item);
                             }
                         } else if ( ! o.protectRoot) {
                             // MS - do not move item yet
@@ -592,6 +598,32 @@
             // check for active drop-target and execute move
             if (this.activeBox != null) {
                 console.log("Dropping with type "+this.activeBox.type+" relative to item: "+this.activeBox.item.item.attr('id'));
+                var refview = M.ViewManager.findViewById(this.activeBox.item.item.attr('id'));
+                var targetview = M.ViewManager.findViewById(this.currentItem.attr('id'));
+                if (refview.type != 'M.ListItemView') {
+                    console.log("refview is of the wrong type with id="+refview.id);
+                }
+                if (targetview.type != 'M.ListItemView') {
+                    console.log("targetview is of the wrong type with id="+targetview.id);
+                }
+                // var collection = refview.parentView.value;
+                // var rank = _.indexOf(collection.models, refview.value);
+                // var refid = collection.models[rank-1].cid;
+
+                if (this.activeBox.type==='droptop') {
+                    diathink.MoveBeforeAction.createAndExec({
+                        // focusView: this.rootView.id,
+                        referenceID: refview.value.cid,
+                        targetID: targetview.value.cid
+                    });
+                } else if (this.activeBox.type==='dropbottom') {
+                    diathink.MoveAfterAction.createAndExec({
+                        referenceID: refview.value.cid,
+                        targetID: targetview.value.cid
+                    });
+                } else if (this.activeBox.type==='drophandle') {
+
+                }
             }
             this.activeBox = null;
 
