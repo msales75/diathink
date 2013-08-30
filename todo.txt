@@ -1,16 +1,36 @@
 Next:
 ----
+this.scrollParent
+this.overflowOffset
+this.placeholder
+this.helper
+this.hovering
+this.mouseentered
+this.position
+this.positionAbs
+this.lastPositionAbs
+this.items
 
- Override jquery-mobile CSS to make it passable with and without helpers
-   Find classes responsible for borders
-   Hide borders when unselected
-   Reduce line-height
-   Position boxes above/below
-   Change icon appearance for inner-drop
- Replace nestedsortable mouseover targeting with helpers
- Highlight helpers on mouseover
+
+* Modify helper-creation to use a high-level translucent copy with absolute positioning,
+   keeping the first line and a bounding-box, and initialize drop-mode
+* Get hover working - or use mouse-positioning?
+ Could use li.top and test for topline and bottomline areas mathematically
+ Show dashed-lines via javascript (more scalable)
+ mousedown
+
+
+
+* Watch DOM modifications done by mousedrag
+* Move most modifications into mouseup via 'stop'
+* Change modifications to
+
+* Enable hover over handles while dragging, and change icon
+
+ (Can we stop keeping track of items during 'refresh' commands?
+  Performance enhancement can wait.)
+
  Mouseover icon causes expand/reduce
- Incorporate mouseup finalization as an appropriate action
  Add a delayed mouseover line-insertion transition
  Support undo for all changes
 
@@ -58,6 +78,13 @@ Google-search categorizes pages about this object
 
 
 ? Use Status parameters for model and view updates
+
+OK Override jquery-mobile CSS to make it passable with and without helpers
+OK   Find classes responsible for borders
+OK   Hide borders when unselected
+OK   Reduce line-height
+OK   Position boxes above/below
+
 
 DONE Include the outline-master-parent in the view-list for each model-node?
 DONE   and a list of views to update?

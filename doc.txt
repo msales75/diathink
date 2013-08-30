@@ -28,6 +28,9 @@ Views (M.View, ListView, ListItemView)
   rootController
 
 
+NOTE: adding more elements to the ListItems in the outline, such as topline or bottomline,
+  messes up the current toleranceElement definition (it would need an extra class).
+
 this.position: current mouse position in relative coordinates
 this.positionAbs mouse position in absolute coordinates
 this.lastPositionAbs: position at (?previous-stop or start of mouse drag)

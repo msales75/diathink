@@ -30,7 +30,7 @@ diathink.app = M.Application.design({
     page1:M.PageView.design({
         // cssClass: 'drop-mode',
 
-        childViews:'header content footer',
+        childViews:'header content footer droplayer',
         events:{
             pageshow:{
                 action:function () {
@@ -57,18 +57,6 @@ diathink.app = M.Application.design({
                         if (that.length>0) {
                             $(that).addClass('ui-focus-parent');
                         }
-                        /*
-                        if (that === this) {
-                            return;
-                        }
-                        var next = $(that).next();
-                        if (next.length===0) {return;}
-                            if (e.type === 'mouseenter') {
-                                // next.css('border-top-color', '#387bbe');
-                            } else if (e.type === 'mouseleave') {
-                                // next.css('border-top-color', 'transparent');
-                            }
-                        */
                     });
 
                     diathink.OutlineController.set('listObject', diathink.data);
@@ -83,26 +71,52 @@ diathink.app = M.Application.design({
                         expandedClass:'expanded',
                         handle:'> div > div > a > div > .drag-handle',
                         buryDepth:3,
-                        helper:'clone',
+                        // helper:'clone',
                         /* function(event, currentItem) {
                          var c = currentItem.clone();
                          c
                          return c;
                          } */
                         scroll:false,
+                        dropLayer: $('.droplayer'),
                         start: function(e, hash) {
-                            $('body').addClass('drop-mode');
+                            // todo: change css-changes into class-assignments?
+                            hash.item.parents('li').each(function() {
+                                $(this).css('overflow','visible').css('z-index',20);
+                            });
+                            hash.item.parents('ul').each(function() {
+                                $(this).css('overflow','visible');
+                            });
+                            $('.droplayer').css('z-index',100);
+                            hash.item.css('border','solid 1px orange');
+                            // show drop-lines - moved to nestedSortable
                         },
                         stop:function (e, hash) { // (could also try 'change' or 'sort' event)
                             if (hash.item.parents('ul').length > 0) {
                                 M.ViewManager.getViewById($(hash.item.parents('ul').get(0)).attr('id')).themeUpdate();
                                 M.ViewManager.getViewById($(hash.originalDOM.parent).attr('id')).themeUpdate();
                             }
+                            var toplines = $('.topline:hover');
+                            var bottomlines = $('.bottomline:hover');
+                            if (toplines.length>0) {
+                                console.log("Moving above element "+toplines.parents("li:first").attr('id'));
+                            } else if (bottomlines.length>0) {
+                                console.log("Moving below element "+bottomlines.parents("li:first").attr('id'));
+                            }
                             $('body').removeClass('drop-mode');
+                            hash.item.parents('li').each(function() {
+                                $(this).css('overflow','');
+                                $(this).css('z-index','');
+                            });
+                            hash.item.parents('ul').each(function() {
+                                $(this).css('overflow','');
+                            });
+                            hash.item.css('border','');
+                            $('.droplayer').css('z-index','auto');
                             console.log("Processed change to structure");
                         },
                         // handle: '> div > div > a > div > .handle',
-                        toleranceElement:'> div > div > a > div'
+                        toleranceElement:'> div > div > a > div.outline-header'
                     });
                     $('.disclose').on('click', function () {
                         $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');
@@ -145,8 +159,11 @@ diathink.app = M.Application.design({
         footer:M.ToolbarView.design({
             value:'FOOTER',
             anchorLocation:M.BOTTOM
-        })
+        }),
 
+        droplayer:M.ContainerView.design({
+            cssClass:'droplayer'
+        })
     })
 });
 

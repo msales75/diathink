@@ -28,6 +28,12 @@ li.ui-li > div > div > a > div > div {
 .drag-handle:hover {
     opacity: 1;
 }
+
+.drop-mode li.ui-sortable-helper {
+    border: solid 2px #F00;
+    z-index: 999;
+}
+
 .drop-mode .drag-handle:hover {
     opacity: 0.2;
 }
@@ -41,10 +47,9 @@ ul.ui-listview > li.ui-li {
     border-bottom-width: 1px;
 }
 
-/* Put a little more border at bottom since it looks crowded */
-li.ui-li > .ui-li {
+li.ui-li > div.ui-li {
     border-top-width: 0px;
-    border-bottom-width: 1px;
+    border-bottom-width: 0px;
 }
 
 .ui-btn-hover-c:hover {
@@ -91,9 +96,15 @@ li.collapsed > div > div > a > ul {
     display: none;
 }
 
+/* Hide bottom-line's that are below children */
+li.branch > div > div > a > .bottomline {
+    display: none;
+}
+
 /* Override default UI */
 div.ui-input-text {
-    margin: 0px 0 0 12px;
+    margin: 0px 0 1px 12px;
+    /* Put a little more border at bottom since it looks crowded */
 }
 
 .ui-li .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li {
@@ -150,6 +161,12 @@ ul.ui-listview.ui-focus-parent {
    overflow: visible;
 }
 
+.drop-mode ul.ui-listview > li.ui-li  {
+    overflow: visible;
+    z-index: auto;
+}
+
+
 /* Don't show bottom list-border if hovering immediately inside a focused element,
   because the outer/wider focused border should override it.  */
 li.ui-li.ui-focus > div > div > a > ul.ui-listview:hover {
@@ -161,6 +178,10 @@ ul.ui-listview > li.ui-li.ui-focus-parent {
    z-index: 10;
 }
 
+.drop-mode ul.ui-listview {
+    overflow: visible;
+}
+
 /* Decrease top/bottom padding around input-text
   and make height pixel-integer not em-based
   (should probably change this back to em?)  */
@@ -170,6 +191,13 @@ div.ui-input-text input.ui-input-text {
     min-height: 22px;
     line-height: 22px;
 }
+
+/* Show borders in drop-mode? */
+/*
+.drop-mode ul.ui-listview > li.ui-li {
+    overflow: hidden;
+}
+*/
 
 .topline, .bottomline {
     display: none;
@@ -247,3 +275,11 @@ div.ui-input-text input.ui-input-text {
 }
 
 
+/* drop-layer fills the page when active */
+.droplayer {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
