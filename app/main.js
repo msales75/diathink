@@ -103,7 +103,6 @@ diathink.app = M.Application.design({
                             } else if (bottomlines.length>0) {
                                 console.log("Moving below element "+bottomlines.parents("li:first").attr('id'));
                             }
-                            $('body').removeClass('drop-mode');
                             hash.item.parents('li').each(function() {
                                 $(this).css('overflow','');
                                 $(this).css('z-index','');

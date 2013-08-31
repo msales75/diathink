@@ -1,41 +1,29 @@
 Next:
 ----
-this.scrollParent
-this.overflowOffset
-this.placeholder
-this.helper
-this.hovering
-this.mouseentered
-this.position
-this.positionAbs
-this.lastPositionAbs
-this.items
 
+OK Hide handle images when in drop-mode
+OK Drag-hover over handle for expand/reduce
 
-* Modify helper-creation to use a high-level translucent copy with absolute positioning,
-   keeping the first line and a bounding-box, and initialize drop-mode
-* Get hover working - or use mouse-positioning?
- Could use li.top and test for topline and bottomline areas mathematically
- Show dashed-lines via javascript (more scalable)
- mousedown
+* Cleanup theme changes for list-finalization
+* Add docking animation for drop or revert
+* Add docking-preview animation for long hovers
+* Expand/contract animation
+* Expand/contract preview for hover
 
+* Test outline-validator
+* Extend outline-validator to test for list-item theme/border/corner classes
+* Test on mobile
 
+* Support undo for all changes
+   - with helper animations?
+* Add shift-tab keyboard-command
+* Add line-split and line-merge for return/backspace
+* Support multi-line input-text
 
-* Watch DOM modifications done by mousedrag
-* Move most modifications into mouseup via 'stop'
-* Change modifications to
+ Add a second pane / dual-pages with same outline
+ -- get cross-dropping/containers working in nestedsortable
+ Support Focusing with breadcrumbs
 
-* Enable hover over handles while dragging, and change icon
-
- (Can we stop keeping track of items during 'refresh' commands?
-  Performance enhancement can wait.)
-
- Mouseover icon causes expand/reduce
- Add a delayed mouseover line-insertion transition
- Support undo for all changes
-
- Add a second pane / dual-pages
- Support Focusing
 
  Local Search (store word-pointers in 512M RAM?)
  Local Saving
@@ -73,11 +61,20 @@ Google-search categorizes pages about this object
  Local/Remote Search (5-25 search-terms per line?)
  ? Finish Raw History management
 
- Later: move some of nestedsortable inside for fine-grained
-    action-queueing (UI-transitions and mouse-moves)
 
 
 ? Use Status parameters for model and view updates
+
+OK Enable drop-into box
+OK Make helper translucent; z-index confusion
+OK Add icon for drop-into box
+OK Migrate css to stylesheet-classes (.dropborder, .droparrow)
+OK Re-enable .drop-mode
+
+OK: move some of nestedsortable inside for fine-grained
+    action-queueing (UI-transitions and mouse-moves)
+OK Watch DOM modifications done by mousedrag
+OK Move most modifications into mouseup via 'stop'
 
 OK Override jquery-mobile CSS to make it passable with and without helpers
 OK   Find classes responsible for borders

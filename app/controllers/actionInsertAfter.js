@@ -393,6 +393,37 @@ diathink.MoveBeforeAction = diathink.Action.extend({
     undoView:function (view) {}
 });
 
+// MoveINto is currently a copy of IndentAction
+diathink.MoveIntoAction = diathink.Action.extend({
+    type:"MoveIntoAction",
+    options: {targetID: null, referenceID: null, transition: false},
+    execModel: function () {
+        // validate targetID & referenceID?
+        var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
+        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
+        // remove target from parentCollection
+        // insert target into reference's children-collection
+        target.parentCollection().remove(target);
+        reference.attributes.children.push(target);
+        // parent should change automatically (check this)
+    },
+    execView:function (outline, focus) {
+        var targetID = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].id;
+        var referenceID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
+        $('#'+targetID).detach().appendTo($('#'+referenceID).children().children().children().children('ul'));
+        M.ViewManager.getViewById(referenceID).addCssClass('branch expanded');
+        M.ViewManager.getViewById(referenceID).removeCssClass('leaf');
+        M.ViewManager.getViewById(referenceID).parentView.themeUpdate();
+        M.ViewManager.getViewById(referenceID).children.themeUpdate();
+        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView =
+            diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].children;
+        if (focus) {
+            $('#' + targetID + ' input').focus();
+        }
+    },
+    undoView:function (view) {}
+});
+
 /*
  M.Action.add("InsertInto",function(id, x) {
 
