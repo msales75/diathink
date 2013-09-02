@@ -73,7 +73,7 @@ diathink.Action = M.Object.extend({
         return M.ViewManager.getViewById(id).rootID;
     },
     getViewFromModel:function (modelId, outline) {
-        return Backbone.RelationalModel.findOrCreate(modelId).views[outline];
+        // return Backbone.RelationalModel.get(modelId).views[outline];
     },
     // utility functions
     newListItemView:function (parentView) { // (id only if known)
@@ -85,17 +85,34 @@ diathink.Action = M.Object.extend({
         var li = templateView.design({cssClass: 'leaf'}); // todo -- merge with nestedsortable
         if (this.options.targetID) {
             li.modelId = this.options.targetID;
-            var item = diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
+            var item = diathink.OutlineNodeModel.getById(this.options.targetID);
         } else {
             // if view is rendered without a model
             // {text: this.options.lineText}; // from list
         }
+        // todo: listview() classes should be on li before it is cloned
         li = parentView.cloneObject(li, item);
         li.value = item; // enables getting the value/contentBinding of a list item in a template view.
         li.parentView = parentView;
         li.setRootID(parentView.rootID);
         parentView.updateNestedLists(li);
         return li;
+    },
+
+    _saveOldSpot: function(view) {
+        var oldspot = $('#'+view.id).next('li');
+        if (oldspot.length===0) {
+            oldspot = $('#'+view.id).prev('li');
+        }
+        if (oldspot.length>0) {
+            return M.ViewManager.getViewById(oldspot.attr('id'));
+        } else {
+            if (view.parentView.parentView && view.parentView.parentView.type==='M.ListItemView') {
+                return view.parentView.parentView;
+            } else {
+                return null;
+            }
+        }
     },
 
     // SHOW methods - various visualization actions,
@@ -153,45 +170,35 @@ diathink.InsertAfterAction = diathink.Action.extend({
     type:"InsertAfterAction",
     options: {targetID: null, referenceID: null, lineText: "", transition: false},
     execModel: function () {
-        if (this.modelStatus !== 0) {
-            return;
-        }
-        this.modelStatus = -1;
-        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
+        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID);
         var collection = reference.parentCollection();
         var refrank = reference.rank();
+        var rank;
+        if (this.type==="InsertAfterAction") {
+            rank = refrank+1;
+        } else if (this.type==="InsertBeforeAction") {
+            rank = refrank;
+        }
         collection.add({
             text: this.options.lineText,
             children: null
         },{
-            at: refrank+1
+            at: rank
         });
-        this.options.targetID = collection.at(refrank+1).cid;
-        this.modelStatus = 1;
+        this.options.targetID = collection.at(rank).cid;
     },
     execView:function (outline, focus) {
-        // var c = diathink.app.getConfig('outlineView');
-        if (this.viewStatus[outline.rootID] !== undefined) {
-            return;
+        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID).views[outline.rootID];
+        var li = this.newListItemView(reference.parentView);
+        if (this.type==="InsertAfterAction") {
+            $('#' + reference.id).after(li.render());
+        } else if (this.type==="InsertBeforeAction") {
+            $('#' + reference.id).before(li.render());
         }
-        if (typeof this.options.targetID !== 'string') {
-            return;
-        }
-        this.viewStatus[outline.rootID] = 1;
-        var viewID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
-
-        var parentView = M.ViewManager.getViewById(viewID).parentView;
-
-        var li = this.newListItemView(parentView);
-        $('#' + viewID).after(li.render());
         li.registerEvents();
         li.theme();
-        if (typeof diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views != 'object') {
-            diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views = {};
-        }
-        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID] = li;
-        this.viewStatus[outline.rootID] = 2;
-        parentView.themeUpdate(); // is this necessary?
+        diathink.OutlineNodeModel.getById(this.options.targetID).setView(outline.rootID, li);
+        reference.parentView.themeUpdate(); // todo: make this unecessary when li is cloned with theme
         if (focus) {
             $('#' + li.header.name.id).focus();
         }
@@ -201,267 +208,96 @@ diathink.InsertAfterAction = diathink.Action.extend({
     validateModel: function() {}
 });
 
-diathink.InsertBeforeAction = diathink.Action.extend({
-    type:"InsertBeforeAction",
-    options: {targetID: null, referenceID: null, lineText: "", transition: false},
-    execModel: function () {
-        if (this.modelStatus !== 0) {
-            return;
-        }
-        this.modelStatus = -1;
-        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
-        var collection = reference.parentCollection();
-        var refrank = reference.rank();
-        collection.add({
-            text: this.options.lineText,
-            children: null
-        },{
-            at: refrank
-        });
-        this.options.targetID = collection.at(refrank).cid;
-        this.modelStatus = 1;
-    },
-    execView:function (outline, focus) {
-        // var c = diathink.app.getConfig('outlineView');
-        if (this.viewStatus[outline.rootID] !== undefined) {
-            return;
-        }
-        if (typeof this.options.targetID !== 'string') {
-            return;
-        }
-        this.viewStatus[outline.rootID] = 1;
-        var viewID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
-
-        var parentView = M.ViewManager.getViewById(viewID).parentView;
-
-        var li = this.newListItemView(parentView);
-        $('#' + viewID).before(li.render());
-        li.registerEvents();
-        li.theme();
-        if (typeof diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views != 'object') {
-            diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views = {};
-        }
-        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID] = li;
-        this.viewStatus[outline.rootID] = 2;
-        parentView.themeUpdate(); // is this necessary?
-        if (focus) {
-            $('#' + li.header.name.id).focus();
-        }
-    },
-    undoView:function (view) {},
-    validateView:function (view) {},
-    validateModel: function() {}
-});
-
-// make it the last child of its previous sibling
-
-diathink.IndentAction = diathink.Action.extend({
-    type:"IndentAction",
-    options: {targetID: null, referenceID: null, transition: false},
-    execModel: function () {
-        // validate targetID & referenceID?
-        var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
-        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
-        // remove target from parentCollection
-        // insert target into reference's children-collection
-        target.parentCollection().remove(target);
-        reference.attributes.children.push(target);
-        // parent should change automatically (check this)
-    },
-    execView:function (outline, focus) {
-        var targetID = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].id;
-        var referenceID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
-        $('#'+targetID).detach().appendTo($('#'+referenceID).children().children().children().children('ul'));
-        M.ViewManager.getViewById(referenceID).addCssClass('branch expanded');
-        M.ViewManager.getViewById(referenceID).removeCssClass('leaf');
-        M.ViewManager.getViewById(referenceID).parentView.themeUpdate();
-        M.ViewManager.getViewById(referenceID).children.themeUpdate();
-        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView =
-            diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].children;
-        if (focus) {
-            $('#' + targetID + ' input').focus();
-        }
-    },
-    undoView:function (view) {}
-});
-
-diathink.OutdentAction = diathink.Action.extend({
-    type:"OutdentAction",
-    options: {targetID: null, referenceID: null, transition: false},
-    execModel: function () {
-        // validate targetID & referenceID?
-        var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
-        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
-        // remove target from parentCollection
-        // insert target into reference's children-collection
-        reference.attributes.children.remove(target);
-        var collection = reference.parentCollection();
-        var rank = reference.rank();
-        collection.add(target, {at: rank+1});
-        // parent should change automatically (check this)
-    },
-    execView:function (outline, focus) {
-        var target = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID];
-        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID];
-        $('#'+target.id).detach().insertAfter('#'+reference.id);
-
-        if (reference.value.attributes.children.length===0) {
-            reference.removeCssClass('branch');
-            reference.addCssClass('leaf');
-        }
-        target.parentView.themeUpdate();
-        reference.parentView.themeUpdate();
-        target.parentView = reference.parentView;
-        if (focus) {
-            $('#' + target.id+ ' input').focus();
-        }
-    },
-    undoView:function (view) {}
+diathink.InsertBeforeAction = diathink.InsertAfterAction.extend({
+    type:"InsertBeforeAction"
 });
 
 diathink.MoveAfterAction = diathink.Action.extend({
     type:"MoveAfterAction",
     options: {targetID: null, referenceID: null, transition: false},
     execModel: function () {
-        // validate targetID & referenceID?
-        var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
-        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
+        var target= diathink.OutlineNodeModel.getById(this.options.targetID);
+        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID);
         target.parentCollection().remove(target);
         var rank = reference.rank();
-        reference.parentCollection().add(target,{at: rank+1});
-        // parent should change automatically (check this)
-    },
-    execView:function (outline, focus) {
-        var targetID = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].id;
-        var referenceID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
-        // remember parent of target
-        var targetParent = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView;
-        var referenceParent = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].parentView;
-
-        $('#'+targetID).detach().insertAfter('#'+referenceID);
-        // todo: update branch/leaf/expanded classes for each parent-list (need to have subroutines for this)
-        // todo: include branch/leaf/expanded classes in listview themeUpdate?
-
-        // M.ViewManager.getViewById(referenceID).addCssClass('branch expanded');
-        // M.ViewManager.getViewById(referenceID).removeCssClass('leaf');
-        targetParent.themeUpdate();
-        referenceParent.themeUpdate();
-
-        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView =
-            diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].children;
-        if (focus) {
-            $('#' + targetID + ' input').focus();
-        }
-    },
-    undoView:function (view) {}
-});
-
-diathink.MoveBeforeAction = diathink.Action.extend({
-    type:"MoveBeforeAction",
-    options: {targetID: null, referenceID: null, transition: false},
-    execModel: function () {
-        // validate targetID & referenceID?
-        var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
-        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
-        target.parentCollection().remove(target);
-        var rank = reference.rank();
+        if (this.type==="MoveAfterAction") {
+            rank = rank+1;
+        } else if (this.type==="MoveBeforeAction") {}
         reference.parentCollection().add(target,{at: rank});
-        // parent should change automatically (check this)
     },
     execView:function (outline, focus) {
-        var targetID = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].id;
-        var referenceID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
-        // remember parent of target
-        var targetParent = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView;
-        var referenceParent = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].parentView;
-
-        $('#'+targetID).detach().insertBefore('#'+referenceID);
-        // todo: update branch/leaf/expanded classes for each parent-list (need to have subroutines for this)
-        // todo: include branch/leaf/expanded classes in listview themeUpdate?
-
-        // M.ViewManager.getViewById(referenceID).addCssClass('branch expanded');
-        // M.ViewManager.getViewById(referenceID).removeCssClass('leaf');
-        targetParent.themeUpdate();
-        referenceParent.themeUpdate();
-
-        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView =
-            diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].children;
+        var target = diathink.OutlineNodeModel.getById(this.options.targetID).views[outline.rootID];
+        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID).views[outline.rootID];
+        // remember old sibling of target for retheming
+        var oldspot = this._saveOldSpot(target);
+        var targetParent = target.parentView;
+        var rank = target.value.rank();
+        if (this.type==="MoveAfterAction") {
+            $('#'+target.id).detach().insertAfter('#'+reference.id);
+        } else if (this.type==="MoveBeforeAction") {
+            $('#'+target.id).detach().insertBefore('#'+reference.id);
+        }
+        target.parentView = reference.parentView;
+        target.theme();
+        if (oldspot) {oldspot.theme();}
         if (focus) {
-            $('#' + targetID + ' input').focus();
+            $('#' + target.header.name.id).focus();
         }
     },
     undoView:function (view) {}
 });
 
-// MoveINto is currently a copy of IndentAction
+diathink.MoveBeforeAction = diathink.MoveAfterAction.extend({
+    type:"MoveBeforeAction"
+});
+
 diathink.MoveIntoAction = diathink.Action.extend({
     type:"MoveIntoAction",
     options: {targetID: null, referenceID: null, transition: false},
     execModel: function () {
-        // validate targetID & referenceID?
-        var target= diathink.OutlineNodeModel.findOrCreate(this.options.targetID);
-        var reference = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID);
-        // remove target from parentCollection
-        // insert target into reference's children-collection
+        var target= diathink.OutlineNodeModel.getById(this.options.targetID);
+        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID);
         target.parentCollection().remove(target);
         reference.attributes.children.push(target);
-        // parent should change automatically (check this)
     },
     execView:function (outline, focus) {
-        var targetID = diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].id;
-        var referenceID = diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].id;
-        $('#'+targetID).detach().appendTo($('#'+referenceID).children().children().children().children('ul'));
-        M.ViewManager.getViewById(referenceID).addCssClass('branch expanded');
-        M.ViewManager.getViewById(referenceID).removeCssClass('leaf');
-        M.ViewManager.getViewById(referenceID).parentView.themeUpdate();
-        M.ViewManager.getViewById(referenceID).children.themeUpdate();
-        diathink.OutlineNodeModel.findOrCreate(this.options.targetID).views[outline.rootID].parentView =
-            diathink.OutlineNodeModel.findOrCreate(this.options.referenceID).views[outline.rootID].children;
+        var target = diathink.OutlineNodeModel.getById(this.options.targetID).views[outline.rootID];
+        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID).views[outline.rootID];
+        var oldspot = this._saveOldSpot(target);
+        $('#'+target.id).detach().appendTo($('#'+reference.id).children('div').children('div').children('a').children('ul'));
+        target.parentView = reference.children;
+        target.theme();
+        if (oldspot) {oldspot.theme();}
         if (focus) {
-            $('#' + targetID + ' input').focus();
+            $('#' + target.header.name.id).focus();
         }
     },
     undoView:function (view) {}
 });
 
-/*
- M.Action.add("InsertInto",function(id, x) {
 
- });
-
- M.Action.add("InsertBefore",function(id, x) {
-
- });
-
- M.Action.add("Remove",function(id, x) {
-
- });
-
- M.Action.add("MoveInto",function(id, x) {
-
- var parentItem = (this.placeholder.parentDepth(o.buryDepth+2).get(0) &&
- this.placeholder.parentDepth(o.buryDepth+2).closest('.ui-sortable').length)
- ? this.placeholder.parentDepth(o.buryDepth+2)
- : null,
- level = this._getLevel(this.placeholder);
-
- });
-
- M.Action.add("MoveAfter",function(id, x) {
-
-
- });
-
- M.Action.add("MoveBefore",function(id, x) {
-
- });
-
- */
-
-/* Implement this when doing drag/drop changes
- dropTargets: function() {
- // "drop-candidates" not minimized, possibly only on-screen
- // each candidate needs to identify its compatibility, action-type and assumptions
- }
- */
-
+diathink.OutdentAction = diathink.Action.extend({
+    type:"OutdentAction",
+    options: {targetID: null, referenceID: null, transition: false},
+    execModel: function () {
+        var target= diathink.OutlineNodeModel.getById(this.options.targetID);
+        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID);
+        reference.attributes.children.remove(target);
+        var collection = reference.parentCollection();
+        var rank = reference.rank();
+        collection.add(target, {at: rank+1});
+    },
+    execView:function (outline, focus) {
+        var target = diathink.OutlineNodeModel.getById(this.options.targetID).views[outline.rootID];
+        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID).views[outline.rootID];
+        var oldspot = this._saveOldSpot(target);
+        $('#'+target.id).detach().insertAfter('#'+reference.id);
+        target.parentView = reference.parentView;
+        target.theme();
+        if (oldspot) {oldspot.theme();}
+        if (focus) {
+            $('#' + target.header.name.id).focus();
+        }
+    },
+    undoView:function (view) {}
+});

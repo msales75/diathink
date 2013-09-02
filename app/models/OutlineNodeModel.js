@@ -30,7 +30,29 @@ diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
             }
         }
         return null;
+    },
+
+    setView: function(key, value) {
+        if (typeof this.views !== 'object') {
+            this.views = {};
+        }
+        this.views[key] = value;
+    },
+
+    clearView: function(key) {
+        if (typeof this.views !== 'object') {
+            this.views = {};
+        }
+        delete this.views[key];
+    }},{
+
+    // static method
+
+    // MS: cannot call this get() or will override Backbone
+    getById: function(id) {
+        return Backbone.Relational.store._collections[0]._byId[id];
     }
+
 });
 diathink.OutlineNodeCollection = Backbone.Collection.extend({
     model: diathink.OutlineNodeModel

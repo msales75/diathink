@@ -89,7 +89,7 @@
 						if (self.options.startCollapsed) $li.addClass(self.options.collapsedClass);
 						else $li.addClass(self.options.expandedClass);
 					} else {
-						$li.addClass(self.options.leafClass);
+						$li.addClass(self.options.leafClass).addClass(self.options.expandedClass);
 					}
 				});
 			}
@@ -109,7 +109,12 @@
 		},
 
         _drawDropLine: function(o) {
-            // todo: could move this into css classes?
+            /* Implement this when doing drag/drop changes
+             dropTargets: function() {
+             // "drop-candidates" not minimized, possibly only on-screen
+             // each candidate needs to identify its compatibility, action-type and assumptions
+             }
+             */
             if (o.type==='drophandle') {
                 return
             } else {
@@ -163,7 +168,7 @@
                         height: 0
                     });
                 }
-                if (itemEl.childDepth(this.options.buryDepth).children('ul').children('li:visible').length === 0) {
+                // if (itemEl.childDepth(this.options.buryDepth).children('ul').children('li:visible').length === 0) {
                     // add dock to handle
                     item.drophandle = $('<div></div>').appendTo(this.options.dropLayer)
                         .addClass('droparrow')
@@ -178,7 +183,7 @@
                             height: 0
                         });
                     }
-                }
+                // }
             }
             for (var i=0; i < this.items.length; ++i) {
                 this._updateDropBoxes(this.items[i]);

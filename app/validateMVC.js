@@ -389,6 +389,140 @@ diathink.validateMVC = function () {
         }
     }
 
+    // todo: check for duplicate DOM id's?
+
+    // check listview's and list-elements
+    $('.ui-listview').each(function() {
+        M.test(this.nodeName.toLowerCase() === 'ul',
+            "Element with ui-listview does not have tag ul");
+    });
+
+    $('ul').each(function() {
+        M.test(typeof $(this).attr('id') === 'string',
+          "List does not have a string for an id");
+        M.test($(this).attr('id').length>=3,
+            "List does not have a long enough id");
+        M.test($(this).hasClass('ui-listview'),
+            "List "+$(this).attr('id')+" does not have class ui-listview");
+        M.test($(this).hasClass('ui-corner-all'),
+            "List "+$(this).attr('id')+" does not have class ui-corner-all");
+        M.test($(this).hasClass('ui-shadow'),
+            "List "+$(this).attr('id')+" does not have class ui-shadow");
+
+        if ($(this).hasClass('ui-focus-parent')) { // }) || $(this).is(':hover')) {
+            M.test($(this).css('overflow') === 'visible',
+                "List "+$(this).attr('id')+" does not have visible overflow, though it should");
+        } else {
+            M.test($(this).css('overflow') === 'hidden',
+                "List "+$(this).attr('id')+" does not have hidden overflow, though it should");
+        }
+
+        // check for ui-sortable class?
+        // M.test($(this).hasClass('ui-sortable'))
+
+    });
+
+    $('.ui-li').each(function() {
+        // either li or immediately under li
+        if (this.nodeName.toLowerCase() !== 'li') {
+            M.test($(this).parent().get(0).nodeName.toLowerCase() === 'li',
+                "Non-list element with ui-li class");
+        }
+    });
+
+    $('li').each(function() {
+        M.test(typeof $(this).attr('id') === 'string',
+            "List-item does not have a string for an id");
+        M.test($(this).attr('id').length>=3,
+            "List-item does not have a long enough id");
+        M.test($(this).hasClass('ui-li'),
+            "List-item "+$(this).attr('id')+" does not ahve class ui-li");
+        M.test($(this).hasClass('ui-btn'),
+                "List-item "+$(this).attr('id')+" does not have class ui-btn");
+        // $(this).hasClass('ui-btn-icon-right');
+
+        if ($(this).next().length>0) {
+            M.test(! $(this).hasClass('ui-last-child'),
+                "LI "+$(this).attr('id')+" is not at end but has class ui-last-child");
+        } else {
+            M.test($(this).hasClass('ui-last-child'),
+                "LI "+$(this).attr('id')+" is at end but does not have class ui-last-child");
+        }
+        if ($(this).prev().length>0) {
+            M.test(! $(this).hasClass('ui-first-child'),
+                "LI "+$(this).attr('id')+" is not at beginning but has class ui-first-child");
+        } else {
+            M.test($(this).hasClass('ui-first-child'),
+                "LI "+$(this).attr('id')+" is at beginning but does not have class ui-first-child");
+        }
+
+        var childlist = $(this).children('div').children('div').children('a').children('ul');
+        M.test(childlist.length===1,
+            "Child list ul not found inside li "+$(this).attr('id'));
+
+        if (childlist.children().length>0) {
+            M.test($(this).hasClass('branch'),
+                "LI "+$(this).attr('id')+" has children but does not have branch class");
+            M.test(! $(this).hasClass('leaf'),
+                "LI "+$(this).attr('id')+" has children but has leaf class");
+        } else {
+            M.test(! $(this).hasClass('branch'),
+                "LI "+$(this).attr('id')+" has no children but has branch class");
+            M.test($(this).hasClass('leaf'),
+                "LI "+$(this).attr('id')+" has no children but does not have leaf class");
+        }
+
+        M.test($(this).hasClass('expanded') || $(this).hasClass('collapsed'),
+            "li "+$(this).attr('id')+" doesn't have expanded or collapsed class.");
+        M.test(!($(this).hasClass('expanded') && $(this).hasClass('collapsed')),
+            "li "+$(this).attr('id')+" has both expanded and collapsed class.");
+
+        if ($(this).is(':visible')) {
+            if ($(this).hasClass('expanded')) {
+                M.test(childlist.is(':visible'),
+                    "Expanded list under "+$(this).attr('id')+" is not visible");
+            } else {
+                M.test(!childlist.is(':visible'),
+                    "Collapsed list under "+$(this).attr('id')+" is visible");
+            }
+        } else {
+            M.test(! $(this).parent().is(':visible'),
+                "LI "+$(this).attr('id')+" is not visible though parent ul is");
+        }
+
+        // validate overflow and z-index, which can be programmatically changed
+        if ($(this).hasClass('ui-focus-parent')) { // } || $(this).is(':hover')) {
+            M.test( $(this).css('overflow') === 'visible',
+                "LI "+$(this).attr('id')+" does not have overflow visible");
+            M.test( $(this).css('z-index') === '10',
+                "LI "+$(this).attr('id')+" does not have z-index=10");
+        } else {
+            M.test( $(this).css('overflow') === 'hidden',
+                "LI "+$(this).attr('id')+" does not have overflow hidden");
+            M.test( $(this).css('z-index') === 'auto',
+                "LI "+$(this).attr('id')+" does not have z-index=auto");
+        }
+    });
+
+    // validate that ui-focus-parent is used iff ui-focus is inside it
+    $('.ui-focus-parent').each(function() {
+        M.test($(this).find('.ui-focus').length>0,
+            "Unable to find ui-focus inside ui-focus-parent with id="+$(this).attr('id'));
+    });
+
+    $('.ui-focus').each(function() {
+        // test that all parents have ui-focus-parent if they are li or ul
+        $(this).parents().each(function() {
+            if ((this.nodeName.toLowerCase==='li')||(this.nodeName.toLowerCase==='ul')) {
+                M.test($(this).hasClass('ui-focus-parent'),
+                    "Missing ui-focus-parent on focus-parent node "+$(this).attr('id'));
+            }
+        });
+    });
+
+    // todo: check overflow on 'a' inner elem
+    // todo: check height/width footprint of li and ul
+
     // DOM children should match value=collection
     // check that view-parent matches nearest DOM-parent-view
     // Also check UI 'State' parameters in the view?

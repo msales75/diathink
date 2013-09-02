@@ -35,7 +35,7 @@ diathink.app = M.Application.design({
             pageshow:{
                 action:function () {
                     // todo: should bind to page on page-init
-                    $('div.ui-page').on('focusin', function(e) {
+                    $('div.ui-page').on('focusin focusout', function(e) {
 
                         // does this have performance issues?
                         $('.ui-focus-parent').removeClass('ui-focus-parent');
@@ -43,6 +43,8 @@ diathink.app = M.Application.design({
                         if (! $(e.target).hasClass('ui-input-text')) {return; }
                         /* Add ui-focus-parent to parents that are last in the list,
                            to help draw correct borders  */
+
+                        if (e.type==='focusout') {return; }
 
                         var that = $(e.target).parents('li.ui-li:first');
 
@@ -69,27 +71,20 @@ diathink.app = M.Application.design({
                         leafClass:'leaf',
                         collapsedClass:'collapsed',
                         expandedClass:'expanded',
+                        hoveringClass:'sort-hover',
+                        errorClass: 'sort-error',
                         handle:'> div > div > a > div > .drag-handle',
                         buryDepth:3,
-                        // helper:'clone',
-                        /* function(event, currentItem) {
-                         var c = currentItem.clone();
-                         c
-                         return c;
-                         } */
                         scroll:false,
                         dropLayer: $('.droplayer'),
                         start: function(e, hash) {
-                            // todo: change css-changes into class-assignments?
                             hash.item.parents('li').each(function() {
-                                $(this).css('overflow','visible').css('z-index',20);
+                                $(this).addClass('drag-hover');
                             });
                             hash.item.parents('ul').each(function() {
-                                $(this).css('overflow','visible');
+                                $(this).addClass('drag-hover');
                             });
-                            $('.droplayer').css('z-index',100);
-                            hash.item.css('border','solid 1px orange');
-                            // show drop-lines - moved to nestedSortable
+                            // hash.item.css('border','solid 1px orange');
                         },
                         stop:function (e, hash) { // (could also try 'change' or 'sort' event)
                             if (hash.item.parents('ul').length > 0) {
@@ -103,15 +98,8 @@ diathink.app = M.Application.design({
                             } else if (bottomlines.length>0) {
                                 console.log("Moving below element "+bottomlines.parents("li:first").attr('id'));
                             }
-                            hash.item.parents('li').each(function() {
-                                $(this).css('overflow','');
-                                $(this).css('z-index','');
-                            });
-                            hash.item.parents('ul').each(function() {
-                                $(this).css('overflow','');
-                            });
-                            hash.item.css('border','');
-                            $('.droplayer').css('z-index','auto');
+                            $('.drag-hover').removeClass('drag-hover');
+                            // hash.item.css('border','');
                             console.log("Processed change to structure");
                         },
                         // handle: '> div > div > a > div > .handle',

@@ -577,6 +577,8 @@ M.ListView = M.View.extend(
      */
     themeUpdate: function() {
         $('#' + this.id).list2view('refresh');
+        // update the corner-pieces of the list here too,
+        //   or do it all incrementally?
     },
 
     /**

@@ -3,22 +3,40 @@ Next:
 
 OK Hide handle images when in drop-mode
 OK Drag-hover over handle for expand/reduce
+OK Cleanup theme changes for list-finalization
+OK Test outline-validator
+OK Add validation for z-index, overflow-handling & corners, expanded-classes
+OK Fixup z-index/overflow handling
+OK Basic test on Firefox/IE
+OK Cleanup redundant code in action-list
+OK Fix 'input' selector for focusing in actions
+OK Why is the outline not showing up without error-messages?
+OK Finish adding/testing item-selectors for old parent/rank with move actions
+OK Fix overflow/z-index manual adjustments for dragging
+OK Draw border around dragged target
+OK Fix ui-focus-parent class-removal
+OK Make all elements available for drop-into
 
-* Cleanup theme changes for list-finalization
+* Support undo for all changes
+
+* Add shift-tab keyboard-command
+* Add line-split and line-merge for return/backspace
+
+* Keep drag-icon for dragged element
+* Connect drop-line-hover with parent-drop-into icon & border
+* Connect drop-into-icon-hover with staggered line into target-location
 * Add docking animation for drop or revert
 * Add docking-preview animation for long hovers
 * Expand/contract animation
 * Expand/contract preview for hover
-
-* Test outline-validator
-* Extend outline-validator to test for list-item theme/border/corner classes
+* Undo-helper animations
 * Test on mobile
+* Support multi-line text per draggable-line
 
-* Support undo for all changes
-   - with helper animations?
-* Add shift-tab keyboard-command
-* Add line-split and line-merge for return/backspace
-* Support multi-line input-text
+* Write a functional test for a sequence of actions that test all action code branches
+* ?nestedsortable test?
+
+? Multi-line-selections
 
  Add a second pane / dual-pages with same outline
  -- get cross-dropping/containers working in nestedsortable

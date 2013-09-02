@@ -68,7 +68,7 @@ diathink.MyListItem = M.ListItemView.extend({
                                 // validate rank >=0
                                 if (rank>0) { // indent the line
                                     // make it the last child of its previous sibling
-                                    diathink.IndentAction.createAndExec({
+                                    diathink.MoveIntoAction.createAndExec({
                                         referenceID: collection.models[rank-1].cid,
                                         targetID: liView.modelId,
                                         focusView: liView.rootID
@@ -82,7 +82,7 @@ diathink.MyListItem = M.ListItemView.extend({
                             // validate rank >=0
                             if (rank>0) { // indent the line
                                 // make it the last child of its previous sibling
-                                diathink.IndentAction.createAndExec({
+                                diathink.MoveIntoAction.createAndExec({
                                     referenceID: collection.models[rank-1].cid,
                                     targetID: liView.modelId,
                                     focusView: liView.rootID
