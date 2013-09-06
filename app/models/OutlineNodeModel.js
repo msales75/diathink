@@ -14,10 +14,41 @@ diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
     ],
     initialize: function() {
       // do whatever you want :)
+        this.deleted = false;
     },
+
+    // todo: override constructor to permit cid's to be reused
+    //  allowing deleted model-elements to be removed from memory
+    // override Backbone.Model to allow specification of cid in attributes
+    /*
+    constructor: function(attributes, options) {
+        var defaults;
+        var attrs = attributes || {};
+        options || (options = {});
+        // MS: if cid is specified, ensure it is unique then use it.
+        if (attributes.cid) {
+            // todo: check uniqueness - if (Backbone.Relational.store.find(attributes.cid));
+            this.cid = attributes.cid;
+        } else {
+            this.cid = _.uniqueId('c');
+        }
+        this.attributes = {};
+        var modelOptions = ['url', 'urlRoot', 'collection'];
+        _.extend(this, _.pick(options, modelOptions));
+        if (options.parse) attrs = this.parse(attrs, options) || {};
+        if (defaults = _.result(this, 'defaults')) {
+            attrs = _.defaults({}, attrs, defaults);
+        }
+        this.set(attrs, options);
+        this.changed = {};
+        this.initialize.apply(this, arguments);
+    },
+*/
+
     parentCollection: function() {
         if (this.attributes.parent == null) {
-            return diathink.data;
+            if (diathink.data.get(this.cid) === this) {return diathink.data;}
+            else {return null;}
         } else {
             return this.attributes.parent.attributes.children;
         }
@@ -33,7 +64,7 @@ diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
     },
 
     setView: function(key, value) {
-        if (typeof this.views !== 'object') {
+        if ((this.views == null) || (typeof this.views !== 'object')) {
             this.views = {};
         }
         this.views[key] = value;
@@ -44,15 +75,15 @@ diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
             this.views = {};
         }
         delete this.views[key];
-    }},{
-
-    // static method
-
+        if (_.size(this.views)===0) {
+            this.views = null;
+        }
+    }
+},{ // static methods
     // MS: cannot call this get() or will override Backbone
     getById: function(id) {
         return Backbone.Relational.store._collections[0]._byId[id];
     }
-
 });
 diathink.OutlineNodeCollection = Backbone.Collection.extend({
     model: diathink.OutlineNodeModel

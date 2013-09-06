@@ -55,6 +55,18 @@ diathink.MyListItem = M.ListItemView.extend({
                         // console.log(e);
                     }
                 },
+                blur: { // update model with action
+                    action:function(id, e) {
+                        var value = $('#'+id).val();
+                        var model = M.ViewManager.findViewById(id).parentView.parentView.value;
+                        if (model.get('text') !== value) {
+                            diathink.TextAction.createAndExec({
+                                targetID: model.cid,
+                                text: $('#'+id).val()
+                            });
+                        }
+                    }
+                },
                 keydown:{
                     action: function (id, e) {
                         var liView = M.ViewManager.findViewById(id).parentView.parentView;
@@ -104,8 +116,13 @@ diathink.MyListItem = M.ListItemView.extend({
                                         focusView: liView.rootID
                                     });
                                     e.preventDefault();
+                                } else { // delete or merge-lines?
+                                    if ($('#'+id).val() === "") {
+                                        diathink.DeleteAction.createAndExec({
+                                            targetID: liView.modelId
+                                        });
+                                    }
                                 }
-                                // otherwise delete or merge-lines?
                             }
                         } else if (e.which === 13) { // enter
                             // split line if in middle of text

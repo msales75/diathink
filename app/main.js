@@ -105,6 +105,7 @@ diathink.app = M.Application.design({
                         // handle: '> div > div > a > div > .handle',
                         toleranceElement:'> div > div > a > div.outline-header'
                     });
+                    diathink.UndoController.refreshButtons();
                     $('.disclose').on('click', function () {
                         $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');
                     });
@@ -113,8 +114,38 @@ diathink.app = M.Application.design({
         },
 
         header:M.ToolbarView.design({
-            value:'HEADER',
-            anchorLocation:M.TOP
+            childViews: "title undobuttons",
+           // value:'HEADER',
+            anchorLocation:M.TOP,
+            title: M.LabelView.design({
+                anchorLocation: M.LEFT,
+                value: "Diathink"
+            }),
+            undobuttons: M.ContainerView.design({
+                anchorLocation:M.RIGHT,
+                cssClass: 'undo-container',
+                childViews: "undobutton redobutton",
+                undobutton:M.ButtonView.design({
+                    isIconOnly: true,
+                    cssClass:'undo-button',
+                    events: {
+                        tap: {
+                            target:diathink.UndoController,
+                            action:'undo'
+                        }
+                    }
+                }),
+                redobutton:M.ButtonView.design({
+                    isIconOnly: true,
+                    cssClass:'redo-button',
+                    events: {
+                        tap: {
+                            target:diathink.UndoController,
+                            action:'redo'
+                        }
+                    }
+                })
+            })
         }),
 
         content:M.ScrollView.design({

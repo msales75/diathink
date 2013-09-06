@@ -181,6 +181,8 @@ M.ToolbarView = M.View.extend(
             for(var i in childViews) {
                 var view = this[childViews[i]];
                 view._name = childViews[i];
+                // MS correction 9/4/2013
+                view.parentView = this;
                 if( viewPositions[view.anchorLocation] ) {
                     M.Logger.log('ToolbarView has two items positioned at M.' +
                         view.anchorLocation + 

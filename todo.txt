@@ -1,27 +1,20 @@
 Next:
 ----
 
-OK Hide handle images when in drop-mode
-OK Drag-hover over handle for expand/reduce
-OK Cleanup theme changes for list-finalization
-OK Test outline-validator
-OK Add validation for z-index, overflow-handling & corners, expanded-classes
-OK Fixup z-index/overflow handling
-OK Basic test on Firefox/IE
-OK Cleanup redundant code in action-list
-OK Fix 'input' selector for focusing in actions
-OK Why is the outline not showing up without error-messages?
-OK Finish adding/testing item-selectors for old parent/rank with move actions
-OK Fix overflow/z-index manual adjustments for dragging
-OK Draw border around dragged target
-OK Fix ui-focus-parent class-removal
-OK Make all elements available for drop-into
+* Why is action-model not showing up in relational-model list?
+(** manage action-collection with controller)
 
-* Support undo for all changes
+
+
+
+* Focus on double-click
+* Horizontal paging
+
+* Index history by User/Time/Parent-list of affected nodes
 
 * Add shift-tab keyboard-command
 * Add line-split and line-merge for return/backspace
-
+* Up and down arrows should change lines
 * Keep drag-icon for dragged element
 * Connect drop-line-hover with parent-drop-into icon & border
 * Connect drop-into-icon-hover with staggered line into target-location
@@ -74,14 +67,63 @@ Recursive views have constrained editing
 Search shows objects/counts separately ("and 17 other cases")
 Google-search categorizes pages about this object
 
-
  Record profiling logs (support replay?)
  Local/Remote Search (5-25 search-terms per line?)
- ? Finish Raw History management
 
+* Local/Remote Save
+* References
+* Tags & Triggers
+* Real-time collaboration
+* History merging with issue-recording
+* UI for browsing merge-issues
+
+
+* Partial view-display
+* Partial local-loading
+* Action-Queue prioritization
+* Partial loading
+* Clone, Sync, Remaster buttons
 
 
 ? Use Status parameters for model and view updates
+
+old: content/siblings/parent/reference/tags
+new: content/siblings/parent/reference/tags
+
+For thought: references vs. annotation
+For thought: inverse-references vs. tags
+  Current idea: triggers/constraints can bind them when needed
+OR special kinds of lines are tag-hierarchies?
+View/edit auto-outline organized by tag1, tag2, tag3?
+Mutually exclusive tags
+
+Annotation?
+Hide-able text-tags
+Hide-able field-value properties
+Constraints/Templates/Triggers
+Chat and Facebook integration
+  - attached url's, gmail, google-drive/docs
+  Open/resolved-issues, points (and ranking within issue)
+    Example; generalization/idea; Ambiguity, Clarification
+
+OK Finish Raw History management
+OK Support undo for all changes
+
+OK Hide handle images when in drop-mode
+OK Drag-hover over handle for expand/reduce
+OK Cleanup theme changes for list-finalization
+OK Test outline-validator
+OK Add validation for z-index, overflow-handling & corners, expanded-classes
+OK Fixup z-index/overflow handling
+OK Basic test on Firefox/IE
+OK Cleanup redundant code in action-list
+OK Fix 'input' selector for focusing in actions
+OK Why is the outline not showing up without error-messages?
+OK Finish adding/testing item-selectors for old parent/rank with move actions
+OK Fix overflow/z-index manual adjustments for dragging
+OK Draw border around dragged target
+OK Fix ui-focus-parent class-removal
+OK Make all elements available for drop-into
 
 OK Enable drop-into box
 OK Make helper translucent; z-index confusion
@@ -118,19 +160,6 @@ DONE   get changes working when calling model-object for changes.
 
 
 DONE Enable text-commands for new lines etc.
-* Local/Remote Save
-* References
-* Tags & Triggers
-* Real-time collaboration
-* History merging with issue-recording
-* UI for browsing merge-issues
-
-* Partial view-display
-* Partial local-loading
-* Action-Queue prioritization
-* Partial loading
-* Index history by User/Time/Parent-list of affected nodes
-* Clone, Sync, Remaster buttons
 
 
  Tags have a trigger-object with methods triggered by:

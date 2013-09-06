@@ -63,17 +63,36 @@ diathink.validateMVC = function () {
             "Model " + m + " does not have a valid cid");
         M.test(typeof models[m].attributes === 'object',
             "Model " + m + " does not have an attributes field");
-        if (models[m].attributes.parent == null) {
-            M.test(modelBase[m] != null,
-                "Unable to find model "+m+" in top-level of diathink.data, despite having parent=null");
-        } else {
-            M.test(modelBase[m] === undefined,
-                "Model "+m+" has a parent but is not in diathink.data");
-        }
-        if (models[m].attributes.children) {
-            collections[m] = models[m].attributes.children;
+
+        if (models[m].deleted === false) {
+            if (models[m].attributes.parent == null) {
+                M.test(modelBase[m] != null,
+                    "Unable to find model "+m+" in top-level of diathink.data, despite having parent=null");
+            } else {
+                M.test(modelBase[m] === undefined,
+                    "Model "+m+" has a parent but is not in diathink.data");
+            }
+            if (models[m].attributes.children) {
+                collections[m] = models[m].attributes.children;
+            }
+        } else { // deleted model
+            M.test(models[m].attributes.parent === null,
+                "Deleted model "+m+" has a parent not null");
+            M.test(models[m].attributes.children.length === 0,
+                "Deleted model "+m+" has children not empty");
+            M.test(models[m].views === null,
+                "Deleted model "+m+" has views not null");
         }
     }
+
+    // ignore deleted models from model-list for rest of tests
+    var models2 = {};
+    for (var m in models) {
+        if (models[m].deleted === false) {
+            models2[m] = models[m];
+        }
+    }
+    models = models2;
 
     M.test(_.size(modelBase) > 0,
         "There is no root-node model without a parent");
@@ -523,12 +542,56 @@ diathink.validateMVC = function () {
     // todo: check overflow on 'a' inner elem
     // todo: check height/width footprint of li and ul
 
+    var actions = diathink.UndoController.actions;
+    var lastaction = diathink.UndoController.lastAction;
+    if (actions.length>0) {
+        M.test(lastaction !== null,
+            "Actions.length>0 but lastaction is null");
+        M.test(actions.at(lastaction).lost === false,
+            "Last action cannot be lost");
+        for (var i=lastaction+1; i<actions.length; ++i) {
+            M.test(actions.at(i).undone === true,
+                "Action at "+i+" is after last-action, but is not undone");
+            M.test(actions.at(i).lost === false,
+                "Action at "+i+" is after last-action, but is lost");
+        }
+    } else {
+        M.test(lastaction === null,
+            "There are no actions, but lastaction is not null")
+    }
+
+
+    // undo-buttons should be up to date
+    var b = M.ViewManager.getCurrentPage().header.undobuttons;
+    M.test(b.undobutton != null,
+        "Cannot find undo button view");
+    M.test(b.redobutton!= null,
+        "Cannot find redo button view");
+    M.test($('#'+b.undobutton.id).length===1,
+        "Cannot find undo button element");
+    M.test($('#'+b.redobutton.id).length===1,
+        "Cannot find redo button element");
+    M.test(
+        ((diathink.UndoController.nextUndo()===false)&&
+            ($('#'+ b.undobutton.id).children('div.ui-disabled').length===1)) ||
+        ((diathink.UndoController.nextUndo()!==false)&&
+            ($('#'+ b.undobutton.id).children('div.ui-disabled').length===0)),
+        "Undo button does not match nextUndo()");
+    M.test(
+        ((diathink.UndoController.nextRedo()===false)&&
+            ($('#'+ b.redobutton.id).children('div.ui-disabled').length===1)) ||
+            ((diathink.UndoController.nextRedo()!==false)&&
+                ($('#'+ b.redobutton.id).children('div.ui-disabled').length===0)),
+        "Redo button does not match nextRedo()");
+
+    // todo: exec/undo and undo/redo should cancel for all actions
+    // (part of a functional test)
+
     // DOM children should match value=collection
     // check that view-parent matches nearest DOM-parent-view
     // Also check UI 'State' parameters in the view?
-    for (d in $('body')) {
-        // make sure all m_id's correspond to a view?
-    }
+
+    // todo: check html/css w3c validation?
 
     return "done";
 }

@@ -237,3 +237,35 @@ div.ui-input-text input.ui-input-text {
 .drop-mode ul.ui-listview.drag-hover {
     overflow: visible;
 }
+
+.undo-container {
+    width: 100px;
+    height: 30px;
+}
+
+.undo-container > a.undo-button, .undo-container > a.redo-button {
+    float: left;
+    padding: 2px;
+    margin: 3px;
+}
+
+.undo-button span.ui-btn-inner {
+    display: block;
+    background-image: url(images/undo.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.redo-button span.ui-btn-inner {
+    display: block;
+    background-image: url(images/redo.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.undo-button > div.ui-disabled,
+.redo-button > div.ui-disabled  {
+    height: 100%;
+    border-radius: inherit;
+    -webkit-border-radius: inherit;
+}
