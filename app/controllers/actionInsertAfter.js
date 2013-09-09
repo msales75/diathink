@@ -1,6 +1,4 @@
 
-// delete action and edit-action
-
 diathink.Action = Backbone.RelationalModel.extend({
     type:"Action",
     instance: 0,
@@ -44,6 +42,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
         }
         diathink.UndoController.refreshButtons();
+        diathink.validateMVC();
     },
     getModel: function(id) {
         return Backbone.Relational.store.find(diathink.OutlineNodeModel, id);
@@ -60,15 +59,19 @@ diathink.Action = Backbone.RelationalModel.extend({
         o.undo = true;
         this.undoTimestamp = (new Date()).getTime();
         this.undone = true;
+        this.undoModel();
         var outlines = diathink.OutlineManager.outlines;
         for (i in outlines) {
             this.undoView(outlines[i], focus);
         }
-        this.undoModel();
         diathink.UndoController.refreshButtons();
+        diathink.validateMVC();
     },
     // todo: should make node-model a doubly-linked list without relying on collection rank?
-    getContext: function(collection, rank) {
+    getContextAt: function(id) {
+        var model = this.getModel(id);
+        var collection= model.parentCollection();
+        var rank = model.rank();
         var context = {};
         if (rank===0) {
             context.prev = null;
@@ -87,15 +90,72 @@ diathink.Action = Backbone.RelationalModel.extend({
         }
         return context;
     },
-    restoreContext: function() {
-        var model = this.getModel(this.options.targetID);
-        var collection, rank, context = this.oldContext;
-        var oldCollection = model.parentCollection();
+    // return the context for an item inserted after id
+    getContextAfter: function(id) {
+        var context;
+        var reference = this.getModel(id);
+        var collection = reference.parentCollection();
+        var refrank = reference.rank();
+        var parent = reference.get('parent');
+        if (parent!=null) {
+            context = {parent: parent.cid};
+        } else {
+            context = {parent: null};
+        }
+        context.prev = id;
+        if (refrank===collection.length-1) {
+            context.next = null;
+        } else {
+            context.next = collection.at(refrank+1).cid;
+        }
+        return context;
+    },
+    // return the context for an item inserted before id
+    getContextBefore: function(id) {
+        var context;
+        var reference = this.getModel(id);
+        var collection = reference.parentCollection();
+        var refrank = reference.rank();
+        var parent = reference.get('parent');
+        if (parent!=null) {
+            context = {parent: parent.cid};
+        } else {
+            context = {parent: null};
+        }
+        context.next = id;
+        if (refrank===0) {
+          context.prev = null;
+        } else {
+          context.prev = collection.at(refrank-1).cid;
+        }
+        return context;
+    },
+    // return the context for an item inserted inside id, at end of list
+    getContextIn: function(id) {
+        var reference = diathink.OutlineNodeModel.getById(id);
+        var collection = reference.get('children');
+        context = {parent: id, next: null};
+        if (collection.length===0) {
+            context.prev = null;
+        } else {
+            context.prev = collection.at(collection.length-1).cid;
+        }
+        return context;
+    },
+    newModel: function() {
+        var target = new diathink.OutlineNodeModel({text: this.options.lineText, children: null});
+        this.options.targetID = target.cid;
+        return target;
+    },
+    restoreContext: function(context) {
+        var target = this.getModel(this.options.targetID);
+        var collection, rank;
+        var oldCollection = target.parentCollection();
         if (oldCollection != null) { // if it's in a collection
-            oldCollection.remove(model);
+            oldCollection.remove(target);
         }
         if (context != null) { // if there was a prior location to revert to
-            model.deleted = false;
+            target.deleted = false;
             if (context.parent != null) {
                 collection = this.getModel(context.parent).get('children');
             } else {
@@ -104,32 +164,58 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (context.prev === null) {
                 rank = 0;
             } else {
-                rank = this.getModel(context.prev).rank();
+                rank = this.getModel(context.prev).rank()+1;
             }
-            collection.add(model, {at: rank+1});
+            collection.add(target, {at: rank});
         } else { // mark it as deleted
-            model.deleted = true;
-            model.views = null; // todo: should we wait to negate views?
-            model.set({parent: null});
+            target.deleted = true;
+            // target.views = null; // todo: negate views individually
+            target.set({parent: null});
         }
     },
-    restoreViewContext: function(outline) {
+    restoreViewContext: function(context, outline) {
         var collection, rank;
-        var context = this.oldContext;
         var li, elem, neighbor, parent, themeparent=false;
+
+        // (1) does target exist in view, or does it need to be created
+        // (2) will destination exist in view, or does it need to be deleted
+        // (3) is destination at top-level of view, with undefined parent
+
         var target = this.getView(this.options.targetID, outline.rootID);
-        if (target!=null) { // if target wasn't deleted
+        if (target!=null) { // if target wasn't deleted from this view
             neighbor = this._saveOldSpot(target);
         }
+
+        // if context is outside view, then set to null
+        if (context != null) {
+            if (context.parent != null) {
+                var parent = this.getView(context.parent, outline.rootID);
+                if (parent != null) {
+                    parent = parent.children;
+                } else { // parent is outside view, is it one level or more?
+                    if (this.getModel(context.parent).get('children') ===
+                        M.ViewManager.getViewById(outline.rootID).value) {
+                        parent = M.ViewManager.getViewById(outline.rootID);
+                    } else { // context is out of scope
+                        context = null;
+                        parent = null;
+                    }
+                }
+            } else { // outline-root diathink.data
+                if (M.ViewManager.getViewById(outline.rootID).value === diathink.data) {
+                    parent = M.ViewManager.getViewById(outline.rootID);
+                } else {
+                    context = null;
+                    parent = null;
+                }
+            }
+        }
+
         if (context === null) { // undo creation
+            this.getModel(this.options.targetID).clearView(outline.rootID);
             if (target != null) {target.destroy();}
         } else { // undo-move/edit
             // get views corresponding to context
-            if (context.parent != null) {
-                parent = this.getView(context.parent, outline.rootID).children;
-            } else {
-                parent = M.ViewManager.getViewById(outline.rootID);
-            }
             if (target == null) {
                 // undo deletion - test later; target doesn't exist in this case
                 target = this.newListItemView(parent);
@@ -149,24 +235,13 @@ diathink.Action = Backbone.RelationalModel.extend({
                 $('#'+this.getView(context.prev, outline.rootID).id).after(elem);
             }
             if (themeparent) {
+                target.registerEvents();
                 parent.themeUpdate(); // hack to theme list-item
             }
             target.theme(); // theme new lcoation
         }
         if (neighbor) {neighbor.theme();} // theme old location
 
-        // re-create view, it shouldn't ever exist
-        // todo: need to add this to validation constraints
-    },
-
-    getModelFromView:function (id) {
-        return M.ViewManager.getViewById(id).modelId;
-    },
-    getOutlineFromView:function (id) {
-        return M.ViewManager.getViewById(id).rootID;
-    },
-    getViewFromModel:function (modelId, outline) {
-        // return Backbone.RelationalModel.get(modelId).views[outline];
     },
     // utility functions
     newListItemView:function (parentView) { // (id only if known)
@@ -206,6 +281,32 @@ diathink.Action = Backbone.RelationalModel.extend({
                 return null;
             }
         }
+    },
+    execModel: function () {
+        if (! this.options.targetID) {
+            var target = new diathink.OutlineNodeModel({text: this.options.lineText, children: null});
+            this.options.targetID = target.cid;
+            this.oldContext = null;
+        } else {
+            if (! this.options.redo) {
+                this.oldContext = this.getContextAt(this.options.targetID);
+            }
+        }
+        this.getNewContext();
+        this.restoreContext(this.newContext);
+    },
+    execView:function (outline, focus) {
+        this.restoreViewContext(this.newContext, outline);
+        if (focus) {
+            $('#' + this.getView(this.options.targetID, outline.rootID).header.name.id).focus();
+        }
+        return;
+    },
+    undoModel: function () {
+        this.restoreContext(this.oldContext);
+    },
+    undoView:function (outline, focus) {
+        this.restoreViewContext(this.oldContext, outline);
     },
 
     // SHOW methods - various visualization actions,
@@ -268,133 +369,40 @@ diathink.Action = Backbone.RelationalModel.extend({
 diathink.InsertAfterAction = diathink.Action.extend({
     type:"InsertAfterAction",
     options: {targetID: null, referenceID: null, lineText: "", transition: false},
-    execModel: function () {
-        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID);
-        var collection = reference.parentCollection();
-        var refrank = reference.rank();
-        var rank;
-        if (this.type==="InsertAfterAction") {
-            rank = refrank+1;
-        } else if (this.type==="InsertBeforeAction") {
-            rank = refrank;
-        }
-        var newrecord;
-        // todo: re-create the item with the same cid instead of retrieving it from store
-        if (this.options.targetID != null) {
-            newrecord = this.getModel(this.options.targetID);
-            newrecord.deleted = false;
-        } else {
-            newrecord = {text: this.options.lineText, children: null};
-        }
-        collection.add(newrecord,{at: rank});
-        this.options.targetID = collection.at(rank).cid;
-        // we don't really need the new context now, do we?  except for warnings
-        // this.newContext= this.getContext(collection, rank);
-    },
-    execView:function (outline, focus) {
-        var reference = this.getView(this.options.referenceID, outline.rootID);
-        var li = this.newListItemView(reference.parentView);
-        if (this.type==="InsertAfterAction") {
-            $('#' + reference.id).after(li.render());
-        } else if (this.type==="InsertBeforeAction") {
-            $('#' + reference.id).before(li.render());
-        }
-        li.registerEvents();
-        li.theme();
-        diathink.OutlineNodeModel.getById(this.options.targetID).setView(outline.rootID, li);
-        reference.parentView.themeUpdate(); // todo: make this unecessary when li is cloned with theme
-        if (focus) {
-            $('#' + li.header.name.id).focus();
-        }
-    },
-    undoModel: function () {
-        this.restoreContext();
-    },
-    undoView:function (outline, focus) {
-        this.restoreViewContext(outline);
-    },
-    validateView:function (view) {},
-    validateModel: function() {}
+    getNewContext: function() {
+        this.newContext = this.getContextAfter(this.options.referenceID);
+    }
 });
 
-diathink.InsertBeforeAction = diathink.InsertAfterAction.extend({
-    type:"InsertBeforeAction"
+diathink.InsertBeforeAction = diathink.Action.extend({
+    type:"InsertBeforeAction",
+    options: {targetID: null, referenceID: null, lineText: "", transition: false},
+    getNewContext: function() {
+        this.newContext = this.getContextBefore(this.options.referenceID);
+    }
 });
 
 diathink.MoveAfterAction = diathink.Action.extend({
     type:"MoveAfterAction",
     options: {targetID: null, referenceID: null, transition: false},
-    execModel: function () {
-        var target= diathink.OutlineNodeModel.getById(this.options.targetID);
-        var reference = diathink.OutlineNodeModel.getById(this.options.referenceID);
-        // store original location for undo
-        var oldCollection = target.parentCollection();
-        this.oldContext = this.getContext(oldCollection, target.rank());
-        oldCollection.remove(target);
-        var rank = reference.rank();
-        if (this.type==="MoveAfterAction") {
-            rank = rank+1;
-        } else if (this.type==="MoveBeforeAction") {}
-        reference.parentCollection().add(target,{at: rank});
-    },
-    execView:function (outline, focus) {
-        var target = this.getView(this.options.targetID, outline.rootID);
-        var reference = this.getView(this.options.referenceID, outline.rootID);
-        // remember old sibling of target for retheming
-        var oldspot = this._saveOldSpot(target);
-        var targetParent = target.parentView;
-        if (this.type==="MoveAfterAction") {
-            $('#'+target.id).detach().insertAfter('#'+reference.id);
-        } else if (this.type==="MoveBeforeAction") {
-            $('#'+target.id).detach().insertBefore('#'+reference.id);
-        }
-        target.parentView = reference.parentView;
-        target.theme();
-        if (oldspot) {oldspot.theme();}
-        if (focus) {
-            $('#' + target.header.name.id).focus();
-        }
-    },
-    undoModel:function() {
-        this.restoreContext();
-    },
-    undoView:function (outline) {
-        this.restoreViewContext(outline);
+    getNewContext: function() {
+        this.newContext = this.getContextAfter(this.options.referenceID);
     }
 });
 
-diathink.MoveBeforeAction = diathink.MoveAfterAction.extend({
-    type:"MoveBeforeAction"
+diathink.MoveBeforeAction = diathink.Action.extend({
+    type:"MoveBeforeAction",
+    options: {targetID: null, referenceID: null, transition: false},
+    getNewContext: function() {
+        this.newContext = this.getContextBefore(this.options.referenceID);
+    }
 });
 
 diathink.MoveIntoAction = diathink.Action.extend({
     type:"MoveIntoAction",
     options: {targetID: null, referenceID: null, transition: false},
-    execModel: function () {
-        var target= this.getModel(this.options.targetID);
-        var reference = this.getModel(this.options.referenceID);
-        var oldCollection = target.parentCollection();
-        this.oldContext = this.getContext(oldCollection, target.rank());
-        oldCollection.remove(target);
-        reference.get('children').push(target);
-    },
-    execView:function (outline, focus) {
-        var target = this.getView(this.options.targetID, outline.rootID);
-        var reference = this.getView(this.options.referenceID, outline.rootID);
-        var oldspot = this._saveOldSpot(target);
-        $('#'+target.id).detach().appendTo($('#'+reference.id).children('div').children('div').children('a').children('ul'));
-        target.parentView = reference.children;
-        target.theme();
-        if (oldspot) {oldspot.theme();}
-        if (focus) {
-            $('#' + target.header.name.id).focus();
-        }
-    },
-    undoModel: function () {
-        this.restoreContext();
-    },
-    undoView:function (outline, focus) {
-        this.restoreViewContext(outline);
+    getNewContext: function() {
+        this.newContext = this.getContextIn(this.options.referenceID);
     }
 });
 
@@ -402,33 +410,8 @@ diathink.MoveIntoAction = diathink.Action.extend({
 diathink.OutdentAction = diathink.Action.extend({
     type:"OutdentAction",
     options: {targetID: null, referenceID: null, transition: false},
-    execModel: function () {
-        var target= this.getModel(this.options.targetID);
-        var reference = this.getModel(this.options.referenceID);
-        var oldCollection = target.parentCollection();
-        this.oldContext = this.getContext(oldCollection, target.rank());
-        reference.get('children').remove(target);
-        var collection = reference.parentCollection();
-        var rank = reference.rank();
-        collection.add(target, {at: rank+1});
-    },
-    execView:function (outline, focus) {
-        var target = this.getView(this.options.targetID, outline.rootID);
-        var reference = this.getView(this.options.referenceID, outline.rootID);
-        var oldspot = this._saveOldSpot(target);
-        $('#'+target.id).detach().insertAfter('#'+reference.id);
-        target.parentView = reference.parentView;
-        target.theme();
-        if (oldspot) {oldspot.theme();}
-        if (focus) {
-            $('#' + target.header.name.id).focus();
-        }
-    },
-    undoModel: function () {
-        this.restoreContext();
-    },
-    undoView:function (outline, focus) {
-        this.restoreViewContext(outline);
+    getNewContext: function() {
+        this.newContext = this.getContextAfter(this.options.referenceID);
     }
 });
 
@@ -439,28 +422,8 @@ diathink.ActionCollection = Backbone.Collection.extend({
 diathink.DeleteAction = diathink.Action.extend({
     type:"DeleteAction",
     options: {targetID: null, transition: false},
-    execModel: function () {
-        var target= this.getModel(this.options.targetID);
-        if (target.get('children').length>0) {return false;} // cannot delete node with children
-        var oldCollection = target.parentCollection();
-        this.oldContext = this.getContext(oldCollection, target.rank());
-        oldCollection.remove(target);
-        target.deleted = true;
-    },
-    execView:function (outline, focus) {
-        var target = this.getView(this.options.targetID, outline.rootID);
-        var oldspot = this._saveOldSpot(target);
-        var targetParent = target.parentView;
-        $('#'+target.id).remove();
-        target.value.clearView(outline.rootID);
-        if (target != null) {target.destroy();}
-        if (oldspot) {oldspot.theme();}
-    },
-    undoModel:function() {
-        this.restoreContext();
-    },
-    undoView:function (outline) {
-        this.restoreViewContext(outline);
+    getNewContext: function() {
+        this.newContext = null;
     }
 });
 

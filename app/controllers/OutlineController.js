@@ -31,46 +31,16 @@ diathink.OutlineController = M.Controller.extend({
     init:function () { // map DOM-id's to parts of the outline
 
     },
-    insertInto:function (parent) {
-        // log in history, noting user-context
-        // (propogate log to server)
-        // validate model
-        // update model
-        // update model loading-queue
-        // validate view
-        // update view
-        // update view loading-queue
-        // execute any triggers (consider queueing-priority carefully?)
-        // execute triggers on parent (or tag or reference)
-        // update trigger priority-queue
-    },
-    insertAfter:function (sibling) {
-    },
-    insertBefore:function (sibling) {
-    },
-    moveInto:function (id, parent) {
-    },
-    moveAfter:function (id, sibling) {
-    },
-    moveBefore:function (id, sibling) {
-    },
-    editText:function (id, text) {
-    },
-    editReference:function (id, target) {
-    },
-    addTag:function (id, tag) {
-    },
-    removeTag:function (id, tag) {
-    },
-    remove:function (id) {
-    },
-    addSourceTrigger:function (trigger_id) {
-    },
-    addTargetTrigger:function (trigger_id) {
-    },
-    removeSourceTrigger:function (trigger_id) {
-    },
-    removeTargetTrigger:function (trigger_id) {
+
+    focusObject:function(id) {
+        var view = M.ViewManager.getViewById(id);
+        var model = view.value;
+        diathink.app.createPage("page_"+model.cid, model);
+        this.switchToPage("page_"+model.cid);
+        // alert('Focusing on model '+model.cid);
+        // new outline object has a new root - make a completely new outline?
+        // make a new mobile-page
+
     }
 });
 
@@ -80,6 +50,9 @@ diathink.dummyController = M.Controller.extend({
     },
     listObject:[]
 });
+
+// nest horizontal pages, expand/contract? drag/drop?
+  // save perspectives? hmm.
 
 
 // TODO: Where do we store and check for triggers?

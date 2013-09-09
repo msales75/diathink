@@ -239,20 +239,20 @@ diathink.validateMVC = function () {
             var foundit = false;
             if (p.type === 'M.ListView') {
                 M.test(typeof p.rootID === 'string',
-                    "Parent ListView "+pt+" has invalid rootID (not a string)");
+                    "Parent ListView "+p+" has invalid rootID (not a string)");
                 M.test(typeof p.value === 'object',
-                    "Parent ListView "+pt+" has invalid value (not an object)");
+                    "Parent ListView "+p+" has invalid value (not an object)");
                 M.test(p.value instanceof diathink.OutlineNodeCollection,
-                    "Parent ListView "+pt+" has a value that's not an OutlineNodeCollection");
+                    "Parent ListView "+p+" has a value that's not an OutlineNodeCollection");
                 M.test(typeof p.value._byId === 'object',
-                    "Parent ListView "+pt+" has a value without _byId");
+                    "Parent ListView "+p+" has a value without _byId");
                 for (var i in p.value._byId) {
                     M.test(typeof p.value._byId[i] === 'object',
-                        "Parent ListView "+pt+" has a child-model "+i+" that is not an object");
+                        "Parent ListView "+p+" has a child-model "+i+" that is not an object");
                     M.test(typeof p.value._byId[i].views === 'object',
-                        "Parent ListView "+pt+" has a child-model "+i+" without views");
+                        "Parent ListView "+p+" has a child-model "+i+" without views");
                     M.test(typeof p.value._byId[i].views[p.rootID] === 'object',
-                        "Parent ListView "+pt+" has a child-model "+i+" without rootID "+ p.rootID+" listed in views");
+                        "Parent ListView "+p+" has a child-model "+i+" without rootID "+ p.rootID+" listed in views");
                     if (p.value._byId[i].views[p.rootID] === views[v]) {
                         foundit = true;
                     }
@@ -283,7 +283,7 @@ diathink.validateMVC = function () {
                 }
             }
             M.test(foundit,
-                "View "+v+" has parent "+pt+" of type "+ p.type+" but none of parent's children reference "+v);
+                "View "+v+" has parent "+p+" of type "+ p.type+" but none of parent's children reference "+v);
 
             if (views[v].rootID == null) { // outside the outlines in the page
                 if (views[v].parentView != null) {
@@ -347,6 +347,9 @@ diathink.validateMVC = function () {
                     M.test(models[views[v].modelId] !== undefined,
                         "View "+v+" has type ListView but modelId is not in models list");
 
+                    M.test(models[views[v].modelId] === views[v].value,
+                        "ListItemView "+v+" has modelId different than value");
+
                     M.test(models[views[v].modelId].attributes.children === views[v].children.value,
                        "ListItemView "+v+" has modelId-children differnet than view-children");
 
@@ -373,6 +376,11 @@ diathink.validateMVC = function () {
                     }
                     M.test(foundit,
                         "View "+v+" is not found in corresponding model "+views[v].modelId+" views-list");
+
+                    // view rootID must be correct for the view it's in
+                    M.test(views[v].value.views[views[v].rootID] === views[v],
+                        "View "+v+" has a model without corresponding view under rootID "+views[v].rootID);
+
                     if (views[v].value.attributes.parent != null) {
                         if (outlines[views[v].parentView.id] != null) { // parent-list is outline-root
                         } else { // parent list is inside of another list
@@ -407,6 +415,9 @@ diathink.validateMVC = function () {
                 "View "+v+" does not have parent-view "+pid);
         }
     }
+
+    // todo: validate that all lists are unique inside their li
+    // $('#'+li.id).children().children().children().children().children('ul').length===1
 
     // todo: check for duplicate DOM id's?
 
@@ -551,7 +562,7 @@ diathink.validateMVC = function () {
             "Last action cannot be lost");
         for (var i=lastaction+1; i<actions.length; ++i) {
             M.test(actions.at(i).undone === true,
-                "Action at "+i+" is after last-action, but is not undone");
+                "Action at "+i+" is after last-action "+lastaction+", but is not undone");
             M.test(actions.at(i).lost === false,
                 "Action at "+i+" is after last-action, but is lost");
         }
@@ -590,6 +601,13 @@ diathink.validateMVC = function () {
     // DOM children should match value=collection
     // check that view-parent matches nearest DOM-parent-view
     // Also check UI 'State' parameters in the view?
+
+    // todo: validate event-handlers:
+    // $('*').each(function() {if ($._data(this,'events')!==undefined)
+    //   {console.log([this.nodeName, this.id, this.className,
+    //    $._data(this,'events')]);}});
+    //  clean up and optimize events later
+    // (maybe tie event handling to priority-queueing)
 
     // todo: check html/css w3c validation?
 

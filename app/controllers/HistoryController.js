@@ -48,8 +48,8 @@ diathink.UndoController = M.Controller.extend({
     redo:function () {
         var rank = this.nextRedo();
         if (rank !== false) {
-            this.actions.at(rank).exec({redo: true});
             this.lastAction = rank;
+            this.actions.at(rank).exec({redo: true});
         }
     },
     // enable/disable undo buttons on screen

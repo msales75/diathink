@@ -108,7 +108,9 @@ diathink.MyListItem = M.ListItemView.extend({
                                 var collection = liView.parentView.value;
                                 var rank = _.indexOf(collection.models, liView.value);
                                 // if it is the last item in its collection
-                                if ((liView.value.attributes.parent)&&(rank===collection.models.length-1)) {
+                                if ((liView.parentView.parentView != null) &&
+                                    (liView.parentView.parentView.type==='M.ListItemView')&&
+                                    (rank===collection.models.length-1)) {
                                     // make it the next child of its parent
                                     diathink.OutdentAction.createAndExec({
                                         referenceID: liView.value.attributes.parent.cid,
@@ -125,7 +127,7 @@ diathink.MyListItem = M.ListItemView.extend({
                                 }
                             }
                         } else if (e.which === 13) { // enter
-                            // split line if in middle of text
+                            // todo: split line if in middle of text
                             diathink.InsertAfterAction.createAndExec({
                                 referenceID: liView.modelId,
                                 focusView: liView.rootID
