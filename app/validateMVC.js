@@ -179,11 +179,10 @@ diathink.validateMVC = function () {
                 "PageView "+v+" has a value that's not null");
             M.test(views[v].rootController === undefined,
                 "PageView "+v+" has a rootController that's not null");
+            M.test($('#'+views[v].id).parent().get(0) === $('body').get(0),
+                "Page "+v+" is not immediately inside body");
         }
     }
-    // todo: allow multiple pages at body-level?
-    M.test(numpages === 1,
-        "There are " + numpages + " views of type PageView instead of 1");
 
     for (v in views) {
         // validate childViews exist and have matching parentView
@@ -429,7 +428,7 @@ diathink.validateMVC = function () {
 
     $('ul').each(function() {
         M.test(typeof $(this).attr('id') === 'string',
-          "List does not have a string for an id");
+            "List does not have a string for an id");
         M.test($(this).attr('id').length>=3,
             "List does not have a long enough id");
         M.test($(this).hasClass('ui-listview'),
@@ -439,17 +438,17 @@ diathink.validateMVC = function () {
         M.test($(this).hasClass('ui-shadow'),
             "List "+$(this).attr('id')+" does not have class ui-shadow");
 
-        if ($(this).hasClass('ui-focus-parent')) { // }) || $(this).is(':hover')) {
-            M.test($(this).css('overflow') === 'visible',
-                "List "+$(this).attr('id')+" does not have visible overflow, though it should");
-        } else {
-            M.test($(this).css('overflow') === 'hidden',
-                "List "+$(this).attr('id')+" does not have hidden overflow, though it should");
+        if ($(this).is(':visible')) {
+            if ($(this).hasClass('ui-focus-parent') || $(this).mouseIsOver()) {
+                M.test($(this).css('overflow') === 'visible',
+                    "List "+$(this).attr('id')+" does not have visible overflow, though it should");
+            } else {
+                M.test($(this).css('overflow') === 'hidden',
+                    "List "+$(this).attr('id')+" does not have hidden overflow, though it should");
+            }
         }
-
         // check for ui-sortable class?
         // M.test($(this).hasClass('ui-sortable'))
-
     });
 
     $('.ui-li').each(function() {
@@ -521,16 +520,18 @@ diathink.validateMVC = function () {
         }
 
         // validate overflow and z-index, which can be programmatically changed
-        if ($(this).hasClass('ui-focus-parent')) { // } || $(this).is(':hover')) {
-            M.test( $(this).css('overflow') === 'visible',
-                "LI "+$(this).attr('id')+" does not have overflow visible");
-            M.test( $(this).css('z-index') === '10',
-                "LI "+$(this).attr('id')+" does not have z-index=10");
-        } else {
-            M.test( $(this).css('overflow') === 'hidden',
-                "LI "+$(this).attr('id')+" does not have overflow hidden");
-            M.test( $(this).css('z-index') === 'auto',
-                "LI "+$(this).attr('id')+" does not have z-index=auto");
+        if ($(this).is(":visible")) {
+            if ($(this).hasClass('ui-focus-parent') || $(this).mouseIsOver()) {
+                M.test( $(this).css('overflow') === 'visible',
+                    "LI "+$(this).attr('id')+" does not have overflow visible");
+                M.test( $(this).css('z-index') === '10',
+                    "LI "+$(this).attr('id')+" does not have z-index=10");
+            } else {
+                M.test( $(this).css('overflow') === 'hidden',
+                    "LI "+$(this).attr('id')+" does not have overflow hidden");
+                M.test( $(this).css('z-index') === 'auto',
+                    "LI "+$(this).attr('id')+" does not have z-index=auto");
+            }
         }
     });
 
@@ -563,8 +564,6 @@ diathink.validateMVC = function () {
         for (var i=lastaction+1; i<actions.length; ++i) {
             M.test(actions.at(i).undone === true,
                 "Action at "+i+" is after last-action "+lastaction+", but is not undone");
-            M.test(actions.at(i).lost === false,
-                "Action at "+i+" is after last-action, but is lost");
         }
     } else {
         M.test(lastaction === null,

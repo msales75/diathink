@@ -32,7 +32,7 @@ diathink.UndoController = M.Controller.extend({
     nextRedo: function() {
         if (this.actions.length===0) {return false;}
         var rank = this.lastAction;
-        while (this.actions.at(rank).undone===false) {
+        while ((this.actions.at(rank).undone===false)||(this.actions.at(rank).lost===true)) {
             ++rank;
             if (rank>=this.actions.length) {return false;}
         }

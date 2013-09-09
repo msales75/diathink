@@ -20,7 +20,7 @@
             if (that.length===0) {return that;}
         }
         return that;
-    }
+    };
 
     $.fn.parentDepth = function(n) {
         var i, that = this;
@@ -29,7 +29,11 @@
             if (that.length===0) {return that;}
         }
         return that;
-    }
+    };
+
+    $.fn.mouseIsOver = function () {
+        return $(this).parent().find($(this).selector + ":hover").length > 0;
+    };
 
 })(jQuery);
 
