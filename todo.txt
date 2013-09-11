@@ -1,21 +1,40 @@
 Next:
 ----
+OK Disable hovers
+* Disable drag-scrolling when dragging
+* Unbind when clicked on the wrong part?
+* Double-click input-box to disable scroll & text-input
+* Add a container around scroll-areas with some padding
+   (to allow 50% width calculation)
 
-* Why is action-model not showing up in relational-model list?
-(** manage action-collection with controller)
+* Todo later: move scroll-binding up to page-level and don't
 
+* Manually handle text-selection
+* Horizontal swipe overrides scrolling
+* Get cross-dropping/containers working in nestedsortable
+* Drag-to-vertical-line (view in separate page)
+* Drag-to-inbox (move to later)
+* Test for touchscreen for drag-scroll and double-click vs. single-click text-selection
 
+* Why don't arrows always highlight when dragging
+* Fix order of undo (blur) for text-edits
+* Why is validation is giving errors on overflow and z-index
+* incorporate drag-hover into the validation
+* Why is action-model not showing up in relational-model list
+* Why is Firefox losing hover-state on fast mouseovers?
 
+* Move event-handling up to page-level
+   (even nested-sortable mouse.js)
 
-* Focus on double-click
-* Horizontal paging
+* Inbox
+* Favorites
 
-* Index history by User/Time/Parent-list of affected nodes
-
+UI Enhancements:
 * Add shift-tab keyboard-command
 * Add line-split and line-merge for return/backspace
 * Up and down arrows should change lines
 * Keep drag-icon for dragged element
+* Select-text-and-drag-down causes pixel-jiggle up and down
 * Connect drop-line-hover with parent-drop-into icon & border
 * Connect drop-into-icon-hover with staggered line into target-location
 * Add docking animation for drop or revert
@@ -23,17 +42,30 @@ Next:
 * Expand/contract animation
 * Expand/contract preview for hover
 * Undo-helper animations
-* Test on mobile
 * Support multi-line text per draggable-line
+* Test on mobile
 
-* Write a functional test for a sequence of actions that test all action code branches
-* ?nestedsortable test?
 
-? Multi-line-selections
+var clickEvents = $._data($('#foo')[0], "events").click;
+jQuery.each(clickEvents, function(key, handlerObj) {
+  console.log(handlerObj.handler) // prints "function() { console.log('clicked!') }"
+})
 
- Add a second pane / dual-pages with same outline
- -- get cross-dropping/containers working in nestedsortable
- Support Focusing with breadcrumbs
+
+OK Need to monitor jQuery events, handlers, and bubbling
+OK Why is scroll is conflicting with tap?
+OK Add a second pane / dual-pages with same outline
+OK Add Home link to Breadcrumbs
+OK Make Breadcrumb link-clicks work
+OK Enable pointer over breadcrumb links
+OK why isn't there a unique initialization event for page-rendering?
+OK  Work-around with pageshow.
+OK Getting too many pageshow / disclose events
+OK How to get tap to propogate to parents?
+
+
+
+
 
 
  Local Search (store word-pointers in 512M RAM?)
@@ -50,11 +82,49 @@ Next:
 
    switching original with reference
    conversation-area with reply-references
+* References & annotations
 
+* Index history by User/Time/Parent-list of affected nodes
+* Write a functional test for a sequence of actions that test all action code branches
+* ?nestedsortable test?
+* Multi-line-selections
 
- Printing
+* Printing
 
-Reverse-references
+Import/export on phone/tablet?
+  URL, GDrive, Image, Contact, Email
+Drag/drop import/export on Desktop
+
+Code editing needs:
+  Multi-line selection/dragging
+  Large-scalable with search
+  Adjust fontsize
+  Syntax coloring
+  Indent recognition
+  Link-to-external-builder, vcs & jslint
+
+  Harder: interactive jslint
+  Proposed commits
+
+Comments/Annotations would rock;
+    link to declarations, related uses, places its changed
+
+Prioritizing?
+
+* Facebook/Google login
+* Collaborative editing
+* Share page with selected friends or post for all
+* Browse shared-pages / activity
+* Notifications
+* Chatroom with quotes, references,
+    thread-highlighting, drag/drop
+
+* Promote-to-task/tasklist
+* structured field:value's
+  (for automating constraints & updates)
+* Inline #tags (maybe)
+
+Reverse-references/annotations
 Dual-pane reverse-reference view
   children mixed with reverse-references?
 Button to turn line into template (select type, optional guess)
@@ -106,6 +176,14 @@ Chat and Facebook integration
   Open/resolved-issues, points (and ranking within issue)
     Example; generalization/idea; Ambiguity, Clarification
 
+
+OK Focus on double-click
+OK Get undo (restoreViewContext) working for all permutations of movements.
+OK: handle out-of-scope view-updates,
+OK when source and/or destination is outside outline,
+OK or context-parent is outside outline.
+OK Fix views being deleted from viewList
+
 OK Finish Raw History management
 OK Support undo for all changes
 
@@ -152,15 +230,13 @@ DONE   get changes working when calling model-object for changes.
    (images/attachments are the problem)
 
 
- Later enable ReferenceList to work as a list of references
-
- Later: UI helpers vs. actions (optimization/refactoring issue)
- Modify model too
-
 
 
 DONE Enable text-commands for new lines etc.
 
+ Later enable ReferenceList to work as a list of references
+ Later: UI helpers vs. actions (optimization/refactoring issue)
+ Modify model too
 
  Tags have a trigger-object with methods triggered by:
    outlineObject.addTrigger({

@@ -438,6 +438,9 @@ diathink.validateMVC = function () {
         M.test($(this).hasClass('ui-shadow'),
             "List "+$(this).attr('id')+" does not have class ui-shadow");
 
+        // li,ul overflow is hidden unless :hover or .ui-focus-parent
+        // ul z-index is always auto
+        // li z-index is auto unless :hover of .ui-focus-parent
         if ($(this).is(':visible')) {
             if ($(this).hasClass('ui-focus-parent') || $(this).mouseIsOver()) {
                 M.test($(this).css('overflow') === 'visible',
@@ -447,7 +450,7 @@ diathink.validateMVC = function () {
                     "List "+$(this).attr('id')+" does not have hidden overflow, though it should");
             }
         }
-        // check for ui-sortable class?
+        // todo: check for ui-sortable class for outline-roots
         // M.test($(this).hasClass('ui-sortable'))
     });
 

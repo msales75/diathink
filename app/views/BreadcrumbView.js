@@ -37,9 +37,13 @@ M.BreadcrumbView = M.View.extend(
 
         render: function() {
             this.html = '<span id="'+this.id+'"' + this.style() + '>';
-            for (i=0; i<this.value.length; ++i) {
-                // todo: secure displayed text
-                this.html += '<a data-href="'+this.value[i].cid+'">'+this.value[i].get('text')+'</a>';
+            this.html += '<a data-href="home">Home</a> &gt;&gt;';
+            if (this.value.length>0) {
+                for (i=0; i<this.value.length-1; ++i) {
+                    // todo: secure displayed text
+                    this.html += '<a data-href="'+this.value[i].cid+'">'+this.value[i].get('text')+'</a> &gt;&gt;';
+                }
+                this.html += ' <strong>'+this.value[i].get('text')+'</strong>';
             }
             this.html += '</span>';
             return this.html

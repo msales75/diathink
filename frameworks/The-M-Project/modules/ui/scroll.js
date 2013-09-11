@@ -58,6 +58,13 @@ M.ScrollView = M.View.extend(
             html += ' class="' + this.cssClass + '"';
         }
         return html;
+    },
+
+    // MS addition for scrollview from jquery-mobile splitscreen
+    theme: function() {
+      $('#' + this.id).scrollview({
+            direction: 'y'
+        });
     }
 
 });

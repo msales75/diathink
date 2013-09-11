@@ -14,6 +14,13 @@ li > div > div > a > div > .drag-handle { /* Image-handle for drag/drop */
     margin: 0px;
 }
 
+.ui-content {
+    display: block;
+    float: left;
+    height: 100%;
+    width: 50%;
+    padding: 0;
+}
 
 /* Decrease spacing for inset-list */
 .ui-content .ui-listview-inset, .ui-panel-inner .ui-listview-inset {
@@ -54,7 +61,8 @@ li.ui-li > div.ui-li {
 }
 
 .ui-btn-hover-c:hover {
-    border-color: #387bbe;
+    border-color: transparent;
+    /* border-color: #387bbe; */
 }
 
 /* Only show overflow when hovering or focused */
@@ -62,16 +70,15 @@ ul.ui-listview > li.ui-li {
     overflow: hidden;
 }
 ul.ui-listview > li.ui-li:hover {
-    z-index: 10; /* Keep bottom border visible on hover */
-    overflow: visible; /* Keep last- */
+    /* z-index: 10; *//* Keep bottom border visible on hover */
+    /* overflow: visible; *//* Keep last- */
 }
-
 ul.ui-listview  {
     overflow: hidden; /* Truncate bottom border when not focused, to
        avoid overlaying outer elements */
 }
 ul.ui-listview:hover  {
-    overflow: visible;
+    /* overflow: visible; */
 }
 
 
@@ -113,10 +120,29 @@ div.ui-input-text {
 }
 
 .ui-shadow:hover {
-    -moz-box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+/*    -moz-box-shadow: 0 1px 3px rgba(0,0,0,.2);
     -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.2);
     box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    */
 }
+
+/* (MS: If you want to disable hover entirely)
+.ui-btn-up-c, .ui-btn-up-c:hover, .ui-btn-hover-c {
+    background: #eee;
+    font-weight: bold;
+    color: #222;
+    text-shadow: 0 1px 0 #fff;
+    background-image: -webkit-gradient(linear,left top,left bottom,from( #fff ),to( #f1f1f1 ));
+    background-image: -webkit-linear-gradient( #fff,#f1f1f1 );
+    background-image: -moz-linear-gradient( #fff,#f1f1f1 );
+    background-image: -ms-linear-gradient( #fff,#f1f1f1 );
+    background-image: -o-linear-gradient( #fff,#f1f1f1 );
+    background-image: linear-gradient( #fff,#f1f1f1 );
+}
+*/
 
 .ui-btn-up-c { /* around list-element */
     border-color: transparent;
@@ -137,9 +163,13 @@ div.ui-input-text {
 
 /* This hover overriding input outline on focus*/
 .ui-shadow-inset:hover {
-    -moz-box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
+    -moz-box-shadow:none;
+    -webkit-box-shadow:none;
+    box-shadow:none;
+/*    -moz-box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
     -webkit-box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
     box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
+    */
 }
 
 .ui-focus, .ui-focus:hover /* For increasing priority over other input-box hovers */
@@ -268,4 +298,14 @@ div.ui-input-text input.ui-input-text {
     height: 100%;
     border-radius: inherit;
     -webkit-border-radius: inherit;
+}
+
+.ui-breadcrumb a {
+    cursor: pointer;
+}
+
+/* Attempt to Eliminate pixel-jitter when selecting? */
+a:active, a:focus {
+    outline-style: none;
+    -moz-outline-style:none;
 }
