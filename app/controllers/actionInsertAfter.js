@@ -21,6 +21,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         var o, i;
         _.extend(this.options, options);
         o = this.options;
+
         this.timestamp = (new Date()).getTime();
 
         this.undone = false;
@@ -343,8 +344,17 @@ diathink.Action = Backbone.RelationalModel.extend({
         var action = new this(options);
         action.exec();
         return action;
+    },
+    checkTextChange:function(id) {
+        var value = $('#'+id).val();
+        var model = M.ViewManager.findViewById(id).parentView.parentView.value;
+        if (model.get('text') !== value) {
+            diathink.TextAction.createAndExec({
+                targetID: model.cid,
+                text: $('#'+id).val()
+            });
+        }
     }
-
     /*
      Action execution in different contexts
 

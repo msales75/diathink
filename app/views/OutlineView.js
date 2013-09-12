@@ -44,7 +44,7 @@ diathink.MyListItem = M.ListItemView.extend({
         childViews:'handle name',
         handle:M.ImageView.extend({
             value:'theme/images/drag_icon.png',
-            cssClass:'drag-handle disclose'
+            cssClass:'drag-handle disclose ui-disable-scroll'
         }),
         name:M.TextFieldView.extend({
             valuePattern:'<%= text %>',
@@ -57,14 +57,7 @@ diathink.MyListItem = M.ListItemView.extend({
                 },
                 blur: { // update model with action
                     action:function(id, e) {
-                        var value = $('#'+id).val();
-                        var model = M.ViewManager.findViewById(id).parentView.parentView.value;
-                        if (model.get('text') !== value) {
-                            diathink.TextAction.createAndExec({
-                                targetID: model.cid,
-                                text: $('#'+id).val()
-                            });
-                        }
+                        diathink.Action.checkTextChange(id);
                     }
                 },
                 keydown:{
@@ -80,6 +73,7 @@ diathink.MyListItem = M.ListItemView.extend({
                                 // validate rank >=0
                                 if (rank>0) { // indent the line
                                     // make it the last child of its previous sibling
+                                    diathink.Action.checkTextChange(id);
                                     diathink.MoveIntoAction.createAndExec({
                                         referenceID: collection.models[rank-1].cid,
                                         targetID: liView.modelId,
@@ -94,6 +88,7 @@ diathink.MyListItem = M.ListItemView.extend({
                             // validate rank >=0
                             if (rank>0) { // indent the line
                                 // make it the last child of its previous sibling
+                                diathink.Action.checkTextChange(id);
                                 diathink.MoveIntoAction.createAndExec({
                                     referenceID: collection.models[rank-1].cid,
                                     targetID: liView.modelId,
@@ -112,6 +107,7 @@ diathink.MyListItem = M.ListItemView.extend({
                                     (liView.parentView.parentView.type==='M.ListItemView')&&
                                     (rank===collection.models.length-1)) {
                                     // make it the next child of its parent
+                                    diathink.Action.checkTextChange(id);
                                     diathink.OutdentAction.createAndExec({
                                         referenceID: liView.value.attributes.parent.cid,
                                         targetID: liView.modelId,
@@ -120,6 +116,7 @@ diathink.MyListItem = M.ListItemView.extend({
                                     e.preventDefault();
                                 } else { // delete or merge-lines?
                                     if ($('#'+id).val() === "") {
+                                        diathink.Action.checkTextChange(id);
                                         diathink.DeleteAction.createAndExec({
                                             targetID: liView.modelId
                                         });
@@ -128,6 +125,7 @@ diathink.MyListItem = M.ListItemView.extend({
                             }
                         } else if (e.which === 13) { // enter
                             // todo: split line if in middle of text
+                            diathink.Action.checkTextChange(id);
                             diathink.InsertAfterAction.createAndExec({
                                 referenceID: liView.modelId,
                                 focusView: liView.rootID

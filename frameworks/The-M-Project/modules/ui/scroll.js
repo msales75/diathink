@@ -63,8 +63,10 @@ M.ScrollView = M.View.extend(
     // MS addition for scrollview from jquery-mobile splitscreen
     theme: function() {
       $('#' + this.id).scrollview({
-            direction: 'y'
-        });
+            direction: 'y',
+            delayedClickEnabled: false
+            // MS - prevents double-handling of tap when using bubbling/delegated
+      });
     }
 
 });

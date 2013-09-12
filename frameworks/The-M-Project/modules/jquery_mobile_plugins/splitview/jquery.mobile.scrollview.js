@@ -281,6 +281,15 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 		$.each(this._getScrollHierarchy(),function(i,sv){ sv._stopMScroll(); });
 		this._stopMScroll();
 
+        // MS - check if this is an excluded zone, where other functionality takes precedence
+        // todo: we might not need this if we had better event-delegation
+        if ($(e.target).hasClass('ui-disable-scroll')) {return;}
+        var disabled=false;
+        $(e.target).parents().each(function() {
+            if ($(this).hasClass('ui-disable-scroll')) {disabled=true;}
+        });
+        if (disabled) {return;}
+
 		var c = this._$clip;
 		var v = this._$view;
 
@@ -340,7 +349,7 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 
 		if (this.options.eventType == "mouse" || this.options.delayedClickEnabled)
 			e.preventDefault();
-		    e.stopPropagation(); // MS edit to enable propogation of mousedown events
+		    // e.stopPropagation(); // MS edit to enable propogation of mousedown events
 	},
 
 	_propagateDragMove: function(sv, e, ex, ey, dir)

@@ -140,18 +140,31 @@ diathink.app.createPage = function(pageName, root) {
                                 $(that).addClass('ui-focus-parent');
                             }
                         });
-                        $('#'+id).on('tap', function (e) {
-                            var that = e.target;
-                            if (! $(that).hasClass('disclose')) {return;}
+                        $('#'+id).on('tap', '.disclose', function (e) {
                             var now = (new Date()).getTime();
-                            if ($(that).data('lastClicked') && ($(that).data('lastClicked') > now - 500)) {
+                            if ($(this).data('lastClicked') && ($(this).data('lastClicked') > now - 500)) {
                                 // process double-click
-                                diathink.mainOutline.focusObject($(that).closest('li.ui-li').attr('id'));
+                                diathink.mainOutline.focusObject($(this).closest('li.ui-li').attr('id'));
                             } else { // single-click
-                                $(that).data('lastClicked', (new Date()).getTime());
-                                $(that).closest('li').toggleClass('expanded').toggleClass('collapsed');
+                                $(this).data('lastClicked', (new Date()).getTime());
+                                $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');
                             }
                         });
+                    $('#'+id).on('tap', 'input', function (e) {
+                        var now = (new Date()).getTime();
+                        // console.log("Processing tap on page "+id+" with now = "+now+", input:");
+                        console.log(this);
+                        if ($(this).data('lastClicked') && ($(this).data('lastClicked') > now - 500)) {
+                            $(this).data('lastClicked', null);
+                            // process double-click
+                            // console.log("Focusing from double-tap with now = "+now);
+                            $(this).focus();
+                            // alert("Processing double-click - disable scrolling");
+                        } else { // single-click
+                            // console.log("Setting lastclicked to now = "+now);
+                            $(this).data('lastClicked', now);
+                        }
+                    });
                     diathink.UndoController.refreshButtons();
                 }
             }
@@ -217,12 +230,6 @@ diathink.app.createPage = function(pageName, root) {
             }),
 
             alist:M.ListView.design({
-                events:{
-                    tap:{
-                        target:controller,
-                        action:'parentObjectClicked'
-                    }
-                },
                 isInset:'YES',
                 rootController: controller,
                 listItemTemplateView:diathink.MyListItem,
@@ -260,12 +267,6 @@ diathink.app.createPage = function(pageName, root) {
             }),
 
             alist2:M.ListView.design({
-                events:{
-                    tap:{
-                        target:controller2,
-                        action:'parentObjectClicked'
-                    }
-                },
                 isInset:'YES',
                 rootController: controller2,
                 listItemTemplateView:diathink.MyListItem,

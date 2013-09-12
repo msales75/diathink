@@ -20,6 +20,10 @@ li > div > div > a > div > .drag-handle { /* Image-handle for drag/drop */
     height: 100%;
     width: 50%;
     padding: 0;
+    cursor: pointer; cursor: hand;
+}
+.ui-content input {
+    cursor: pointer; cursor: hand;
 }
 
 /* Decrease spacing for inset-list */
@@ -29,7 +33,7 @@ li > div > div > a > div > .drag-handle { /* Image-handle for drag/drop */
 
 /* Indentation of input-box */
 li.ui-li > div > div > a > div > div {
-   cursor: text;
+   /* cursor: text; */ /* MS: only for non-mobile */
    margin-left: 30px;
 }
 
@@ -300,7 +304,7 @@ div.ui-input-text input.ui-input-text {
     -webkit-border-radius: inherit;
 }
 
-.ui-breadcrumb a {
+.ui-content .ui-breadcrumb a {
     cursor: pointer;
 }
 

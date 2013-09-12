@@ -2869,7 +2869,7 @@ function triggerVirtualEvent( eventType, event, flags ) {
 
 	return ve;
 }
-
+// MS called on mouseup
 function mouseEventCallback( event ) {
 	var touchID = $.data( event.target, touchTargetPropertyName );
 
@@ -3273,6 +3273,7 @@ if ( eventCaptureSupported ) {
 					origEvent = event.originalEvent,
 					timer;
 
+                // MS: page-level vmouseup handler
 				function clearTapTimer() {
 					clearTimeout( timer );
 				}
@@ -5826,6 +5827,7 @@ function updateButtonClass( $btn, classToRemove, classToAdd, hover, state ) {
 var attachEvents = function() {
 	var hoverDelay = $.mobile.buttonMarkup.hoverDelay, hov, foc;
 
+    // MS - vmouseup bound to document
 	$.mobile.document.bind( {
 		"vmousedown vmousecancel vmouseup vmouseover vmouseout focus blur scrollstart": function( event ) {
 			var theme,

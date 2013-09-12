@@ -1,16 +1,24 @@
+
 Next:
 ----
+(event.type != 'mouseover')&&(event.type!='vmouseover')&&(event.type!='mouseout')&&(event.type!='vmouseout')&&(event.type!='resize')&&(event.type!='throttledresize')&&(event.type!='mousemove')&&(event.type!='vmousemove')&&(event.type!='mousedown')&&(event.type!='vmousedown')
 OK Disable hovers
-* Disable drag-scrolling when dragging
-* Unbind when clicked on the wrong part?
-* Double-click input-box to disable scroll & text-input
+OK Disable drag-scrolling when dragging
+OK Change cursor to hand for dragging
+OK Double-click input-box for text-input
+OK Why is ui-focus is sticking when text is entered
+OK Edit event getting fired at blur/change, in middle of create-event.
+
+Disable scroll temporarily on double-click
+  * Unbind when clicked on the wrong part?
 * Add a container around scroll-areas with some padding
    (to allow 50% width calculation)
-
-* Todo later: move scroll-binding up to page-level and don't
-
 * Manually handle text-selection
 * Horizontal swipe overrides scrolling
+
+* Add in check that disallows two actions running concurrently
+   (like with blur event)
+
 * Get cross-dropping/containers working in nestedsortable
 * Drag-to-vertical-line (view in separate page)
 * Drag-to-inbox (move to later)
@@ -52,20 +60,10 @@ jQuery.each(clickEvents, function(key, handlerObj) {
 })
 
 
-OK Need to monitor jQuery events, handlers, and bubbling
-OK Why is scroll is conflicting with tap?
-OK Add a second pane / dual-pages with same outline
-OK Add Home link to Breadcrumbs
-OK Make Breadcrumb link-clicks work
-OK Enable pointer over breadcrumb links
-OK why isn't there a unique initialization event for page-rendering?
-OK  Work-around with pageshow.
-OK Getting too many pageshow / disclose events
-OK How to get tap to propogate to parents?
 
 
 
-
+* Todo later: move scroll-binding up to page-level and delegate events manually
 
 
  Local Search (store word-pointers in 512M RAM?)
@@ -90,6 +88,8 @@ OK How to get tap to propogate to parents?
 * Multi-line-selections
 
 * Printing
+
+? Later? Add in check that disallows a tap leading to another tap?
 
 Import/export on phone/tablet?
   URL, GDrive, Image, Contact, Email
@@ -176,6 +176,18 @@ Chat and Facebook integration
   Open/resolved-issues, points (and ranking within issue)
     Example; generalization/idea; Ambiguity, Clarification
 
+
+
+OK Need to monitor jQuery events, handlers, and bubbling
+OK Why is scroll is conflicting with tap?
+OK Add a second pane / dual-pages with same outline
+OK Add Home link to Breadcrumbs
+OK Make Breadcrumb link-clicks work
+OK Enable pointer over breadcrumb links
+OK why isn't there a unique initialization event for page-rendering?
+OK  Work-around with pageshow.
+OK Getting too many pageshow / disclose events
+OK How to get tap to propogate to parents?
 
 OK Focus on double-click
 OK Get undo (restoreViewContext) working for all permutations of movements.
