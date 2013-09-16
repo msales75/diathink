@@ -283,10 +283,10 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 
         // MS - check if this is an excluded zone, where other functionality takes precedence
         // todo: we might not need this if we had better event-delegation
-        if ($(e.target).hasClass('ui-disable-scroll')) {return;}
+        if ($(e.target).hasClass('ui-focus') || $(e.target).hasClass('ui-disable-scroll')) {return;}
         var disabled=false;
         $(e.target).parents().each(function() {
-            if ($(this).hasClass('ui-disable-scroll')) {disabled=true;}
+            if ($(this).hasClass('ui-focus') || $(this).hasClass('ui-disable-scroll')) {disabled=true;}
         });
         if (disabled) {return;}
 

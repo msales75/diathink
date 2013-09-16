@@ -214,13 +214,6 @@ M.ListView = M.View.extend(
     */
     rootController: null,
 
-    design: function(obj) {
-        var view = M.View.design.call(this, obj); // usual view-design
-        if (view.rootController) { // bind with outline-controller
-            view.rootController.bindView(view);
-        }
-        return view;
-    },
     /**
      * This method renders the empty list view either as an ordered or as an unordered list. It also applies
      * some styling, if the corresponding properties where set.
@@ -301,6 +294,23 @@ M.ListView = M.View.extend(
         });
         $('#' + this.id).empty();
     },
+
+        // MS -- override destroy to remove child-list-items
+        destroy: function() {
+            if(this.id && $('#' + this.id)) {
+                this.removeAllItems(); // MS modification to destroy()
+                var childViews = this.getChildViewsAsArray();
+                for(var i in childViews) {
+                    if(this[childViews[i]]) {
+                        this[childViews[i]].destroy();
+                    }
+                }
+                M.EventDispatcher.unregisterEvents(this);
+                M.ViewManager.unregister(this);
+                $('#' + this.id).remove();
+            }
+            delete this;
+        },
 
     /**
      * Updates the the list view by re-rendering all of its child views, respectively its item views. There

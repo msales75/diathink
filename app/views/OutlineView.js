@@ -1,16 +1,8 @@
 
 diathink.RecurseListTemplate = M.ListView.extend({
-    isTemplate: true,
+    /* isTemplate: true, */
     isInset:'YES',
     listItemTemplateView:null,
-    /*
-     events: {
-     tap: {
-     target: diathink.dummyController,
-     action: 'dummyListClicked'
-     }
-     },
-     */
     contentBinding:{
         target:diathink.dummyController,
         property:'listObject'
@@ -20,25 +12,11 @@ diathink.RecurseListTemplate = M.ListView.extend({
 });
 
 diathink.MyListItem = M.ListItemView.extend({
-    isTemplate: true,
+    /* isTemplate: true, */
     childViews:'header children',
     hasSingleAction:'NO',
     isSelectable:'NO',
     modelType: diathink.OutlineNodeModel,
-
-    /* events: {
-     tap: {
-     target: diathink.OutlineController,
-     action: 'listObjectClicked'
-     }}, */
-/*    topline:M.ContainerView.extend({
-        cssClass: 'topline',
-        childViews: 'dashline',
-        dashline:M.ContainerView.extend({
-            cssClass: 'dashline'
-        })
-    }),
-*/
     header:M.ContainerView.extend({
         cssClass:'outline-header',
         childViews:'handle name',
@@ -49,12 +27,6 @@ diathink.MyListItem = M.ListItemView.extend({
         name:M.TextFieldView.extend({
             valuePattern:'<%= text %>',
             events:{
-                enter:{
-                    action:function (id, e) {
-                        // console.log("Enter clicked on object with id "+id);
-                        // console.log(e);
-                    }
-                },
                 blur: { // update model with action
                     action:function(id, e) {
                         diathink.Action.checkTextChange(id);
@@ -130,6 +102,8 @@ diathink.MyListItem = M.ListItemView.extend({
                                 referenceID: liView.modelId,
                                 focusView: liView.rootID
                             });
+                            var scrollid = $('#'+id).closest('.ui-scrollview-clip').attr('id');
+                            M.ViewManager.findViewById(scrollid).themeUpdate();
                         }
                         e.stopPropagation();
                         console.log("Processed keyup with which=" + e.which + " and keycode=" + e.keyCode);
@@ -141,17 +115,6 @@ diathink.MyListItem = M.ListItemView.extend({
     }),
 
     children: diathink.RecurseListTemplate
-
-    /*
-    bottomline: M.ContainerView.extend({
-        cssClass: 'bottomline',
-        childViews: 'dashline',
-        dashline:M.ContainerView.extend({
-            cssClass: 'dashline'
-        })
-    })
-    */
-
 });
 
 diathink.RecurseListTemplate.listItemTemplateView = diathink.MyListItem;

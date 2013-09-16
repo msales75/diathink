@@ -96,3 +96,9 @@ jQuery.fn.parentDepth = function(n) {
         return that;
 };
 
+// correct height of scrollview on resize
+$(window).resize(function() {
+    $('.scroll-container').height(
+        Math.round($('.ui-footer').offset().top -
+            $('.scroll-container').offset().top)-5);
+});

@@ -213,8 +213,8 @@ diathink.Action = Backbone.RelationalModel.extend({
         }
 
         if (context === null) { // undo creation
-            this.getModel(this.options.targetID).clearView(outline.rootID);
             if (target != null) {target.destroy();}
+              // destroy() also detaches view-reference from model
         } else { // undo-move/edit
             // get views corresponding to context
             if (target == null) {
@@ -447,8 +447,10 @@ diathink.TextAction= diathink.Action.extend({
     },
     execView:function (outline, focus) {
         var target = this.getView(this.options.targetID, outline.rootID);
-        target.header.name.value = this.options.text;
-        $('#'+target.id+' > div > div > a > div > div > input').val(this.options.text);
+        if (target != null) {
+            target.header.name.value = this.options.text;
+            $('#'+target.id+' > div > div > a > div > div > input').val(this.options.text);
+        }
     },
     undoModel: function () {
         var target = this.getModel(this.options.targetID);
@@ -456,7 +458,9 @@ diathink.TextAction= diathink.Action.extend({
     },
     undoView:function (outline, focus) {
         var target = this.getView(this.options.targetID, outline.rootID);
-        target.header.name.value = this.oldText;
-        $('#'+target.id+' > div > div > a > div > div > input').val(this.oldText);
+        if (target != null) {
+            target.header.name.value = this.oldText;
+            $('#'+target.id+' > div > div > a > div > div > input').val(this.oldText);
+        }
     }
 });

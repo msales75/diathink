@@ -464,7 +464,7 @@
         var list = $( this ),
             list2view = list.data( "mobile-list2view" );
 
-        if ( !list2view.options.filter ) {
+        if ( !list2view || !list2view.options.filter ) {
             return;
         }
 

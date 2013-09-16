@@ -7,7 +7,12 @@ diathink.OutlineManager = M.Object.extend({
     outlines: {},
     add: function(id, controller) {
         this.outlines[id] = controller;
+    },
+    remove: function(id) {
+        this.outlines[id].destroy();
+        delete this.outlines[id];
     }
+
 });
 
 diathink.OutlineController = M.Controller.extend({
@@ -18,30 +23,15 @@ diathink.OutlineController = M.Controller.extend({
         view.setRootID();
         diathink.OutlineManager.add(this.rootID, this);
     },
-    remove: function(view) {
-        // TODO
+    destroy: function() {
+        var i, v, view, models;
+        view = M.ViewManager.getViewById(this.rootID);
+        models = view.value.models;
+        for (i=0; i<models.length; ++i) {
+            models[i].views[this.rootID].destroy();
+        }
     },
-    listObject:[],
-    listObjectClicked:function (id, nameId) {
-        console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
-    },
-    parentObjectClicked:function (id, nameId) {
-        console.log('You clicked on the overall list with the DOM id: ', id, 'and has the name', nameId);
-    },
-    init:function () { // map DOM-id's to parts of the outline
-
-    },
-
-    focusObject:function(id) {
-        var view = M.ViewManager.getViewById(id);
-        var model = view.value;
-        diathink.app.createPage("page_"+model.cid, model);
-        this.switchToPage("page_"+model.cid);
-        // alert('Focusing on model '+model.cid);
-        // new outline object has a new root - make a completely new outline?
-        // make a new mobile-page
-
-    }
+    listObject:[]
 });
 
 diathink.dummyController = M.Controller.extend({

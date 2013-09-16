@@ -190,6 +190,26 @@ M.ListItemView = M.View.extend(
         }
     },
 
+        // MS -- override destroy to remove view from model-outline
+        destroy: function() {
+            if(this.id && $('#' + this.id)) {
+                // MS modification to clear views from associated model
+                if (this.value && this.rootID) {
+                    this.value.clearView(this.rootID);
+                }
+                var childViews = this.getChildViewsAsArray();
+                for(var i in childViews) {
+                    if(this[childViews[i]]) {
+                        this[childViews[i]].destroy();
+                    }
+                }
+                M.EventDispatcher.unregisterEvents(this);
+                M.ViewManager.unregister(this);
+                $('#' + this.id).remove();
+            }
+            delete this;
+        },
+
     /**
      * This method is responsible for registering events for view elements and its child views. It
      * basically passes the view's event-property to M.EventDispatcher to bind the appropriate

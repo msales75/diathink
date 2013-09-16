@@ -29,11 +29,11 @@ diathink.validateMVC = function () {
             "Outline " + o + " points to a view with an invalid rootID");
         M.test(views[o].id === o,
             "Outline " + o + " points to a view with an invalid id");
-        M.test(typeof views[o].rootController === 'object',
+        M.test(typeof views[o].contentBinding.target === 'object',
             "Outline "+o+" points to a view without a rootController");
-        M.test(views[o].rootController.type === 'diathink.OutlineController',
+        M.test(views[o].contentBinding.target.type === 'diathink.OutlineController',
             "Outline "+o+" points to a view without a rootController of the right type");
-        M.test(views[o].rootController.rootID === o,
+        M.test(views[o].contentBinding.target.rootID === o,
             "Outline "+o+" points to a view with a rootController with the wrong rootID");
         M.test(views[o].childViews === null,
             "Outline "+o+" points to a view with childViews");

@@ -134,6 +134,8 @@ M.GridView = M.View.extend(
                         this.html += this[arr[i]].render();
 
                         this.html += '</div>';
+                        // MS change GridView to fix parentView bug
+                        this[arr[i]].parentView = this;
                     }
                 }
             } else {

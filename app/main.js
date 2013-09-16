@@ -32,89 +32,17 @@ diathink.app = M.Application.design({
 diathink.app.createPage = function(pageName, root) {
     // get breadcrumbs, parent-collection
     // todo: later: do we preserve expand/contract status? maybe not.
-    var crumb, collection, breadcrumbs = [];
-    if (root === null) {
-        collection = diathink.data;
-    } else {
-        collection = root.get('children');
-        crumb = root;
-        while (crumb != null) {
-            breadcrumbs.unshift(crumb);
-            crumb = crumb.get('parent');
-        }
-        root.get('parent');
-    }
-    var controller = diathink.OutlineController.extend({});
-    var controller2 = diathink.OutlineController.extend({});
-    // controller.rootID = root.id;
-
-    function breadcrumbEvents(breadcrumbs) {
-        // todo, move event-bindings to page or body?
-        $(this).children('a').bind('click',function() {
-            var cid = $(this).attr('data-href');
-            var model = diathink.OutlineNodeManager.getById(cid);
-            diathink.app.createPage('page_'+cid, model);
-        });
-
-    };
+    var pageShown = 0;
 
     diathink.app.pages[pageName] = M.PageView.design({
-        childViews:'header content content2 footer droplayer',
+        childViews:'header content footer droplayer',
         events:{
             pageshow:{
                 action:function () {
                     // todo: here, set the outline-controller to correct collection
-                        if (controller.get('listObject').length>0) {return;} // first-call
-                        var id = M.ViewManager.getPage(pageName).id;
-
-                        controller.set('listObject', collection);
-                        controller2.set('listObject', collection);
-
-                        $('#' + M.ViewManager.getView(pageName, 'alist').id).
-                            add('#' + M.ViewManager.getView(pageName, 'alist2').id).nestedSortable({
-                            listType:'ul',
-                            items:'li',
-                            doNotClear:true,
-                            isTree:true,
-                            branchClass:'branch',
-                            leafClass:'leaf',
-                            collapsedClass:'collapsed',
-                            expandedClass:'expanded',
-                            hoveringClass:'sort-hover',
-                            errorClass: 'sort-error',
-                            handle:'> div > div > a > div > .drag-handle',
-                            buryDepth:3,
-                            scroll:false,
-                            dropLayer: $('.droplayer'),
-                            start: function(e, hash) {
-                                hash.item.parents('li').each(function() {
-                                    $(this).addClass('drag-hover');
-                                });
-                                hash.item.parents('ul').each(function() {
-                                    $(this).addClass('drag-hover');
-                                });
-
-                                // hash.item.css('border','solid 1px orange');
-                            },
-                            stop:function (e, hash) { // (could also try 'change' or 'sort' event)
-                                if (hash.item.parents('ul').length > 0) {
-                                    M.ViewManager.getViewById($(hash.item.parents('ul').get(0)).attr('id')).themeUpdate();
-                                    M.ViewManager.getViewById($(hash.originalDOM.parent).attr('id')).themeUpdate();
-                                }
-                                var toplines = $('.topline:hover');
-                                var bottomlines = $('.bottomline:hover');
-                                if (toplines.length>0) {
-                                    console.log("Moving above element "+toplines.parents("li:first").attr('id'));
-                                } else if (bottomlines.length>0) {
-                                    console.log("Moving below element "+bottomlines.parents("li:first").attr('id'));
-                                }
-                                $('.drag-hover').removeClass('drag-hover');
-                                // hash.item.css('border','');
-                                console.log("Processed change to structure");
-                            },
-                            // handle: '> div > div > a > div > .handle',
-                            toleranceElement:'> div > div > a > div.outline-header'
-                        });
+                    var id = M.ViewManager.getPage(pageName).id;
+                    if (pageShown>0) {return;} // first-call
+                    ++pageShown;
 
                         $('#'+id).on('focusin focusout', function(e) {
                             // does this have performance issues?
@@ -142,29 +70,47 @@ diathink.app.createPage = function(pageName, root) {
                         });
                         $('#'+id).on('tap', '.disclose', function (e) {
                             var now = (new Date()).getTime();
+                            $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
                             if ($(this).data('lastClicked') && ($(this).data('lastClicked') > now - 500)) {
                                 // process double-click
-                                diathink.mainOutline.focusObject($(this).closest('li.ui-li').attr('id'));
+                                $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');
+                                var li= M.ViewManager.getViewById($(this).closest('li.ui-li').attr('id'));
+                                var rootID = li.rootID;
+                                var rootView = M.ViewManager.getViewById(rootID);
+                                var panelView = rootView.parentView.parentView;
+                                panelView.changeRoot(li.value);
                             } else { // single-click
                                 $(this).data('lastClicked', (new Date()).getTime());
                                 $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');
                             }
                         });
                     $('#'+id).on('tap', 'input', function (e) {
-                        var now = (new Date()).getTime();
+                        $(this).focus();
+                        // var now = (new Date()).getTime();
                         // console.log("Processing tap on page "+id+" with now = "+now+", input:");
-                        console.log(this);
-                        if ($(this).data('lastClicked') && ($(this).data('lastClicked') > now - 500)) {
-                            $(this).data('lastClicked', null);
-                            // process double-click
-                            // console.log("Focusing from double-tap with now = "+now);
-                            $(this).focus();
-                            // alert("Processing double-click - disable scrolling");
-                        } else { // single-click
-                            // console.log("Setting lastclicked to now = "+now);
-                            $(this).data('lastClicked', now);
-                        }
+                         // console.log(this);
+                        // if ($(this).data('lastClicked') && ($(this).data('lastClicked') > now - 500)) {
+                            // $(this).data('lastClicked', null);
+                             // process double-click
+                             // console.log("Focusing from double-tap with now = "+now);
+                             // $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
+                             // $(this).addClass('ui-disable-scroll');
+                             // alert("Processing double-click - disable scrolling");
+                        // } else { // single-click
+                             // console.log("Setting lastclicked to now = "+now);
+                            // $(this).data('lastClicked', now);
+                        // }
                     });
+                    $('#'+id).on('tap', '.ui-breadcrumb-link', function(e) {
+                            var modelid= $(this).attr('data-href');
+                            var panelview = M.ViewManager.getViewById($(this).parent().attr('id')).parentView;
+                            if (modelid==='home') {
+                                panelview.changeRoot(null);
+                            } else {
+                                panelview.changeRoot(diathink.OutlineNodeModel.getById(modelid));
+                            }
+                    });
+                    $(window).resize();
                     diathink.UndoController.refreshButtons();
                 }
             }
@@ -205,77 +151,15 @@ diathink.app.createPage = function(pageName, root) {
             })
         }),
 
-        content:M.ScrollView.design({
-            childViews:'label alist',
-
-            label:M.BreadcrumbView.design({
-                value: breadcrumbs,
-                events: {
-                    tap: {
-                        action: function(id, e) {
-                            var el = e.target;
-                             if (el.nodeName.toLowerCase()==='a') {
-                                var pageid = $(el).attr('data-href');
-                                 if (pageid==='home') {
-                                     M.Controller.switchToPage('page1');
-                                 } else if (diathink.app.pages['page_'+pageid] != null) {
-                                     M.Controller.switchToPage('page_'+pageid);
-                                 } else { // todo: create new page
-
-                                 }
-                             }
-                        }
-                    }
-                }
+        content:M.GridView.design({
+            cssClass: "scroll-container",
+            childViews: "scroll1 scroll2",
+            layout: M.TWO_COLUMNS,
+            scroll1:diathink.PanelOutlineView.design({
+                rootModel: root
             }),
-
-            alist:M.ListView.design({
-                isInset:'YES',
-                rootController: controller,
-                listItemTemplateView:diathink.MyListItem,
-                contentBinding:{
-                    target:controller,
-                    property:'listObject'
-                },
-                idName:'cid', // For Backbone.Model compatibility
-                items: 'models' // For Backbone.Model compatibility
-            })
-        }),
-
-        content2:M.ScrollView.design({
-            childViews:'label2 alist2',
-
-            label2:M.BreadcrumbView.design({
-                value: breadcrumbs,
-                events: {
-                    tap: {
-                        action: function(id, e) {
-                            var el = e.target;
-                            if (el.nodeName.toLowerCase()==='a') {
-                                var pageid = $(el).attr('data-href');
-                                if (pageid==='home') {
-                                    M.Controller.switchToPage('page1');
-                                } else if (diathink.app.pages['page_'+pageid] != null) {
-                                    M.Controller.switchToPage('page_'+pageid);
-                                } else { // todo: create new page
-
-                                }
-                            }
-                        }
-                    }
-                }
-            }),
-
-            alist2:M.ListView.design({
-                isInset:'YES',
-                rootController: controller2,
-                listItemTemplateView:diathink.MyListItem,
-                contentBinding:{
-                    target:controller2,
-                    property:'listObject'
-                },
-                idName:'cid', // For Backbone.Model compatibility
-                items: 'models' // For Backbone.Model compatibility
+            scroll2:diathink.PanelOutlineView.design({
+                rootModel: root
             })
         }),
 
@@ -289,7 +173,7 @@ diathink.app.createPage = function(pageName, root) {
         })
     });
 
-    diathink.app.pages[pageName].render();
+    // diathink.app.pages[pageName].render();
 
 };
 

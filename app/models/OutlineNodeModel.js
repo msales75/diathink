@@ -71,7 +71,7 @@ diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
     },
 
     clearView: function(key) {
-        if (typeof this.views !== 'object') {
+        if ((this.views == null) || (typeof this.views !== 'object')) {
             this.views = {};
         }
         delete this.views[key];

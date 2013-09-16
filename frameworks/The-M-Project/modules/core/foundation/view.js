@@ -237,10 +237,23 @@ M.View = M.Object.extend(
         var view = this.extend(obj);
         view.id = M.ViewManager.getNextId();
         M.ViewManager.register(view);
+        view.onDesign();
+        if (this.isTemplate) {
+            // design children too
+            var childViews = view.getChildViewsAsArray();
+            for(var i in childViews) {
+                view[childViews[i]].isTemplate = true;
+                view[childViews[i]].parentView = view;
+                view[childViews[i]] = view[childViews[i]].design({});
+            }
+        }
 
         view.attachToObservable();
 
         return view;
+    },
+    onDesign: function() {
+        // place-holder function for any instantiation
     },
 
      /**

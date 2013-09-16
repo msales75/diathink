@@ -19,7 +19,7 @@
  * @extends M.View
  */
 M.BreadcrumbView = M.View.extend(
-    /** @scope M.ButtonView.prototype */ {
+    /** @scope M.BreadcrumbView.prototype */ {
 
         /**
          * The type of this object.
@@ -79,6 +79,7 @@ M.BreadcrumbView = M.View.extend(
             /* theme only if not already done */
             if(!$('#' + this.id).hasClass('ui-breadcrumb')) {
                 $('#'+this.id).addClass('ui-breadcrumb');
+                $('#'+this.id).children('a').addClass('ui-breadcrumb-link').addClass('ui-link');
             }
         },
 

@@ -16,9 +16,9 @@ li > div > div > a > div > .drag-handle { /* Image-handle for drag/drop */
 
 .ui-content {
     display: block;
+/*    height: 100%;
     float: left;
-    height: 100%;
-    width: 50%;
+    width: 50%; */
     padding: 0;
     cursor: pointer; cursor: hand;
 }
@@ -35,6 +35,9 @@ li > div > div > a > div > .drag-handle { /* Image-handle for drag/drop */
 li.ui-li > div > div > a > div > div {
    /* cursor: text; */ /* MS: only for non-mobile */
    margin-left: 30px;
+}
+li.ui-li > div > div > a > div > div.ui-focus > input {
+    cursor: text;
 }
 
 .drag-handle:hover {
@@ -304,7 +307,7 @@ div.ui-input-text input.ui-input-text {
     -webkit-border-radius: inherit;
 }
 
-.ui-content .ui-breadcrumb a {
+.ui-breadcrumb > a.ui-breadcrumb-link {
     cursor: pointer;
 }
 
@@ -312,4 +315,16 @@ div.ui-input-text input.ui-input-text {
 a:active, a:focus {
     outline-style: none;
     -moz-outline-style:none;
+}
+
+.scroll-container {
+    margin: 10px 20px;
+}
+
+.ui-grid-a > div, .ui-grid-a > div > div {
+    height: 100%;
+}
+
+.ui-scrollview-clip {
+
 }

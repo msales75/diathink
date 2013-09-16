@@ -67,6 +67,14 @@ M.ScrollView = M.View.extend(
             delayedClickEnabled: false
             // MS - prevents double-handling of tap when using bubbling/delegated
       });
+      this.themeChildViews(); // MS fix to avoid list2view bug
+    },
+
+    themeUpdate: function() {
+        // todo: call after changing height of content?
+        var scrolltop = $('#' + this.id).children('.ui-scrollview-view').position().top;
+        $('#' + this.id).scrollTop(0);
+        $('#'+this.id).scrollview('scrollTo', 0, scrolltop);
     }
 
 });
