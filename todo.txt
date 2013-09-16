@@ -8,24 +8,7 @@ OK Try two-column grid for defining view-area
 OK Fix bug with header
 OK Fix height of scroll-area based on need
 OK Encapsulated outline-creation, ready for focus
-
-* Focus replaces current scroll-area instead of page
-* Add validations for panel-view properties, rootID, controller.
-
-rootModel is a valid model or null
-panel.rootModel matches breadcrumbs.rootModel and outline.alist.rootModel
-panel.rootController matches outline.alist.contentBidning.target
-
-rootController is distinct for every outline?
-
-there are no controllers without a panel or vica versa
-every panel has breadcrumbs with
-breadcrumbs.rootModel, breadcrumbs.value
-breadcrumbs rendered hyperlinks are up to date
-alist.value is the collection for rootModel
-
-Check scroll height, position & visibility
-
+OK Focus replaces current scroll-area instead of page
 
 
 * Get cross-dropping/containers working in nestedsortable
@@ -68,6 +51,8 @@ UI Enhancements:
 * Undo-helper animations
 * Support multi-line text per draggable-line
 * Test on mobile
+
+Validation checks scroll height, position & visibility
 
 
 var clickEvents = $._data($('#foo')[0], "events").click;

@@ -41,6 +41,11 @@ diathink.validateMVC = function () {
             "Outline "+o+" has listObject that is not a diathink.OutlineNodeCollection");
         M.test(outlines[o].listObject === views[o].value,
             "Outline "+o+" has listObject that doesn't match the corresponding ListView-value");
+        // temporary constraint until references: parent should be a panel
+        M.test(views[o].parentView.parentView.type === 'diathink.PanelOutlineView',
+            "Outline view "+o+" does not have parent-parent-view a panel");
+        M.test(views[o].parentView.parentView.outline.alist === views[o],
+            "Outline view "+o+" does not match parent.parent.outline.alist in a panel");
     }
 
     var collections = {};
@@ -159,7 +164,7 @@ diathink.validateMVC = function () {
     }
 
     // identify view-root and validate view-tree
-    var pages = {};
+    var pages = {}, panels = {};
     var numpages = 0;
     for (v in views) {
         M.test(views[v].id === v,
@@ -181,6 +186,84 @@ diathink.validateMVC = function () {
                 "PageView "+v+" has a rootController that's not null");
             M.test($('#'+views[v].id).parent().get(0) === $('body').get(0),
                 "Page "+v+" is not immediately inside body");
+        }
+        if (views[v].type === 'diathink.PanelOutlineView') {
+            panels[v] = views[v];
+            M.test(panels[v].rootID === null, // panel is not inside an outline-view
+                "Panel "+v+" has rootID defined");
+            M.test(typeof panels[v].breadcrumbs === 'object',
+                "Panel "+v+" does not have breadcrumbs defined");
+            M.test(panels[v].breadcrumbs.type === 'M.BreadcrumbView',
+                "Panel "+v+" does not have breadcrumbs of correct type");
+            M.test(typeof panels[v].outline === 'object',
+                "Panel "+v+" does not have outline defined");
+            M.test(panels[v].outline.type === 'M.ScrollView',
+                "Panel "+v+ " does not have outline of type ScrollView");
+            M.test(typeof panels[v].outline.alist === 'object',
+                "Panel "+v+" does not have outline.alist defined");
+            M.test(panels[v].outline.alist.type === 'M.ListView',
+                "Panel "+v+" has outline.alist without type listview");
+            if (panels[v].rootModel !== null) {
+                M.test(typeof panels[v].rootModel === 'object',
+                    "Panel "+v+" does not have rootModel defined as an object");
+                M.test(panels[v].rootModel === models[panels[v].rootModel.cid],
+                    "Panel "+v+" does not have a valid rootModel");
+            }
+            M.test(panels[v].rootModel === panels[v].breadcrumbs.rootModel,
+                "Panel "+v+" does not have rootModel match breadcrumbs rootModel");
+            M.test(panels[v].rootModel === panels[v].outline.alist.rootModel,
+                "Panel "+v+" does not have rootModel match outline.alist.rootModel");
+            M.test(outlines[panels[v].rootController.rootID] != null,
+                "Panel "+v+ "has a rootcontroller with an invalid rootID");
+            M.test(outlines[panels[v].rootController.rootID] === panels[v].rootController,
+                "Panel "+v+" has a rootController that is not in outline list");
+            M.test(panels[v].rootController === panels[v].outline.alist.contentBinding.target,
+                "Panel "+v+" does not have rootController match alist's rootController");
+            M.test(panels[v].outline.alist.id === panels[v].rootController.rootID,
+                "Panel "+v+" does not have outline.alist with id=root-controller.rootID");
+            M.test(panels[v].outline.alist.id === panels[v].outline.alist.rootID,
+                "Panel "+v+" does not have outline.alist with id=rootID for an outline");
+            if (panels[v].rootModel === null) {
+                M.test(panels[v].outline.alist.value === diathink.data,
+                    "Panel "+v+" does not have valid alist.value == diathink.data");
+            } else {
+                M.test(panels[v].outline.alist.value === panels[v].rootModel.get('children'),
+                    "Panel "+v+" does not have valid alist.value == rootModel children");
+            }
+            M.test(panels[v].value === null,
+                "Panel "+v+" value is not null");
+            M.test(panels[v].outline.value === null,
+                "Panel "+v+" outline-value is not null");
+
+            var crumb, bvalue = [];
+            if (panels[v].rootModel !== null) {
+                crumb = panels[v].rootModel;
+                while (crumb != null) {
+                    bvalue.unshift(crumb);
+                    crumb = crumb.get('parent');
+                }
+            }
+            M.test(panels[v].breadcrumbs.value.length === bvalue.length,
+                "Panel "+v+" does not have breadcrumbs value match length="+bvalue.length);
+            for (var i=0; i<bvalue.length; ++i) {
+                M.test(panels[v].breadcrumbs.value[i] === bvalue[i],
+                    "Panel "+v+" does not have breadcrumbs value "+i+" match "+bvalue[i].cid);
+            }
+            var count = 0;
+            $('#'+panels[v].breadcrumbs.id).children('a').each(function() {
+                if (count>0) {
+                    M.test($(this).attr('data-href') === bvalue[count-1].cid,
+                        "Panel "+v+" does not have breadcrumb value "+count+" match view");
+                }
+                ++count;
+            });
+            if (bvalue.length>0) {
+                M.test(bvalue.length === count,
+                    "Panel "+v+" does not have breadcrumb count "+bvalue.length+" match view-length "+count);
+            } else {
+                M.test(bvalue.length === count-1,
+                    "Panel "+v+" does not have breadcrumb count "+bvalue.length+" match view-length "+(count-1));
+            }
         }
     }
 
@@ -284,6 +367,26 @@ diathink.validateMVC = function () {
             M.test(foundit,
                 "View "+v+" has parent "+p+" of type "+ p.type+" but none of parent's children reference "+v);
 
+            if (views[v].type === 'M.BreadcrumbView') {
+                M.test(views[v].parentView.type === 'diathink.PanelOutlineView',
+                    "Breadcrumb view "+v+" does not have paneloutlineview parent");
+                M.test(views[v].parentView.breadcrumbs === views[v],
+                    "Breadcrumb view "+v+" does not match parentview.breadcrumbs");
+            }
+            if (views[v].type === 'M.ScrollView') {
+                M.test(views[v].parentView.type === 'diathink.PanelOutlineView',
+                    "ScrollView "+v+" does not have paneloutlineview parent");
+                M.test(views[v].parentView.outline === views[v],
+                    "ScrollView "+v+" does not have match parentview.outline");
+            }
+            if (panels[v] === undefined) {
+                M.test(views[v].rootController == null,
+                    "View "+v+" has null rootID but rootController is not null");
+                if ((views[v].rootModel !== undefined)&&(views[v].rootID !== views[v].id)) {
+                    M.test(views[v].type === 'M.BreadcrumbView',
+                        "View "+v+" has rootModel defined but no rootController, and it is not a Breadcrumb view");
+                }
+            }
             if (views[v].rootID == null) { // outside the outlines in the page
                 if (views[v].parentView != null) {
                     M.test(views[v].parentView.rootID === null,
@@ -291,8 +394,6 @@ diathink.validateMVC = function () {
                 }
                 M.test(views[v].modelId === null,
                     "View "+v+" has null rootID but modelId is not null");
-                M.test(views[v].rootController == null,
-                    "View "+v+" has null rootID but rootController is not null");
                 M.test(views[v].type != 'M.ListView',
                     "View "+v+" has null rootID but it is a ListView");
                 M.test(views[v].type != 'M.ListItemView',
