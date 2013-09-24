@@ -35,7 +35,7 @@ diathink.app.createPage = function(pageName, root) {
     var pageShown = 0;
 
     diathink.app.pages[pageName] = M.PageView.design({
-        childViews:'header content footer droplayer',
+        childViews:'header content footer drawlayer',
         events:{
             pageshow:{
                 action:function () {
@@ -168,8 +168,12 @@ diathink.app.createPage = function(pageName, root) {
             anchorLocation:M.BOTTOM
         }),
 
-        droplayer:M.ContainerView.design({
-            cssClass:'droplayer'
+        drawlayer:M.ContainerView.design({
+            childViews: 'droplayer',
+            cssClass: 'drawlayer',
+            droplayer: M.ContainerView.design({
+                cssClass: 'droplayer'
+            })
         })
     });
 

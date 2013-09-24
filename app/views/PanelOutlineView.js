@@ -77,13 +77,26 @@ diathink.PanelOutlineView = M.ContainerView.extend({
                     buryDepth:3,
                     scroll:false,
                     dropLayer: $('.droplayer'),
+                    helper: function (e, item) {
+                        return item.clone().appendTo('.drawlayer').css({
+                            position: 'absolute',
+                            left: $(item).offset().left+'px',
+                            top: $(item).offset().top+'px'
+                        });
+                    },
+                    // appendTo: '.droplayer',
                     start: function(e, hash) {
+                        hash.item.parents().each(function() {
+                            $(this).addClass('drag-hover');
+                        });
+                        /*
                         hash.item.parents('li').each(function() {
                             $(this).addClass('drag-hover');
                         });
                         hash.item.parents('ul').each(function() {
                             $(this).addClass('drag-hover');
                         });
+                        */
 
                         // hash.item.css('border','solid 1px orange');
                     },

@@ -48,10 +48,11 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 		}
 		this._$view = $child.addClass("ui-scrollview-view");
 
-		this._$clip.css("overflow", this.options.scrollMethod === "scroll" ? "scroll" : "hidden");
+        // MS hack to make overflow-x visible
+		this._$clip.css("overflow-y", this.options.scrollMethod === "scroll" ? "scroll" : "hidden");
 		this._makePositioned(this._$clip);
 
-		this._$view.css("overflow", "hidden");
+		this._$view.css("overflow-y", "hidden");
 
 		// Turn off our faux scrollbars if we are using native scrolling
 		// to position the view.

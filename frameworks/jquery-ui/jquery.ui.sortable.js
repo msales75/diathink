@@ -624,8 +624,10 @@ $.widget2("ui.sortable", $.ui.mouse, {
 			var item = this.items[i];
 
 			//We ignore calculating positions of all connected containers when we're not over them
+            /* MS: this is probably inefficient, but need to recalculate all items now.
 			if(item.instance != this.currentContainer && this.currentContainer && item.item[0] != this.currentItem[0])
 				continue;
+				*/
 
 			var t = this.options.toleranceElement ? $(this.options.toleranceElement, item.item) : item.item;
 
@@ -737,6 +739,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
 		} else {
 
 			//When entering a new container, we will find the item with the least distance and append our item near it
+            /* MS disabling calculation of closest item
 			var dist = 10000; var itemWithLeastDistance = null;
 			var posProperty = this.containers[innermostIndex].floating ? 'left' : 'top';
 			var sizeProperty = this.containers[innermostIndex].floating ? 'width' : 'height';
@@ -759,14 +762,15 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 			if(!itemWithLeastDistance && !this.options.dropOnEmpty) //Check if dropOnEmpty is enabled
 				return;
+            */
 
 			this.currentContainer = this.containers[innermostIndex];
-			itemWithLeastDistance ? this._rearrange(event, itemWithLeastDistance, null, true) : this._rearrange(event, null, this.containers[innermostIndex].element, true);
+			// itemWithLeastDistance ? this._rearrange(event, itemWithLeastDistance, null, true) : this._rearrange(event, null, this.containers[innermostIndex].element, true);
 			this._trigger("change", event, this._uiHash());
 			this.containers[innermostIndex]._trigger("change", event, this._uiHash(this));
 
 			//Update the placeholder
-			this.options.placeholder.update(this.currentContainer, this.placeholder);
+			// this.options.placeholder.update(this.currentContainer, this.placeholder);
 
 			this.containers[innermostIndex]._trigger("over", event, this._uiHash(this));
 			this.containers[innermostIndex].containerCache.over = 1;
@@ -1095,6 +1099,9 @@ $.widget2("ui.sortable", $.ui.mouse, {
 	},
 
 	_trigger: function() {
+        // console.log("Calling _trigger of type "+arguments[0]);
+        // console.log(this);
+        // console.log(arguments);
 		if ($.Widget.prototype._trigger.apply(this, arguments) === false) {
 			this.cancel();
 		}

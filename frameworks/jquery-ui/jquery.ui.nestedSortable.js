@@ -39,7 +39,8 @@
 			errorClass: 'mjs-nestedSortable-error',
 			expandedClass: 'mjs-nestedSortable-expanded',
 			hoveringClass: 'mjs-nestedSortable-hovering',
-			leafClass: 'mjs-nestedSortable-leaf'
+			leafClass: 'mjs-nestedSortable-leaf',
+            connectWith: '.ui-sortable'
 		},
 
 		_create: function() {
@@ -120,6 +121,7 @@
             // determine whether to draw top or bottom line
             // determine position to draw at
             this.options.dropLayer.html('');
+
             for (var i = this.items.length - 1; i >= 0; i--) {
                 var item = this.items[i], itemEl = item.item;
                 // add dock to above this item
@@ -376,12 +378,13 @@
 
             //Post events to containers
             // MS - not sure how this works yet
-            this._contactContainers(event);
+            // this._contactContainers(event);
 
             //Interconnect with droppables
             if($.ui.ddmanager) {
                 $.ui.ddmanager.drag(this, event);
             }
+            // cancel or clear?
 
             //Call callbacks
             this._trigger('sort', event, this._uiHash());
@@ -402,8 +405,13 @@
 			// $('.'+this.options.hoveringClass).removeClass(this.options.hoveringClass);
 			this.hovering && window.clearTimeout(this.hovering);
 			this.hovering = null;
+
             // hide boxes
-            this._hideDropLines();
+            // var outlines = diathink.OutlineManager.outlines;
+            // for (var o in outlines) {
+            //    $('#'+outlines[o].rootID).nestedSortable('hideDropLines');
+            // }
+            this.hideDropLines();
 
             // Beginning of of prototype._mouseStop
             // $.ui.sortable.prototype._mouseStop.apply(this, arguments);
@@ -476,8 +484,20 @@
             $.ui.sortable.prototype._mouseStart.apply(this, arguments);
             // MS Warning todo: - this creates a placeholder
 
-            this._drawDropLines();
+            this.drawDropLines();
+            // loop over outlines, each with a different dropLayer
+            // var outlines = diathink.OutlineManager.outlines;
+            // for (var o in outlines) {
+            //    $('#'+outlines[o].rootID).nestedSortable('drawDropLines');
+            // }
             // this._previewDropBoxes();
+        },
+
+        drawDropLines: function(o) {
+            this._drawDropLines();
+        },
+        hideDropLines: function(o) {
+            this._hideDropLines();
         },
 
 		// mjs - this function is slightly modified to make it easier to hover over a collapsed element and have it expand

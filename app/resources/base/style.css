@@ -45,8 +45,8 @@ li.ui-li > div > div > a > div > div.ui-focus > input {
 }
 
 li.ui-sortable-helper {
-    opacity: 0.65;
-    border: solid 1px orange;
+    opacity: 0.8;
+    border: solid 1px blue;
 }
 
 .drop-mode .drag-handle {
@@ -229,8 +229,7 @@ div.ui-input-text input.ui-input-text {
 
 
 /* drop-layer fills the page when active */
-.droplayer {
-    display: none;
+.droplayer, .drawlayer {
     z-index: 100;
     width: 100%;
     height: 100%;
@@ -239,7 +238,10 @@ div.ui-input-text input.ui-input-text {
     left: 0;
 }
 
-.drop-mode .droplayer {
+.drawlayer {
+    display: none;
+}
+.drop-mode .drawlayer {
     display: block;
 }
 
@@ -265,6 +267,16 @@ div.ui-input-text input.ui-input-text {
     opacity: 1;
 }
 
+.drop-mode .drag-hover {
+    z-index: 10;
+    overflow: visible;
+}
+
+.drop-mode .drag-hover.ui-scrollview-clip, .drop-mode .drag-hover.ui-scrollview-view {
+    overflow-x: visible;
+    overflow-y: hidden;
+}
+
 /* .drag-hover used when :hover is unavailable underneath drop-layer? */
 .drop-mode ul.ui-listview > li.ui-li.drag-hover {
     z-index: 20;
@@ -274,6 +286,7 @@ div.ui-input-text input.ui-input-text {
 .drop-mode ul.ui-listview.drag-hover {
     overflow: visible;
 }
+
 
 .undo-container {
     width: 100px;
