@@ -3,6 +3,9 @@ Next:
 
 * Move nestedSortable to page-level,
     to maintain one copy of the items, and to stop using containers.
+* ERROR: can move underneath items that have visible children,
+  and can move to immediately lower/higher state (too many green lines)
+
 * Keep dragLayer in outer layer for dragging across panels
 * Move dropLayer to each panel for scrolling
 * Enable scrolling when dragging

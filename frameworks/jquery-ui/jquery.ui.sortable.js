@@ -600,6 +600,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
 			for (var j=0, queriesLength = _queries.length; j < queriesLength; j++) {
 				var item = $(_queries[j]);
 
+                // MS Todo: probably can get rid of this data-binding?
 				item.data(this.widgetName + '-item', targetData); // Data for target checking (mouse manager)
 
 				items.push({

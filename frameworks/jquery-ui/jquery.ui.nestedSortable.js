@@ -28,7 +28,6 @@
 			maxLevels: 0,
 			buryDepth: 0,
 			protectRoot: false,
-			rootID: null,
 			rtl: false,
 			startCollapsed: false,
 			tabSize: 20,
@@ -39,16 +38,18 @@
 			errorClass: 'mjs-nestedSortable-error',
 			expandedClass: 'mjs-nestedSortable-expanded',
 			hoveringClass: 'mjs-nestedSortable-hovering',
-			leafClass: 'mjs-nestedSortable-leaf',
-            connectWith: '.ui-sortable'
+			leafClass: 'mjs-nestedSortable-leaf'
+            // connectWith: '.ui-sortable'
 		},
 
 		_create: function() {
 			this.element.data('ui-sortable', this.element.data('mjs-nestedSortable'));
 
 			// mjs - prevent browser from freezing if the HTML is not correct
+            /*
 			if (!this.element.is(this.options.listType))
 				throw new Error('nestedSortable: Please check that the listType option is set to your actual list type');
+				*/
 
 			// mjs - force 'intersect' tolerance method if we have a tree with expanding/collapsing functionality
 			if (this.options.isTree && this.options.expandOnHover) {
@@ -58,24 +59,13 @@
 			$.ui.sortable.prototype._create.apply(this, arguments);
 
 			// mjs - prepare the tree by applying the right classes (the CSS is responsible for actual hide/show functionality)
-			if (this.options.isTree) {
-				var self = this;
-				$(this.items).each(function() {
-					var $li = this.item;
-					if ($li.childDepth(self.options.buryDepth).children(self.options.listType).children().length) {
-						$li.addClass(self.options.branchClass);
-						// expand/collapse class only if they have children
-						if (self.options.startCollapsed) $li.addClass(self.options.collapsedClass);
-						else $li.addClass(self.options.expandedClass);
-					} else {
-						$li.addClass(self.options.leafClass).addClass(self.options.expandedClass);
-					}
-				});
-			}
+            // todo: initialize lists for each panel - outside nestedSortable?
+            this.refreshStyle();
+
             // MS - identify the OutlineView we are in
             var view = M.ViewManager.findViewById(this.element.attr('id'));
             if ((view.type != 'M.ListView') || (view.rootID != view.id)) {
-                console.log("ERROR: View rootID is not here, for view-id="+view.id);
+                // console.log("ERROR: View rootID is not here, for view-id="+view.id);
             }
             this.rootView = view;
 		},
@@ -86,6 +76,23 @@
 				.removeData("ui-sortable");
 			return $.ui.sortable.prototype._destroy.apply(this, arguments);
 		},
+
+        refreshStyle: function() {
+            if (this.options.isTree) {
+                var self = this;
+                $(this.items).each(function() {
+                    var $li = this.item;
+                    if ($li.childDepth(self.options.buryDepth).children(self.options.listType).children().length) {
+                        $li.addClass(self.options.branchClass);
+                        // expand/collapse class only if they have children
+                        if (self.options.startCollapsed) $li.addClass(self.options.collapsedClass);
+                        else $li.addClass(self.options.expandedClass);
+                    } else {
+                        $li.addClass(self.options.leafClass).addClass(self.options.expandedClass);
+                    }
+                });
+            }
+        },
 
         _drawDropLine: function(o) {
             /* Implement this when doing drag/drop changes
@@ -124,23 +131,54 @@
 
             for (var i = this.items.length - 1; i >= 0; i--) {
                 var item = this.items[i], itemEl = item.item;
-                // add dock to above this item
-                // check if this is the helper
-                if (itemEl.hasClass('ui-sortable-helper')) {
-                    // draw a box for where it is?
-                    /*
-                    item.dropnull = this._drawDropLine({
-                        top: item.top+2,
-                        left: item.left+3,
-                        width: item.width-6,
-                        height: item.height-4
-                    });
-                    */
+                var noBottom = false, noTop = false;
+
+                item.droptop = null;
+                item.dropbottom = null;
+                item.drophandle = null;
+
+                // Tests for valid drop location:
+
+                // cannot drop current-item on itself
+                if (itemEl[0] === this.currentItem[0]) {
                     continue;
                 }
 
-                // if predecessor has no visible children, drop into topline
-                if (itemEl.prev().childDepth(this.options.buryDepth).children('ul').children('li:visible').length===0) {
+                // cannot drop the current-item inside itself
+                var activeModel = M.ViewManager.getViewById(this.currentItem.attr('id')).value;
+                var itemModel = M.ViewManager.getViewById(itemEl.attr('id')).value;
+                var model = itemModel;
+                while ((model != null)&&(model !== activeModel)) {
+                    model = model.get('parent');
+                }
+                if (model != null) { // it is a child of itself
+                    continue;
+                }
+
+                // cannot drop current-item adjacent to itself
+                if (activeModel.get('parent') === itemModel.get('parent')) {
+                    var aRank = activeModel.rank();
+                    var iRank = itemModel.rank();
+                    if (aRank-iRank === 1) {
+                        noBottom = true;
+                    } else if (iRank-aRank === 1) {
+                        noTop = true;
+                    }
+                }
+                if (itemEl.prev().childDepth(this.options.buryDepth).children('ul').children('li:visible').length!==0) {
+                    // predecessor has visible children, cannot drop above it
+                    noTop = true;
+                }
+                if (itemEl.childDepth(this.options.buryDepth).children('ul').children('li:visible').length !== 0) {
+                   // last in a list, cannot drop below it
+                    noBottom = true;
+                }
+                if (itemEl.next().length!==0) {
+                    // has visible children, cannot drop below it
+                    noBottom = true;
+                }
+
+                if (!noTop) {
                     item.droptop = this._drawDropLine({
                         top: item.top-1,
                         left: item.left,
@@ -148,22 +186,19 @@
                         height: 0
                     });
                 }
-                // if (itemEl.childDepth(this.options.buryDepth).children('ul').children('li:visible').length === 0) {
-                    // add dock to handle
-                    item.drophandle = $('<div></div>').appendTo(this.options.dropLayer)
+                item.drophandle = $('<div></div>').appendTo(this.options.dropLayer)
                         .addClass('droparrow')
                         .css('top', item.top+'px')
-                        .css('left', (item.left-10)+'px')
-                        if (itemEl.next().length===0) { // if it's the last in a list and has no visible children
-                        // add dock below this item
-                        item.dropbottom = this._drawDropLine({
-                            top: item.top+item.height+2-1, // +2 for border
-                            left: item.left,
-                            width: item.width,
-                            height: 0
-                        });
-                    }
-                // }
+                        .css('left', (item.left-10)+'px');
+
+                if (!noBottom) {
+                    item.dropbottom = this._drawDropLine({
+                        top: item.top+item.height+2-1, // +2 for border
+                        left: item.left,
+                        width: item.width,
+                        height: 0
+                    });
+                }
             }
             for (var i=0; i < this.items.length; ++i) {
                 this._updateDropBoxes(this.items[i]);
@@ -232,6 +267,7 @@
 
 			//Compute the helpers position
             // relative to 'offsetParent' which is the nearest relative/absolute positioned element
+            // todo: these come from sortable.js
 			this.position = this._generatePosition(event);
 			this.positionAbs = this._convertPositionTo("absolute");
 
@@ -501,23 +537,6 @@
         },
 
 		// mjs - this function is slightly modified to make it easier to hover over a collapsed element and have it expand
-		_intersectsWithSides: function(item) {
-
-			var half = this.options.isTree ? .8 : .5;
-
-			var isOverBottomHalf = isOverAxis(this.positionAbs.top + this.offset.click.top, item.top + (item.height*half), item.height),
-                isOverTopHalf = isOverAxis(this.positionAbs.top + this.offset.click.top, item.top - (item.height*half), item.height),
-				isOverRightHalf = isOverAxis(this.positionAbs.left + this.offset.click.left, item.left + (item.width/2), item.width),
-				verticalDirection = this._getDragVerticalDirection(),
-				horizontalDirection = this._getDragHorizontalDirection();
-
-			if (this.floating && horizontalDirection) {
-				return ((horizontalDirection == "right" && isOverRightHalf) || (horizontalDirection == "left" && !isOverRightHalf));
-			} else {
-				return verticalDirection && ((verticalDirection == "down" && isOverBottomHalf) || (verticalDirection == "up" && isOverTopHalf));
-			}
-
-		},
         _insideDropBox: function(e) {
             var i, j, d;
             for (i=0; i<this.items.length; ++i) {
@@ -534,14 +553,12 @@
             return null;
         },
 
+        // todo: stop using containers
 		_contactContainers: function(event) {
-
 			if (this.options.protectRoot && this.currentItem[0].parentNode == this.element[0] ) {
 				return;
 			}
-
 			$.ui.sortable.prototype._contactContainers.apply(this, arguments);
-            // todo: MS warning - this updates the placeholder, and calls _rearrange
             // (contactContainers needs to be adjusted)
 
 		},
@@ -653,126 +670,6 @@
 
         },
 
-        serialize: function(options) {
-
-			var o = $.extend({}, this.options, options),
-				items = this._getItemsAsjQuery(o && o.connected),
-			    str = [];
-
-			$(items).each(function() {
-				var res = ($(o.item || this).attr(o.attribute || 'id') || '')
-						.match(o.expression || (/(.+)[-=_](.+)/)),
-				    pid = ($(o.item || this).parent(o.listType).parentDepth(o.buryDepth)
-						.parent(o.items)
-						.attr(o.attribute || 'id') || '')
-						.match(o.expression || (/(.+)[-=_](.+)/));
-
-				if (res) {
-					str.push(((o.key || res[1]) + '[' + (o.key && o.expression ? res[1] : res[2]) + ']')
-						+ '='
-						+ (pid ? (o.key && o.expression ? pid[1] : pid[2]) : o.rootID));
-				}
-			});
-
-			if(!str.length && o.key) {
-				str.push(o.key + '=');
-			}
-
-			return str.join('&');
-
-		},
-
-		toHierarchy: function(options) {
-
-			var o = $.extend({}, this.options, options),
-				sDepth = o.startDepthCount || 0,
-			    ret = [];
-
-			$(this.element).children(o.items).each(function () {
-				var level = _recursiveItems(this);
-				ret.push(level);
-			});
-
-			return ret;
-
-			function _recursiveItems(item) {
-				var id = ($(item).attr(o.attribute || 'id') || '').match(o.expression || (/(.+)[-=_](.+)/));
-				if (id) {
-					var currentItem = {"id" : id[2]};
-					if ($(item).childDepth(o.buryDepth).children(o.listType).children(o.items).length > 0) {
-						currentItem.children = [];
-						$(item).childDepth(o.buryDepth).children(o.listType).children(o.items).each(function() {
-							var level = _recursiveItems(this);
-							currentItem.children.push(level);
-						});
-					}
-					return currentItem;
-				}
-			}
-		},
-
-		toArray: function(options) {
-
-			var o = $.extend({}, this.options, options),
-				sDepth = o.startDepthCount || 0,
-			    ret = [],
-			    left = 1;
-
-			if (!o.excludeRoot) {
-				ret.push({
-					"item_id": o.rootID,
-					"parent_id": null,
-					"depth": sDepth,
-					"left": left,
-					"right": ($(o.items, this.element).length + 1) * 2
-				});
-				left++
-			}
-
-			$(this.element).children(o.items).each(function () {
-				left = _recursiveArray(this, sDepth + 1, left);
-			});
-
-			ret = ret.sort(function(a,b){ return (a.left - b.left); });
-
-			return ret;
-
-			function _recursiveArray(item, depth, left) {
-
-				var right = left + 1,
-				    id,
-				    pid;
-
-				if ($(item).childDepth(o.buryDepth).children(o.listType).children(o.items).length > 0) {
-					depth ++;
-					$(item).childDepth(o.buryDepth).children(o.listType).children(o.items).each(function () {
-						right = _recursiveArray($(this), depth, right);
-					});
-					depth --;
-				}
-
-				id = ($(item).attr(o.attribute || 'id')).match(o.expression || (/(.+)[-=_](.+)/));
-
-				if (depth === sDepth + 1) {
-					pid = o.rootID;
-				} else {
-					var parentItem = ($(item).parent(o.listType).parentDepth(o.buryDepth)
-											 .parent(o.items)
-											 .attr(o.attribute || 'id'))
-											 .match(o.expression || (/(.+)[-=_](.+)/));
-					pid = parentItem[2];
-				}
-
-				if (id) {
-						ret.push({"item_id": id[2], "parent_id": pid, "depth": depth, "left": left, "right": right});
-				}
-
-				left = right + 1;
-				return left;
-			}
-
-		},
-
 		_clearEmpty: function(item) {
 			var o = this.options;
 
@@ -791,58 +688,29 @@
 
 		},
 
-		_getLevel: function(item) {
+        _trigger: function() {
+            // console.log("Calling _trigger of type "+arguments[0]);
+            // console.log(this);
+            // console.log(arguments);
+            if ($.Widget.prototype._trigger.apply(this, arguments) === false) {
+                this.cancel();
+                // might need cancel()?
+            }
+        },
 
-			var level = 1;
-
-			if (this.options.listType) {
-				var list = item.closest(this.options.listType);
-				while (list && list.length > 0 &&
-                    	!list.is('.ui-sortable')) {
-					level++;
-					list = list.parent().closest(this.options.listType);
-				}
-			}
-
-			return level;
-		},
-
-		_getChildLevels: function(parent, depth) {
-			var self = this,
-			    o = this.options,
-			    result = 0;
-			depth = depth || 0;
-
-			$(parent).childDepth(o.buryDepth).children(o.listType).children(o.items).each(function (index, child) {
-					result = Math.max(self._getChildLevels(child, depth + 1), result);
-			});
-
-			return depth ? result + 1 : result;
-		},
-
-		_isAllowed: function(parentItem, level, levels) {
-			var o = this.options,
-				maxLevels = this.placeholder.closest('.ui-sortable').nestedSortable('option', 'maxLevels'); // this takes into account the maxLevels set to the recipient list
-
-			// mjs - is the root protected?
-			// mjs - are we nesting too deep?
-			if ( ! o.isAllowed(this.placeholder, parentItem, this.currentItem)) {
-					this.placeholder.addClass(o.errorClass);
-					if (maxLevels < levels && maxLevels != 0) {
-						this.beyondMaxLevels = levels - maxLevels;
-					} else {
-						this.beyondMaxLevels = 1;
-					}
-			} else {
-				if (maxLevels < levels && maxLevels != 0) {
-					this.placeholder.addClass(o.errorClass);
-					this.beyondMaxLevels = levels - maxLevels;
-				} else {
-					this.placeholder.removeClass(o.errorClass);
-					this.beyondMaxLevels = 0;
-				}
-			}
-		}
+        _uiHash: function(_inst) {
+            var inst = _inst || this;
+            return {
+                helper: inst.helper,
+                placeholder: inst.placeholder || $([]),
+                position: inst.position,
+                originalPosition: inst.originalPosition,
+                offset: inst.positionAbs,
+                item: inst.currentItem,
+                sender: _inst ? _inst.element : null,
+                originalDOM: inst.domPosition
+            };
+        }
 
 	}));
 

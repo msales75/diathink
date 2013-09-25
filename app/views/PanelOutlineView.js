@@ -61,64 +61,9 @@ diathink.PanelOutlineView = M.ContainerView.extend({
                     collection = this.rootModel.get('children');
                 }
                 this.bindToCaller(this, M.View.registerEvents)();
+                // todo: stop using content-binding to initialize lists,
+                //  but still need to refresh nestedSortable ?
                 this.contentBinding.target.set('listObject', collection);
-                $('#'+this.id).nestedSortable({
-                    listType:'ul',
-                    items:'li',
-                    doNotClear:true,
-                    isTree:true,
-                    branchClass:'branch',
-                    leafClass:'leaf',
-                    collapsedClass:'collapsed',
-                    expandedClass:'expanded',
-                    hoveringClass:'sort-hover',
-                    errorClass: 'sort-error',
-                    handle:'> div > div > a > div > .drag-handle',
-                    buryDepth:3,
-                    scroll:false,
-                    dropLayer: $('.droplayer'),
-                    helper: function (e, item) {
-                        return item.clone().appendTo('.drawlayer').css({
-                            position: 'absolute',
-                            left: $(item).offset().left+'px',
-                            top: $(item).offset().top+'px'
-                        });
-                    },
-                    // appendTo: '.droplayer',
-                    start: function(e, hash) {
-                        hash.item.parents().each(function() {
-                            $(this).addClass('drag-hover');
-                        });
-                        /*
-                        hash.item.parents('li').each(function() {
-                            $(this).addClass('drag-hover');
-                        });
-                        hash.item.parents('ul').each(function() {
-                            $(this).addClass('drag-hover');
-                        });
-                        */
-
-                        // hash.item.css('border','solid 1px orange');
-                    },
-                    stop:function (e, hash) { // (could also try 'change' or 'sort' event)
-                        if (hash.item.parents('ul').length > 0) {
-                            M.ViewManager.getViewById($(hash.item.parents('ul').get(0)).attr('id')).themeUpdate();
-                            M.ViewManager.getViewById($(hash.originalDOM.parent).attr('id')).themeUpdate();
-                        }
-                        var toplines = $('.topline:hover');
-                        var bottomlines = $('.bottomline:hover');
-                        if (toplines.length>0) {
-                            console.log("Moving above element "+toplines.parents("li:first").attr('id'));
-                        } else if (bottomlines.length>0) {
-                            console.log("Moving below element "+bottomlines.parents("li:first").attr('id'));
-                        }
-                        $('.drag-hover').removeClass('drag-hover');
-                        // hash.item.css('border','');
-                        console.log("Processed change to structure");
-                    },
-                    // handle: '> div > div > a > div > .handle',
-                    toleranceElement:'> div > div > a > div.outline-header'
-                });
             },
             isInset:'YES',
             listItemTemplateView:diathink.MyListItem,
