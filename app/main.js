@@ -126,7 +126,7 @@ diathink.app.createPage = function(pageName, root) {
                         handle:'> div > div > a > div > .drag-handle',
                         buryDepth:3,
                         scroll:false,
-                        dropLayer: $('.droplayer'),
+                        dropLayers: '.droplayer',
                         helper: function (e, item) {
                             return item.clone().appendTo('.drawlayer').css({
                                 position: 'absolute',
@@ -227,11 +227,7 @@ diathink.app.createPage = function(pageName, root) {
         }),
 
         drawlayer:M.ContainerView.design({
-            childViews: 'droplayer',
-            cssClass: 'drawlayer',
-            droplayer: M.ContainerView.design({
-                cssClass: 'droplayer'
-            })
+            cssClass: 'drawlayer'
         })
     });
 

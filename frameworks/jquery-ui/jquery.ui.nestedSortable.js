@@ -31,7 +31,7 @@
 			rtl: false,
 			startCollapsed: false,
 			tabSize: 20,
-            dropLayer: null,
+            dropLayers: [],
 			branchClass: 'mjs-nestedSortable-branch',
 			collapsedClass: 'mjs-nestedSortable-collapsed',
 			disableNestingClass: 'mjs-nestedSortable-no-nesting',
@@ -94,7 +94,7 @@
             }
         },
 
-        _drawDropLine: function(o) {
+        _drawDropLine: function(o, canvas) {
             /* Implement this when doing drag/drop changes
              dropTargets: function() {
              // "drop-candidates" not minimized, possibly only on-screen
@@ -104,7 +104,7 @@
             if (o.type==='drophandle') {
                 return
             } else {
-              return $('<div></div>').appendTo(this.options.dropLayer)
+              return $('<div></div>').appendTo(canvas)
                 .addClass('dropborder')
                 .css('top', o.top+'px')
                 .css('left', o.left+'px')
@@ -127,7 +127,9 @@
             // loop over items
             // determine whether to draw top or bottom line
             // determine position to draw at
-            this.options.dropLayer.html('');
+
+            $(this.options.dropLayers).html('');
+            this._showDropLines();
 
             for (var i = this.items.length - 1; i >= 0; i--) {
                 var item = this.items[i], itemEl = item.item;
@@ -155,6 +157,7 @@
                     continue;
                 }
 
+
                 // cannot drop current-item adjacent to itself
                 if (activeModel.get('parent') === itemModel.get('parent')) {
                     var aRank = activeModel.rank();
@@ -178,32 +181,40 @@
                     noBottom = true;
                 }
 
+                var view = M.ViewManager.getViewById(itemEl.attr('id'));
+                while (view.type !== 'M.ScrollView') {
+                    view = view.parentView;
+                    if (view==null) {console.log('Invalid View'); return;}
+                }
+                var canvas = $('#'+view.droplayer.id);
+                var ctop = canvas.offset().top;
+                var cleft = canvas.offset().left;
+
                 if (!noTop) {
                     item.droptop = this._drawDropLine({
-                        top: item.top-1,
-                        left: item.left,
+                        top: item.top-ctop,
+                        left: item.left-cleft,
                         width: item.width,
                         height: 0
-                    });
+                    }, canvas);
                 }
-                item.drophandle = $('<div></div>').appendTo(this.options.dropLayer)
+                item.drophandle = $('<div></div>').appendTo(canvas)
                         .addClass('droparrow')
-                        .css('top', item.top+'px')
-                        .css('left', (item.left-10)+'px');
+                        .css('top', (item.top-ctop-1)+'px')
+                        .css('left', (item.left-cleft-10)+'px');
 
                 if (!noBottom) {
                     item.dropbottom = this._drawDropLine({
-                        top: item.top+item.height+2-1, // +2 for border
-                        left: item.left,
+                        top: item.top+item.height-ctop+2-1, // +2 for border
+                        left: item.left-cleft,
                         width: item.width,
                         height: 0
-                    });
+                    }, canvas);
                 }
             }
             for (var i=0; i < this.items.length; ++i) {
                 this._updateDropBoxes(this.items[i]);
             }
-            this._showDropLines();
         },
 
         // cache drop-coordinates

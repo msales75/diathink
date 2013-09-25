@@ -1,14 +1,14 @@
 Next:
 ----
 
-* Move nestedSortable to page-level,
+OK Move nestedSortable to page-level,
     to maintain one copy of the items, and to stop using containers.
-* ERROR: can move underneath items that have visible children,
+OK ERROR: can move underneath items that have visible children,
   and can move to immediately lower/higher state (too many green lines)
 
-* Keep dragLayer in outer layer for dragging across panels
-* Move dropLayer to each panel for scrolling
-* Enable scrolling when dragging
+OK Keep dragLayer in outer layer for dragging across panels
+OK Move dropLayer to each panel for scrolling
+
 * Clean up drag-helper appearance/classes
 * Enable drag-scrolling at top and bottom of screen
 
@@ -53,6 +53,14 @@ UI Enhancements:
 * Printing
   Multi-line selection/dragging
   Adjust fontsize
+
+Migrate events to page-level:
+Breadcrumb-tap
+Collapse/expand-toggle
+Text-input focus/blur/keydown
+ (Need to eliminate default text-input handlers? Perhaps use spans?)
+UL mobile-events probably undesired
+IMG events groupable for shared file (or eliminate)
 
 Search-button on each used for back-references and similar-pages
 
