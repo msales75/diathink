@@ -125,7 +125,7 @@ diathink.app.createPage = function(pageName, root) {
                         errorClass: 'sort-error',
                         handle:'> div > div > a > div > .drag-handle',
                         buryDepth:3,
-                        scroll:false,
+                        scroll:true,
                         dropLayers: '.droplayer',
                         helper: function (e, item) {
                             return item.clone().appendTo('.drawlayer').css({

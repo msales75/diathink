@@ -59,8 +59,11 @@
 			$.ui.sortable.prototype._create.apply(this, arguments);
 
 			// mjs - prepare the tree by applying the right classes (the CSS is responsible for actual hide/show functionality)
-            // todo: initialize lists for each panel - outside nestedSortable?
             this.refreshStyle();
+
+            // todo: initialize lists for each panel - outside nestedSortable?
+            // define panels
+            this.panels = $(this.element).find('.ui-scrollview-clip');
 
             // MS - identify the OutlineView we are in
             var view = M.ViewManager.findViewById(this.element.attr('id'));
@@ -194,7 +197,7 @@
                     item.droptop = this._drawDropLine({
                         top: item.top-ctop,
                         left: item.left-cleft,
-                        width: item.width,
+                        width: item.width-2,
                         height: 0
                     }, canvas);
                 }
@@ -207,7 +210,7 @@
                     item.dropbottom = this._drawDropLine({
                         top: item.top+item.height-ctop+2-1, // +2 for border
                         left: item.left-cleft,
-                        width: item.width,
+                        width: item.width-2,
                         height: 0
                     }, canvas);
                 }
@@ -274,7 +277,7 @@
 		_mouseDrag: function(event) {
 			var i, item, itemElement, intersection,
 				o = this.options,
-				scrolled = false;
+				scrolled = false, self = this;
 
 			//Compute the helpers position
             // relative to 'offsetParent' which is the nearest relative/absolute positioned element
@@ -282,163 +285,94 @@
 			this.position = this._generatePosition(event);
 			this.positionAbs = this._convertPositionTo("absolute");
 
-			if (!this.lastPositionAbs) {
-			    // only if this is the first time mousedrag is called
-				this.lastPositionAbs = this.positionAbs;
-			}
 
-			//Do scrolling
-			if(this.options.scroll) {
-				if(this.scrollParent[0] != document && this.scrollParent[0].tagName != 'HTML') {
+            // define this.overflowOffset (done in _mouseStart)
+            // todo: do we need to update boxes more often when scrolling?
+            // todo: which panel are we over?
 
-					if((this.overflowOffset.top + this.scrollParent[0].offsetHeight) - event.pageY < o.scrollSensitivity) {
-						this.scrollParent[0].scrollTop = scrolled = this.scrollParent[0].scrollTop + o.scrollSpeed;
-					} else if(event.pageY - this.overflowOffset.top < o.scrollSensitivity) {
-						this.scrollParent[0].scrollTop = scrolled = this.scrollParent[0].scrollTop - o.scrollSpeed;
-					}
+            // todo: loop over panels first, then items by-panel second?
+            // for now, just loop over panels independently
 
-					if((this.overflowOffset.left + this.scrollParent[0].offsetWidth) - event.pageX < o.scrollSensitivity) {
-						this.scrollParent[0].scrollLeft = scrolled = this.scrollParent[0].scrollLeft + o.scrollSpeed;
-					} else if(event.pageX - this.overflowOffset.left < o.scrollSensitivity) {
-						this.scrollParent[0].scrollLeft = scrolled = this.scrollParent[0].scrollLeft - o.scrollSpeed;
-					}
-
-				} else {
-
-					if(event.pageY - $(document).scrollTop() < o.scrollSensitivity) {
-						scrolled = $(document).scrollTop($(document).scrollTop() - o.scrollSpeed);
-					} else if($(window).height() - (event.pageY - $(document).scrollTop()) < o.scrollSensitivity) {
-						scrolled = $(document).scrollTop($(document).scrollTop() + o.scrollSpeed);
-					}
-
-					if(event.pageX - $(document).scrollLeft() < o.scrollSensitivity) {
-						scrolled = $(document).scrollLeft($(document).scrollLeft() - o.scrollSpeed);
-					} else if($(window).width() - (event.pageX - $(document).scrollLeft()) < o.scrollSensitivity) {
-						scrolled = $(document).scrollLeft($(document).scrollLeft() + o.scrollSpeed);
-					}
-
-				}
-
-				if(scrolled !== false && $.ui.ddmanager && !o.dropBehaviour)
-					$.ui.ddmanager.prepareOffsets(this, event);
-			}
-
-			//Regenerate the absolute position used for position checks
-            // (possibly different absolute-offset after scrolling)
-			this.positionAbs = this._convertPositionTo("absolute");
-
-			// mjs - find the top offset before rearrangement,
-			// var previousTopOffset = this.placeholder.offset().top;
-
-			//Set the helper position
-            // TODO: change this to different coordinate system
-			if(!this.options.axis || this.options.axis !== "y") {
-				this.helper[0].style.left = this.position.left+"px";
-			}
-			if(!this.options.axis || this.options.axis !== "x") {
-				this.helper[0].style.top = this.position.top+"px";
-			}
-
-            var box = this._insideDropBox();
-            if (box) {
-                box.elem.addClass('active');
+            //Set the helper position
+            if(!this.options.axis || this.options.axis !== "y") {
+                this.helper[0].style.left = this.position.left+"px";
             }
-            if (this.activeBox && (this.activeBox!=box)) {
-                this.activeBox.elem.removeClass('active');
+            if(!this.options.axis || this.options.axis !== "x") {
+                this.helper[0].style.top = this.position.top+"px";
             }
-            this.activeBox = box;
 
-            this.hovering = this.hovering ? this.hovering : null;
-            this.hoveringBox = this.hoveringBox ? this.hoveringBox : null;
-
-            if ((this.hovering != null) && (this.hoveringBox != null)) {
-                if (this.activeBox != this.hoveringBox) {
-                    this.hovering && window.clearTimeout(this.hovering);
-                    this.hovering = null;
-                    this.hoveringBox = null;
+            if (this.scrollPanel) {
+                var left = this.scrollPanel.offset().left;
+                var right = left + this.scrollPanel.width();
+                if (!(this.positionAbs.left >= left && this.positionAbs.left <= right)) {
+                    this.scrollPanel = null;
+                    console.log("Clearing scrollPanel")
                 }
             }
+            if (!this.scrollPanel) {
+                this.panels.each(function() {
+                    var left = $(this).offset().left;
+                    var right = left + $(this).width();
+                    if (self.positionAbs.left >= left && self.positionAbs.left <= right) {
+                        self.scrollPanel = $(this);
+                        console.log("Changing scrollPanel to ");
+                        console.log(self.scrollPanel);
+                    }
+                });
+            }
+            // todo: initialize lists for each panel - outside nestedSortable?
 
-            if (this.activeBox && this.activeBox.type === 'drophandle') {
-                var hoverItem = this.activeBox.item.item;
-                // mjs - if the element has children and they are hidden, show them after a delay (CSS responsible)
-                if (o.expandOnHover) {
-                    if (!this.hovering) {
-                        // hoverItem.addClass(o.hoveringClass);
-                        var self = this;
-                        this.hovering = window.setTimeout(function() {
-                            hoverItem.removeClass(o.collapsedClass).addClass(o.expandedClass);
-                            self.refreshPositions();
-                            self._drawDropLines();
-                            self._trigger("expand", event, self._uiHash());
-                        }, o.expandOnHover);
-                        this.hoveringBox = this.activeBox;
+            if (this.scrollPanel) {
+                // do we need to initialize the panel?
+                var panelid = this.scrollPanel.attr('id');
+                if (this.panelScrollStart[panelid] === undefined) {
+                    this.panelScrollStart[panelid] = this.scrollPanel.scrollview('getScrollPosition').y;
+                }
+                // todo: add constraint?: for later panels, could scroll-position be different than the
+                // scroll-position at mouse-start, which is where items are last updated?
+
+                this.scrollPanel.scrollview( 'scrollWhileDragging',
+                        event.pageY - this.scrollPanel.offset().top);
+
+                var box = this._insideDropBox();
+                if (box) {
+                    box.elem.addClass('active');
+                }
+                if (this.activeBox && (this.activeBox!=box)) {
+                    this.activeBox.elem.removeClass('active');
+                }
+                this.activeBox = box;
+
+                this.hovering = this.hovering ? this.hovering : null;
+                this.hoveringBox = this.hoveringBox ? this.hoveringBox : null;
+
+                if ((this.hovering != null) && (this.hoveringBox != null)) {
+                    if (this.activeBox != this.hoveringBox) {
+                        this.hovering && window.clearTimeout(this.hovering);
+                        this.hovering = null;
+                        this.hoveringBox = null;
+                    }
+                }
+
+                if (this.activeBox && this.activeBox.type === 'drophandle') {
+                    var hoverItem = this.activeBox.item.item;
+                    // mjs - if the element has children and they are hidden, show them after a delay (CSS responsible)
+                    if (o.expandOnHover) {
+                        if (!this.hovering) {
+                            // hoverItem.addClass(o.hoveringClass);
+                            var self = this;
+                            this.hovering = window.setTimeout(function() {
+                                hoverItem.removeClass(o.collapsedClass).addClass(o.expandedClass);
+                                self.refreshPositions();
+                                self._drawDropLines();
+                                self._trigger("expand", event, self._uiHash());
+                            }, o.expandOnHover);
+                            this.hoveringBox = this.activeBox;
+                        }
                     }
                 }
             }
-
-            //Rearrange
-            for (i = this.items.length - 1; i >= 0; i--) {
-
-                //Cache variables and intersection, continue if no intersection
-                item = this.items[i];
-                itemElement = item.item[0];
-
-                // MS - new intersection criteria via topline and bottomline
-
-
-                intersection = this._intersectsWithPointer(item);
-                if (!intersection) {
-                    continue;
-                }
-
-                // Only put the placeholder inside the current Container, skip all
-                // items form other containers. This works because when moving
-                // an item from one container to another the
-                // currentContainer is switched before the placeholder is moved.
-                //
-                // Without this moving items in "sub-sortables" can cause the placeholder to jitter
-                // beetween the outer and inner container.
-                if (item.instance !== this.currentContainer) {
-                    continue;
-                }
-
-                // cannot intersect with itself
-                // no useless actions that have been done before
-                // no action if the item moved is the parent of the item checked
-                if (itemElement !== this.currentItem[0] &&
-                    this.placeholder[intersection === 1 ? "next" : "prev"]()[0] !== itemElement &&
-                    !$.contains(this.placeholder[0], itemElement) &&
-                    (this.options.type === "semi-dynamic" ? !$.contains(this.element[0], itemElement) : true)
-                    ) {
-
-
-                    // Clear emtpy ul's/ol's
-                    this._clearEmpty(itemElement);
-
-                    this._trigger("change", event, this._uiHash());
-                    break;
-                }
-            }
-
-            this.beyondMaxLevels = 0;
-
-            //Post events to containers
-            // MS - not sure how this works yet
-            // this._contactContainers(event);
-
-            //Interconnect with droppables
-            if($.ui.ddmanager) {
-                $.ui.ddmanager.drag(this, event);
-            }
-            // cancel or clear?
-
-            //Call callbacks
-            this._trigger('sort', event, this._uiHash());
-
-            this.lastPositionAbs = this.positionAbs;
             return false;
-
         },
 
 		_mouseStop: function(event, noPropagation) {
@@ -527,11 +461,14 @@
 		},
 
         _mouseStart: function(event, overrideHandle, noActivation) {
+            this.panelScrollStart = {};
 
             $.ui.sortable.prototype._mouseStart.apply(this, arguments);
             // MS Warning todo: - this creates a placeholder
 
             this.drawDropLines();
+
+
             // loop over outlines, each with a different dropLayer
             // var outlines = diathink.OutlineManager.outlines;
             // for (var o in outlines) {
@@ -550,13 +487,22 @@
 		// mjs - this function is slightly modified to make it easier to hover over a collapsed element and have it expand
         _insideDropBox: function(e) {
             var i, j, d;
+
+            // this.position is same, scroll is different for each item
             for (i=0; i<this.items.length; ++i) {
                 if (this.items[i].dropboxes == null) {continue;} // when mousedrag is called before initialization
                 for (j=0; j<this.items[i].dropboxes.length; ++j) {
                     d = this.items[i].dropboxes[j];
                     var x = this.positionAbs.left + this.offset.click.left;
                     var y = this.positionAbs.top + this.offset.click.top;
+                    var parentPanel = this.items[i].item.closest('.ui-scrollview-clip');
+                    y += parentPanel.scrollview('getScrollPosition').y -
+                        this.panelScrollStart[parentPanel.attr('id')];
                     if (((x>= d.left)&&(x<= d.right)) && ((y>= d.top)&&(y<= d.bottom))) {
+                        if (parentPanel.get(0) !==
+                            this.scrollPanel.get(0)) {
+                            console.log("ERROR: Active panel does not match item");
+                        }
                         return d;
                     }
                 }

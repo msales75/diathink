@@ -70,7 +70,7 @@ diathink.PanelOutlineView = M.ContainerView.extend({
             idName:'cid', // For Backbone.Model compatibility
             items: 'models' // For Backbone.Model compatibility
         }),
-        droplayer: M.ContainerView.design({
+        droplayer: M.ContainerView.extend({
             cssClass: 'droplayer'
         })
     })

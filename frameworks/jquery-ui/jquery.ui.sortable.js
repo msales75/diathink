@@ -833,6 +833,8 @@ $.widget2("ui.sortable", $.ui.mouse, {
 		if(this.cssPosition == 'absolute' && this.scrollParent[0] != document && $.contains(this.scrollParent[0], this.offsetParent[0])) {
 			po.left += this.scrollParent.scrollLeft();
 			po.top += this.scrollParent.scrollTop();
+            // MS: add constraint to ensure this never happens
+            alert('Special case is happening!');
 		}
 
 		if((this.offsetParent[0] == document.body) //This needs to be actually done for all browsers, since pageX/pageY includes this information
@@ -849,6 +851,8 @@ $.widget2("ui.sortable", $.ui.mouse, {
 	_getRelativeOffset: function() {
 
 		if(this.cssPosition == "relative") {
+            // MS add constraint to make sure this never happens
+            alert('Special Relative case is happening!');
 			var p = this.currentItem.position();
 			return {
 				top: p.top - (parseInt(this.helper.css("top"),10) || 0) + this.scrollParent.scrollTop(),
@@ -920,7 +924,6 @@ $.widget2("ui.sortable", $.ui.mouse, {
 				- ( ( this.cssPosition == 'fixed' ? -this.scrollParent.scrollLeft() : scrollIsRootNode ? 0 : scroll.scrollLeft() ) * mod)
 			)
 		};
-
 	},
 
 	_generatePosition: function(event) {
@@ -932,6 +935,8 @@ $.widget2("ui.sortable", $.ui.mouse, {
 		// 2. and the scroll parent is the document or similar to the offset parent
 		// we have to refresh the relative offset during the scroll so there are no jumps
 		if(this.cssPosition == 'relative' && !(this.scrollParent[0] != document && this.scrollParent[0] != this.offsetParent[0])) {
+            // MS: add constraint to ensure this never happens
+            alert('ERROR: css position of helper depends on scrollparent?');
 			this.offset.relative = this._getRelativeOffset();
 		}
 

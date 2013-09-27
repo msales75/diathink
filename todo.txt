@@ -11,7 +11,8 @@ OK Move dropLayer to each panel for scrolling
 
 * Clean up drag-helper appearance/classes
 * Enable drag-scrolling at top and bottom of screen
-
+  - use same scroll-system or different one?
+    Use a variation of sortable's built-in one?
 
 * Drag-to-vertical-line (view in separate page)
 * Horizontal swipe

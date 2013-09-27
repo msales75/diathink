@@ -362,6 +362,49 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 		sv._didDrag = this._didDrag;
 	},
 
+    // MS addition for drag-scrolling
+    //  todo: stop quickly when mouse-drag-direction changes
+    scrollWhileDragging: function(ey, init) {
+        var cheight = this._$clip.height();
+        var vheight = this._$view.height();
+        if (this._lastY == null) {
+            this._lastY = ey;
+            return;
+        }
+        this._maxY = cheight-vheight;
+        if (this._maxY > 0) this._maxY = 0;
+        var dy = ey - this._lastY;
+        var sy = 0;
+            var frac = ey/cheight;
+            this._doSnapBackY = false;
+            if (frac<0.25) {
+                if (this._sy >= 0) { // if we scrolled to top
+                    // follow mouse/2 pattern
+                    var newY = this._sy + (dy/2);
+                    this._doSnapBackY = true;
+                } else if (dy <= 0) { // if mouse moved up
+                    sy = 10;
+                }
+            } else if (frac > 0.75) {
+                if (this._sy <= this._maxY ) { // if we scrolled to bottom
+                    // follow mouse-2 pattern
+                    var newY = this._sy + (dy/2);
+                    this._doSnapBackY = true;
+                } else if (dy >= 0) { // if mouse moved down
+                    sy = -10;
+                }
+            }
+            if (sy) {
+                this._startMScroll(0, sy);
+                this._didDrag = true;
+                this._lastMove = getCurrentTime();
+            } else {
+                this._hideScrollBars();
+            }
+        this._lastY = ey;
+        return false;
+    },
+
 	_handleDragMove: function(e, ex, ey)
 	{
 		this._lastMove = getCurrentTime();
