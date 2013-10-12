@@ -40,7 +40,8 @@ diathink.PanelOutlineView = M.ContainerView.extend({
         }
     }),
     outline: M.ScrollView.extend({
-        childViews:'alist droplayer',
+        childViews:'alist droplayer scrollSpacer',
+        /* updateScroll: diathink.updateScroll, */ // called whenever scrollview changes
         alist:M.ListView.extend({
             rootModel: null,
             onDesign: function() { // once parent's rootModel is defined in design-stage
@@ -69,6 +70,9 @@ diathink.PanelOutlineView = M.ContainerView.extend({
             listItemTemplateView:diathink.MyListItem,
             idName:'cid', // For Backbone.Model compatibility
             items: 'models' // For Backbone.Model compatibility
+        }),
+        scrollSpacer:M.ContainerView.extend({
+            cssClass: 'scroll-spacer'
         }),
         droplayer: M.ContainerView.extend({
             cssClass: 'droplayer'

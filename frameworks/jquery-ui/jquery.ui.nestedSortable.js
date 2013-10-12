@@ -71,7 +71,12 @@
                 // console.log("ERROR: View rootID is not here, for view-id="+view.id);
             }
             this.rootView = view;
-		},
+            if (this.options.keyboard) {
+                // override open/close keyboard methods
+                this.options.keyboard.softKeyboardOpen = this.softKeyboardOpen;
+                this.options.keyboard.softKeyboardClose = this.softKeyboardClose;
+            }
+        },
 
 		_destroy: function() {
 			this.element
@@ -96,7 +101,20 @@
                 });
             }
         },
-
+        softKeyboardOpen: function() {
+            // scroll to active element in active-panel
+            var input = $('li.ui-focus');
+            var panel = input.closest('.ui-scrollview-clip');
+            var globalOffsetY = input.offset().y; // scroll to this offset
+            var containerOffsetY = panel.offset().y;
+            var oldScrollY = panel.scrollview('getScrollPosition').y;
+            var newScrollY = globalOffsetY - containerOffsetY + oldScrollY;
+            panel.scrollview('scrollTo', 0, newScrollY);
+            alert("softKeyboardOpen");
+        },
+        softKeyboardClose: function() {
+            alert("softKeyboardClose");
+        },
         _drawDropLine: function(o, canvas) {
             /* Implement this when doing drag/drop changes
              dropTargets: function() {

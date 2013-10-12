@@ -35,7 +35,7 @@ diathink.app.createPage = function(pageName, root) {
     var pageShown = 0;
 
     diathink.app.pages[pageName] = M.PageView.design({
-        childViews:'header content footer drawlayer',
+        childViews:'hiddendiv header content drawlayer',
         events:{
             pageshow:{
                 action:function () {
@@ -44,31 +44,28 @@ diathink.app.createPage = function(pageName, root) {
                     if (pageShown>0) {return;} // first-call
                     ++pageShown;
 
-                        $('#'+id).on('focusin focusout', function(e) {
-                            // does this have performance issues?
-                            $('.ui-focus-parent').removeClass('ui-focus-parent');
-
-                            if (! $(e.target).hasClass('ui-input-text')) {return; }
-                            /* Add ui-focus-parent to parents that are last in the list,
-                             to help draw correct borders  */
-
-                            if (e.type==='focusout') {return; }
-
-                            var that = $(e.target).parents('li.ui-li:first');
-
-                            while ($(that).next().length===0) {
-                                $(that).addClass('ui-focus-parent');
-                                $(that).parent('ul').addClass('ui-focus-parent');
-                                that = that.parents('li.ui-li:first');
-                                if (that.length===0) {
-                                    break;
-                                }
-                            }
-                            if (that.length>0) {
-                                $(that).addClass('ui-focus-parent');
-                            }
-                        });
-                        $('#'+id).on('tap', '.disclose', function (e) {
+                    $('#'+id).on('focusin focusout', function(e) {
+                        // does this have performance issues?
+                        if (e.type=='focusout') {
+                            // does this occur on manual keyboard-close?
+                            console.log('blurring keyboard from focusout');
+                            diathink.keyboard.blur();
+                            diathink.focused = null;
+                            return;
+                        }
+                        if (e.target && e.target.nodeName && e.target.nodeName.toLowerCase()==='textarea') {
+                            console.log('focusing keyboard from focusin');
+                            diathink.focused = e.target;
+                            // check if keyboard opened
+                            diathink.keyboard.focus();
+                        } else {
+                            // check if keyboard closed
+                            console.log('blurring keyboard from focusin');
+                            diathink.keyboard.blur();
+                            diathink.focused = null;
+                        }
+                    });
+                    $('#'+id).on('tap', '.disclose', function (e) {
                             var now = (new Date()).getTime();
                             $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
                             if ($(this).data('lastClicked') && ($(this).data('lastClicked') > now - 500)) {
@@ -83,24 +80,29 @@ diathink.app.createPage = function(pageName, root) {
                                 $(this).data('lastClicked', (new Date()).getTime());
                                 $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');
                             }
-                        });
-                    $('#'+id).on('tap', 'input', function (e) {
-                        $(this).focus();
-                        // var now = (new Date()).getTime();
-                        // console.log("Processing tap on page "+id+" with now = "+now+", input:");
-                         // console.log(this);
-                        // if ($(this).data('lastClicked') && ($(this).data('lastClicked') > now - 500)) {
-                            // $(this).data('lastClicked', null);
-                             // process double-click
-                             // console.log("Focusing from double-tap with now = "+now);
-                             // $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
-                             // $(this).addClass('ui-disable-scroll');
-                             // alert("Processing double-click - disable scrolling");
-                        // } else { // single-click
-                             // console.log("Setting lastclicked to now = "+now);
-                            // $(this).data('lastClicked', now);
-                        // }
                     });
+/*
+                   $('#'+id).on('tap', 'span.outline-content', function (e) {
+                        diathink.keyboard.focus();
+                        $('.ui-focus').removeClass('ui-focus');
+                        $(this).addClass('ui-focus');
+                        var item = $(this).closest('li.ui-li');
+                        item.addClass('ui-focus');
+                        diathink.focused = this;
+
+                        // move textarea to current location
+                        //    (near screen top if focus is working)
+                        var input = $('#'+diathink.app.pages[pageName].hiddeninput.id);
+                        input.css('left', Math.round($(this).offset().left)+'px')
+                            .css('top', Math.round($(this).offset().top)+'px')
+                            .width($(this).width())
+                            .height($(this).height())
+                            .css('z-index', 20)
+                            .css('opacity', 1);
+                        input.children('textarea').val($(this).text());
+                        console.log("Setting height to "+$(this).height());
+                    });
+*/
                     $('#'+id).on('tap', '.ui-breadcrumb-link', function(e) {
                             var modelid= $(this).attr('data-href');
                             var panelview = M.ViewManager.getViewById($(this).parent().attr('id')).parentView;
@@ -110,8 +112,21 @@ diathink.app.createPage = function(pageName, root) {
                                 panelview.changeRoot(diathink.OutlineNodeModel.getById(modelid));
                             }
                     });
+                    //   keyup change input paste
+                    $('#'+id).on('keyup', 'textarea', function(e) {
+                        M.ViewManager.getViewById($(this).attr('id')).fixHeight();
+                    });
+                    $.mobile.window.on('load',function() {
+                        $('textarea').trigger('keyup');
+                    });
+                    // ? also on: mobile.document pagechange
+
                     $(window).resize();
                     diathink.UndoController.refreshButtons();
+                    diathink.keyboard = diathink.keyboardSetup.extend({
+                        // hiddeninput: diathink.app.pages[pageName].hiddeninput.input.id
+                    });
+                    diathink.keyboard.init();
                     $('#'+id).nestedSortable({
                         listType:'ul',
                         items:'li',
@@ -126,6 +141,7 @@ diathink.app.createPage = function(pageName, root) {
                         handle:'> div > div > a > div > .drag-handle',
                         buryDepth:3,
                         scroll:true,
+                        keyboard: diathink.keyboard,
                         dropLayers: '.droplayer',
                         helper: function (e, item) {
                             return item.clone().appendTo('.drawlayer').css({
@@ -173,7 +189,27 @@ diathink.app.createPage = function(pageName, root) {
                 }
             }
         },
-
+        hiddendiv:M.ContainerView.design({
+            cssClass: 'hiddendiv'
+        }),
+        /*
+        hiddeninput:M.ContainerView.design({
+            childViews: 'input',
+            cssClass: "hiddeninput",
+            input: M.HiddenInputView.design({
+                hasMultipleLines: true,
+                events: {
+                    keyup: {
+                        action: function(id) {
+                            if (diathink.focused) {
+                                $(diathink.focused).text($('#'+id).val());
+                            }
+                        }
+                    }
+                }
+            })
+        }),
+        */
         header:M.ToolbarView.design({
             childViews: "title undobuttons",
             // value:'HEADER',
@@ -219,11 +255,6 @@ diathink.app.createPage = function(pageName, root) {
             scroll2:diathink.PanelOutlineView.design({
                 rootModel: root
             })
-        }),
-
-        footer:M.ToolbarView.design({
-            value:'FOOTER',
-            anchorLocation:M.BOTTOM
         }),
 
         drawlayer:M.ContainerView.design({

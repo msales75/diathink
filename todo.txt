@@ -1,39 +1,38 @@
 Next:
 ----
 
-OK Move nestedSortable to page-level,
-    to maintain one copy of the items, and to stop using containers.
-OK ERROR: can move underneath items that have visible children,
-  and can move to immediately lower/higher state (too many green lines)
+OK Add empty-block under list that's 80% screen-height (when scrollable)
+Add font-change button (and update textarea heights)
 
-OK Keep dragLayer in outer layer for dragging across panels
-OK Move dropLayer to each panel for scrolling
-
-* Clean up drag-helper appearance/classes
-* Enable drag-scrolling at top and bottom of screen
-  - use same scroll-system or different one?
-    Use a variation of sortable's built-in one?
+* Fix overflow/border/z-index validations for new design
+* Fix/Define span & textarea validation constraints
 
 * Drag-to-vertical-line (view in separate page)
+ - Keep track of panels like items in nestedSortable
+ - Add design-space for vertical line, inbox, trash, settings
+ - Determine its coordinates relative to panels
+ - Add line into drawDropLines & updateDropBoxes
+ - Add non-action event
 * Horizontal swipe
-* Drag-to-inbox (move to later)
+* Find real-estate for inbox, trash
+* Inbox
 
+Soft Keyboard assumptions (needs interactive validation for devices)
+  Scroll-position on window-click event keeps keyboard in same position
+  Suppressing focus/blur keeps keyboard in same position
+  Focus/blur on input causes keyboard to appear or disappear
+  Suppressing mousedown suppresses focus and blur
+  If mobile, suppressing mousedown does not suppress tap, vmousedown or vclick
+  If IOS, the weird hack detects keyboard height
+  If not IOS, resize is called with new dimensions when keyboard changes
 
+* Clean up drag-helper appearance/classes?
 * Why don't arrows always highlight when dragging
 * Why is validation is giving errors on overflow and z-index
 * incorporate drag-hover into the validation
-* Why is action-model not showing up in relational-model list
-* Why is Firefox losing hover-state on fast mouseovers?
-
 * Add in check that disallows two actions running concurrently
    (like with blur event)
 
-* Test for touchscreen for drag-scroll and double-click vs. single-click text-selection
-
-
-* Later: Manually handle text-selection
-* Inbox
-* Favorites
 
 UI Enhancements:
 * Add shift-tab keyboard-command
@@ -52,18 +51,100 @@ UI Enhancements:
 * Test on mobile
 
 * Printing
-  Multi-line selection/dragging
-  Adjust fontsize
+
+* Enable font-size change
+
+Add white header, with spots for:
+ Inbox (draggable?)
+ Zoom-small/large (double-click for size & panel-options)
+ Undo (double-click for history?)
+ Redo
+ Search
+  Move Original
+ Link (text-mode-only)
+ Notices/Offline (from footer?)
+ Trash (footer when dragging?)
+
+Check if ui-focus classes are being added elsewhere in jquery-mobile?
+Black Circle with grey gridlines with optional black-triangle inside (right/down).
+  Vary transparency from very faint to black
+
+Make Breadcrumbs should be draggable, like line-handles.
+
+* Why is action-model not showing up in relational-model list
+* Why is Firefox losing hover-state on fast mouseovers?
+
+
+
+-----
+
+Override selection-default when dragging across lines
+Multi-line selection/dragging
 
 Migrate events to page-level:
 Breadcrumb-tap
 Collapse/expand-toggle
 Text-input focus/blur/keydown
- (Need to eliminate default text-input handlers? Perhaps use spans?)
 UL mobile-events probably undesired
 IMG events groupable for shared file (or eliminate)
 
+Links: Where to draw a superimposed-word/symbol can be calculated from a div/span.
+
+How do you drag links?
+ Open text-editor and click on 'add link'
+ Click on a comment in conversation-page
+
+Show ID code in text-area,
+  pointing above to clipped-link-text,
+    which can optionally be edited.
+
+* Use different icon if some backlinks are visible on screen,
+  first click highlights them, second link opens full-search.
+* Also different icon if they are unread?
+  Can drag to inbox on viewing?
+
 Search-button on each used for back-references and similar-pages
+
+
+Settings:
+  Undo/redo
+  Don't move original
+  (Optional/later) Zoom to touch -- and zoom-out with zoom-box when dragging
+  Search
+  More in menu:
+    +/- Font-size (for this device/orientation)
+    +/- Zoomed Font-size (for this device/orientation)
+    +/- Panels (for this device/orientation)
+    Offline-flag
+    Handles on Left/right
+    Text/background-style/colors
+  Inbox
+  Trash
+  ? Favorites
+OS dependent:
+  Spellcheck
+  Autocomplete/autocorrect
+  Magnifying-glass for cursor
+  Text-selection
+  Double-tap for word-selection
+  Text Copy/Cut/Paste
+
+Photo, Camera
+Attachment
+
+
+Supplement keyboard with:
+ Bold, Italic, Superscript, Subscript, Link, Undo/redo
+
+Track jQuery event-firings &
+  Monitor state-parameters-changes after each firing
+  function, element, nested-triggering-event, default-firing
+
+Link-previews should include breadcrumbs.
+
+LATER: Add link to side outside text?
+LATER: Add markup-text for bold/italics
+LATER: Add WYSIWYG editor for non-touch devices
 
 Validation checks scroll height, position & visibility
 
@@ -74,18 +155,29 @@ Trigger adds/removes based on links
 Text-syntax for hidden links
   Checkbox?
 
-var clickEvents = $._data($('#foo')[0], "events").click;
-jQuery.each(clickEvents, function(key, handlerObj) {
-  console.log(handlerObj.handler) // prints "function() { console.log('clicked!') }"
-})
+Top-level directory:
+ Inbox
+ Notes
+ Conversations
+ Archived
+
+Later:
+ Todo?
+ Contacts
+ Activity/History
 
 
 
+See user-status online (can check facebook)
+See user-activity (just typed, been a while)
+ (just for those in conversation)
+
+Links will be like annotated text (with pointer when editing),
+  look like hyperlinks when not editing
 
 (event.type != 'mouseover')&&(event.type!='vmouseover')&&(event.type!='mouseout')&&(event.type!='vmouseout')&&(event.type!='resize')&&(event.type!='throttledresize')&&(event.type!='mousemove')&&(event.type!='vmousemove')&&(event.type!='mousedown')&&(event.type!='vmousedown')
 
 * Todo later: move scroll-binding up to page-level and delegate events manually
-
 
  Local Search (store word-pointers in 512M RAM?)
  Local Saving
@@ -99,18 +191,50 @@ jQuery.each(clickEvents, function(key, handlerObj) {
      Preview contracted-children to right
      Edit text, when there are no children, or expanded
 
+'Following' should be a measure of usage/relevance
+Editable documents can follow other versions
+Clone, Propose, Accept
+
+Backlink-click shows sort by relevance or date,
+  button shows '4 unread'
+Uneditable search-results can be dragged into a list,
+ as can a feed?
+  Editable-list
+  List-feed/conversation
+  Search-results
+
    switching original with reference
    conversation-area with reply-references
+* Shared/collaborative online editing
 * References & annotations
+
 
 * Index history by User/Time/Parent-list of affected nodes
 * Write a functional test for a sequence of actions that test all action code branches
 * ?nestedsortable test?
 * Multi-line-selections
 
+Login via Facebook
+  - access name & email
+Page has Share button
+   Start a new conversation
+   Add to existing conversation
+     - then triggers conversation invite button
+Conversation has "Invite" button,
+     Send invitation to facebook or clipboard
+Must login to comment
+Conversation shows who is active/participating
+Conversation-page has links to content-pages.
+Content-pages have links to conversations.
+
+Lines just need 'linked-by' button,
+Page-search needs Related/Excluded
+
+"New/Unread" notification: online and offline
+ Online goes to inbox? Notices?
+
 
 ? Later? Add in check that disallows a tap leading to another tap?
-
 Import/export on phone/tablet?
   URL, GDrive, Image, Contact, Email
 Drag/drop import/export on Desktop
@@ -194,6 +318,68 @@ Chat and Facebook integration
   - attached url's, gmail, google-drive/docs
   Open/resolved-issues, points (and ranking within issue)
     Example; generalization/idea; Ambiguity, Clarification
+
+OK Add CSS to style these spans the same as inputs
+OK Change :focus CSS to use .ui-focus instead
+OK but missing blue border from input:focus?
+OK Add/remove ui-focus classes based on active-span
+OK Use darker background outside panels
+OK  Tweak borders how you want:
+OK  too many gradients? milder colors?
+OK  Use round(offset()) instead of offset() for textarea
+OK Update textarea position & dimensions on resize
+OK Textarea needs to shrink when moving from short line to long
+OK Re-enable keyboard commands from text-area
+OK Need to use multiple textareas
+OK Hide textarea on line-drag
+OK Fix keyboard-auto-scroll (again)
+
+OK Eliminate hiddeninput & cleanup
+OK Fix open-keyboard-twice issue by tracking open/close status
+OK Update model-content from textarea change
+OK Textarea is too wide, margin on left distorts 100% width
+OK Let textarea drop to second line for long input
+OK Shrink textarea when line shortens
+OK Textarea-height needs to propogate on renderUpdate.
+
+OK Add hidden-input positioned in header, outside scrollbars
+OK Add keyboard initialization into main.js
+OK Give keyboard object to nestedSortable
+OK Define keyboard-open/close methods in nestedSortable
+OK Tap over span triggers keyboard-focus-event & updates active-span
+
+OK Change inputs to spans
+OK Add view for span-text -
+OK    remove unnecessary styles from it?
+OK Tap scrolls text-span to visible position
+OK Close keyboard by blurring hidden input
+OK Move a textarea on top of the span
+OK  and utilize default text-editor
+
+OK Fix height of textarea - examine jquery-mobile
+OK Use jquery-mobile to grow text-editor size automatically
+OK Add active-variable to track active span
+OK Synchronize text below too
+OK Move textarea with scrolling, if it's in the same panel
+
+VOID Define cursor object with position in active-span
+VOID Draw cursor-line manually, based on active-span and position
+VOID In text-mode, left/right arrows or tap can move cursor
+VOID Override keydowns to write/backspace to active-span
+VOID When in text-mode, tap moves cursor
+VOID Allow selection within a span?
+
+OK Enable drag-scrolling at top and bottom of screen
+OK  - use same scroll-system or different one?
+OK   Use a variation of sortable's built-in one?
+
+OK Move nestedSortable to page-level,
+    to maintain one copy of the items, and to stop using containers.
+OK ERROR: can move underneath items that have visible children,
+  and can move to immediately lower/higher state (too many green lines)
+
+OK Keep dragLayer in outer layer for dragging across panels
+OK Move dropLayer to each panel for scrolling
 
 OK Get cross-dropping/containers working in nestedsortable
 OK Need to replace drag-helper with something outside scrollview.
@@ -280,8 +466,41 @@ DONE   get changes working when calling model-object for changes.
    (can increase localstorage to 50M hmm...)
    (images/attachments are the problem)
 
+For my brainstorming:
+ Text from:
+  Gmail
+  Web snippets (URL+selection)
+  Clipboard text
+  LATER: PDFs
+Embed images & GDrive
+
+Item search shows inbound links, optionally hiding those that are referenced
+Citations and comments are inbound links; are they different than others?
+(Freeze after posting in chatroom?)
+Links go to other chats and/or to objects
+
+Nodes :: Conversations
+Conversations are special kinds of nodes, attached to regular nodes via a link.
+Focused-page has options:
+  Invite for a new conversation
+    Add to an existing conversation
+Conversations have a link that can be shared via Facebook or Email,
+  associated with one or more page-nodes.
+Each line is like a regular line, without some options.
+Start with Facebook login only
+Ask for post permissions when inviting or sending to facebook users.
+
+Conversations
+Chat-panel has a draggable link on the page-line.
+Allow anonymous reading via link, require Facebook login for editing.
 
 
+Socialization is important, if only for comments
+ ("quoting" things, or other comments)
+
+Select/drag/drop website text snippets, with url
+PDF's would be nice (just select text?)
+Image Snapshot?
 
 DONE Enable text-commands for new lines etc.
 
@@ -618,3 +837,10 @@ Friends?
 Spreadsheet interface (from tagged properties)
 2D-UI design (from outline structure?)
 
+How are constraints supported by the UI
+  Form for optional/required fields
+  Auto-add/remove tags
+Checkbox/Selections - for mutually exclusive tags.
+Tag-lists can be annotated as unique, all, required
+Tasks have a status, completed or not.
+Spreadsheet-like functionaltiy?

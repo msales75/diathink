@@ -299,7 +299,7 @@ diathink.Action = Backbone.RelationalModel.extend({
     execView:function (outline, focus) {
         this.restoreViewContext(this.newContext, outline);
         if (focus) {
-            $('#' + this.getView(this.options.targetID, outline.rootID).header.name.id).focus();
+            $('#' + this.getView(this.options.targetID, outline.rootID).header.name.text.id).focus();
         }
         return;
     },
@@ -346,9 +346,12 @@ diathink.Action = Backbone.RelationalModel.extend({
         return action;
     },
     checkTextChange:function(id) {
+        console.log("Checking text change for id="+id);
         var value = $('#'+id).val();
-        var model = M.ViewManager.findViewById(id).parentView.parentView.value;
+        var model = M.ViewManager.findViewById(id).parentView.parentView.parentView.value;
         if (model.get('text') !== value) {
+            console.log("TextAction for id="+id+"; model="+
+                model.cid+" with value="+$('#'+id).val());
             diathink.TextAction.createAndExec({
                 targetID: model.cid,
                 text: $('#'+id).val()
@@ -448,8 +451,10 @@ diathink.TextAction= diathink.Action.extend({
     execView:function (outline, focus) {
         var target = this.getView(this.options.targetID, outline.rootID);
         if (target != null) {
-            target.header.name.value = this.options.text;
-            $('#'+target.id+' > div > div > a > div > div > input').val(this.options.text);
+            target.header.name.text.value = this.options.text;
+            console.log("Updating view "+target.header.name.text.id+" to value "+this.options.text);
+            $('#'+target.header.name.text.id).val(this.options.text);
+            target.header.name.text.fixHeight();
         }
     },
     undoModel: function () {
@@ -459,8 +464,10 @@ diathink.TextAction= diathink.Action.extend({
     undoView:function (outline, focus) {
         var target = this.getView(this.options.targetID, outline.rootID);
         if (target != null) {
-            target.header.name.value = this.oldText;
-            $('#'+target.id+' > div > div > a > div > div > input').val(this.oldText);
+            target.header.name.text.value = this.oldText;
+            console.log("Updating view "+target.header.name.text.id+" to value "+this.oldText);
+            $('#'+target.header.name.text.id).val(this.oldText);
+            target.header.name.text.fixHeight();
         }
     }
 });

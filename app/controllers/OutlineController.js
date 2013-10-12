@@ -15,6 +15,17 @@ diathink.OutlineManager = M.Object.extend({
 
 });
 
+/*
+diathink.updateScroll = function() {
+    // make sure that textarea is over correct span
+    if (diathink.focused) {
+        $('#'+M.ViewManager.getCurrentPage().hiddeninput.id)
+            .css('left', $(diathink.focused).offset().left+'px')
+            .css('top', $(diathink.focused).offset().top+'px');
+    }
+};
+*/
+
 diathink.OutlineController = M.Controller.extend({
     type: 'diathink.OutlineController',
     rootID: null,

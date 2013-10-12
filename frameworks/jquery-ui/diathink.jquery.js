@@ -1,5 +1,15 @@
 
-jQuery.fn.selectText = function(){
+jQuery.escapeHtml = function(text) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+};
+
+jQuery.fn.selectText = function() {
     var doc = document
         , element = this[0]
         , range, selection
@@ -98,8 +108,29 @@ jQuery.fn.parentDepth = function(n) {
 
 // correct height of scrollview on resize
 $(window).resize(function() {
-    $('.ui-scrollview-clip').height(
-        Math.round($('.ui-footer').offset().top -
-            $('.ui-scrollview-clip').offset().top)-10);
+    if ($('.ui-scrollview-clip').length>0) {
+        var height = Math.round($('body').height() -
+            $('.ui-scrollview-clip').offset().top)-10;
+        $('.ui-scrollview-clip').height(height);
+        $('.scroll-spacer').height(Math.round(height*0.8));
+        $('textarea').each(function() {
+            M.ViewManager.getViewById($(this).attr('id')).fixHeight();
+        });
+    }
     // 10px for .scroll-container margin
+    // Textarea position/size update
+
+    // check only if the width or #panels or fontsize has changed?
+
+    // move textarea to current location
+    //    (near screen top if focus is working)
+    /*
+    var input = $('#'+M.ViewManager.getCurrentPage().hiddeninput.id);
+    if (input && diathink.focused) {
+        input.css('left', Math.round($(diathink.focused).offset().left)+'px')
+            .css('top', Math.round($(diathink.focused).offset().top)+'px')
+            .width($(diathink.focused).width())
+            .height($(diathink.focused).height());
+    }
+    */
 });

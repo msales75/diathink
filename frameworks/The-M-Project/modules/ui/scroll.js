@@ -66,6 +66,7 @@ M.ScrollView = M.View.extend(
             direction: 'y',
             delayedClickEnabled: false
             // MS - prevents double-handling of tap when using bubbling/delegated
+            /* updateScroll: this.updateScroll */
       });
       this.themeChildViews(); // MS fix to avoid list2view bug
     },

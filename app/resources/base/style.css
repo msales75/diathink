@@ -1,164 +1,102 @@
 
 
-li > div > div > a > div > .drag-handle { /* Image-handle for drag/drop */
+body {
+    font-size: 16px;
+}
+
+.ui-btn-inner {
+    font-size: 1em; /* Override 16px default */
+}
+/* Image-handle for drag/drop */
+li.ui-li > div > div > a > div > .drag-handle {
     position: absolute;
-    left: 0;
-    top: 0;
-    height: 26px;
-    width: 26px;
-    background-color: #DDD;
-    opacity: 0.25;
+    top: 0.09em;
+    left: 0.09em;
+    height: 1.3em; /* 24px */
+    width: 1.3em;
+    background-color: transparent;
+    opacity: 0.1;
     cursor: pointer;
-    border: none;
-    border-radius: 9.6px;
+    border: solid 1px black;
+    border-radius: 0.675em;
     margin: 0px;
 }
 
-.ui-content {
-    display: block;
-/*    height: 100%;
-    float: left;
-    width: 50%; */
-    padding: 0;
-    cursor: pointer; cursor: hand;
-}
-.ui-content input {
-    cursor: pointer; cursor: hand;
-}
-
-/* Decrease spacing for inset-list */
-.ui-content .ui-listview-inset, .ui-panel-inner .ui-listview-inset {
-    margin: 0;
-}
-
-/* Indentation of input-box */
-li.ui-li > div > div > a > div > div {
-   /* cursor: text; */ /* MS: only for non-mobile */
-   margin-left: 30px;
-}
-li.ui-li > div > div > a > div > div.ui-focus > input {
-    cursor: text;
-}
-
-.drag-handle:hover {
-    opacity: 1;
-}
-
-li.ui-sortable-helper {
-    opacity: 0.8;
-    border: solid 1px blue;
+li.ui-li.ui-focus > div > div > a > div > .drag-handle,
+li.ui-li.ui-btn-hover-c > div > div > a > div > .drag-handle {
+    opacity: 0.45;
 }
 
 .drop-mode .drag-handle {
     visibility: hidden;
 }
-
-/* use 1px margin/top offset to trim last pixel when overflow is hidden */
-ul.ui-listview > li.ui-li {
-    margin-top: -1px;
-    position: relative;
-    top: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
+.drop-mode .ui-sortable-helper .drag-handle {
+    visibility: visible;
 }
 
-li.ui-li > div.ui-li {
-    border-top-width: 0px;
-    border-bottom-width: 0px;
-}
-
-.ui-btn-hover-c:hover {
-    border-color: transparent;
-    /* border-color: #387bbe; */
-}
-
-/* Only show overflow when hovering or focused */
-ul.ui-listview > li.ui-li {
-    overflow: hidden;
-}
-ul.ui-listview > li.ui-li:hover {
-    /* z-index: 10; *//* Keep bottom border visible on hover */
-    /* overflow: visible; *//* Keep last- */
-}
-ul.ui-listview  {
-    overflow: hidden; /* Truncate bottom border when not focused, to
-       avoid overlaying outer elements */
-}
-ul.ui-listview:hover  {
-    /* overflow: visible; */
-}
-
-
-li.collapsed.branch > div > div > a > div > .disclose{
-    /* background: #FFF center url("images/expand.png") no-repeat; */
+/* Handle transformation when open or closed */
+li.collapsed.branch > div > div > a > div > .disclose {
     background-color: #888;
-}
-
-li.expanded > div > div > a > div > .disclose {
-    /* background: #FFF center url("images/contract.png") no-repeat; */
-    background-color: #DDD;
 }
 
 li.collapsed > div > div > a > ul {
     display: none;
 }
 
-/* Hide bottom-line's that are below children */
-li.branch > div > div > a > .bottomline {
-    display: none;
+/* Override 15px padding around each panel,
+   since it messes up column spacing */
+.ui-content {
+    padding: 0;
 }
 
-/* Override default UI */
-div.ui-input-text {
-    margin: 0px 0 1px 12px;
-    /* Put a little more border at bottom since it looks crowded */
+/* Fix line-spacing for inset-list */
+.ui-content .ui-listview-inset, .ui-panel-inner .ui-listview-inset {
+    margin: 0;
 }
 
-.ui-li .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li {
-    padding: 0 0 0 14px;
-    position: static;
-    overflow: visible;  /* Keeps bottom-border from being clipped on hover */
+ul.ui-listview > li.ui-li {
+    position: relative;
+    border: none;
+}
+/* around list-element */
+.ui-btn-up-c, .ui-btn-up-c:hover, .ui-btn-hover-c, .ui-btn-hover-c:hover {
+    border: none;
+    text-shadow: 1px 1px 0 #ccc;
+    background-image: none;
 }
 
-.ui-shadow, .drop-mode .ui-shadow:hover {
+li.ui-li > div.ui-li.ui-btn-inner {
+    border: none;
+}
+
+/* Style draggable helper in drop-mode */
+.drop-mode li.ui-li.ui-sortable-helper {
+    opacity: 0.9;
+    border: solid 1px #888;
+    border-radius: 0.675em;
+}
+
+/* Remove extra padding around ui-link-inherit */
+.ui-li .ui-btn-inner a.ui-link-inherit {
+    padding: 0 0 0 0.8em;
+}
+
+/* Remove shadows from many ui-shadow elements */
+.ui-shadow, .ui-shadow:hover {
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
     box-shadow: none;
 }
 
-.ui-shadow:hover {
-    -moz-box-shadow: none;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-/*    -moz-box-shadow: 0 1px 3px rgba(0,0,0,.2);
-    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.2);
-    box-shadow: 0 1px 3px rgba(0,0,0,.2);
-    */
+/* Set page background */
+.ui-page,  .ui-body-c {
+    background-image: none;
+    background-color: #888;
 }
 
-/* (MS: If you want to disable hover entirely)
-.ui-btn-up-c, .ui-btn-up-c:hover, .ui-btn-hover-c {
-    background: #eee;
-    font-weight: bold;
-    color: #222;
-    text-shadow: 0 1px 0 #fff;
-    background-image: -webkit-gradient(linear,left top,left bottom,from( #fff ),to( #f1f1f1 ));
-    background-image: -webkit-linear-gradient( #fff,#f1f1f1 );
-    background-image: -moz-linear-gradient( #fff,#f1f1f1 );
-    background-image: -ms-linear-gradient( #fff,#f1f1f1 );
-    background-image: -o-linear-gradient( #fff,#f1f1f1 );
-    background-image: linear-gradient( #fff,#f1f1f1 );
-}
-*/
-
-.ui-btn-up-c { /* around list-element */
-    border-color: transparent;
-}
-.ui-btn-inner {
-    border-color: transparent;
-}
-.ui-body-c { /* around input-area */
-    border-color: transparent;
+/* Remove border around body and text-area*/
+.ui-body-c {
+    border: none;
 }
 
 /* Only show box-shadow on hover or when in drop-mode */
@@ -168,65 +106,15 @@ div.ui-input-text {
     box-shadow:none;
 }
 
-/* This hover overriding input outline on focus*/
-.ui-shadow-inset:hover {
-    -moz-box-shadow:none;
-    -webkit-box-shadow:none;
-    box-shadow:none;
-/*    -moz-box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
-    -webkit-box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
-    box-shadow:inset 0 1px 4px rgba(0,0,0,.2);
-    */
-}
-
-.ui-focus, .ui-focus:hover /* For increasing priority over other input-box hovers */
-{
-    border-color: #387bbe;
-    -moz-box-shadow: inset 0 0 1px #387bbe,0px 0 9px #387bbe;
-    -webkit-box-shadow: inset 0 0 1px #387bbe,0px 0 9px #387bbe;
-    box-shadow: inset 0 0 1px #387bbe,0px 0 9px #387bbe;
-}
-
-ul.ui-listview.ui-focus-parent {
-   overflow: visible;
-}
-
-/* Don't show bottom list-border if hovering immediately inside a focused element,
-  because the outer/wider focused border should override it.  */
-li.ui-li.ui-focus > div > div > a > ul.ui-listview:hover {
-    overflow: hidden;
-}
-
-ul.ui-listview > li.ui-li.ui-focus-parent {
-   overflow: visible;
-   z-index: 10;
-}
-
-/* Decrease top/bottom padding around input-text
-  and make height pixel-integer not em-based
-  (should probably change this back to em?)  */
-div.ui-input-text input.ui-input-text {
-    padding: 2px 0;
-    height: 22px;
-    min-height: 22px;
-    line-height: 22px;
-}
-
 /* Mask other hover-effects when in drop-mode */
 .drop-mode .ui-btn-hover-c {
     border-color: transparent;
-    background: #eee;
+    background-color: #eee;
+    background-image: none;
     font-weight: bold;
-    color: #222;
-    text-shadow: 0 1px 0 #fff;
-    background-image: -webkit-gradient(linear,left top,left bottom,from( #fff ),to( #f1f1f1 ));
-    background-image: -webkit-linear-gradient( #fff,#f1f1f1 );
-    background-image: -moz-linear-gradient( #fff,#f1f1f1 );
-    background-image: -ms-linear-gradient( #fff,#f1f1f1 );
-    background-image: -o-linear-gradient( #fff,#f1f1f1 );
-    background-image: linear-gradient( #fff,#f1f1f1 );
+    color: #333;
+    text-shadow: 1px 1px 0 #ccc;
 }
-
 
 /* drop-layer fills the page when active */
 .droplayer, .drawlayer {
@@ -245,8 +133,10 @@ div.ui-input-text input.ui-input-text {
 
 .drop-mode .droplayer > .dropborder {
   position: absolute;
-  border:  dashed #8BE05A 1px;
+  background-color: transparent;
+  border:  dashed #000 1px;
 }
+
 .drop-mode .droplayer > .dropborder.active {
     border-style: solid;
 }
@@ -257,8 +147,8 @@ div.ui-input-text input.ui-input-text {
     background-position: center;
     background-image: url(images/indent-arrow.png);
     opacity: 0.3;
-    height: 24px;
-    width: 24px;
+    height: 1.25em;
+    width: 1.25em;
 }
 
 .drop-mode .droplayer > .droparrow.active {
@@ -279,28 +169,31 @@ div.ui-input-text input.ui-input-text {
     overflow-y: hidden;
 }
 
-/* .drag-hover used when :hover is unavailable underneath drop-layer? */
-.drop-mode ul.ui-listview > li.ui-li.drag-hover {
-    z-index: 20;
-    overflow: visible;
-}
-
-.drop-mode ul.ui-listview.drag-hover {
-    overflow: visible;
+.ui-header {
+    background-color: #EEE;
+    background-image: none;
+    height: 42px;
 }
 
 
-.undo-container {
+.undo-container, .zoom-container {
     width: 100px;
     height: 30px;
 }
-
-.undo-container > a.undo-button, .undo-container > a.redo-button {
+.undo-container > a.undo-button, .undo-container > a.redo-button,
+.zoom-container > a {
     float: left;
     padding: 2px;
     margin: 3px;
 }
 
+.ui-header span.ui-btn-inner {
+    display: block;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Undo-button particulars */
 .undo-button span.ui-btn-inner {
     display: block;
     background-image: url(images/undo.png);
@@ -321,6 +214,7 @@ div.ui-input-text input.ui-input-text {
     border-radius: inherit;
     -webkit-border-radius: inherit;
 }
+/** End undo-button details */
 
 .ui-breadcrumb > a.ui-breadcrumb-link {
     cursor: pointer;
@@ -332,6 +226,7 @@ a:active, a:focus {
     -moz-outline-style:none;
 }
 
+/* Not sure if this is being used? */
 .scroll-container {
     margin: 10px 20px;
 }
@@ -339,7 +234,121 @@ a:active, a:focus {
 .ui-grid-a > div, .ui-grid-a > div > div {
     height: 100%;
 }
+.ui-grid-a > div > div {
+    width: 94%;
+}
 
-.ui-scrollview-clip {
+li.ui-li.ui-focus, li.ui-li.ui-focus:hover {
+    background-color: #FFF;
+}
 
+li.ui-li {
+    background-color: #EEE;
+}
+li.ui-li.ui-btn-hover-c {
+    background-color: #FFF;
+}
+
+li.ui-li .outline-header > div.outline-content_container {
+    padding: 1px 2px 1px 0.8em;
+    margin: 0;
+    -webkit-transition: height 80ms linear;
+    -moz-transition: height 80ms linear;
+    -o-transition: height 80ms linear;
+    transition: height 80ms linear;
+}
+
+li.ui-li .outline-header > div > textarea.outline-content.ui-input-text {
+    display: block;
+    margin: 0; /* 12px; */
+    font-weight: normal;
+    padding: 0.15em 0.18em; /* 2px 3px; */
+    color: #333;
+    font-size: 1em; /* 18px; */
+    min-height: 1.25em; /* 22px; */
+    line-height: 1.25em; /* 22px; */
+    border-radius: 0.675em; /* 8px; */
+    outline: none;
+    text-shadow: 1px 1px 0 #ccc;
+    background-color: transparent;
+    background-image: none;
+    overflow: hidden;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+div.hiddendiv {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0.675em; /* 8px; */
+    outline: none;
+    position: absolute;
+    min-height: 1.25em;
+    font-size: 1em; /* 18px; */
+    line-height: 1.25em; /* 22px; */
+    font-weight: normal;
+    left: 10px;
+    top: 10px;
+    z-index: 9000;
+}
+
+.hiddendiv span.marker {
+    display: inline;
+    font-size: 1em; /* 18px; */
+    line-height: 1.25em; /* 22px; */
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+}
+
+/*
+div.hiddeninput {
+    display: block;
+    position: absolute;
+    z-index: -1;
+    margin: 0;
+    height: 1.25em;
+    width: 50px;
+    padding: 0;
+    border: none;
+    top: 0;
+    left: 0;
+    opacity: 0;
+}
+*/
+
+
+.ui-body-c .ui-link {
+    color: #DDD;
+    text-shadow: 1px 1px 0 #333;
+}
+.ui-body-c .ui-link:hover {
+    color: #EEE;
+}
+
+.ui-btn:focus,.ui-link-inherit:focus,
+.ui-mobile-nosupport-boxshadow .ui-focus,
+.ui-mobile-nosupport-boxshadow .ui-btn:focus,
+.ui-mobile-nosupport-boxshadow .ui-link-inherit:focus {
+    outline:0
+}
+
+.ui-input-text.ui-focus,
+.ui-input-search.ui-focus,
+.ui-focus,.ui-btn:focus {
+    -moz-box-shadow:none;
+    -webkit-box-shadow:none;
+    box-shadow:none;
+}
+
+.scroll-spacer {
+    display: block;
+    width: 100%;
+    height: 80%;
+    background: transparent;
 }

@@ -23,7 +23,8 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 		startEventName:    "scrollstart",
 		updateEventName:   "scrollupdate",
 		stopEventName:     "scrollstop",
-	
+        /* updateScroll: null, */ // MS external function for each scroll-move
+
 		eventType:         $.support.touch ? "touch" : "mouse",
 	
 		showScrollBars:    true,
@@ -189,7 +190,6 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 				c.scrollTop = -y;
 				break;
 		}
-
 		var $vsb = this._$vScrollBar;
 		var $hsb = this._$hScrollBar;
 
@@ -210,7 +210,12 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 			else
 				$sbt.css("left", -x/$v.width()*100 + "%");
 		}
-	},
+/*
+        if (this.options.updateScroll) {
+            this.options.updateScroll();
+        }
+*/
+    },
 
 	scrollTo: function(x, y, duration)
 	{
@@ -348,8 +353,11 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 		//
 		// XXX: We should test if this has an effect on links! - kin
 
-		if (this.options.eventType == "mouse" || this.options.delayedClickEnabled)
-			e.preventDefault();
+        // TODO: MS We can't prevent-default on textarea if we want to place cursor correctly.
+
+        // MS edit to allow default at this point, but might prevent it after bubbling to doc.
+		// if (this.options.eventType == "mouse" || this.options.delayedClickEnabled)
+			// e.preventDefault();
 		    // e.stopPropagation(); // MS edit to enable propogation of mousedown events
 	},
 

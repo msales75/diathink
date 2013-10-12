@@ -46,7 +46,8 @@
                 "jquery.ui.sortable.js",
                 "jquery.ui.touch-punch.js",
                 "jquery.ui.nestedSortable.js",
-                "jquery.cursor.js"
+                "jquery.cursor.js",
+                "textinput.js"
             ]
         },
         {

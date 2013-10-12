@@ -8679,7 +8679,7 @@ $.mobile.document.delegate( ":jqmData(role='table')", "tablecreate", function() 
 	});
 
 }( jQuery ));
-
+/* MS disable mobile.textinput, replacing with custom one.
 (function( $, undefined ) {
 
 $.widget( "mobile.textinput", $.mobile.widget, {
@@ -8860,7 +8860,7 @@ $.mobile.document.bind( "pagecreate create", function( e ) {
 });
 
 })( jQuery );
-
+*/
 (function( $, undefined ) {
 
 $.mobile.listview.prototype.options.filter = false;

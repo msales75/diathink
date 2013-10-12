@@ -531,6 +531,8 @@ M.ListView = M.View.extend(
                     case 'M.LabelView':
                     case 'M.ButtonView':
                     case 'M.ImageView':
+                    case 'M.TextEditView': // MS modification
+                    case 'M.SpanView': // MS modification
                     case 'M.TextFieldView':
                         while(regexResult !== null) {
                             if(typeof(record[regexResult[1]]) === 'object') {
