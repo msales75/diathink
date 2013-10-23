@@ -28,7 +28,9 @@ diathink.keyboardSetup = M.Object.extend({
 // for touch devices, don't let mousedown propogate to window,
 //   to prevent unintended focus/blurs that change keyboard
             document.ontouchmove = function(e) {
-                e.preventDefault(); // this is useful
+                if ($('#debuglog').css('display')==='none') {
+                    e.preventDefault(); // helps prevent scrolling
+                }
             }
 
             $(window).click(function(e) {
@@ -55,18 +57,18 @@ diathink.keyboardSetup = M.Object.extend({
                             (Math.abs(newWidth-self.oldWidth)<20) &&
                             (newHeight < self.oldHeight - 50) &&
                             (newHeight > 0.2*self.oldHeight)) {
-                            if (! this.isOpen) {
+                            if (! self.isOpen) {
                                 self.softKeyboardOpen();
-                                this.isOpen = true;
+                                self.isOpen = true;
                             }
                             self.listenForResize = 0;
                         } else if ( (self.listenForResize===-1) &&
                             (Math.abs(newWidth-self.oldWidth)<20) &&
                             (self.oldHeight < newHeight - 50) &&
                             (self.oldHeight > 0.2*newHeight)) {
-                            if (this.isOpen) {
+                            if (self.isOpen) {
                                 self.softKeyboardClose();
-                                this.isOpen = false;
+                                self.isOpen = false;
                             }
                             self.listenForResize = 0;
                         }
@@ -104,9 +106,9 @@ diathink.keyboardSetup = M.Object.extend({
         if (this.is_touch_device && this.is_mobile_ios) {
             setTimeout(function() {
                 if (self._virtualKeyboardHeight()>10) {
-                    if (! this.isOpen) {
+                    if (! self.isOpen) {
                         self.softKeyboardOpen();
-                        this.isOpen = true;
+                        self.isOpen = true;
                     }
                 }
             }, 1);
@@ -117,12 +119,14 @@ diathink.keyboardSetup = M.Object.extend({
         // keep track of selected textarea, and define blur on it,
         // especially a blur without any keyboard event?
             // did user close keyboard?
+        var self = this;
                 if (self.is_mobile_ios) {
                 setTimeout(function() {
-                    if (self._virtualKeyboardHeight()<10) {
-                        if (this.isOpen) {
+                    if (self.isOpen) {
+                        alert("test-close keyboard-height = "+self._virtualKeyboardHeight());
+                        if (self._virtualKeyboardHeight()<10) {
                             self.softKeyboardClose();
-                            this.isOpen = false;
+                            self.isOpen = false;
                         }
                     }
                 }, 1);

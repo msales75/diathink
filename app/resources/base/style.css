@@ -1,8 +1,24 @@
 
 
+body, div, span, a, img, h1, h2, h3, h4, h5, ul, li {
+ -webkit-touch-callout: none;
+ -webkit-user-select: none;
+ -khtml-user-select: none;
+ -moz-user-select: none;
+ -ms-user-select: none;
+ user-select: none;
+}
+
+html, body { overflow: hidden; height: 100% }
+body { margin:0; padding:0; }
 body {
     font-size: 16px;
 }
+
+.ui-mobile .ui-page-active {
+    overflow: hidden;
+}
+
 
 .ui-btn-inner {
     font-size: 1em; /* Override 16px default */
@@ -155,18 +171,21 @@ li.ui-li > div.ui-li.ui-btn-inner {
     opacity: 1;
 }
 
-.drop-mode .drag-hover {
+/* .drop-mode .drag-hover {
     z-index: 10;
     overflow: visible;
 }
-
+*/
+.ui-scrollview-clip {
+    overflow: hidden;
+}
 .ui-scrollview-clip > .ui-scrollview-view {
     padding-bottom: 2px;
 }
 
 .drop-mode .drag-hover.ui-scrollview-clip, .drop-mode .drag-hover.ui-scrollview-view {
-    overflow-x: visible;
-    overflow-y: hidden;
+    /* overflow-x: visible; */
+    overflow: hidden;
 }
 
 .ui-header {
@@ -178,7 +197,7 @@ li.ui-li > div.ui-li.ui-btn-inner {
 
 .undo-container, .zoom-container {
     width: 100px;
-    height: 30px;
+    height: 36px;
 }
 .undo-container > a.undo-button, .undo-container > a.redo-button,
 .zoom-container > a {
@@ -292,7 +311,7 @@ div.hiddendiv {
     font-weight: normal;
     left: 10px;
     top: 10px;
-    z-index: 9000;
+    z-index: 1500;
 }
 
 .hiddendiv span.marker {
@@ -352,3 +371,48 @@ div.hiddeninput {
     height: 80%;
     background: transparent;
 }
+
+/* Debug style */
+#debuglog {
+    display: none;
+    position: absolute;
+    z-index: 2000;
+    overflow: scroll;
+    width: 100%;
+    min-height: 100%;
+    height: 100%;
+    background-color: white;
+}
+#debuglog li {
+    display: block;
+    margin: 0; padding: 0; border: 0;
+    font-size: 13px;
+    font-weight: normal;
+    color: black;
+    background-color: transparent;
+}
+#debuglog ul {
+  display: block;
+  margin: 0; padding: 0; border: 0;
+  margin-left: 20px;
+}
+
+#debuglog .kill {
+    position: absolute;
+    z-index: 3000;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    background-color: #F80;
+}
+#debugopen {
+    position: absolute;
+    z-index: 1000;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background-color: #FF0;
+}
+/* End of debug */

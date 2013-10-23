@@ -1,9 +1,11 @@
 M.test = function (test, message) {
     if (!test) {
         if (message) {
-            console.log("INVALID: " + message);
+            diathink.log([], "INVALID: " + message);
+            // console.log("INVALID: " + message);
         } else {
-            console.log("INVALID: Unspecified validation error");
+            diathink.log([], "INVALID: Unspecified validation error");
+            // console.log("INVALID: Unspecified validation error");
         }
     }
 };
@@ -13,6 +15,12 @@ diathink.validateMVC = function () {
     var outlines = diathink.OutlineManager.outlines;
     var models = Backbone.Relational.store._collections[0]._byId;
     var views = M.ViewManager.viewList;
+
+    $('[id]').each(function(){
+        var ids = $('[id="'+this.id+'"]');
+        M.test(ids.length===1,
+            "There is more than one DOM element with id="+this.id);
+    });
 
     for (var o in outlines) {
         M.test(typeof outlines[o] === 'object',
@@ -516,10 +524,6 @@ diathink.validateMVC = function () {
         }
     }
 
-    // todo: validate that all lists are unique inside their li
-    // $('#'+li.id).children().children().children().children().children('ul').length===1
-
-    // todo: check for duplicate DOM id's?
 
     // check listview's and list-elements
     $('.ui-listview').each(function() {
@@ -528,6 +532,7 @@ diathink.validateMVC = function () {
     });
 
     $('ul').each(function() {
+        if ($(this).closest('#debuglog').length>0) {return;}
         M.test(typeof $(this).attr('id') === 'string',
             "List does not have a string for an id");
         M.test($(this).attr('id').length>=3,
@@ -539,6 +544,13 @@ diathink.validateMVC = function () {
         M.test($(this).hasClass('ui-shadow'),
             "List "+$(this).attr('id')+" does not have class ui-shadow");
 
+
+        // todo: check for ui-sortable class for page
+        // todo: validate that page.data('ui-sortable') has valid
+        //    .panels and .items and
+        // M.test($(this).hasClass('ui-sortable'))
+
+        /*
         // li,ul overflow is hidden unless :hover or .ui-focus-parent
         // ul z-index is always auto
         // li z-index is auto unless :hover of .ui-focus-parent
@@ -550,9 +562,7 @@ diathink.validateMVC = function () {
                 M.test($(this).css('overflow') === 'hidden',
                     "List "+$(this).attr('id')+" does not have hidden overflow, though it should");
             }
-        }
-        // todo: check for ui-sortable class for outline-roots
-        // M.test($(this).hasClass('ui-sortable'))
+        } */
     });
 
     $('.ui-li').each(function() {
@@ -564,6 +574,7 @@ diathink.validateMVC = function () {
     });
 
     $('li').each(function() {
+        if ($(this).closest('#debuglog').length>0) {return;}
         M.test(typeof $(this).attr('id') === 'string',
             "List-item does not have a string for an id");
         M.test($(this).attr('id').length>=3,
@@ -622,7 +633,11 @@ diathink.validateMVC = function () {
             M.test(! $(this).parent().is(':visible'),
                 "LI "+$(this).attr('id')+" is not visible though parent ul is");
         }
+        // validate that all lists are unique inside their li
+        M.test($(this).children().children().children().children('ul').length===1,
+            "List-item "+$(this).attr('id')+" does not have exactly one ul inside it");
 
+/*
         // validate overflow and z-index, which can be programmatically changed
         if ($(this).is(":visible")) {
             if ($(this).hasClass('ui-focus-parent') || $(this).mouseIsOver()) {
@@ -637,6 +652,7 @@ diathink.validateMVC = function () {
                     "LI "+$(this).attr('id')+" does not have z-index=auto");
             }
         }
+*/
     });
 
     // validate that ui-focus-parent is used iff ui-focus is inside it
@@ -655,8 +671,6 @@ diathink.validateMVC = function () {
         });
     });
 
-    // todo: check overflow on 'a' inner elem
-    // todo: check height/width footprint of li and ul
 
     var actions = diathink.UndoController.actions;
     var lastaction = diathink.UndoController.lastAction;
@@ -673,7 +687,6 @@ diathink.validateMVC = function () {
         M.test(lastaction === null,
             "There are no actions, but lastaction is not null")
     }
-
 
     // undo-buttons should be up to date
     var b = M.ViewManager.getCurrentPage().header.undobuttons;
@@ -698,21 +711,81 @@ diathink.validateMVC = function () {
                 ($('#'+ b.redobutton.id).children('div.ui-disabled').length===0)),
         "Redo button does not match nextRedo()");
 
+    function footprint(elem) {
+        var obj = {};
+        var offset = $(elem).offset();
+        var paddingtop = Number($(elem).css('padding-top').replace(/px/,''));
+        var margintop = Number($(elem).css('margin-top').replace(/px/,''));
+        var bordertop = Number($(elem).css('border-top-width').replace(/px/,''));
+        if ($(elem).css('border-top-style')==='none') {bordertop = 0;}
+        var paddingleft = Number($(elem).css('padding-left').replace(/px/,''));
+        var marginleft = Number($(elem).css('margin-left').replace(/px/,''));
+        var borderleft = Number($(elem).css('border-left-width').replace(/px/,''));
+        if ($(elem).css('border-left-style')==='none') {borderleft = 0;}
+        obj.top = offset.top - margintop;
+        obj.left = offset.left - marginleft;
+        obj.bottom = obj.top + $(elem).outerHeight(true);
+        obj.right = obj.left + $(elem).outerWidth(true);
+        return obj;
+    }
+    $('*').each(function() {
+        // validate that everything fits inside the parent-object, except
+        // for scrollview-view height > inside scrollview-clip
+        var type = this.nodeName.toLowerCase();
+        if ((type==='html')||(type==='head')||(type==='meta')||
+            (type==='script')||(type==='link')||(type==='style')||
+            (type==='title')||(type==='base')||(type==='body')) {
+            return;
+        }
+        var box = footprint(this);
+        if ($(this).parent().length>0) {
+            var pbox = footprint($(this).parent().get(0));
+            M.test(box.top >= pbox.top,
+                "Object "+this.nodeName+'#'+String(this.id)+" has top="+box.top+" above parent="+pbox.top);
+            M.test(box.left >= pbox.left,
+                "Object "+this.nodeName+'#'+String(this.id)+" has left="+box.left+" above parent="+pbox.left);
+            if (box.right <= pbox.right,
+                "Object "+this.nodeName+'#'+String(this.id)+" has right="+box.right+" above parent="+pbox.right);
+            if (! $(this).hasClass('.ui-scrollview-clip')) {
+                M.test(box.bottom <= pbox.bottom,
+                    "Object "+this.nodeName+'#'+String(this.id)+" has bottom="+box.bottom+" above parent="+pbox.bottom);
+            }
+        }
+    });
+
+
+    // todo: Need a optional debug-button in header,
+    //     and log failed tests to a error-log.
+    // todo: Need diagnostic output to see what is going on
+    //    with dragging, scrolling, focusing, and keyboards?
+    // diagnostics/assertions for keyboard/focus status
+
+    // todo: action-state test to ensure actions can't overlap
+    // todo: textarea not exceed height/width of parent boxes
+    // todo: textarea height/width change must always match with content
+    // todo: check height/width footprint of li and ul
+    // todo: diathink.focused should be focused and match hiddendiv
+    // todo: hiddendiv should have properties matching focused-div
+    // todo: recalculated widths/heights should match up after resize
+    // todo: ui-focus should always/only be on focused textarea and parent li.
+
+    // nestedSortable items matches up with boxes etc. when dragging
+
     // todo: exec/undo and undo/redo should cancel for all actions
     // (part of a functional test)
-
-    // DOM children should match value=collection
-    // check that view-parent matches nearest DOM-parent-view
+    // functional tests that cover each contingency of each action?
     // Also check UI 'State' parameters in the view?
+    // todo: check overflow on 'a' inner elem
 
+    // todo: check html/css w3c validation?
     // todo: validate event-handlers:
     // $('*').each(function() {if ($._data(this,'events')!==undefined)
     //   {console.log([this.nodeName, this.id, this.className,
     //    $._data(this,'events')]);}});
     //  clean up and optimize events later
     // (maybe tie event handling to priority-queueing)
-
-    // todo: check html/css w3c validation?
+    // todo: can't check for unmatched tags or quotes or ampersands via javascript,
+    //   though unmatched tags should mess up the view hierarchy and trigger other errors
 
     return "done";
 }

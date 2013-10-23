@@ -830,11 +830,15 @@ $.widget2("ui.sortable", $.ui.mouse, {
 		// 1. The position of the helper is absolute, so it's position is calculated based on the next positioned parent
 		// 2. The actual offset parent is a child of the scroll parent, and the scroll parent isn't the document, which means that
 		//    the scroll is included in the initial calculation of the offset of the parent, and never recalculated upon drag
-		if(this.cssPosition == 'absolute' && this.scrollParent[0] != document && $.contains(this.scrollParent[0], this.offsetParent[0])) {
-			po.left += this.scrollParent.scrollLeft();
-			po.top += this.scrollParent.scrollTop();
+		if (this.cssPosition == 'absolute' &&
+            this.scrollParent[0] != document &&
+            $.contains(this.scrollParent[0], this.offsetParent[0])) {
             // MS: add constraint to ensure this never happens
-            alert('Special case is happening!');
+              if ((this.scrollParent.scrollLeft()!==0) || (this.scrollParent.scrollTop()!==0)) {
+                alert('Special case is happening with cssPosition = absolute!');
+                po.left += this.scrollParent.scrollLeft();
+                po.top += this.scrollParent.scrollTop();
+              }
 		}
 
 		if((this.offsetParent[0] == document.body) //This needs to be actually done for all browsers, since pageX/pageY includes this information

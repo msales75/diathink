@@ -61,21 +61,25 @@
 			// mjs - prepare the tree by applying the right classes (the CSS is responsible for actual hide/show functionality)
             this.refreshStyle();
 
-            // todo: initialize lists for each panel - outside nestedSortable?
-            // define panels
-            this.panels = $(this.element).find('.ui-scrollview-clip');
 
             // MS - identify the OutlineView we are in
-            var view = M.ViewManager.findViewById(this.element.attr('id'));
-            if ((view.type != 'M.ListView') || (view.rootID != view.id)) {
+            // var view = M.ViewManager.findViewById(this.element.attr('id'));
+            // if ((view.type != 'M.ListView') || (view.rootID != view.id)) {
                 // console.log("ERROR: View rootID is not here, for view-id="+view.id);
-            }
-            this.rootView = view;
+            // }
+            // this.rootView = view;
             if (this.options.keyboard) {
                 // override open/close keyboard methods
                 this.options.keyboard.softKeyboardOpen = this.softKeyboardOpen;
                 this.options.keyboard.softKeyboardClose = this.softKeyboardClose;
             }
+            this.panels = $(this.element).find('.ui-scrollview-clip');
+        },
+
+        update: function() {
+            // todo: initialize lists for each panel - outside nestedSortable?
+            this.panels = $(this.element).find('.ui-scrollview-clip');
+            this.refresh();
         },
 
 		_destroy: function() {
@@ -103,13 +107,16 @@
         },
         softKeyboardOpen: function() {
             // scroll to active element in active-panel
+
             var input = $('li.ui-focus');
-            var panel = input.closest('.ui-scrollview-clip');
-            var globalOffsetY = input.offset().y; // scroll to this offset
-            var containerOffsetY = panel.offset().y;
-            var oldScrollY = panel.scrollview('getScrollPosition').y;
-            var newScrollY = globalOffsetY - containerOffsetY + oldScrollY;
-            panel.scrollview('scrollTo', 0, newScrollY);
+            if (input.length>0) {
+                var panel = input.closest('.ui-scrollview-clip');
+                var globalOffsetY = input.offset().top; // scroll to this offset
+                var containerOffsetY = panel.offset().top;
+                var oldScrollY = panel.scrollview('getScrollPosition').y;
+                var newScrollY = -(globalOffsetY - containerOffsetY) + oldScrollY;
+                panel.scrollview('scrollTo', 0, newScrollY);
+            }
             alert("softKeyboardOpen");
         },
         softKeyboardClose: function() {
@@ -148,13 +155,13 @@
             // loop over items
             // determine whether to draw top or bottom line
             // determine position to draw at
-
+            diathink.log(['debug','drag'],"Redrawing dropLines");
             $(this.options.dropLayers).html('');
             this._showDropLines();
 
             for (var i = this.items.length - 1; i >= 0; i--) {
                 var item = this.items[i], itemEl = item.item;
-                var noBottom = false, noTop = false;
+                var noBottom = false, noTop = false, noHandle = false;
 
                 item.droptop = null;
                 item.dropbottom = null;
@@ -189,6 +196,9 @@
                         noTop = true;
                     }
                 }
+                if (activeModel.get('parent') === itemModel) {
+                    noHandle = true;
+                }
                 if (itemEl.prev().childDepth(this.options.buryDepth).children('ul').children('li:visible').length!==0) {
                     // predecessor has visible children, cannot drop above it
                     noTop = true;
@@ -219,10 +229,12 @@
                         height: 0
                     }, canvas);
                 }
-                item.drophandle = $('<div></div>').appendTo(canvas)
+                if (!noHandle) {
+                    item.drophandle = $('<div></div>').appendTo(canvas)
                         .addClass('droparrow')
                         .css('top', (item.top-ctop-1)+'px')
                         .css('left', (item.left-cleft-10)+'px');
+                }
 
                 if (!noBottom) {
                     item.dropbottom = this._drawDropLine({
@@ -236,6 +248,7 @@
             for (var i=0; i < this.items.length; ++i) {
                 this._updateDropBoxes(this.items[i]);
             }
+            this._previewDropBoxes();
         },
 
         // cache drop-coordinates
@@ -280,14 +293,22 @@
         _previewDropBoxes: function() {
             var i, j, d;
             for (i=0; i<this.items.length; ++i) {
+                var view = M.ViewManager.getViewById(this.items[i].item.attr('id'));
+                while (view.type !== 'M.ScrollView') {
+                    view = view.parentView;
+                    if (view==null) {debug.log(['error','drag'],'Invalid View'); return;}
+                }
+                var canvas = $('#'+view.droplayer.id);
+                var ctop = canvas.offset().top;
+                var cleft = canvas.offset().left;
                 for (j=0; j<this.items[i].dropboxes.length; ++j) {
                     d = this.items[i].dropboxes[j];
-                    $('<div></div>').appendTo(this.options.dropLayer)
+                    $('<div></div>').appendTo(canvas)
                         .css('position','absolute')
-                        .css('top', (d.top-1)+'px')
-                        .css('left', (d.left-1)+'px')
+                        .css('top', (d.top-ctop-1)+'px')
+                        .css('left', (d.left-cleft-1)+'px')
                         .css('width', (d.right-d.left-2)+'px')
-                        .css('height',(d.bottom- d.top-2)+'px')
+                        .css('height',(d.bottom-d.top-2)+'px')
                         .css('border','dotted red 1px');
                 }
             }
@@ -324,7 +345,7 @@
                 var right = left + this.scrollPanel.width();
                 if (!(this.positionAbs.left >= left && this.positionAbs.left <= right)) {
                     this.scrollPanel = null;
-                    console.log("Clearing scrollPanel")
+                    console.log("Clearing scrollPanel");
                 }
             }
             if (!this.scrollPanel) {
@@ -355,6 +376,7 @@
                 var box = this._insideDropBox();
                 if (box) {
                     box.elem.addClass('active');
+                    diathink.log(['debug','drag'],"Defined drop box of type"+box.type);
                 }
                 if (this.activeBox && (this.activeBox!=box)) {
                     this.activeBox.elem.removeClass('active');
@@ -380,6 +402,7 @@
                             // hoverItem.addClass(o.hoveringClass);
                             var self = this;
                             this.hovering = window.setTimeout(function() {
+                                diathink.log(['debug','drag'],"Trying to expand on hover")
                                 hoverItem.removeClass(o.collapsedClass).addClass(o.expandedClass);
                                 self.refreshPositions();
                                 self._drawDropLines();
@@ -505,7 +528,7 @@
 		// mjs - this function is slightly modified to make it easier to hover over a collapsed element and have it expand
         _insideDropBox: function(e) {
             var i, j, d;
-
+            diathink.log(['debug','drag'],"Identifying drop-box")
             // this.position is same, scroll is different for each item
             for (i=0; i<this.items.length; ++i) {
                 if (this.items[i].dropboxes == null) {continue;} // when mousedrag is called before initialization

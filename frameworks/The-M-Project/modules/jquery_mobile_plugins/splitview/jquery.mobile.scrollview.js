@@ -180,12 +180,14 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 		{
 			case "translate":
 				setElementTransform($v, x + "px", y + "px");
+                this._$clip[0].scrollTop = 0; // MS fix for scrollTop drifting
 				break;
 			case "position":
 				$v.css({left: x + "px", top: y + "px"});
 				break;
 			case "scroll":
 				var c = this._$clip[0];
+                alert('Changing scrollTop via scrollview!');
 				c.scrollLeft = -x;
 				c.scrollTop = -y;
 				break;
@@ -283,18 +285,25 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 
 	_handleDragStart: function(e, ex, ey)
 	{
+        diathink.log(['scroll','debug'], 'Starting drag-scroll at '+ex+'x'+ey);
 		// Stop any scrolling of elements in our parent hierarcy.
 		$.each(this._getScrollHierarchy(),function(i,sv){ sv._stopMScroll(); });
 		this._stopMScroll();
 
         // MS - check if this is an excluded zone, where other functionality takes precedence
         // todo: we might not need this if we had better event-delegation
-        if ($(e.target).hasClass('ui-focus') || $(e.target).hasClass('ui-disable-scroll')) {return;}
+        if ($(e.target).hasClass('ui-focus') || $(e.target).hasClass('ui-disable-scroll')) {
+            diathink.log(['scroll','debug'], "ui-focus or ui-disable aborting scroll");
+            return;
+        }
         var disabled=false;
         $(e.target).parents().each(function() {
             if ($(this).hasClass('ui-focus') || $(this).hasClass('ui-disable-scroll')) {disabled=true;}
         });
-        if (disabled) {return;}
+        if (disabled) {
+            diathink.log(['scroll','debug'], "ui-focus or ui-disable aborting scroll");
+            return;
+        }
 
 		var c = this._$clip;
 		var v = this._$view;
@@ -375,8 +384,9 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
     scrollWhileDragging: function(ey, init) {
         var cheight = this._$clip.height();
         var vheight = this._$view.height();
-        if (this._lastY == null) {
+        if (this._lastY == null) { // initialization
             this._lastY = ey;
+            diathink.log(['scroll','debug'], "Initialized lastY for scrollWhileDragging");
             return;
         }
         this._maxY = cheight-vheight;
@@ -390,23 +400,31 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
                     // follow mouse/2 pattern
                     var newY = this._sy + (dy/2);
                     this._doSnapBackY = true;
+                    diathink.log(['scroll','debug'], "Doing snapback over top frac="+frac+"; sy="+this._sy+"; ey="+ey);
                 } else if (dy <= 0) { // if mouse moved up
                     sy = 10;
+                    diathink.log(['scroll','debug'], "Scrolling up with frac="+frac+"; velocity 10"+"; ey="+ey);
                 }
             } else if (frac > 0.75) {
                 if (this._sy <= this._maxY ) { // if we scrolled to bottom
                     // follow mouse-2 pattern
                     var newY = this._sy + (dy/2);
                     this._doSnapBackY = true;
+                    diathink.log(['scroll','debug'], "Doing snapback with frac="+frac+"; sy="+this._sy+"; ey="+ey);
                 } else if (dy >= 0) { // if mouse moved down
                     sy = -10;
+                    diathink.log(['scroll','debug'], "Scrolling down with frac="+frac+"; velocity -10"+"; ey="+ey);
                 }
+            } else {
+                diathink.log(['scroll','debug'], "No scroll with frac="+frac+"; ey="+ey);
             }
             if (sy) {
+                diathink.log(['scroll','debug'], "Momemtum scroll set to "+sy+"; ey="+ey);
                 this._startMScroll(0, sy);
                 this._didDrag = true;
                 this._lastMove = getCurrentTime();
             } else {
+                diathink.log(['scroll','debug'], "Hiding scrollbars with sy=0; ey="+ey);
                 this._hideScrollBars();
             }
         this._lastY = ey;
@@ -551,6 +569,7 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 		var l = this._lastMove;
 		var t = getCurrentTime();
 		var doScroll = l && (t - l) <= this.options.moveIntervalThreshold;
+        diathink.log(['debug','scroll'],"Handling drag stop");
 
 		var sx = (this._hTracker && this._speedX && doScroll) ? this._speedX : (this._doSnapBackX ? 1 : 0);
 		var sy = (this._vTracker && this._speedY && doScroll) ? this._speedY : (this._doSnapBackY ? 1 : 0);
@@ -575,6 +594,7 @@ jQuery.widget( "mobile.scrollview", jQuery.mobile.widget, {
 		this._disableTracking();
 
 		if (!this._didDrag && this.options.delayedClickEnabled && this._$clickEle.length) {
+            diathink.log(['debug','scroll'],"Triggering tap from empty dragstop");
 			this._$clickEle
 //				.trigger("mousedown")
 				//.trigger("focus")

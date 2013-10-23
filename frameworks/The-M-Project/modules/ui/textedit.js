@@ -205,7 +205,8 @@ M.TextEditView = M.View.extend(
          *
          * @type Array
          */
-        recommendedEvents: ['focus', 'blur', 'enter', 'keyup', 'tap'],
+        recommendedEvents: ['focus', 'blur', 'enter', 'keydown', 'keyup', 'tap'],
+        // MS: temporarily added keydown to list to suppress warnings
 
         /**
          * Define whether putting an asterisk to the right of the label for this TextEdit.

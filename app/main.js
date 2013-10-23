@@ -76,6 +76,7 @@ diathink.app.createPage = function(pageName, root) {
                                 var rootView = M.ViewManager.getViewById(rootID);
                                 var panelView = rootView.parentView.parentView;
                                 panelView.changeRoot(li.value);
+                                $(window).resize();
                             } else { // single-click
                                 $(this).data('lastClicked', (new Date()).getTime());
                                 $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');

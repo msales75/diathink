@@ -22,6 +22,7 @@ diathink.PanelOutlineView = M.ContainerView.extend({
         // todo: garbage collection on old html/event-handlers?
         this.theme();
         this.registerEvents();
+        $('#'+M.ViewManager.getCurrentPage().id).nestedSortable('update');
     },
     breadcrumbs:M.BreadcrumbView.extend({
         rootModel: null,

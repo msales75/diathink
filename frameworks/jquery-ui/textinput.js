@@ -117,7 +117,7 @@
 
                         padding = Number(input.css('padding-bottom').replace(/px/, '')) +
                             Number(input.css('padding-top').replace(/px/, ''));
-                    console.log('_keyUp: scrollHeight='+scrollHeight+'; clientHeight='+clientHeight+'; padding = '+padding);
+                    // console.log('_keyUp: scrollHeight='+scrollHeight+'; clientHeight='+clientHeight+'; padding = '+padding);
 
                     if ( clientHeight < scrollHeight) {
                         // console.log('setting height to '+(scrollHeight+extraLineHeight));
