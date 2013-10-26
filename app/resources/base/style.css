@@ -178,6 +178,7 @@ li.ui-li > div.ui-li.ui-btn-inner {
 */
 .ui-scrollview-clip {
     overflow: hidden;
+    height: 100%;
 }
 .ui-scrollview-clip > .ui-scrollview-view {
     padding-bottom: 2px;
@@ -245,9 +246,9 @@ a:active, a:focus {
     -moz-outline-style:none;
 }
 
-/* Not sure if this is being used? */
+/* Margins around page */
 .scroll-container {
-    margin: 10px 20px;
+    margin: 0px 10px;
 }
 
 .ui-grid-a > div, .ui-grid-a > div > div {

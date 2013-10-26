@@ -23,6 +23,7 @@ diathink.PanelOutlineView = M.ContainerView.extend({
         this.theme();
         this.registerEvents();
         $('#'+M.ViewManager.getCurrentPage().id).nestedSortable('update');
+        $(window).resize(); // fix height of new panel, spacer
     },
     breadcrumbs:M.BreadcrumbView.extend({
         rootModel: null,

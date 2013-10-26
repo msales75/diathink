@@ -33,7 +33,7 @@ diathink.keyboardSetup = M.Object.extend({
                 }
             }
 
-            $(window).click(function(e) {
+            $(window).bind('click keydown', function(e) {
                 if (e.target && e.target.nodeName && e.target.nodeName.toUpperCase()==='TEXTAREA') {
                     setTimeout(function() {
                         window.scrollTo(0, 0);

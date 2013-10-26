@@ -108,10 +108,16 @@ jQuery.fn.parentDepth = function(n) {
 
 // correct height of scrollview on resize
 $(window).resize(function() {
-    if ($('.ui-scrollview-clip').length>0) {
+    if ($('.scroll-container').length>0) {
         var height = Math.round($('body').height() -
-            $('.ui-scrollview-clip').offset().top)-10;
-        $('.ui-scrollview-clip').height(height);
+            $('.ui-header').height());
+        // keep margins on scroll-container
+        var mtop = Number($('.scroll-container').css('margin-top').replace(/px/,''));
+        var mbottom = Number($('.scroll-container').css('margin-bottom').replace(/px/,''));
+        $('.scroll-container').height(height-mtop-mbottom);
+        $('.ui-scrollview-clip').height(height-mtop-mbottom -
+            ($('.ui-scrollview-clip').offset().top -
+                $('.scroll-container').offset().top) );
         $('.scroll-spacer').height(Math.round(height*0.8));
         $('textarea').each(function() {
             M.ViewManager.getViewById($(this).attr('id')).fixHeight();

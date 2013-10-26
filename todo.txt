@@ -1,6 +1,7 @@
 Next:
 ----
 
+
 OK Dropping into item produces 'special case'
 OK Disallow dropping into own parent (it sets prev=self)
 OK After focus, page-height looks wrong (until resize?)
@@ -13,37 +14,55 @@ OK Disable scrollTop scrolling on the panels (how is this happening?)
   (workaround by manually resetting scrollTop)
 OK Add empty-block under list that's 80% screen-height (when scrollable)
 ? OK It's possible to select/drag a browser-link to localhost
-
 OK Make log scrollable on iphone
 OK When dialog opens for softkeyboardopen,
   the parent panel has scrollability frozen
 OK Second keyboard open does not trigger keyboard-dialog
    - iPhone doesn't fix scrolling on keyboard open?
-
-
-* Scroll-bars are not full page-height after focusing.
-* In iPhone landscape mode, bottom is clipped
-* Keyboard-strokes after focus also cause autoscroll
-* Opening new content does not have correct number of textarea lines
-* Text-cursor remains separately focused from mouse-dragging
-
-* Drag Pickup and dropdown-action are slow on iphone
-* Safari freezes after pressing Return
-
-* iPhone closes keyboards after return/backspace
+OK Scroll-bars are not full page-height after focusing.
+OK In iPhone landscape mode, bottom is clipped
+OK iPhone closes keyboards after return/backspace
   -- triggering focus() won't open keyboard from keydown event
-Need separate buttons outside keyboard for tab/return?
+  (Require homepage docking)
+VOID Why is validation is giving errors on overflow and z-index
+VOID incorporate drag-hover into the validation
+
+? validate that scroll-spacer has height
+? validate that panel extends to bottom of page
+   ui-scrollview-clip 305px?
+? Drag Pickup and dropdown-action are slow on iphone
+? Safari freezes after pressing Return
+? Return does not always make a new line (e.g. after a space)
+? Backspace must be hit twice to delete line.
+validate all M.ScrollViews are at:
+
+var panelParent = M.ViewManager.getCurrentPage().content;
+var canvas1 = panelParent.scroll1.outline.droplayer;
+var canvas2 = panelParent.scroll2.outline.droplayer;
+canvas1.offset = canvas1.offset();
+canvas2.offset = canvas2.offset();
+
+
+Logo images
+  Diamond-text: http://images2.layoutsparks.com/1/76256/white-logo-black-design.gif
+  Cute dog: http://www.aaanything.net/wp-content/gallery/super-cute-animals/cute_puppy_in_black_and_white.jpg
+
+* iPhone not scrolling to correct line
+* Keyboard-strokes after focus also cause autoscroll
+
+OK Opening new content does not have correct number of textarea lines
+* Text-cursor remains separately focused from mouse-dragging
+   Does ui-focus match focus?
+* Add font-change button (and update textarea heights)
+
+* Do a preliminary benchmark of iPhone/iPad performance
 
 * Validate that all elements in page fit inside the page/screen
 * Validate that scrollview and textarea heights are up to date,
     and that spacers are present.
 
-? Return does not always make a new line (e.g. after a space)
-? Backspace must be hit twice to delete line.
+* Retain list-contraction in model
 
-// * Intercept setTimeout and jQuery bindings for benchmarking
-
-Add font-change button (and update textarea heights)
 * Drag-to-vertical-line (view in separate page)
  - Keep track of panels like items in nestedSortable
  - Add design-space for vertical line, inbox, trash, settings
@@ -53,6 +72,10 @@ Add font-change button (and update textarea heights)
 * Horizontal swipe
 * Find real-estate for inbox, trash
 * Inbox
+
+* Add iPhone/Safari detection to request homepage install
+
+* Intercept setTimeout and jQuery bindings for benchmarking
 
 Soft Keyboard assumptions (needs interactive validation for devices)
   Scroll-position on window-click event keeps keyboard in same position
@@ -68,10 +91,6 @@ Soft Keyboard assumptions (needs interactive validation for devices)
 * Why don't arrows always highlight when dragging
 * Add in check that disallows two actions running concurrently
    (like with blur event)
-
-VOID Why is validation is giving errors on overflow and z-index
-VOID incorporate drag-hover into the validation
-List-types: Editable vs. Search-results vs. Conversations
 
 
 UI Enhancements:
@@ -128,6 +147,13 @@ UL mobile-events probably undesired
 IMG events groupable for shared file (or eliminate)
 
 Links: Where to draw a superimposed-word/symbol can be calculated from a div/span.
+
+List-types: Editable vs. Search-results vs. Conversations
+
+LATER: Separate buttons outside keyboard:
+  up/down/left/right/
+  indent/outdent/new-line/new-child/
+  delete/split/merge-up
 
 Link UI:
  * Dragging link or breadcrumb copies docked-link between lines, copies reference into line-text, or opens target-page, or deletes reference

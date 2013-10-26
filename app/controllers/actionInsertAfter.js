@@ -454,7 +454,7 @@ diathink.TextAction= diathink.Action.extend({
             target.header.name.text.value = this.options.text;
             console.log("Updating view "+target.header.name.text.id+" to value "+this.options.text);
             $('#'+target.header.name.text.id).val(this.options.text);
-            target.header.name.text.fixHeight();
+            target.header.name.text.themeUpdate();
         }
     },
     undoModel: function () {
@@ -467,7 +467,7 @@ diathink.TextAction= diathink.Action.extend({
             target.header.name.text.value = this.oldText;
             console.log("Updating view "+target.header.name.text.id+" to value "+this.oldText);
             $('#'+target.header.name.text.id).val(this.oldText);
-            target.header.name.text.fixHeight();
+            target.header.name.text.themeUpdate();
         }
     }
 });

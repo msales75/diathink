@@ -7,6 +7,21 @@
 
 var diathink = diathink || {};
 
+// Test for Mobile not on homepage
+var nav = navigator;
+if (nav.userAgent.match(/iPhone/i) ||
+    nav.userAgent.match(/iPad/i) ||
+    nav.userAgent.match(/iPod/i)) {
+
+    if (! nav.standalone) {
+        diathink.isSafari = (/Safari/i).test(nav.appVersion) && !(/CriOS/i).test(nav.appVersion);
+        var OSVersion = nav.appVersion.match(/OS (\d+_\d+)/i);
+        diathink.OSVersion = OSVersion && OSVersion[1] ? +OSVersion[1].replace('_', '.') : 0;
+        // show message & abort application.
+    }
+}
+
+
 M.assert = function(test) {
     if (!test) {
         throw "Assertion failed";
@@ -76,7 +91,6 @@ diathink.app.createPage = function(pageName, root) {
                                 var rootView = M.ViewManager.getViewById(rootID);
                                 var panelView = rootView.parentView.parentView;
                                 panelView.changeRoot(li.value);
-                                $(window).resize();
                             } else { // single-click
                                 $(this).data('lastClicked', (new Date()).getTime());
                                 $(this).closest('li').toggleClass('expanded').toggleClass('collapsed');
@@ -115,7 +129,7 @@ diathink.app.createPage = function(pageName, root) {
                     });
                     //   keyup change input paste
                     $('#'+id).on('keyup', 'textarea', function(e) {
-                        M.ViewManager.getViewById($(this).attr('id')).fixHeight();
+                        M.ViewManager.getViewById($(this).attr('id')).themeUpdate();
                     });
                     $.mobile.window.on('load',function() {
                         $('textarea').trigger('keyup');
