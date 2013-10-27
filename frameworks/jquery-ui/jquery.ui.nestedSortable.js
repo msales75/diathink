@@ -150,14 +150,25 @@
                 this.activeBox.elem.removeClass('active');
             }
         },
+        _emptyDropLayers: function() {
+            $(this.options.dropLayers).html('');
+        },
 
         _drawDropLines: function() {
             // loop over items
             // determine whether to draw top or bottom line
             // determine position to draw at
             diathink.log(['debug','drag'],"Redrawing dropLines");
-            $(this.options.dropLayers).html('');
+
+            this._emptyDropLayers();
             this._showDropLines();
+
+            // foreach M.ScrollView, cache offset top/left
+            var panelParent = M.ViewManager.getCurrentPage().content;
+            var canvas1 = panelParent.scroll1.outline.droplayer;
+            var canvas2 = panelParent.scroll2.outline.droplayer;
+            canvas1.cacheOffset = $('#'+canvas1.id).offset();
+            canvas2.cacheOffset = $('#'+canvas2.id).offset();
 
             for (var i = this.items.length - 1; i >= 0; i--) {
                 var item = this.items[i], itemEl = item.item;
@@ -177,6 +188,7 @@
                 // cannot drop the current-item inside itself
                 var activeModel = M.ViewManager.getViewById(this.currentItem.attr('id')).value;
                 var itemModel = M.ViewManager.getViewById(itemEl.attr('id')).value;
+
                 var model = itemModel;
                 while ((model != null)&&(model !== activeModel)) {
                     model = model.get('parent');
@@ -218,8 +230,9 @@
                     if (view==null) {console.log('Invalid View'); return;}
                 }
                 var canvas = $('#'+view.droplayer.id);
-                var ctop = canvas.offset().top;
-                var cleft = canvas.offset().left;
+                // cache droplayer offsets
+                var ctop = view.droplayer.cacheOffset.top;
+                var cleft = view.droplayer.cacheOffset.left;
 
                 if (!noTop) {
                     item.droptop = this._drawDropLine({
@@ -248,7 +261,7 @@
             for (var i=0; i < this.items.length; ++i) {
                 this._updateDropBoxes(this.items[i]);
             }
-            this._previewDropBoxes();
+            // this._previewDropBoxes();
         },
 
         // cache drop-coordinates
@@ -528,16 +541,22 @@
 		// mjs - this function is slightly modified to make it easier to hover over a collapsed element and have it expand
         _insideDropBox: function(e) {
             var i, j, d;
-            diathink.log(['debug','drag'],"Identifying drop-box")
+            diathink.log(['debug','drag'],"Identifying drop-box");
             // this.position is same, scroll is different for each item
+
+            // cache scroll-positions of each panel
+            this.panels.each(function() {
+                M.ViewManager.getViewById(this.id).scrollY = $(this).scrollview('getScrollPosition').y;
+            });
+
             for (i=0; i<this.items.length; ++i) {
                 if (this.items[i].dropboxes == null) {continue;} // when mousedrag is called before initialization
                 for (j=0; j<this.items[i].dropboxes.length; ++j) {
                     d = this.items[i].dropboxes[j];
                     var x = this.positionAbs.left + this.offset.click.left;
                     var y = this.positionAbs.top + this.offset.click.top;
-                    var parentPanel = this.items[i].item.closest('.ui-scrollview-clip');
-                    y += parentPanel.scrollview('getScrollPosition').y -
+                    var parentPanel = this.items[i].parentPanel;
+                    y += M.ViewManager.getViewById(parentPanel.attr('id')).scrollY  -
                         this.panelScrollStart[parentPanel.attr('id')];
                     if (((x>= d.left)&&(x<= d.right)) && ((y>= d.top)&&(y<= d.bottom))) {
                         if (parentPanel.get(0) !==

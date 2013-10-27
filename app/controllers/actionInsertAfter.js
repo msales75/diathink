@@ -43,7 +43,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
         }
         diathink.UndoController.refreshButtons();
-        diathink.validateMVC();
+        // diathink.validateMVC();
     },
     getModel: function(id) {
         return Backbone.Relational.store.find(diathink.OutlineNodeModel, id);
@@ -66,7 +66,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             this.undoView(outlines[i], focus);
         }
         diathink.UndoController.refreshButtons();
-        diathink.validateMVC();
+        // diathink.validateMVC();
     },
     // todo: should make node-model a doubly-linked list without relying on collection rank?
     getContextAt: function(id) {

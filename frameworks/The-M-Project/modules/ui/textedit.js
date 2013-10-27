@@ -428,26 +428,61 @@ M.TextEditView = M.View.extend(
         //   keyup change input paste
         //   mobile.document pagechange, mobile.window load
         fixHeight: function() {
-            var hiddendiv = $('.hiddendiv');
             var thisel = $('#'+this.id);
+            if (!thisel.is(':visible')) {return;}
+            var currentWidth = thisel.width();
+            if (!(currentWidth > 0)) {
+                return;
+            }
+            var currentFont = thisel.css('font-size');
+            if ((this.lastWidth===currentWidth)&&(this.lastFont===currentFont)&&(this.lastValue===this.value)) {
+                return;
+            }
+            if (!this.hiddenDiv) {
+                this.hiddenDiv = $('.hiddendiv');
+                if (this.hiddenDiv.length!==1) {
+                    this.hiddenDiv = null;
+                    return;
+                }
+            }
+            var hiddendiv = this.hiddenDiv;
+            if (!this.parentDiv) {
+                this.parentDiv = thisel.parent('div');
+                if (this.parentDiv.length!==1) {
+                    alert("ERROR: parentDiv not found");
+                }
+            }
+            if (this.lastWidth !== currentWidth) {
+                hiddendiv.width(currentWidth);
+            }
+            // if (this.lastValue !== this.value) {
+                var lastchar = this.value.substr(this.value.length-1,1);
+                var rest = this.value.substr(0, this.value.length-1);
+                hiddendiv.html($.escapeHtml(rest)+'<span class="marker">'+
+                    $.escapeHtml(lastchar).replace(/ /g, "&nbsp;") +'</span>');
+            // }
+            if (this.lastFont !== currentFont) {
+                this.lineHeight = Number(hiddendiv.css('line-height').replace(/px/,''));
+                this.padding = Number(thisel.css('padding-top').replace(/px/,'')) +
+                    Number(thisel.css('padding-bottom').replace(/px/,''));
+            }
+            var lineHeight = this.lineHeight;
+            var padding = this.padding;
 
-            var lastchar = this.value.substr(this.value.length-1,1);
-            var rest = this.value.substr(0, this.value.length-1);
+            // cache lineHeight if font-size hasn't changed?
+            // cache parent-div
 
-            hiddendiv.width(thisel.width())
-              .html($.escapeHtml(rest)+'<span class="marker">'+
-                  $.escapeHtml(lastchar).replace(/ /g, "&nbsp;") +'</span>');
-            var lineHeight = Number(hiddendiv.css('line-height').replace(/px/,''));
             var nlines= Math.round((hiddendiv.children('span').position().top / lineHeight) - 0.4) + 1;
             var height = nlines * lineHeight;
-            var padding = Number(thisel.css('padding-top').replace(/px/,'')) +
-                Number(thisel.css('padding-bottom').replace(/px/,''));
-            if (Math.abs(thisel.parent('div').height()-height-padding) > 0.5) {
+            if (Math.abs(this.parentDiv.height()-height-padding) > 0.5) {
                 console.log("Setting id="+thisel.parent('div').attr('id')+" to height "+
                     height+" plus padding "+padding);
-                thisel.parent('div').height(height+padding);
+                this.parentDiv.height(height+padding);
             }
-            // Put span around last character, converting it to htmlspecialchars
+
+            this.lastValue = this.value;
+            this.lastWidth = currentWidth;
+            this.lastFont = currentFont;
         },
 
         /**
@@ -467,6 +502,10 @@ M.TextEditView = M.View.extend(
 
             /* add container-css class */
             jDom.parent().addClass(this.cssClass + '_container');
+            this.fixHeight();
+        },
+        themeUpdate: function() {
+            this.fixHeight();
         },
 
         /**
