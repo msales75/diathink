@@ -63,12 +63,12 @@ diathink.PanelOutlineView = M.ContainerView.extend({
                 } else {
                     collection = this.rootModel.get('children');
                 }
-                this.bindToCaller(this, M.View.registerEvents)();
+                // this.bindToCaller(this, M.View.registerEvents)();
                 // todo: stop using content-binding to initialize lists,
                 //  but still need to refresh nestedSortable ?
                 this.contentBinding.target.set('listObject', collection);
             },
-            isInset:'YES',
+            isInset: true,
             listItemTemplateView:diathink.MyListItem,
             idName:'cid', // For Backbone.Model compatibility
             items: 'models' // For Backbone.Model compatibility

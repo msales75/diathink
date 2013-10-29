@@ -219,8 +219,8 @@ M.ListItemView = M.View.extend(
      * their internal events.
      */
     registerEvents: function() {
+        /*
         this.internalEvents = {};
-/*
         this.internalEvents = {
             tap: {
                 target: this.parentView,
@@ -239,8 +239,8 @@ M.ListItemView = M.View.extend(
                 }
             })
         }
- */
         this.bindToCaller(this, M.View.registerEvents)();
+         */
     },
 
     /**
@@ -277,28 +277,24 @@ M.ListItemView = M.View.extend(
     // MS custom theme function to handle changes in list-sequence, active-status, etc.
     // todo: class-names should probably not be hard-coded
     // todo: position of ul inside list should probably not be hard-coded
-    theme: function(andParent,andNext,andPrev) {
-        if (andParent === undefined) {andParent=true;}
-        if (andNext === undefined) {andNext=true;}
-        if (andPrev === undefined) {andPrev=true;}
-
+    themeFirst: function() {
         var elem = $('#'+this.id);
-        if (elem.length !== 1) {
-            return;
-        }
-        // check for change to adjacency affecting borders
-        if (elem.next('li').length>0) {
-            elem.removeClass('ui-last-child');
-        } else {
-            elem.addClass('ui-last-child');
-        }
         if (elem.prev('li').length>0) {
             elem.removeClass('ui-first-child');
         } else {
             elem.addClass('ui-first-child');
         }
-
-        // check for change to child-content affecting leaf/branch
+    },
+    themeLast: function() {
+        var elem = $('#'+this.id);
+        if (elem.next('li').length>0) {
+            elem.removeClass('ui-last-child');
+        } else {
+            elem.addClass('ui-last-child');
+        }
+    },
+    themeParent: function() {
+        var elem = $('#'+this.id);
         if (elem.children('div').children('div').children('a').children('ul').children().length>0) {
             elem.addClass('branch').removeClass('leaf');
             if (!elem.hasClass('collapsed')) {
@@ -306,28 +302,15 @@ M.ListItemView = M.View.extend(
             }
         } else {
             elem.addClass('leaf').removeClass('branch').
-              addClass('expanded').removeClass('collapsed');
+                addClass('expanded').removeClass('collapsed');
         }
-        if (andParent) {
-            var parent = this.parentView.parentView;
-            if (parent && (parent.type==='M.ListItemView')) {
-                parent.theme(false,false,false);
-            }
-        }
-        if (andNext) {
-            var next = elem.next('li');
-            if (next.length>0) {
-                M.ViewManager.getViewById(next.attr('id')).theme(false,false,false);
-            }
-        }
-        if (andPrev) {
-            var prev = elem.prev('li');
-            if (prev.length>0) {
-                M.ViewManager.getViewById(prev.attr('id')).theme(false,false,false);
-            }
-        }
-
+    },
+    theme: function() {
+        // check for change to adjacency affecting borders
+        // check for change to child-content affecting leaf/branch
+        $('#'+this.id).addClass('ui-li ui-li-static and ui-btn-up-c');
         this.themeChildViews();
+        this.header.name.text.fixHeight();
     }
 
 

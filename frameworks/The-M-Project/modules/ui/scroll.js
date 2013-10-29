@@ -73,9 +73,11 @@ M.ScrollView = M.View.extend(
 
     themeUpdate: function() {
         // todo: call after changing height of content?
+        /*
         var scrolltop = $('#' + this.id).children('.ui-scrollview-view').position().top;
         $('#' + this.id).scrollTop(0);
         $('#'+this.id).scrollview('scrollTo', 0, scrolltop);
+        */
     }
 
 });

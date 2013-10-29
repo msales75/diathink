@@ -269,6 +269,23 @@ M.TextEditView = M.View.extend(
             return this.html;
         },
 
+        // MS addition for focusing on textarea
+        focus: function() {
+            var focusedEl = $('#'+this.id);
+            focusedEl.addClass( 'ui-focus' );
+            var parentListId = M.ViewManager.getViewById(focusedEl.attr('id')).parentView.parentView.parentView.id;
+            $('#'+parentListId).addClass('ui-focus');
+        },
+        blur: function() {
+            // update value/listeners
+            var focusedEl = $('#'+this.id);
+            focusedEl.removeClass( 'ui-focus' );
+            var parentListId = M.ViewManager.getViewById(focusedEl.attr('id')).parentView.parentView.parentView.id;
+            $('#'+parentListId).removeClass('ui-focus');
+            this.setValueFromDOM();
+            diathink.Action.checkTextChange(this.id);
+        },
+
         /**
          * This method is responsible for registering events for view elements and its child views. It
          * basically passes the view's event-property to M.EventDispatcher to bind the appropriate
@@ -277,6 +294,8 @@ M.TextEditView = M.View.extend(
          * It extend M.View's registerEvents method with some special stuff for text field views and
          * their internal events.
          */
+
+  /* MS: Get rid of event-registration for each textbox
         registerEvents: function() {
             this.internalEvents = {
                 focus: {
@@ -292,7 +311,7 @@ M.TextEditView = M.View.extend(
                     action: 'setValueFromDOM'
                 }
             };
-            /* add TAP handler only if needed */
+            // add TAP handler only if needed
             var type = this.inputType;
             if (_.include(this.dateInputTypes, this.inputType) && !this.useNativeImplementationIfAvailable) {
                 this.internalEvents['tap'] = {
@@ -302,6 +321,7 @@ M.TextEditView = M.View.extend(
             }
             this.bindToCaller(this, M.View.registerEvents)();
         },
+*/
 
         /**
          * The contentDidChange method is automatically called by the observable when the
@@ -429,7 +449,10 @@ M.TextEditView = M.View.extend(
         //   mobile.document pagechange, mobile.window load
         fixHeight: function() {
             var thisel = $('#'+this.id);
-            if (!thisel.is(':visible')) {return;}
+            // don't execute before element is visible, e.g.
+            //   on startup before calling resize()
+            if (thisel.css('visibility') !== 'visible') {return;}
+
             var currentWidth = thisel.width();
             if (!(currentWidth > 0)) {
                 return;
@@ -494,15 +517,26 @@ M.TextEditView = M.View.extend(
             /* trigger keyup event to make the text field autogrow */
             var jDom = $('#'  + this.id);
             if(typeof this.value === 'string') { // MS edit for theming empty fields
-                jDom.trigger('keyup').textinput2();
+                // jDom.trigger('keyup'); // .textinput2();
                 if(!this.isEnabled){
-                    jDom.textinput2('disable');
+                    // jDom.textinput2('disable');
                 }
             }
+            if (this.cssClass) {
+                var firstclass = this.cssClass.split(' ')[0];
+                /* add container-css class */
+                jDom.parent().addClass(firstclass + '_container');
+            }
 
-            /* add container-css class */
-            jDom.parent().addClass(this.cssClass + '_container');
-            this.fixHeight();
+            // jquery-mobile hack for correcting ios bug
+            if ( typeof jDom[0].autocorrect !== "undefined" && !$.support.touchOverflow ) {
+                // Set the attribute instead of the property just in case there
+                // is code that attempts to make modifications via HTML.
+                jDom[0].setAttribute( "autocorrect", "off" );
+                jDom[0].setAttribute( "autocomplete", "off" );
+            }
+
+            // this.fixHeight(); // dimensinos aren't defined until themeUpdate
         },
         themeUpdate: function() {
             this.fixHeight();

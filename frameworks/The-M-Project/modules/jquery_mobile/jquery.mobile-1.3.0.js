@@ -6186,7 +6186,7 @@ $.mobile.document.bind( "pagecreate create", function( e ) {
 });
 
 })( jQuery );
-
+/*
 (function( $, undefined ) {
 
 //Keeps track of the number of lists per page UID
@@ -6627,7 +6627,7 @@ $.mobile.document.delegate( "ul,ol", "listviewcreate", function() {
 });
 
 })( jQuery );
-
+*/
 /*
 * "checkboxradio" plugin
 */
@@ -8861,6 +8861,7 @@ $.mobile.document.bind( "pagecreate create", function( e ) {
 
 })( jQuery );
 */
+    /*
 (function( $, undefined ) {
 
 $.mobile.listview.prototype.options.filter = false;
@@ -8994,7 +8995,7 @@ $.mobile.document.delegate( "ul, ol", "listviewcreate", function() {
 });
 
 })( jQuery );
-
+*/
 (function( $, undefined ) {
 
 $.widget( "mobile.slider", $.mobile.widget, {

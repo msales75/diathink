@@ -27,6 +27,8 @@ OK iPhone closes keyboards after return/backspace
 VOID Why is validation is giving errors on overflow and z-index
 VOID incorporate drag-hover into the validation
 
+Show an exception or alert or something when exceptions are thrown loading application in index.html
+
 ? validate that scroll-spacer has height
 ? validate that panel extends to bottom of page
    ui-scrollview-clip 305px?
@@ -86,6 +88,8 @@ Soft Keyboard assumptions (needs interactive validation for devices)
   Click is called after focus or blur for keyboard-height
   If IOS, the weird hack detects keyboard height
   If not IOS, resize is called with new dimensions when keyboard changes
+
+On text focus:  Hide cursor and background-change, verify not scrolling
 
 * Clean up drag-helper appearance/classes?
 * Why don't arrows always highlight when dragging

@@ -728,6 +728,7 @@ diathink.validateMVC = function () {
         obj.right = obj.left + $(elem).outerWidth(true);
         return obj;
     }
+    /*
     $('*').each(function() {
         // validate that everything fits inside the parent-object, except
         // for scrollview-view height > inside scrollview-clip
@@ -752,6 +753,7 @@ diathink.validateMVC = function () {
             }
         }
     });
+    */
 
 
     // todo: Need a optional debug-button in header,

@@ -97,9 +97,13 @@
                     $.mobile.zoom.disable( true );
                 }
                 focusedEl.addClass( $.mobile.focusClass );
+                var parentListId = M.ViewManager.getViewById(focusedEl.attr('id')).parentView.parentView.parentView.id;
+                $('#'+parentListId).addClass($.mobile.focusClass );
             })
                 .blur(function() {
                     focusedEl.removeClass( $.mobile.focusClass );
+                    var parentListId = M.ViewManager.getViewById(focusedEl.attr('id')).parentView.parentView.parentView.id;
+                    $('#'+parentListId).removeClass($.mobile.focusClass );
                     if ( o.preventFocusZoom ) {
                         $.mobile.zoom.enable( true );
                     }

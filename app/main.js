@@ -65,6 +65,9 @@ diathink.app.createPage = function(pageName, root) {
                             // does this occur on manual keyboard-close?
                             console.log('blurring keyboard from focusout');
                             diathink.keyboard.blur();
+                            if (diathink.focused) {
+                                M.ViewManager.getViewById(diathink.focused.id).blur();
+                            }
                             diathink.focused = null;
                             return;
                         }
@@ -73,10 +76,14 @@ diathink.app.createPage = function(pageName, root) {
                             diathink.focused = e.target;
                             // check if keyboard opened
                             diathink.keyboard.focus();
+                            M.ViewManager.getViewById(e.target.id).focus();
                         } else {
                             // check if keyboard closed
                             console.log('blurring keyboard from focusin');
                             diathink.keyboard.blur();
+                            if (diathink.focused) {
+                                M.ViewManager.getViewById(diathink.focused.id).blur();
+                            }
                             diathink.focused = null;
                         }
                     });
@@ -129,7 +136,86 @@ diathink.app.createPage = function(pageName, root) {
                     });
                     //   keyup change input paste
                     $('#'+id).on('keyup', 'textarea', function(e) {
-                        M.ViewManager.getViewById($(this).attr('id')).themeUpdate();
+                        var view = M.ViewManager.getViewById($(this).attr('id'));
+                        view.setValueFromDOM();
+                        view.themeUpdate();
+                    });
+                    $('#'+id).on('keydown','textarea', function(e) {
+                                var id = this.id;
+                                var liView = M.ViewManager.findViewById(id).parentView.parentView.parentView;
+                                if (e.which === 32) { // spacebar
+                                    var sel = $('#'+id).selection();
+                                    // check if cursor is on far left of textbox
+                                    if (sel && (sel[0] === 0) && (sel[1] === 0)) {
+                                        // get parent-collection and rank
+                                        var collection = liView.parentView.value;
+                                        var rank = _.indexOf(collection.models, liView.value);
+                                        // validate rank >=0
+                                        if (rank>0) { // indent the line
+                                            // make it the last child of its previous sibling
+                                            diathink.Action.checkTextChange(id);
+                                            diathink.MoveIntoAction.createAndExec({
+                                                referenceID: collection.models[rank-1].cid,
+                                                targetID: liView.modelId,
+                                                focusView: liView.rootID
+                                            });
+                                            e.preventDefault();
+                                        }
+                                    }
+                                } else if (e.which === 9) { // tab
+                                    var collection = liView.parentView.value;
+                                    var rank = _.indexOf(collection.models, liView.value);
+                                    // validate rank >=0
+                                    if (rank>0) { // indent the line
+                                        // make it the last child of its previous sibling
+                                        diathink.Action.checkTextChange(id);
+                                        diathink.MoveIntoAction.createAndExec({
+                                            referenceID: collection.models[rank-1].cid,
+                                            targetID: liView.modelId,
+                                            focusView: liView.rootID
+                                        });
+                                        e.preventDefault();
+                                    }
+                                } else if (e.which === 8) { // backspace
+                                    var sel = $('#'+id).selection();
+                                    if (sel && (sel[0] === 0) && (sel[1] === 0)) {
+                                        // get parent-collection and rank
+                                        var collection = liView.parentView.value;
+                                        var rank = _.indexOf(collection.models, liView.value);
+                                        // if it is the last item in its collection
+                                        if ((liView.parentView.parentView != null) &&
+                                            (liView.parentView.parentView.type==='M.ListItemView')&&
+                                            (rank===collection.models.length-1)) {
+                                            // make it the next child of its parent
+                                            diathink.Action.checkTextChange(id);
+                                            diathink.OutdentAction.createAndExec({
+                                                referenceID: liView.value.attributes.parent.cid,
+                                                targetID: liView.modelId,
+                                                focusView: liView.rootID
+                                            });
+                                            e.preventDefault();
+                                        } else { // delete or merge-lines?
+                                            if ($('#'+id).val() === "") {
+                                                diathink.Action.checkTextChange(id);
+                                                diathink.DeleteAction.createAndExec({
+                                                    targetID: liView.modelId
+                                                });
+                                            }
+                                        }
+                                    }
+                                } else if (e.which === 13) { // enter
+                                    // todo: split line if in middle of text
+                                    diathink.Action.checkTextChange(id);
+                                    diathink.InsertAfterAction.createAndExec({
+                                        referenceID: liView.modelId,
+                                        focusView: liView.rootID
+                                    });
+                                    e.preventDefault();
+                                    // var scrollid = $('#'+id).closest('.ui-scrollview-clip').attr('id');
+                                    // M.ViewManager.findViewById(scrollid).themeUpdate();
+                                }
+                                e.stopPropagation();
+                                console.log("Processed keyup with which=" + e.which + " and keycode=" + e.keyCode);
                     });
                     $.mobile.window.on('load',function() {
                         $('textarea').trigger('keyup');
@@ -153,8 +239,8 @@ diathink.app.createPage = function(pageName, root) {
                         expandedClass:'expanded',
                         hoveringClass:'sort-hover',
                         errorClass: 'sort-error',
-                        handle:'> div > div > a > div > .drag-handle',
-                        buryDepth:3,
+                        handle:'> div > .drag-handle',
+                        buryDepth:0,
                         scroll:true,
                         keyboard: diathink.keyboard,
                         dropLayers: '.droplayer',
@@ -183,6 +269,7 @@ diathink.app.createPage = function(pageName, root) {
                             // hash.item.css('border','solid 1px orange');
                         },
                         stop:function (e, hash) { // (could also try 'change' or 'sort' event)
+                            /*
                             if (hash.item.parents('ul').length > 0) {
                                 M.ViewManager.getViewById($(hash.item.parents('ul').get(0)).attr('id')).themeUpdate();
                                 M.ViewManager.getViewById($(hash.originalDOM.parent).attr('id')).themeUpdate();
@@ -197,9 +284,10 @@ diathink.app.createPage = function(pageName, root) {
                             // $('.drag-hover').removeClass('drag-hover');
                             // hash.item.css('border','');
                             console.log("Processed change to structure");
+                            */
                         },
                         // handle: '> div > div > a > div > .handle',
-                        toleranceElement:'> div > div > a > div.outline-header'
+                        toleranceElement:'> div.outline-header'
                     });
                 }
             }

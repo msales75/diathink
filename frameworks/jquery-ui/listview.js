@@ -1,4 +1,4 @@
-
+/*
 (function( $, undefined ) {
 
 //Keeps track of the number of lists per page UID
@@ -90,7 +90,7 @@
 
         refresh: function( create ) {
             this.parentPage = this.element.closest( ".ui-page" );
-            this._createSubPages();
+           // this._createSubPages();
 
             var o = this.options,
                 $list = this.element,
@@ -579,3 +579,4 @@
     });
 
 })( jQuery );
+*/

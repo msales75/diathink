@@ -24,7 +24,7 @@ body {
     font-size: 1em; /* Override 16px default */
 }
 /* Image-handle for drag/drop */
-li.ui-li > div > div > a > div > .drag-handle {
+li.ui-li > div > .drag-handle {
     position: absolute;
     top: 0.09em;
     left: 0.09em;
@@ -38,8 +38,8 @@ li.ui-li > div > div > a > div > .drag-handle {
     margin: 0px;
 }
 
-li.ui-li.ui-focus > div > div > a > div > .drag-handle,
-li.ui-li.ui-btn-hover-c > div > div > a > div > .drag-handle {
+li.ui-li.ui-focus > div > .drag-handle,
+li.ui-li.ui-btn-hover-c > div > .drag-handle {
     opacity: 0.45;
 }
 
@@ -51,11 +51,11 @@ li.ui-li.ui-btn-hover-c > div > div > a > div > .drag-handle {
 }
 
 /* Handle transformation when open or closed */
-li.collapsed.branch > div > div > a > div > .disclose {
+li.collapsed.branch > div > .disclose {
     background-color: #888;
 }
 
-li.collapsed > div > div > a > ul {
+li.collapsed > ul {
     display: none;
 }
 
@@ -93,7 +93,11 @@ li.ui-li > div.ui-li.ui-btn-inner {
 }
 
 /* Remove extra padding around ui-link-inherit */
-.ui-li .ui-btn-inner a.ui-link-inherit {
+/* Need to re-add this padding somewhere */
+/* .ui-li .ui-btn-inner a.ui-link-inherit {
+    padding: 0 0 0 0.8em;
+} */
+.ui-li .ui-btn-inner {
     padding: 0 0 0 0.8em;
 }
 
@@ -265,12 +269,19 @@ li.ui-li.ui-focus, li.ui-li.ui-focus:hover {
 li.ui-li {
     background-color: #EEE;
 }
+
 li.ui-li.ui-btn-hover-c {
     background-color: #FFF;
 }
+li.ui-li-static.ui-li {
+    padding: 0;
+}
+li.ui-li > ul {
+    padding: 0 0 0 0.8em;
+}
 
 li.ui-li .outline-header > div.outline-content_container {
-    padding: 1px 2px 1px 0.8em;
+    padding: 1px 2px 1px 1.65em;
     margin: 0;
     -webkit-transition: height 80ms linear;
     -moz-transition: height 80ms linear;

@@ -5,14 +5,17 @@ $(function () {
         if ($(window).scrollTop()!=lastwtop) {
             // clearInterval(scroll);
             diathink.log(["debug"],"window scrolltop = "+$(window).scrollTop());
+            lastwtop = $(window).scrollTop();
         }
         if ($(document).scrollTop()!=lastdtop) {
             // clearInterval(scroll);
             diathink.log(["debug"],"document scrolltop = "+$(document).scrollTop());
+            lastdtop = $(document).scrollTop();
         }
         if ($('body').scrollTop()!=lastbtop) {
             // clearInterval(scroll);
             diathink.log(["debug"],"body scrolltop = "+$('body').scrollTop());
+            lastbtop = $('body').scrollTop();
         }
         if (diathink.app && diathink.app.pages) {
             for (var i in diathink.app.pages) {

@@ -254,7 +254,8 @@ M.ListView = M.View.extend(
      * internal events.
      */
     registerEvents: function() {
-        /*this.internalEvents = {
+        /*
+        this.internalEvents = {
             focus: {
                 target: this,
                 action: 'gotFocus'
@@ -267,13 +268,13 @@ M.ListView = M.View.extend(
                 target: this,
                 action: 'setValueFromDOM'
             }
-        }*/
+        }
         this.bindToCaller(this, M.View.registerEvents)();
         if(this.hasSearchBar && !this.usesDefaultSearchBehaviour) {
             this.searchBar.registerEvents();
         }
+         */
     },
-
     /**
      * This method adds a new list item to the list view by simply appending its html representation
      * to the list view inside the DOM. This method is based on jQuery's append().
@@ -374,7 +375,8 @@ M.ListView = M.View.extend(
         }
 
         /* Finally let the whole list look nice */
-        this.themeUpdate();
+        // this.themeUpdate();
+        // this.fixTextHeights();
     },
 
     /**
@@ -469,14 +471,26 @@ M.ListView = M.View.extend(
             // }
 
             /* ... once it is in the DOM, make it look nice */
-            var childViewsArray = obj.getChildViewsAsArray();
+            obj.theme();
+
+            // determine list-placement for corner-theming
+            var objElem = $('#'+obj.id);
+            if (index===0) {
+                objElem.addClass('ui-first-child');
+            }
+            if (index===content.length-1) {
+                objElem.addClass('ui-last-child');
+            }
+            /* var childViewsArray = obj.getChildViewsAsArray();
             for(var i in obj.getChildViewsAsArray()) {
                 obj[childViewsArray[i]].theme();
-            }
+            } */
 
-            // MS -- render updated-content for any nested lists 
+            // MS -- render updated-content for any nested lists
             //    (must be after rendering/theming, above)
+
             that.updateNestedLists(obj);
+            obj.themeParent(); // add branch or leaf-classes
         });
     },
 
@@ -565,9 +579,11 @@ M.ListView = M.View.extend(
      * @private
      */
     theme: function() {
-        $('#' + this.id).list2view({icon: false});
+        // $('#' + this.id).list2view({icon: false});
+        $('#'+this.id).addClass('ui-listview ui-listview-inset ui-corner-all ui-shadow ui-listview-c');
+        /*
         if(this.searchBar) {
-            /* JQM-hack: remove multiple search bars */
+            // JQM-hack: remove multiple search bars
             if($('#' + this.id) && $('#' + this.id).parent()) {
                 var searchBarsFound = 0;
                 $('#' + this.id).parent().find('form.ui-listview-filter').each(function() {
@@ -580,6 +596,7 @@ M.ListView = M.View.extend(
             }
             this.searchBar.theme();
         }
+        */
     },
 
     /**
@@ -588,11 +605,18 @@ M.ListView = M.View.extend(
      * @private
      */
     themeUpdate: function() {
-        $('#' + this.id).list2view('refresh');
-        // update the corner-pieces of the list here too,
-        //   or do it all incrementally?
+        // $('#' + this.id).children('li').each(function() {
+           // M.ViewManager.getViewById(this.id).themeUpdate();
+        // });
+        // $('#' + this.id).list2view('refresh');
+        // call fixHeight for all textareas?
     },
 
+    fixTextHeights: function() {
+        $('#' + this.id +' textarea').each(function() {
+            M.ViewManager.getViewById(this.id).fixHeight();
+        });
+    },
     /**
      * This method activates the edit mode and forces the list view to re-render itself
      * and to display a remove button for every list view item.

@@ -108,21 +108,64 @@ jQuery.fn.parentDepth = function(n) {
 
 // correct height of scrollview on resize
 $(window).resize(function() {
-    if ($('.scroll-container').length>0) {
-        var height = Math.round($('body').height() -
-            $('.ui-header').height());
-        // keep margins on scroll-container
-        var mtop = Number($('.scroll-container').css('margin-top').replace(/px/,''));
-        var mbottom = Number($('.scroll-container').css('margin-bottom').replace(/px/,''));
-        $('.scroll-container').height(height-mtop-mbottom);
-        $('.ui-scrollview-clip').height(height-mtop-mbottom -
-            ($('.ui-scrollview-clip').offset().top -
-                $('.scroll-container').offset().top) );
-        $('.scroll-spacer').height(Math.round(height*0.8));
-        $('textarea').each(function() {
-            M.ViewManager.getViewById($(this).attr('id')).fixHeight();
-        });
+    // avoid class-based jQuery selections
+    // only call fixHeight if scroll-container width or font-size has changed
+    // only update margins if font-size has changed
+    // only update scroll-heights if height has changed
+
+    var newHeight = $('body').height();
+    var newWidth = $('body').width();
+    var newFont = $('body').css('font-size');
+    var changeHeight=false, changeWidth=false, changeFont=false;
+    if (newHeight !== diathink.lastHeight) {
+        changeHeight = true;
     }
+    if (newWidth !== diathink.lastWidth) {
+        changeWidth = true;
+    }
+    if (newFont !== diathink.lastFont) {
+        changeFont = true;
+    }
+    if (!changeHeight && !changeWidth && !changeFont) {
+        return;
+    }
+    // get scroll-container
+    var page = M.ViewManager.getCurrentPage();
+    if (!page) {return;}
+    var scrollContainer = $('#'+page.content.id);
+    if (scrollContainer.length===0) {return;}
+    var scrollViews = $([
+        $('#'+page.content.scroll1.outline.id).get(0),
+        $('#'+page.content.scroll2.outline.id).get(0)
+    ]);
+    var scrollSpacer = $([
+        $('#'+page.content.scroll1.outline.scrollSpacer.id).get(0),
+        $('#'+page.content.scroll2.outline.scrollSpacer.id).get(0)
+    ]);
+    var header = $('#'+page.header.id);
+    // might header-height have changed?
+    var headerHeight = header.height();
+    var height = Math.round(newHeight - headerHeight);
+    var mtop = Number(scrollContainer.css('margin-top').replace(/px/,''));
+    var mbottom = Number(scrollContainer.css('margin-bottom').replace(/px/,''));
+
+    if (changeHeight || changeFont) {
+        scrollContainer.height(height-mtop-mbottom);
+    }
+
+    var scrollViewOffset = scrollViews.offset().top - headerHeight;
+    scrollViews.height(height-mtop-mbottom-scrollViewOffset);
+    scrollSpacer.height(Math.round(height*0.8));
+
+    if (changeWidth || changeFont) {
+            $('textarea').each(function() {
+                M.ViewManager.getViewById($(this).attr('id')).fixHeight();
+            });
+    }
+
+    diathink.lastHeight = newHeight;
+    diathink.lastWidth = newWidth;
+    diathink.lastFont = newFont;
     // 10px for .scroll-container margin
     // Textarea position/size update
 

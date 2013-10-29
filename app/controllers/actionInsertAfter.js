@@ -176,7 +176,7 @@ diathink.Action = Backbone.RelationalModel.extend({
     },
     restoreViewContext: function(context, outline) {
         var collection, rank;
-        var li, elem, neighbor, parent, themeparent=false;
+        var li, elem, oldspot, neighbor, neighborType, parent, createTarget=false;
 
         // (1) does target exist in view, or does it need to be created
         // (2) will destination exist in view, or does it need to be deleted
@@ -184,7 +184,9 @@ diathink.Action = Backbone.RelationalModel.extend({
 
         var target = this.getView(this.options.targetID, outline.rootID);
         if (target!=null) { // if target wasn't deleted from this view
-            neighbor = this._saveOldSpot(target);
+            oldspot = this._saveOldSpot(target);
+            neighbor = oldspot.obj;
+            neighborType = oldspot.type;
         }
 
         // if context is outside view, then set to null
@@ -223,7 +225,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                 // add text in?
                 target.value.setView(target.rootID, target);
                 elem = target.render();
-                themeparent = true;
+                createTarget = true;
             } else { // undo move
                 elem = $('#'+target.id).detach();
                 target.parentView = parent;
@@ -235,14 +237,44 @@ diathink.Action = Backbone.RelationalModel.extend({
             } else {
                 $('#'+this.getView(context.prev, outline.rootID).id).after(elem);
             }
-            if (themeparent) {
-                target.registerEvents();
-                parent.themeUpdate(); // hack to theme list-item
+            if (createTarget) {
+                target.registerEvents(); // should phase-out with event-delegation
+                parent.themeUpdate(); // hack to theme list-item; could be optimized more
+                target.theme(); // theme textarea with event-handler and fixHeight
+                $('#'+target.id).addClass('leaf').addClass('expanded');
             }
-            target.theme(); // theme new lcoation
-        }
-        if (neighbor) {neighbor.theme();} // theme old location
 
+            // fix target's top/bottom corners
+            target.themeFirst(); // could check if this two are strictly necessary
+            target.themeLast();
+
+            // fixup new neighborhood
+            if (context.next && (context.prev == null)) {
+                $('#'+target.id).next().removeClass('ui-first-child');
+            }
+            if (context.prev && (context.next == null)) {
+                $('#'+target.id).prev().removeClass('ui-last-child');
+            }
+            if ((context.prev==null)&&(context.next==null)) {
+                target.parentView.parentView.themeParent();
+            }
+        }
+        if (neighbor) { // fixup old location
+            var neighborElem = $('#'+neighbor.id);
+            if (neighborType==='next') {
+                var prev = neighborElem.prev('li');
+                if (prev.length===0) {
+                    neighborElem.addClass('ui-first-child');
+                }
+            } else if (neighborType==='prev') {
+                var next = neighborElem.next('li');
+                if (next.length===0) {
+                    neighborElem.addClass('ui-last-child');
+                }
+            } else if (neighborType==='parent') {
+                neighbor.themeParent();
+            }
+        }
     },
     // utility functions
     newListItemView:function (parentView) { // (id only if known)
@@ -269,15 +301,17 @@ diathink.Action = Backbone.RelationalModel.extend({
     },
 
     _saveOldSpot: function(view) {
+        var type = 'next';
         var oldspot = $('#'+view.id).next('li');
         if (oldspot.length===0) {
             oldspot = $('#'+view.id).prev('li');
+            type = 'prev';
         }
         if (oldspot.length>0) {
-            return M.ViewManager.getViewById(oldspot.attr('id'));
+            return {type: type, obj: M.ViewManager.getViewById(oldspot.attr('id'))};
         } else {
             if (view.parentView.parentView && view.parentView.parentView.type==='M.ListItemView') {
-                return view.parentView.parentView;
+                return {type: 'parent', obj: view.parentView.parentView};
             } else {
                 return null;
             }
