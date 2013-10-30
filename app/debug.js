@@ -1,6 +1,6 @@
 $(function () {
 
-    var lastwtop = 0, lastdtop = 0, lastbtop = 0, lastptop = 0, last1top = 0, last2top = 0;
+/*    var lastwtop = 0, lastdtop = 0, lastbtop = 0, lastptop = 0, last1top = 0, last2top = 0;
     var scroll = setInterval(function() {
         if ($(window).scrollTop()!=lastwtop) {
             // clearInterval(scroll);
@@ -34,7 +34,7 @@ $(function () {
             }
         });
     }, 200);
-
+*/
     function randomString(size) {
         if (!size) {
             size = 12;
@@ -122,7 +122,7 @@ $(function () {
         } else {
             lastcursor.push([logCount, now, t, mesg]);
         }
-        console.log('DEBUG: '+mesg);
+        // console.log('DEBUG: '+mesg);
     };
 
     function drawlog(tags, elem, blockid) {
@@ -170,7 +170,7 @@ $(function () {
 
 // $('.ui-header').css('position', 'fixed');
 
-
+    /*
     $(window).click(function (e) {
         if (e.target && e.target.nodeName && e.target.nodeName.toUpperCase() === 'TEXTAREA') {
             setTimeout(function () {
@@ -179,9 +179,10 @@ $(function () {
             }, 0);
         }
     });
+*/
 
     // bind to textarea, window and document
-
+/*
     $('textarea').bind('focus blur mousedown mouseup click tap touchstart touchend',
         function (e) {
             diathink.log([], "textarea event "+e.type+" with textarea-start="+e.target.selectionStart);
@@ -237,6 +238,6 @@ $(function () {
                 // alert("Window-event of type "+e.type);
             }
         });
-
+*/
 
 });

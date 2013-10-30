@@ -1,69 +1,54 @@
 Next:
 ----
 
-
-OK Dropping into item produces 'special case'
-OK Disallow dropping into own parent (it sets prev=self)
-OK After focus, page-height looks wrong (until resize?)
-OK After focus, items are not droppable
-OK Make overflow hidden for page and scrollview
-OK Add validation for scrollTop() is 0 for body, page, panels.
-OK When scrolling to bottom, whole page scrolls
-OK Remove extraneous text-selections made with the mouse
-OK Disable scrollTop scrolling on the panels (how is this happening?)
-  (workaround by manually resetting scrollTop)
-OK Add empty-block under list that's 80% screen-height (when scrollable)
-? OK It's possible to select/drag a browser-link to localhost
-OK Make log scrollable on iphone
-OK When dialog opens for softkeyboardopen,
-  the parent panel has scrollability frozen
-OK Second keyboard open does not trigger keyboard-dialog
-   - iPhone doesn't fix scrolling on keyboard open?
-OK Scroll-bars are not full page-height after focusing.
-OK In iPhone landscape mode, bottom is clipped
-OK iPhone closes keyboards after return/backspace
-  -- triggering focus() won't open keyboard from keydown event
-  (Require homepage docking)
-VOID Why is validation is giving errors on overflow and z-index
-VOID incorporate drag-hover into the validation
-
-Show an exception or alert or something when exceptions are thrown loading application in index.html
-
-? validate that scroll-spacer has height
-? validate that panel extends to bottom of page
-   ui-scrollview-clip 305px?
-? Drag Pickup and dropdown-action are slow on iphone
-? Safari freezes after pressing Return
-? Return does not always make a new line (e.g. after a space)
-? Backspace must be hit twice to delete line.
-validate all M.ScrollViews are at:
-
-var panelParent = M.ViewManager.getCurrentPage().content;
-var canvas1 = panelParent.scroll1.outline.droplayer;
-var canvas2 = panelParent.scroll2.outline.droplayer;
-canvas1.offset = canvas1.offset();
-canvas2.offset = canvas2.offset();
+OK Fix autogrow called when needed
+OK Don't call fixHeight when content is empty.
+OK Ensure we call fixheight on keyup change input paste
+OK Ensure we call resize after window.load
+OK Fix validations for new list-item html
+OK Reduce console.logs.
+?OK Fix scrolling while dragging
+OK Adjust icon position for green arrow
+OK Fixup dotted-line appearance
+OK Does ui-focus match focus - class for hide-selection.
+OK Text-cursor remains separately focused from mouse-dragging
+OK Drag-icon should also add ui-focus to list-item and changed focused elem
+OK When dragging, add hover-class for the target list-parent
 
 
-Logo images
-  Diamond-text: http://images2.layoutsparks.com/1/76256/white-logo-black-design.gif
-  Cute dog: http://www.aaanything.net/wp-content/gallery/super-cute-animals/cute_puppy_in_black_and_white.jpg
+* Helper needs to stick around for docking
+* When is helper destroyed?
 
-* iPhone not scrolling to correct line
-* Keyboard-strokes after focus also cause autoscroll
+* Changes in width due to new-location-indenting are not noticed by fixHeight
 
-OK Opening new content does not have correct number of textarea lines
-* Text-cursor remains separately focused from mouse-dragging
-   Does ui-focus match focus?
+UI Enhancements:
+* currentItem should have solid background when hidden.
+* Add docking animation for drop or revert
+* Add transition animation for return/backspace
+* Focus on previous line when backspacing
+* Expand/contract animation
+* Undo-helper animations
+* Add line-split and line-merge for return/backspace
+* Up and down arrows should change lines
+* Transition animation for change-root
+* Need ellipses and horizontal scroll for breadcrumbs
+
 * Add font-change button (and update textarea heights)
 
-* Do a preliminary benchmark of iPhone/iPad performance
+* Connect drop-line-hover with parent-drop-into icon & border
+* Connect drop-into-icon-hover with staggered line into target-location
 
-* Validate that all elements in page fit inside the page/screen
-* Validate that scrollview and textarea heights are up to date,
-    and that spacers are present.
 
-* Retain list-contraction in model
+* validate classes used for bindings like .disclose are only used in designated view.
+
+ (maybe with some items open?)
+ Can be dragged or opened like regular links?
+
+
+* Add docking-preview animation for long hovers
+* Expand/contract preview for hover
+* Select-text-and-drag-down causes pixel-jiggle up and down
+* Add shift-tab keyboard-command
 
 * Drag-to-vertical-line (view in separate page)
  - Keep track of panels like items in nestedSortable
@@ -75,9 +60,32 @@ OK Opening new content does not have correct number of textarea lines
 * Find real-estate for inbox, trash
 * Inbox
 
+
+* Remove alerts from keyboard
+* Check/debug keyboard popup & autoscrolling
+* iPhone not scrolling to correct line
+* Keyboard-strokes after focus also cause autoscroll
+* Port to phonegap and test panel-scrolling
+
+* Do we need autocorrect/complete attributes?
+* Do we need scroll-checker every 200ms?
+
+* validate that scroll-spacer has height
+* validate that panel extends to bottom of page
+   ui-scrollview-clip 305px?
+validate all M.ScrollViews are at:
+* Validate that all elements in page fit inside the page/screen
+* Validate that scrollview and textarea heights are up to date,
+    and that spacers are present.
+Show an exception or alert or something when exceptions are thrown loading application in index.html
+
+
+
+* Retain list-contraction in model
+
 * Add iPhone/Safari detection to request homepage install
 
-* Intercept setTimeout and jQuery bindings for benchmarking
+? Intercept setTimeout and jQuery bindings for benchmarking
 
 Soft Keyboard assumptions (needs interactive validation for devices)
   Scroll-position on window-click event keeps keyboard in same position
@@ -97,21 +105,8 @@ On text focus:  Hide cursor and background-change, verify not scrolling
    (like with blur event)
 
 
-UI Enhancements:
-* Add shift-tab keyboard-command
-* Add line-split and line-merge for return/backspace
-* Up and down arrows should change lines
-* Keep drag-icon for dragged element
-* Select-text-and-drag-down causes pixel-jiggle up and down
-* Connect drop-line-hover with parent-drop-into icon & border
-* Connect drop-into-icon-hover with staggered line into target-location
-* Add docking animation for drop or revert
-* Add docking-preview animation for long hovers
-* Expand/contract animation
-* Expand/contract preview for hover
-* Undo-helper animations
-* Support multi-line text per draggable-line
-* Test on mobile
+OK Support multi-line text per draggable-line
+OK Keep drag-icon for dragged element
 
 * Printing
 
@@ -137,27 +132,33 @@ Make Breadcrumbs should be draggable, like line-handles.
 * Why is Firefox losing hover-state on fast mouseovers?
 
 
+Logo images
+  Diamond-text: http://images2.layoutsparks.com/1/76256/white-logo-black-design.gif
+  Cute dog: http://www.aaanything.net/wp-content/gallery/super-cute-animals/cute_puppy_in_black_and_white.jpg
 
 -----
+
+
+Search returns a list of expandable links,
+ Search results aren't editable, no textareas
+ Only has line-links, not inline.
+ Might need links before search.
 
 Override selection-default when dragging across lines
 Multi-line selection/dragging
 
-Migrate events to page-level:
-Breadcrumb-tap
-Collapse/expand-toggle
-Text-input focus/blur/keydown
-UL mobile-events probably undesired
-IMG events groupable for shared file (or eliminate)
+OK Migrate events to page-level:
+OK Breadcrumb-tap
+OK Collapse/expand-toggle
+OK Text-input focus/blur/keydown
+OK UL mobile-events probably undesired
+OK IMG events groupable for shared file (or eliminate)
+
+* Deal with image-load/error bindings which we removed.
 
 Links: Where to draw a superimposed-word/symbol can be calculated from a div/span.
 
 List-types: Editable vs. Search-results vs. Conversations
-
-LATER: Separate buttons outside keyboard:
-  up/down/left/right/
-  indent/outdent/new-line/new-child/
-  delete/split/merge-up
 
 Link UI:
  * Dragging link or breadcrumb copies docked-link between lines, copies reference into line-text, or opens target-page, or deletes reference
@@ -183,6 +184,11 @@ Show uneditable ID code in text-area,
   Can drag to inbox on viewing?
 
 Search-button on each used for back-references and similar-pages
+
+LATER: Separate buttons outside keyboard:
+  up/down/left/right/
+  indent/outdent/new-line/new-child/
+  delete/split/merge-up
 
 
 Settings:
@@ -399,6 +405,71 @@ Chat and Facebook integration
   - attached url's, gmail, google-drive/docs
   Open/resolved-issues, points (and ranking within issue)
     Example; generalization/idea; Ambiguity, Clarification
+
+
+*** Streamline unneeded event-bindings/widgets:
+page (keep for now):
+  adds remove() handler (probably unneeded)
+     adds beforehide -> removeContainerBackground
+	 adds pagebeforeshow -> _handlePageBeforeShow
+  adds tabindex=0
+  adds ui-page ui-body-c
+Scrollview (keep this for now):
+  addClass ui-scrollview-clip,
+  wrap children in div.ui-scrollview-view
+  hide overflow
+  don't allow position:static for self or view
+  set view to left:0/top:0
+  setup timer/momentum-stuff (probably all we need)
+Does need .remove?
+ (bind at root?)
+  .ui-header
+   scrollview-clip.remove
+breadcrumb tap
+scrollview mousedown
+
+OK Drag Pickup and dropdown-action are slow on iphone
+OK Safari freezes after pressing Return
+OK Return does not always make a new line (e.g. after a space)
+OK Backspace must be hit twice to delete line.
+
+OK Opening new content does not have correct number of textarea lines
+OK Do a preliminary benchmark of iPhone/iPad performance
+
+OK Eliminate list2view
+OK   Add classes manually
+OK   Remove buttonMarkup
+OK   Manage corners more optimally
+OK Eliminate text2input
+OK   Add classes manually
+OK   Migrate focus/blur/keyup handlers
+OK   Eliminate all list event-binding
+OK   Improve autogrow
+
+OK Dropping into item produces 'special case'
+OK Disallow dropping into own parent (it sets prev=self)
+OK After focus, page-height looks wrong (until resize?)
+OK After focus, items are not droppable
+OK Make overflow hidden for page and scrollview
+OK Add validation for scrollTop() is 0 for body, page, panels.
+OK When scrolling to bottom, whole page scrolls
+OK Remove extraneous text-selections made with the mouse
+OK Disable scrollTop scrolling on the panels (how is this happening?)
+  (workaround by manually resetting scrollTop)
+OK Add empty-block under list that's 80% screen-height (when scrollable)
+? OK It's possible to select/drag a browser-link to localhost
+OK Make log scrollable on iphone
+OK When dialog opens for softkeyboardopen,
+  the parent panel has scrollability frozen
+OK Second keyboard open does not trigger keyboard-dialog
+   - iPhone doesn't fix scrolling on keyboard open?
+OK Scroll-bars are not full page-height after focusing.
+OK In iPhone landscape mode, bottom is clipped
+OK iPhone closes keyboards after return/backspace
+  -- triggering focus() won't open keyboard from keydown event
+  (Require homepage docking)
+VOID Why is validation is giving errors on overflow and z-index
+VOID incorporate drag-hover into the validation
 
 OK Add CSS to style these spans the same as inputs
 OK Change :focus CSS to use .ui-focus instead

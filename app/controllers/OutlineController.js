@@ -47,7 +47,7 @@ diathink.OutlineController = M.Controller.extend({
 
 diathink.dummyController = M.Controller.extend({
     dummyListClicked:function (id, nameId) {
-        console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
+        //console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
     },
     listObject:[]
 });

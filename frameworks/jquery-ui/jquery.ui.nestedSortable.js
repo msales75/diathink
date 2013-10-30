@@ -122,22 +122,60 @@
         softKeyboardClose: function() {
             alert("softKeyboardClose");
         },
-        _drawDropLine: function(o, canvas) {
+        _drawDropLine: function(o) {
             /* Implement this when doing drag/drop changes
              dropTargets: function() {
              // "drop-candidates" not minimized, possibly only on-screen
              // each candidate needs to identify its compatibility, action-type and assumptions
              }
              */
-            if (o.type==='drophandle') {
-                return
-            } else {
-              return $('<div></div>').appendTo(canvas)
-                .addClass('dropborder')
-                .css('top', o.top+'px')
-                .css('left', o.left+'px')
-                .css('height', o.height+'px')
-                .css('width', o.width+'px')
+            var item = o.item;
+            var canvas = o.canvas;
+            var type = o.type;
+            var ctop = o.offset.top;
+            var cleft = o.offset.left;
+            d = item.dropboxes[item.dropboxes.length] =
+              {type: type, item: item};
+
+            if (type==='droptop') {
+                // boundaries for drawn box (smaller than active hover area)
+                item[type] = $('<div></div>').appendTo(canvas)
+                    .addClass('dropborder')
+                    .css('top', (item.top-ctop)+'px')
+                    .css('left', (item.left-cleft+item.height)+'px')
+                    .css('height', '0px')
+                    .css('width', (item.width-item.height-item.height/2)+'px');
+                // boundaries for active hover-area, (larger than drawn area)
+                d.top = item.top - (item.height/2);
+                d.bottom = item.top + (item.height/2);
+                d.left = item.left + item.height; // stay clear of handle
+                d.right = item.left+item.width-item.height/2;
+                d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
+            } else if (type==='dropbottom') {
+                item[type] = $('<div></div>').appendTo(canvas)
+                    .addClass('dropborder')
+                    .css('top', (item.top+item.height-ctop-1)+'px')
+                    .css('left', (item.left-cleft+item.height)+'px')
+                    .css('width',(item.width-item.height-item.height/2)+'px')
+                    .css('height', '0px');
+                d.top = item.top + (item.height/2);
+                d.bottom = item.top + (3*item.height/2);
+                d.left = item.left + item.height; // stay clear of handle
+                d.right = item.left+item.width-item.height/2;
+                d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
+            } else if (type==='drophandle') {
+                item[type] = $('<div></div>').appendTo(canvas)
+                    .addClass('droparrow')
+                    .css('top', (item.top-ctop-1)+'px')
+                    .css('left', (item.left-cleft-1)+'px');
+                d.top = item.top;
+                d.bottom = item.top + item.height;
+                d.left = item.left;
+                d.right = item.left + item.height;
+                d.parentView = M.ViewManager.getViewById(item.item[0].id);
+            }
+            if (item[type]) {
+                d.elem = item[type];
             }
         },
         _showDropLines: function() {
@@ -152,6 +190,53 @@
         },
         _emptyDropLayers: function() {
             $(this.options.dropLayers).html('');
+        },
+        _validateDropItem: function(itemEl) {
+
+            var noBottom = false, noTop = false, noHandle = false;
+            // cannot drop current-item on itself
+            if (itemEl[0] === this.currentItem[0]) {
+                return false;
+            }
+
+            // cannot drop the current-item inside itself
+            var activeModel = M.ViewManager.getViewById(this.currentItem.attr('id')).value;
+            var itemModel = M.ViewManager.getViewById(itemEl.attr('id')).value;
+
+            var model = itemModel;
+            while ((model != null)&&(model !== activeModel)) {
+                model = model.get('parent');
+            }
+            if (model != null) { // it is a child of itself
+                return false;
+            }
+
+            // cannot drop current-item adjacent to itself
+            if (activeModel.get('parent') === itemModel.get('parent')) {
+                var aRank = activeModel.rank();
+                var iRank = itemModel.rank();
+                if (aRank-iRank === 1) {
+                    noBottom = true;
+                } else if (iRank-aRank === 1) {
+                    noTop = true;
+                }
+            }
+            if (activeModel.get('parent') === itemModel) {
+                noHandle = true;
+            }
+            if (itemEl.prev().childDepth(this.options.buryDepth).children('ul').children('li:visible').length!==0) {
+                // predecessor has visible children, cannot drop above it
+                noTop = true;
+            }
+            if (itemEl.childDepth(this.options.buryDepth).children('ul').children('li:visible').length !== 0) {
+                // last in a list, cannot drop below it
+                noBottom = true;
+            }
+            if (itemEl.next().length!==0) {
+                // has visible children, cannot drop below it
+                noBottom = true;
+            }
+            return {bottom: !noBottom, top: !noTop, handle: !noHandle};
         },
 
         _drawDropLines: function() {
@@ -172,94 +257,42 @@
 
             for (var i = this.items.length - 1; i >= 0; i--) {
                 var item = this.items[i], itemEl = item.item;
-                var noBottom = false, noTop = false, noHandle = false;
 
                 item.droptop = null;
                 item.dropbottom = null;
                 item.drophandle = null;
+                item.dropboxes = [];
 
-                // Tests for valid drop location:
+                var validate = this._validateDropItem(itemEl);
+                if (!validate) {continue;}
 
-                // cannot drop current-item on itself
-                if (itemEl[0] === this.currentItem[0]) {
-                    continue;
-                }
-
-                // cannot drop the current-item inside itself
-                var activeModel = M.ViewManager.getViewById(this.currentItem.attr('id')).value;
-                var itemModel = M.ViewManager.getViewById(itemEl.attr('id')).value;
-
-                var model = itemModel;
-                while ((model != null)&&(model !== activeModel)) {
-                    model = model.get('parent');
-                }
-                if (model != null) { // it is a child of itself
-                    continue;
-                }
-
-
-                // cannot drop current-item adjacent to itself
-                if (activeModel.get('parent') === itemModel.get('parent')) {
-                    var aRank = activeModel.rank();
-                    var iRank = itemModel.rank();
-                    if (aRank-iRank === 1) {
-                        noBottom = true;
-                    } else if (iRank-aRank === 1) {
-                        noTop = true;
-                    }
-                }
-                if (activeModel.get('parent') === itemModel) {
-                    noHandle = true;
-                }
-                if (itemEl.prev().childDepth(this.options.buryDepth).children('ul').children('li:visible').length!==0) {
-                    // predecessor has visible children, cannot drop above it
-                    noTop = true;
-                }
-                if (itemEl.childDepth(this.options.buryDepth).children('ul').children('li:visible').length !== 0) {
-                   // last in a list, cannot drop below it
-                    noBottom = true;
-                }
-                if (itemEl.next().length!==0) {
-                    // has visible children, cannot drop below it
-                    noBottom = true;
-                }
-
-                var view = M.ViewManager.getViewById(itemEl.attr('id'));
-                while (view.type !== 'M.ScrollView') {
-                    view = view.parentView;
-                    if (view==null) {console.log('Invalid View'); return;}
-                }
+                var view = M.ViewManager.getViewById(item.parentPanel[0].id);
                 var canvas = $('#'+view.droplayer.id);
-                // cache droplayer offsets
-                var ctop = view.droplayer.cacheOffset.top;
-                var cleft = view.droplayer.cacheOffset.left;
 
-                if (!noTop) {
-                    item.droptop = this._drawDropLine({
-                        top: item.top-ctop,
-                        left: item.left-cleft,
-                        width: item.width-2,
-                        height: 0
-                    }, canvas);
+                if (validate.top) {
+                    this._drawDropLine({
+                        type: 'droptop',
+                        item: item,
+                        canvas: canvas,
+                        offset: view.droplayer.cacheOffset
+                    });
                 }
-                if (!noHandle) {
-                    item.drophandle = $('<div></div>').appendTo(canvas)
-                        .addClass('droparrow')
-                        .css('top', (item.top-ctop-1)+'px')
-                        .css('left', (item.left-cleft-10)+'px');
+                if (validate.handle) {
+                    this._drawDropLine({
+                        type: 'drophandle',
+                        item: item,
+                        canvas: canvas,
+                        offset: view.droplayer.cacheOffset
+                    });
                 }
-
-                if (!noBottom) {
-                    item.dropbottom = this._drawDropLine({
-                        top: item.top+item.height-ctop+2-1, // +2 for border
-                        left: item.left-cleft,
-                        width: item.width-2,
-                        height: 0
-                    }, canvas);
+                if (validate.bottom) {
+                    this._drawDropLine({
+                        type: 'dropbottom',
+                        item: item,
+                        canvas: canvas,
+                        offset: view.droplayer.cacheOffset
+                    });
                 }
-            }
-            for (var i=0; i < this.items.length; ++i) {
-                this._updateDropBoxes(this.items[i]);
             }
             // this._previewDropBoxes();
         },
@@ -283,24 +316,16 @@
                 {type: 'droptop', elem: item.droptop, item: item};
                 d.top = item.top - (item.height/2) - 1;
                 d.bottom = item.top + (item.height/2) + 1;
-                d.left = item.left + 12; // stay clear of handle
+                d.left = item.left + 16; // stay clear of handle
                 d.right = item.left+item.width+2;
             }
             if (item.dropbottom != null) {
                 d = item.dropboxes[item.dropboxes.length] =
                 {type: 'dropbottom', elem: item.dropbottom, item: item};
-                d.top = item.top + (item.height/2) - 1;
-                d.bottom = item.top + (3*item.height/2) + 3;
-                d.left = item.left + 12; // stay clear of handle
-                d.right = item.left+item.width+2;
             }
             if (item.drophandle != null) {
                 d = item.dropboxes[item.dropboxes.length] =
                 {type: 'drophandle', elem: item.drophandle, item: item};
-                d.top = item.top + 1;
-                d.bottom = item.top + 1 + 22+2;
-                d.left = item.left+3-16;
-                d.right = item.left+3-16+22+2;
             }
         },
         _previewDropBoxes: function() {
@@ -318,10 +343,10 @@
                     d = this.items[i].dropboxes[j];
                     $('<div></div>').appendTo(canvas)
                         .css('position','absolute')
-                        .css('top', (d.top-ctop-1)+'px')
-                        .css('left', (d.left-cleft-1)+'px')
-                        .css('width', (d.right-d.left-2)+'px')
-                        .css('height',(d.bottom-d.top-2)+'px')
+                        .css('top', (d.top-ctop)+'px')
+                        .css('left', (d.left-cleft)+'px')
+                        .css('width', (d.right-d.left)+'px')
+                        .css('height',(d.bottom-d.top)+'px')
                         .css('border','dotted red 1px');
                 }
             }
@@ -358,7 +383,7 @@
                 var right = left + this.scrollPanel.width();
                 if (!(this.positionAbs.left >= left && this.positionAbs.left <= right)) {
                     this.scrollPanel = null;
-                    console.log("Clearing scrollPanel");
+                    // console.log("Clearing scrollPanel");
                 }
             }
             if (!this.scrollPanel) {
@@ -367,8 +392,8 @@
                     var right = left + $(this).width();
                     if (self.positionAbs.left >= left && self.positionAbs.left <= right) {
                         self.scrollPanel = $(this);
-                        console.log("Changing scrollPanel to ");
-                        console.log(self.scrollPanel);
+                        // console.log("Changing scrollPanel to ");
+                        // console.log(self.scrollPanel);
                     }
                 });
             }
@@ -387,9 +412,28 @@
                         event.pageY - this.scrollPanel.offset().top);
 
                 var box = this._insideDropBox();
+                // todo: embed hover-variables into a class?
+                if (diathink.timer) {clearTimeout(diathink.timer);}
                 if (box) {
                     box.elem.addClass('active');
+                    // add a virtual-hover over parent-element
+                    if (box.parentView.type==='M.ListItemView') {
+                        var parentEl = $('#'+box.parentView.id).get(0);
+                        if (parentEl !== diathink.hoverItem) {
+                            $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                        }
+                        $(parentEl).addClass('ui-btn-hover-c');
+                        diathink.hoverItem = parentEl;
+                    } else {
+                        if (diathink.hoverItem) {
+                            $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                        }
+                    }
                     diathink.log(['debug','drag'],"Defined drop box of type"+box.type);
+                } else { // virtual blur
+                    if (diathink.hoverItem) {
+                        $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                    }
                 }
                 if (this.activeBox && (this.activeBox!=box)) {
                     this.activeBox.elem.removeClass('active');
@@ -432,12 +476,14 @@
 		_mouseStop: function(event, noPropagation) {
 
 			// mjs - if the item is in a position not allowed, send it back
+            /*
 			if (this.beyondMaxLevels) {
 				this._trigger("revert", event, this._uiHash());
 			}
+			*/
 
-			// mjs - clear the hovering timeout, just to be sure
-			// $('.'+this.options.hoveringClass).removeClass(this.options.hoveringClass);
+			// mjs - clear the expansion-hovering timeout, just to be sure
+			  // $('.'+this.options.hoveringClass).removeClass(this.options.hoveringClass);
 			this.hovering && window.clearTimeout(this.hovering);
 			this.hovering = null;
 
@@ -454,11 +500,12 @@
             if(!event) return;
 
             //If we are using droppables, inform the manager about the drop
+            /*
             if ($.ui.ddmanager && !this.options.dropBehaviour)
                 $.ui.ddmanager.drop(this, event);
+            */
 
-
-            if(this.options.revert) { // MS Note that this won't work without placeholder
+            if (this.options.revert) { // MS Note that this won't work without placeholder
                 var that = this;
                 var cur = this.placeholder.offset();
 
@@ -471,6 +518,7 @@
                     that._clear(event);
                 });
             } else {
+                // todo: don't destroy helper here any more?
                 this._clear(event, noPropagation);
             }
             // End of prototype._mouseStop
@@ -481,7 +529,7 @@
 
             // check for active drop-target and execute move
             if (this.activeBox != null) {
-                console.log("Dropping with type "+this.activeBox.type+" relative to item: "+this.activeBox.item.item.attr('id'));
+                // console.log("Dropping with type "+this.activeBox.type+" relative to item: "+this.activeBox.item.item.attr('id'));
                 var refview = M.ViewManager.findViewById(this.activeBox.item.item.attr('id'));
                 var targetview = M.ViewManager.findViewById(this.currentItem.attr('id'));
                 if (refview.type != 'M.ListItemView') {
@@ -528,7 +576,7 @@
             // for (var o in outlines) {
             //    $('#'+outlines[o].rootID).nestedSortable('drawDropLines');
             // }
-            // this._previewDropBoxes();
+           // this._previewDropBoxes();
         },
 
         drawDropLines: function(o) {
@@ -572,21 +620,22 @@
 
         // todo: stop using containers
 		_contactContainers: function(event) {
+            /*
 			if (this.options.protectRoot && this.currentItem[0].parentNode == this.element[0] ) {
 				return;
 			}
 			$.ui.sortable.prototype._contactContainers.apply(this, arguments);
             // (contactContainers needs to be adjusted)
-
+            */
 		},
 
         // MS - incorporating _clear code from sortable.js to customize
         _clear: function(event, noPropagation) {
 
-            this.reverting = false;
+            // this.reverting = false;
             // We delay all events that have to be triggered to after the point where the placeholder has been removed and
             // everything else normalized again
-            var delayedTriggers = [];
+            // var delayedTriggers = [];
 
             // We first have to update the dom position of the actual currentItem
             // Note: don't do it if the current item is already removed (by a user), or it gets reappended (see #4088)
@@ -597,24 +646,21 @@
             // if(!this._noFinalSort && this.currentItem.parent().length) this.placeholder.before(this.currentItem);
             // this._noFinalSort = null;
 
-            if(this.helper[0] == this.currentItem[0]) {
-                for(var i in this._storedCSS) {
-                    if(this._storedCSS[i] == 'auto' || this._storedCSS[i] == 'static') this._storedCSS[i] = '';
-                }
-                this.currentItem.css(this._storedCSS).removeClass("ui-sortable-helper");
-            } else {
-                this.currentItem.show();
-            }
+            this.currentItem.removeClass('drag-hidden');
             /*
             if (this.placeholder[0].parentNode.tagName.toLowerCase()!== 'ul') {
                 console.log("ERROR: place-holder was not added at a valid location, before currentItem addition");
-            }*/
+            }
             if (this.currentItem[0].parentNode.tagName.toLowerCase()!== 'ul') {
                 console.log("ERROR: current-item was not added at a valid location");
-            }
+            }*/
 
+            /*
             if(this.fromOutside && !noPropagation) delayedTriggers.push(function(event) { this._trigger("receive", event, this._uiHash(this.fromOutside)); });
-            if((this.fromOutside || this.domPosition.prev != this.currentItem.prev().not(".ui-sortable-helper")[0] || this.domPosition.parent != this.currentItem.parent()[0]) && !noPropagation) delayedTriggers.push(function(event) { this._trigger("update", event, this._uiHash()); }); //Trigger update callback if the DOM position has changed
+            if((this.fromOutside || this.domPosition.prev !=
+                this.currentItem.prev().not(".ui-sortable-helper")[0] ||
+                this.domPosition.parent != this.currentItem.parent()[0]) &&
+                !noPropagation) delayedTriggers.push(function(event) { this._trigger("update", event, this._uiHash()); }); //Trigger update callback if the DOM position has changed
 
             // Check if the items Container has Changed and trigger appropriate
             // events.
@@ -641,21 +687,23 @@
             if(this._storedOpacity) this.helper.css("opacity", this._storedOpacity); //Reset opacity
             // MS override zIndex to go away completely after done
             // if(this._storedZIndex) this.helper.css("zIndex", this._storedZIndex == 'auto' ? '' : this._storedZIndex); //Reset z-index
+             */
             this.helper.css("zIndex", ''); //Reset z-index
 
             this.dragging = false;
             if(this.cancelHelperRemoval) {
+                /*
                 if(!noPropagation) {
                     this._trigger("beforeStop", event, this._uiHash());
                     for (var i=0; i < delayedTriggers.length; i++) { delayedTriggers[i].call(this, event); }; //Trigger all delayed events
                     this._trigger("stop", event, this._uiHash());
                 }
-
                 this.fromOutside = false;
+                 */
                 return false;
             }
 
-            if(!noPropagation) this._trigger("beforeStop", event, this._uiHash());
+            // if(!noPropagation) this._trigger("beforeStop", event, this._uiHash());
 
             /*
             if (this.placeholder[0].parentNode.tagName.toLowerCase() !== 'ul') {
@@ -664,12 +712,13 @@
 
             //$(this.placeholder[0]).remove(); would have been the jQuery way - unfortunately, it unbinds ALL events from the original node!
             // MS remove it here, since it was probably created in _mouseStart
-            if (this.placeholder && (this.placeholder.length>0)) {
-                this.placeholder[0].parentNode.removeChild(this.placeholder[0]);
-            }
+            // if (this.placeholder && (this.placeholder.length>0)) {
+                // this.placeholder[0].parentNode.removeChild(this.placeholder[0]);
+            // }
 
             if(this.helper[0] != this.currentItem[0]) this.helper.remove(); this.helper = null;
 
+            /*
             if(!noPropagation) {
                 for (var i=0; i < delayedTriggers.length; i++) { delayedTriggers[i].call(this, event); }; //Trigger all delayed events
                 this._trigger("stop", event, this._uiHash());
@@ -682,6 +731,7 @@
                 var item = this.items[i].item[0];
                 this._clearEmpty(item);
             }
+            */
 
             return true;
 
@@ -719,7 +769,7 @@
             var inst = _inst || this;
             return {
                 helper: inst.helper,
-                placeholder: inst.placeholder || $([]),
+                // placeholder: inst.placeholder || $([]),
                 position: inst.position,
                 originalPosition: inst.originalPosition,
                 offset: inst.positionAbs,

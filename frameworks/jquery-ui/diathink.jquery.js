@@ -25,6 +25,7 @@ jQuery.fn.selectText = function() {
         selection.removeAllRanges();
         selection.addRange(range);
     }
+    return this;
 };
 
 function getTextNodesIn(node) {
@@ -112,11 +113,15 @@ $(window).resize(function() {
     // only call fixHeight if scroll-container width or font-size has changed
     // only update margins if font-size has changed
     // only update scroll-heights if height has changed
+    var newHeight, newWidth, newFont, changeHeight, changeWidth, changeFont;
 
-    var newHeight = $('body').height();
-    var newWidth = $('body').width();
-    var newFont = $('body').css('font-size');
-    var changeHeight=false, changeWidth=false, changeFont=false;
+    (function() { // anonymous function for profiling
+    newHeight = $(document.body).height();
+    newWidth = $(document.body).width();
+    newFont = $(document.body).css('font-size');
+    changeHeight=false;
+    changeWidth=false;
+    changeFont=false;
     if (newHeight !== diathink.lastHeight) {
         changeHeight = true;
     }
@@ -126,6 +131,7 @@ $(window).resize(function() {
     if (newFont !== diathink.lastFont) {
         changeFont = true;
     }
+    })();
     if (!changeHeight && !changeWidth && !changeFont) {
         return;
     }
@@ -144,10 +150,15 @@ $(window).resize(function() {
     ]);
     var header = $('#'+page.header.id);
     // might header-height have changed?
-    var headerHeight = header.height();
-    var height = Math.round(newHeight - headerHeight);
-    var mtop = Number(scrollContainer.css('margin-top').replace(/px/,''));
-    var mbottom = Number(scrollContainer.css('margin-bottom').replace(/px/,''));
+
+    var headerHeight, height, mtop, mbottom;
+
+    (function() {
+    headerHeight = header.height();
+    height = Math.round(newHeight - headerHeight);
+    mtop = Number(scrollContainer.css('margin-top').replace(/px/,''));
+    mbottom = Number(scrollContainer.css('margin-bottom').replace(/px/,''));
+    })();
 
     if (changeHeight || changeFont) {
         scrollContainer.height(height-mtop-mbottom);
@@ -158,9 +169,11 @@ $(window).resize(function() {
     scrollSpacer.height(Math.round(height*0.8));
 
     if (changeWidth || changeFont) {
+        (function() {
             $('textarea').each(function() {
                 M.ViewManager.getViewById($(this).attr('id')).fixHeight();
             });
+        })();
     }
 
     diathink.lastHeight = newHeight;

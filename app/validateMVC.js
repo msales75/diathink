@@ -600,7 +600,7 @@ diathink.validateMVC = function () {
                 "LI "+$(this).attr('id')+" is at beginning but does not have class ui-first-child");
         }
 
-        var childlist = $(this).children('div').children('div').children('a').children('ul');
+        var childlist = $(this).children('div').children('ul');
         M.test(childlist.length===1,
             "Child list ul not found inside li "+$(this).attr('id'));
 
@@ -634,7 +634,7 @@ diathink.validateMVC = function () {
                 "LI "+$(this).attr('id')+" is not visible though parent ul is");
         }
         // validate that all lists are unique inside their li
-        M.test($(this).children().children().children().children('ul').length===1,
+        M.test($(this).children('ul').length===1,
             "List-item "+$(this).attr('id')+" does not have exactly one ul inside it");
 
 /*

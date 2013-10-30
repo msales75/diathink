@@ -453,6 +453,16 @@ M.TextEditView = M.View.extend(
             //   on startup before calling resize()
             if (thisel.css('visibility') !== 'visible') {return;}
 
+            /*
+            if (this.value.length<4) {
+                // todo: could optimize without looking at width here.
+                this.lineHeight = Number(hiddendiv.css('line-height').replace(/px/,''));
+                this.padding = Number(thisel.css('padding-top').replace(/px/,'')) +
+                    Number(thisel.css('padding-bottom').replace(/px/,''));
+                this.parentDiv.height(this.lineHeight + this.padding);
+                return;
+            } */
+
             var currentWidth = thisel.width();
             if (!(currentWidth > 0)) {
                 return;
@@ -461,6 +471,7 @@ M.TextEditView = M.View.extend(
             if ((this.lastWidth===currentWidth)&&(this.lastFont===currentFont)&&(this.lastValue===this.value)) {
                 return;
             }
+
             if (!this.hiddenDiv) {
                 this.hiddenDiv = $('.hiddendiv');
                 if (this.hiddenDiv.length!==1) {
@@ -475,15 +486,7 @@ M.TextEditView = M.View.extend(
                     alert("ERROR: parentDiv not found");
                 }
             }
-            if (this.lastWidth !== currentWidth) {
-                hiddendiv.width(currentWidth);
-            }
-            // if (this.lastValue !== this.value) {
-                var lastchar = this.value.substr(this.value.length-1,1);
-                var rest = this.value.substr(0, this.value.length-1);
-                hiddendiv.html($.escapeHtml(rest)+'<span class="marker">'+
-                    $.escapeHtml(lastchar).replace(/ /g, "&nbsp;") +'</span>');
-            // }
+
             if (this.lastFont !== currentFont) {
                 this.lineHeight = Number(hiddendiv.css('line-height').replace(/px/,''));
                 this.padding = Number(thisel.css('padding-top').replace(/px/,'')) +
@@ -492,17 +495,23 @@ M.TextEditView = M.View.extend(
             var lineHeight = this.lineHeight;
             var padding = this.padding;
 
+
+            hiddendiv.width(currentWidth);
+            var lastchar = this.value.substr(this.value.length-1,1);
+            var rest = this.value.substr(0, this.value.length-1);
+            hiddendiv.html($.escapeHtml(rest)+'<span class="marker">'+
+                $.escapeHtml(lastchar).replace(/ /g, "&nbsp;") +'</span>');
+
             // cache lineHeight if font-size hasn't changed?
             // cache parent-div
 
             var nlines= Math.round((hiddendiv.children('span').position().top / lineHeight) - 0.4) + 1;
             var height = nlines * lineHeight;
             if (Math.abs(this.parentDiv.height()-height-padding) > 0.5) {
-                console.log("Setting id="+thisel.parent('div').attr('id')+" to height "+
-                    height+" plus padding "+padding);
+                //console.log("Setting id="+thisel.parent('div').attr('id')+" to height "+
+                  //  height+" plus padding "+padding);
                 this.parentDiv.height(height+padding);
             }
-
             this.lastValue = this.value;
             this.lastWidth = currentWidth;
             this.lastFont = currentFont;
@@ -516,7 +525,7 @@ M.TextEditView = M.View.extend(
         theme: function() {
             /* trigger keyup event to make the text field autogrow */
             var jDom = $('#'  + this.id);
-            if(typeof this.value === 'string') { // MS edit for theming empty fields
+            if (typeof this.value === 'string') { // MS edit for theming empty fields
                 // jDom.trigger('keyup'); // .textinput2();
                 if(!this.isEnabled){
                     // jDom.textinput2('disable');
@@ -529,7 +538,8 @@ M.TextEditView = M.View.extend(
             }
 
             // jquery-mobile hack for correcting ios bug
-            if ( typeof jDom[0].autocorrect !== "undefined" && !$.support.touchOverflow ) {
+            // todo: check if this is true/correct?
+            if ( jDom[0] && (typeof jDom[0].autocorrect !== "undefined") && !$.support.touchOverflow ) {
                 // Set the attribute instead of the property just in case there
                 // is code that attempts to make modifications via HTML.
                 jDom[0].setAttribute( "autocorrect", "off" );

@@ -14,9 +14,6 @@ diathink.Action = Backbone.RelationalModel.extend({
         this.options = _.extend({}, this.options, options);
         return this;
     },
-    preview:function () {
-        // no instantiation or parameter-saving
-    },
     exec:function (options) {
         var o, i;
         _.extend(this.options, options);
@@ -25,21 +22,24 @@ diathink.Action = Backbone.RelationalModel.extend({
         this.timestamp = (new Date()).getTime();
 
         this.undone = false;
-        diathink.UndoController.log(this);
 
+        // before changing model, start preview animation
+        this.getContexts();
+        if (!o.excludeAllViews) {
+            for (i in outlines) {
+                if (o.excludeView && (o.excludeView === i)) continue;
+                this.preview(outlines[i], o.focusView===i);
+            }
+        }
+
+        diathink.UndoController.log(this);
         this.execModel();
         // todo: assumptions and issue-handling
         var outlines = diathink.OutlineManager.outlines;
         if (!o.excludeAllViews) {
             for (i in outlines) {
-                if (o.excludeView) {
-                    if (o.excludeView === i) continue;
-                }
-                var focus = false;
-                if (o.focusView === i) {
-                    focus = true;
-                }
-                this.execView(outlines[i], focus);
+                if (o.excludeView && (o.excludeView === i)) continue;
+                this.execView(outlines[i], o.focusView===i);
             }
         }
         diathink.UndoController.refreshButtons();
@@ -174,6 +174,16 @@ diathink.Action = Backbone.RelationalModel.extend({
             target.set({parent: null});
         }
     },
+    preview:function (outline, focus) {
+        if (this.oldContext) {
+            var target = this.getView(this.options.targetID, outline.rootID);
+            // fade-out and shrink
+        }
+        if (this.newContext) {
+            // create spacer, expand and dock-if-helper (start fade-in after restoreContext before focus)
+        }
+        // no instantiation or parameter-saving
+    },
     restoreViewContext: function(context, outline) {
         var collection, rank;
         var li, elem, oldspot, neighbor, neighborType, parent, createTarget=false;
@@ -240,7 +250,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (createTarget) {
                 target.registerEvents(); // should phase-out with event-delegation
                 parent.themeUpdate(); // hack to theme list-item; could be optimized more
-                target.theme(); // theme textarea with event-handler and fixHeight
+                target.theme(); // add classes and if there is content, fixHeight
                 $('#'+target.id).addClass('leaf').addClass('expanded');
             }
 
@@ -317,10 +327,8 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
         }
     },
-    execModel: function () {
+    getContexts: function() {
         if (! this.options.targetID) {
-            var target = new diathink.OutlineNodeModel({text: this.options.lineText, children: null});
-            this.options.targetID = target.cid;
             this.oldContext = null;
         } else {
             if (! this.options.redo) {
@@ -328,6 +336,12 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
         }
         this.getNewContext();
+    },
+    execModel: function () {
+        if (!this.options.targetID) {
+            var target = new diathink.OutlineNodeModel({text: this.options.lineText, children: null});
+            this.options.targetID = target.cid;
+        }
         this.restoreContext(this.newContext);
     },
     execView:function (outline, focus) {
@@ -380,12 +394,12 @@ diathink.Action = Backbone.RelationalModel.extend({
         return action;
     },
     checkTextChange:function(id) {
-        console.log("Checking text change for id="+id);
+        // console.log("Checking text change for id="+id);
         var value = $('#'+id).val();
         var model = M.ViewManager.findViewById(id).parentView.parentView.parentView.value;
         if (model.get('text') !== value) {
-            console.log("TextAction for id="+id+"; model="+
-                model.cid+" with value="+$('#'+id).val());
+            //console.log("TextAction for id="+id+"; model="+
+              //  model.cid+" with value="+$('#'+id).val());
             diathink.TextAction.createAndExec({
                 targetID: model.cid,
                 text: $('#'+id).val()
@@ -477,6 +491,7 @@ diathink.DeleteAction = diathink.Action.extend({
 diathink.TextAction= diathink.Action.extend({
     type:"TextAction",
     options: {targetID: null, text: null, transition: false},
+    getContexts: function() {},
     execModel: function () {
         var target= this.getModel(this.options.targetID);
         this.oldText = target.get('text');
@@ -486,7 +501,7 @@ diathink.TextAction= diathink.Action.extend({
         var target = this.getView(this.options.targetID, outline.rootID);
         if (target != null) {
             target.header.name.text.value = this.options.text;
-            console.log("Updating view "+target.header.name.text.id+" to value "+this.options.text);
+            // console.log("Updating view "+target.header.name.text.id+" to value "+this.options.text);
             $('#'+target.header.name.text.id).val(this.options.text);
             target.header.name.text.themeUpdate();
         }
@@ -499,7 +514,7 @@ diathink.TextAction= diathink.Action.extend({
         var target = this.getView(this.options.targetID, outline.rootID);
         if (target != null) {
             target.header.name.text.value = this.oldText;
-            console.log("Updating view "+target.header.name.text.id+" to value "+this.oldText);
+            // console.log("Updating view "+target.header.name.text.id+" to value "+this.oldText);
             $('#'+target.header.name.text.id).val(this.oldText);
             target.header.name.text.themeUpdate();
         }

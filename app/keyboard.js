@@ -13,7 +13,7 @@ diathink.keyboardSetup = M.Object.extend({
     init: function(config) {
 
         var self = this;
-        this.is_touch_device = 'ontouchstart' in document.documentElement;
+        diathink.is_touch_device = 'ontouchstart' in document.documentElement;
 
         var is_mobile_ios =  (navigator.userAgent.match(/iPhone/i) ||
             navigator.userAgent.match(/iPad/i) ||
@@ -24,7 +24,7 @@ diathink.keyboardSetup = M.Object.extend({
 // alert("Mobile IOS DEVICE = "+is_mobile_ios);
 
 // use ios keyboard-detection-hack
-        if (this.is_touch_device) {
+        if (diathink.is_touch_device) {
 // for touch devices, don't let mousedown propogate to window,
 //   to prevent unintended focus/blurs that change keyboard
             document.ontouchmove = function(e) {
@@ -89,7 +89,7 @@ diathink.keyboardSetup = M.Object.extend({
 
     focus: function() {
         var self = this;
-        if (this.is_touch_device) {
+        if (diathink.is_touch_device) {
             if (! this.is_mobile_ios) { // not-ios; check for keyboard-resize-event
                 this.listenForResize = 1;
                 this.oldWidth = $(window).width();
@@ -103,7 +103,7 @@ diathink.keyboardSetup = M.Object.extend({
                 }, 2500);
             }
         }
-        if (this.is_touch_device && this.is_mobile_ios) {
+        if (diathink.is_touch_device && this.is_mobile_ios) {
             setTimeout(function() {
                 if (self._virtualKeyboardHeight()>10) {
                     if (! self.isOpen) {

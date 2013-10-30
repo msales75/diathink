@@ -59,33 +59,46 @@ diathink.app.createPage = function(pageName, root) {
                     if (pageShown>0) {return;} // first-call
                     ++pageShown;
 
-                    $('#'+id).on('focusin focusout', function(e) {
-                        // does this have performance issues?
+                    $('#'+id).on('focusin focusout', 'textarea', function(e) {
+                        // todo: does this have performance issues?
+                        // console.log('Check call-count: calling '+ e.type+' for textarea');
                         if (e.type=='focusout') {
                             // does this occur on manual keyboard-close?
-                            console.log('blurring keyboard from focusout');
+                            // console.log('blurring keyboard from focusout');
                             diathink.keyboard.blur();
-                            if (diathink.focused) {
-                                M.ViewManager.getViewById(diathink.focused.id).blur();
+                            if (diathink.focused && diathink.focused.id) {
+                                if (M.ViewManager.getViewById(diathink.focused.id)) {
+                                    M.ViewManager.getViewById(diathink.focused.id).blur();
+                                }
                             }
                             diathink.focused = null;
                             return;
                         }
                         if (e.target && e.target.nodeName && e.target.nodeName.toLowerCase()==='textarea') {
-                            console.log('focusing keyboard from focusin');
+                            //console.log('focusing keyboard from focusin');
                             diathink.focused = e.target;
                             // check if keyboard opened
                             diathink.keyboard.focus();
                             M.ViewManager.getViewById(e.target.id).focus();
                         } else {
                             // check if keyboard closed
-                            console.log('blurring keyboard from focusin');
+                            // console.log('blurring keyboard from focusin');
                             diathink.keyboard.blur();
-                            if (diathink.focused) {
-                                M.ViewManager.getViewById(diathink.focused.id).blur();
+                            if (diathink.focused && diathink.focused.id) {
+                                if (M.ViewManager.getViewById(diathink.focused.id)) {
+                                    M.ViewManager.getViewById(diathink.focused.id).blur();
+                                }
                             }
                             diathink.focused = null;
                         }
+                    });
+                    $('#'+id).on('vmousedown', '.disclose', function(e) {
+                        var targetView = M.ViewManager.getViewById(this.id).parentView.name.text;
+                        // add a class for non-text focus
+                        $('#'+targetView.id).addClass('hide-selection').focus().selectText();
+                    });
+                    $('#'+id).on('vmousedown', 'textarea', function(e) {
+                        $(this).removeClass('hide-selection');
                     });
                     $('#'+id).on('tap', '.disclose', function (e) {
                             var now = (new Date()).getTime();
@@ -134,8 +147,44 @@ diathink.app.createPage = function(pageName, root) {
                                 panelview.changeRoot(diathink.OutlineNodeModel.getById(modelid));
                             }
                     });
-                    //   keyup change input paste
-                    $('#'+id).on('keyup', 'textarea', function(e) {
+                    function closestListItem( element ) {
+                        var cname;
+                        while ( element ) {
+                            if (element.nodeName.toLowerCase()==='body') {return null;}
+                            if (element.nodeName.toLowerCase()==='li') {
+                                cname = ( typeof element.className === 'string' ) && ( element.className + ' ' );
+                                if ( cname && cname.indexOf( "ui-li " ) > -1 ) {
+                                    break;
+                                }
+                            }
+                            element = element.parentNode;
+                        }
+                        return element;
+                    }
+                    diathink.hoverItem = null, diathink.hoverTimer = null;
+                    // handle hovering-class, also retain class for 500ms in case it's followed by focus class
+                    $('#'+id).on('vmouseover vmouseout', function(e) {
+                        // find the closest li to the target
+                        var li = closestListItem(e.target);
+                        if (!li) {return;}
+                        if (diathink.timer) {clearTimeout(diathink.timer);}
+                        if (e.type==='vmouseover') {
+                            if (li !== diathink.hoverItem) {
+                                $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                            }
+                            $(li).addClass('ui-btn-hover-c');
+                            diathink.hoverItem = li;
+                        } else if (e.type==='vmouseout') {
+                            if (li === diathink.hoverItem) {
+                                diathink.timer = setTimeout(function() {
+                                    $(li).removeClass('ui-btn-hover-c');
+                                }, 500);
+                            } else { // if a different item is hovering do nothing
+                            }
+                        }
+                    });
+                    // Note: input and paste do not bubble, so these don't yet work.
+                    $('#'+id).on('keyup change input paste', 'textarea', function(e) {
                         var view = M.ViewManager.getViewById($(this).attr('id'));
                         view.setValueFromDOM();
                         view.themeUpdate();
@@ -215,14 +264,15 @@ diathink.app.createPage = function(pageName, root) {
                                     // M.ViewManager.findViewById(scrollid).themeUpdate();
                                 }
                                 e.stopPropagation();
-                                console.log("Processed keyup with which=" + e.which + " and keycode=" + e.keyCode);
+                                // console.log("Processed keyup with which=" + e.which + " and keycode=" + e.keyCode);
                     });
                     $.mobile.window.on('load',function() {
-                        $('textarea').trigger('keyup');
+                        $(window).resize();
+                        // $('textarea').trigger('keyup');
                     });
                     // ? also on: mobile.document pagechange
 
-                    $(window).resize();
+                    //  $(window).resize();
                     diathink.UndoController.refreshButtons();
                     diathink.keyboard = diathink.keyboardSetup.extend({
                         // hiddeninput: diathink.app.pages[pageName].hiddeninput.input.id
@@ -250,41 +300,6 @@ diathink.app.createPage = function(pageName, root) {
                                 left: $(item).offset().left+'px',
                                 top: $(item).offset().top+'px'
                             });
-                        },
-                        start: function(e, hash) {
-                            /*
-                            hash.item.parents().each(function() {
-                                $(this).addClass('drag-hover');
-                            });
-                            */
-                            /*
-                             hash.item.parents('li').each(function() {
-                             $(this).addClass('drag-hover');
-                             });
-                             hash.item.parents('ul').each(function() {
-                             $(this).addClass('drag-hover');
-                             });
-                             */
-
-                            // hash.item.css('border','solid 1px orange');
-                        },
-                        stop:function (e, hash) { // (could also try 'change' or 'sort' event)
-                            /*
-                            if (hash.item.parents('ul').length > 0) {
-                                M.ViewManager.getViewById($(hash.item.parents('ul').get(0)).attr('id')).themeUpdate();
-                                M.ViewManager.getViewById($(hash.originalDOM.parent).attr('id')).themeUpdate();
-                            }
-                            var toplines = $('.topline:hover');
-                            var bottomlines = $('.bottomline:hover');
-                            if (toplines.length>0) {
-                                console.log("Moving above element "+toplines.parents("li:first").attr('id'));
-                            } else if (bottomlines.length>0) {
-                                console.log("Moving below element "+bottomlines.parents("li:first").attr('id'));
-                            }
-                            // $('.drag-hover').removeClass('drag-hover');
-                            // hash.item.css('border','');
-                            console.log("Processed change to structure");
-                            */
                         },
                         // handle: '> div > div > a > div > .handle',
                         toleranceElement:'> div.outline-header'

@@ -182,16 +182,17 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 		//If the helper is not the original, hide the original so it's not playing any role during the drag, won't cause anything bad this way
 		if(this.helper[0] != this.currentItem[0]) {
-			this.currentItem.hide();
+			this.currentItem.addClass('drag-hidden');
 		}
 
 		//Create the placeholder
+        // MS edit - don't create placeholder
+        /* MS -- comment out unused stuff.
 		this._createPlaceholder();
 
 		//Set a containment if given in the options
 		if(o.containment)
 			this._setContainment();
-
 		if(o.cursor) { // cursor option
 			if ($('body').css("cursor")) this._storedCursor = $('body').css("cursor");
 			$('body').css("cursor", o.cursor);
@@ -206,30 +207,30 @@ $.widget2("ui.sortable", $.ui.mouse, {
 			if (this.helper.css("zIndex")) this._storedZIndex = this.helper.css("zIndex");
 			this.helper.css("zIndex", o.zIndex);
 		}
-
+*/
 		//Prepare scrolling
 		if(this.scrollParent[0] != document && this.scrollParent[0].tagName != 'HTML')
 			this.overflowOffset = this.scrollParent.offset();
 
-		//Call callbacks
-		this._trigger("start", event, this._uiHash());
+		// Call callbacks - MS comment-out
+		// this._trigger("start", event, this._uiHash());
 
 		//Recache the helper size
 		if(!this._preserveHelperProportions)
 			this._cacheHelperProportions();
 
 
-		//Post 'activate' events to possible containers
-		if(!noActivation) {
-			 for (var i = this.containers.length - 1; i >= 0; i--) { this.containers[i]._trigger("activate", event, this._uiHash(this)); }
-		}
+		//Post 'activate' events to possible containers - MS comment-out
+		// if(!noActivation) {
+			 // for (var i = this.containers.length - 1; i >= 0; i--) { this.containers[i]._trigger("activate", event, this._uiHash(this)); }
+		// }
 
-		//Prepare possible droppables
-		if($.ui.ddmanager)
-			$.ui.ddmanager.current = this;
+		//Prepare possible droppables - MS comment out
+		// if($.ui.ddmanager)
+			// $.ui.ddmanager.current = this;
 
-		if ($.ui.ddmanager && !o.dropBehaviour)
-			$.ui.ddmanager.prepareOffsets(this, event);
+		// if ($.ui.ddmanager && !o.dropBehaviour)
+			// $.ui.ddmanager.prepareOffsets(this, event);
 
 		this.dragging = true;
 
@@ -572,6 +573,19 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 	},
 
+    _closestPanel: function( element ) {
+        var cname;
+        while ( element ) {
+            if (element.nodeName.toLowerCase()==='body') {return null;}
+                cname = ( typeof element.className === 'string' ) && ( element.className + ' ' );
+                if ( cname && cname.indexOf( "ui-scrollview-clip " ) > -1 ) {
+                    break;
+                }
+            element = element.parentNode;
+        }
+        return element;
+    },
+
 	_refreshItems: function(event) {
 
 		this.items = [];
@@ -599,7 +613,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 			for (var j=0, queriesLength = _queries.length; j < queriesLength; j++) {
 				var item = $(_queries[j]);
-                var parentPanel = item.closest('.ui-scrollview-clip');
+                var parentPanel = $(this._closestPanel(item.get(0)));
 
                 // MS Todo: probably can get rid of this data-binding?
 				item.data(this.widgetName + '-item', targetData); // Data for target checking (mouse manager)

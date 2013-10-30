@@ -12,7 +12,7 @@ body, div, span, a, img, h1, h2, h3, h4, h5, ul, li {
 html, body { overflow: hidden; height: 100% }
 body { margin:0; padding:0; }
 body {
-    font-size: 16px;
+    font-size: 28px;
 }
 
 .ui-mobile .ui-page-active {
@@ -154,11 +154,12 @@ li.ui-li > div.ui-li.ui-btn-inner {
 .drop-mode .droplayer > .dropborder {
   position: absolute;
   background-color: transparent;
-  border:  dashed #000 1px;
+  border:  dashed #BBB 1px;
 }
 
 .drop-mode .droplayer > .dropborder.active {
     border-style: solid;
+    border-color: #444;
 }
 
 .drop-mode .droplayer > .droparrow {
@@ -167,8 +168,8 @@ li.ui-li > div.ui-li.ui-btn-inner {
     background-position: center;
     background-image: url(images/indent-arrow.png);
     opacity: 0.3;
-    height: 1.25em;
-    width: 1.25em;
+    height: 1.48em;
+    width: 1.48em;
 }
 
 .drop-mode .droplayer > .droparrow.active {
@@ -268,6 +269,17 @@ li.ui-li.ui-focus, li.ui-li.ui-focus:hover {
 
 li.ui-li {
     background-color: #EEE;
+}
+
+li.ui-li.drag-hidden {
+    -webkit-transition: height 80ms linear;
+    -moz-transition: height 80ms linear;
+    -o-transition: height 80ms linear;
+    transition: height 80ms linear;
+}
+
+li.ui-li.drag-hidden > div, li.ui-li.drag-hidden > ul {
+    visibility: hidden;
 }
 
 li.ui-li.ui-btn-hover-c {
@@ -376,6 +388,19 @@ div.hiddeninput {
     -webkit-box-shadow:none;
     box-shadow:none;
 }
+
+textarea.hide-selection::selection {
+    background: transparent;
+}
+/*
+li.ui-li > div > div > textarea.ui-input-text.outline-content:focus {
+    color: transparent;
+    -webkit-text-fill-color: #333;
+}
+li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
+    color: #333;
+}
+*/
 
 .scroll-spacer {
     display: block;
