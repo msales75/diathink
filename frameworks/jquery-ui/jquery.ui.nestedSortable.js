@@ -540,19 +540,19 @@
 
                 if (this.activeBox.type==='droptop') {
                     diathink.MoveBeforeAction.createAndExec({
-                        dragView: rootID,
+                        dragView: refview.rootID,
                         referenceID: refview.value.cid,
                         targetID: targetview.value.cid
                     });
                 } else if (this.activeBox.type==='dropbottom') {
                     diathink.MoveAfterAction.createAndExec({
-                        dragView: rootID,
+                        dragView: refview.rootID,
                         referenceID: refview.value.cid,
                         targetID: targetview.value.cid
                     });
                 } else if (this.activeBox.type==='drophandle') {
                     diathink.MoveIntoAction.createAndExec({
-                        dragView: rootID,
+                        dragView: refview.rootID,
                         referenceID: refview.value.cid,
                         targetID: targetview.value.cid
                     });

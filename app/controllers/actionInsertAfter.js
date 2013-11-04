@@ -353,9 +353,10 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (that.options.targetID) {
                 var target = that.getView(that.options.targetID, outline.rootID);
                 // vanish if not already hidden & shrink over 80ms
-                var placeholder = $('<div></div>').addClass('li-placeholder').css('height',$('#'+target.id).css('height'));
+                var oldHeight = $('#'+target.id).css('height');
+                var placeholder = $('<div></div>').addClass('li-placeholder').css('height',oldHeight);
                 var oldTarget = $('#'+target.id).addClass('drag-hidden').replaceWith(placeholder);
-                that.targetHeight[outline.rootID] = oldTarget.css('height');
+                that.targetHeight[outline.rootID] = oldHeight;
                 that.sourcePlaceholder[outline.rootID] = placeholder.get(0);
                 that.movingTarget[outline.rootID] = oldTarget.get(0);
             }
@@ -369,11 +370,14 @@ diathink.Action = Backbone.RelationalModel.extend({
                     that.status.sourceAnim[outline.rootID] = 2;
                     that.nextQueue();
                 });
+            } else {
+                that.status.sourceAnim[outline.rootID] = 2;
+                that.nextQueue();
             }
         });
         // ready for removal, let model run now.
         // create preview-spacer in the right spot
-        this.addQueue(['destPlace', outline.rootID], ['destContext'], function() {
+        this.addQueue(['destPlace', outline.rootID], ['destContext', ['sourcePlace', outline.rootID]], function() {
             if (that.newContext) {
                 var place = $('<div></div>').addClass('li-placeholder');
                 that.targetPlaceholder[outline.rootID] = place.get(0);
@@ -394,13 +398,19 @@ diathink.Action = Backbone.RelationalModel.extend({
                     that.status.destAnim[outline.rootID] = 2;
                     that.nextQueue();
                 });
+            } else {
+                that.status.destAnim[outline.rootID] = 2;
+                that.nextQueue();
             }
         });
         //  todo: for non-docking, start fade-in after restoreContext before focus
         // dock the dragged-helper
         if (diathink.helper && dragView) {
-            this.addAsync('dockAnim', [['destPlace', outline.rootID]], function () {
+            this.addAsync('dockAnim', [['destPlace', outline.rootID], ['sourcePlace', outline.rootID]], function () {
+                // Is destPlace for this view above or below source?
+                var source = $(that.sourcePlaceholder[outline.rootID]).offset();
                 var cur = $(that.targetPlaceholder[outline.rootID]).offset();
+                if (cur.top > source.top) {cur.top -= Number(that.targetHeight[outline.rootID].replace(/px/,''));}
                 // todo: placeholder may move during animation
                 $(diathink.helper).animate({
                     left: cur.left,
@@ -418,7 +428,7 @@ diathink.Action = Backbone.RelationalModel.extend({
     },
     restoreViewContext: function(outline) {
         var that = this;
-        this.addQueue(['view', outline.rootID], ['model', ['sourcePlace', outline.rootID], ['destPlace', outline.rootID]], function() {
+        this.addQueue(['view', outline.rootID], ['model', ['sourceAnim', outline.rootID], ['destAnim', outline.rootID]], function() {
             var collection, rank;
             var context, li, elem, oldspot, neighbor, neighborType, parent, createTarget=false;
 
