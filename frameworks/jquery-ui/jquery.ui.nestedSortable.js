@@ -372,10 +372,10 @@
 
             //Set the helper position
             if(!this.options.axis || this.options.axis !== "y") {
-                this.helper[0].style.left = this.position.left+"px";
+                diathink.helper[0].style.left = this.position.left+"px";
             }
             if(!this.options.axis || this.options.axis !== "x") {
-                this.helper[0].style.top = this.position.top+"px";
+                diathink.helper[0].style.top = this.position.top+"px";
             }
 
             if (this.scrollPanel) {
@@ -463,7 +463,7 @@
                                 hoverItem.removeClass(o.collapsedClass).addClass(o.expandedClass);
                                 self.refreshPositions();
                                 self._drawDropLines();
-                                self._trigger("expand", event, self._uiHash());
+                                // self._trigger("expand", event, self._uiHash());
                             }, o.expandOnHover);
                             this.hoveringBox = this.activeBox;
                         }
@@ -492,7 +492,7 @@
             // for (var o in outlines) {
             //    $('#'+outlines[o].rootID).nestedSortable('hideDropLines');
             // }
-            this.hideDropLines();
+            // this.hideDropLines();
 
             // Beginning of of prototype._mouseStop
             // $.ui.sortable.prototype._mouseStop.apply(this, arguments);
@@ -506,29 +506,28 @@
             */
 
             if (this.options.revert) { // MS Note that this won't work without placeholder
-                var that = this;
-                var cur = this.placeholder.offset();
-
-                this.reverting = true;
-
-                $(this.helper).animate({
-                    left: cur.left - this.offset.parent.left - this.margins.left + (this.offsetParent[0] == document.body ? 0 : this.offsetParent[0].scrollLeft),
-                    top: cur.top - this.offset.parent.top - this.margins.top + (this.offsetParent[0] == document.body ? 0 : this.offsetParent[0].scrollTop)
-                }, parseInt(this.options.revert, 10) || 500, function() {
-                    that._clear(event);
-                });
+                /* todo: remove drag-hidden if aborted
+                setTimeout(function() {
+                    $('#'+target.id).removeClass('drag-hidden');
+                }, 80); */
             } else {
                 // todo: don't destroy helper here any more?
-                this._clear(event, noPropagation);
+                // this._clear(event, noPropagation);
             }
+            // when we want to remove helper we do this:
+
+
+
             // End of prototype._mouseStop
 
             // TODO: some of this should probably be done before calling _clear?
             // todo: make a temporary border/focus/animation for object docking,
             // todo: (including vertical-gap-adjustments).  Also make animation for reversion.
 
+            var rootID = M.ViewManager.findViewById(this.currentItem[0].id).rootID;
             // check for active drop-target and execute move
             if (this.activeBox != null) {
+                this.reverting = false;
                 // console.log("Dropping with type "+this.activeBox.type+" relative to item: "+this.activeBox.item.item.attr('id'));
                 var refview = M.ViewManager.findViewById(this.activeBox.item.item.attr('id'));
                 var targetview = M.ViewManager.findViewById(this.currentItem.attr('id'));
@@ -541,23 +540,42 @@
 
                 if (this.activeBox.type==='droptop') {
                     diathink.MoveBeforeAction.createAndExec({
-                        // focusView: this.rootView.id,
+                        dragView: rootID,
                         referenceID: refview.value.cid,
                         targetID: targetview.value.cid
                     });
                 } else if (this.activeBox.type==='dropbottom') {
                     diathink.MoveAfterAction.createAndExec({
+                        dragView: rootID,
                         referenceID: refview.value.cid,
                         targetID: targetview.value.cid
                     });
                 } else if (this.activeBox.type==='drophandle') {
                     diathink.MoveIntoAction.createAndExec({
+                        dragView: rootID,
                         referenceID: refview.value.cid,
                         targetID: targetview.value.cid
                     });
                 }
+            } else { // cancel action
+                var that = this;
+                var cur = this.currentItem.offset();
+                this.reverting = true;
+                $(diathink.helper).animate({
+                    left: cur.left,
+                    top: cur.top
+                }, 200, function() {
+                    that.currentItem.removeClass('drag-hidden');
+                    $(diathink.helper).remove();
+                    diathink.helper = null;
+                    that.hideDropLines();
+                    that.reverting = false;
+                });
             }
             this.activeBox = null;
+
+            this.helper = null; // no more internal references to helper, though
+            //  diathink.helper may persist.
 
             return false;
 		},
@@ -646,7 +664,7 @@
             // if(!this._noFinalSort && this.currentItem.parent().length) this.placeholder.before(this.currentItem);
             // this._noFinalSort = null;
 
-            this.currentItem.removeClass('drag-hidden');
+            // this.currentItem.removeClass('drag-hidden');
             /*
             if (this.placeholder[0].parentNode.tagName.toLowerCase()!== 'ul') {
                 console.log("ERROR: place-holder was not added at a valid location, before currentItem addition");
@@ -688,10 +706,10 @@
             // MS override zIndex to go away completely after done
             // if(this._storedZIndex) this.helper.css("zIndex", this._storedZIndex == 'auto' ? '' : this._storedZIndex); //Reset z-index
              */
-            this.helper.css("zIndex", ''); //Reset z-index
+            // this.helper.css("zIndex", ''); //Reset z-index
 
             this.dragging = false;
-            if(this.cancelHelperRemoval) {
+            // if(this.cancelHelperRemoval) {
                 /*
                 if(!noPropagation) {
                     this._trigger("beforeStop", event, this._uiHash());
@@ -700,8 +718,8 @@
                 }
                 this.fromOutside = false;
                  */
-                return false;
-            }
+                // return false;
+            // }
 
             // if(!noPropagation) this._trigger("beforeStop", event, this._uiHash());
 
@@ -716,7 +734,7 @@
                 // this.placeholder[0].parentNode.removeChild(this.placeholder[0]);
             // }
 
-            if(this.helper[0] != this.currentItem[0]) this.helper.remove(); this.helper = null;
+            // if(this.helper[0] != this.currentItem[0]) this.helper.remove(); this.helper = null;
 
             /*
             if(!noPropagation) {

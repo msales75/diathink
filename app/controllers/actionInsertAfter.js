@@ -10,40 +10,179 @@ diathink.Action = Backbone.RelationalModel.extend({
     triggers:null,
     undone: false,
     lost: false,
+    targetPlaceholder: {},
+    sourcePlaceholder: {},
+    queue: {},
+    targetHeight: {},
+    movingTarget: {},
+    status: {},
     constructor: function(options) {
         this.options = _.extend({}, this.options, options);
+        this.targetPlaceholder = {};
+        this.sourcePlaceholder = {};
+        this.queue = {};
+        this.targetHeight = {};
+        this.movingTarget = {};
+        this.status = {
+            sourceContext: 0,
+            destContext: 0,
+            log: 0,
+            undobuttons: 0,
+            sourceCollection: 0,
+            targetCollection: 0,
+            targetRank: 0,
+            model: 0,
+            dockAnim: 0,
+            focus: 0,
+            sourcePlace: {},
+            destPlace: {},
+            view: {},
+            sourceAnim: {},
+            destAnim: {}
+        };
         return this;
     },
+    addAsync: function(self, deps, f) {
+        this.addQueue(self, deps, f, true);
+    },
+    addQueue: function(self, deps, f, async) {
+        if (!async) {async=false;}
+        if (typeof self === 'object') {
+            if (this.queue[self[0]+':'+self[1]]!==undefined) {alert("Queue error"); return;}
+            this.queue[self[0]+':'+self[1]] = [self, deps, f, async];
+        } else {
+            if (this.queue[self]!==undefined) {alert("Queue error"); return;}
+            this.queue[self] = [self, deps, f, async];
+        }
+    },
+    nextQueue: function() {
+        // console.log("Running nextQueue");
+        if (this.nextQueueScheduled) {
+            clearTimeout(this.nextQueueScheduled);
+        }
+        // loop over the queue and start all items which can be started
+        var i, j, deps, depj, self, self0, f, ready, n= 0, queue=this.queue;
+        var that = this;
+        for (i in queue) {
+
+            if (this.queue[i]===undefined) {continue;}
+
+            // never start the same job twice
+            self = queue[i][0];
+            if (typeof self === 'object') { // array
+                self0 = this.status[self[0]];
+                // console.log("Considering queue item "+i+" type="+self[0]+":"+self[1]);
+                if (self0 && self0[self[1]]>0) {
+                    // console.log("Aborting queue item "+i+" because already begun");
+                    continue;
+                }
+            } else {
+                // console.log("Considering queue item "+i+" type="+self);
+                if (this.status[self]>0) {
+                    // console.log("Aborting queue item "+i+" because already begun");
+                    continue;
+                }
+            }
+
+            deps = queue[i][1];
+            f = queue[i][2];
+            ready=1;
+            // console.log("Checking dependencies for "+i+": "+deps.join(','));
+            for (j=0; j<deps.length; ++j) {
+                if (typeof deps[j] === 'object') { // a dependency-array
+                    depj = this.status[deps[j][0]];
+                    if (!(depj && (depj[deps[j][1]]===2))) {
+                        // console.log("Postponing "+i+" because haven't met: "+deps[j][0]+":"+deps[j][1]);
+                        ready=0; break;
+                    }
+                } else { // a simple/string dependency
+                    if (!(this.status[deps[j]]===2)) {
+                        // console.log("Postponing "+i+" because haven't met: "+deps[j]);
+                        ready=0; break;
+                    }
+                }
+            }
+            if (ready) {
+                ++n;
+                // remove self from queue
+                this.execQueue(i);
+            }
+        }
+        if (n>0) {
+            this.nextQueueScheduled = setTimeout(function() {
+                that.nextQueue();
+            }, 0);
+        }
+    },
+    execQueue: function(i) {
+        var q, that = this;
+        q = this.queue[i];
+        // console.log("Scheduling "+i);
+        if (typeof q[0] === 'object') {
+            that.status[q[0][0]][q[0][1]] = 1;
+        } else {
+            that.status[q[0]] = 1;
+        }
+        setTimeout(function() {
+            // console.log("Removing from queue item "+i);
+            delete that.queue[i];
+        }, 0);
+        setTimeout(function() {
+            // console.log("Updating status of item "+i+"before execution");
+            // console.log("Executing "+i);
+            (q[2])();
+            if (!q[3]) { // unless it ends asynchronously like an animation
+                // console.log("Updating status after finishing non-async item "+i);
+                if (typeof q[0] === 'object') {
+                    that.status[q[0][0]][q[0][1]] = 2;
+                } else {
+                    that.status[q[0]] = 2;
+                }
+                that.nextQueue();
+            }
+        }, 0);
+    },
     exec:function (options) {
-        var o, i;
+        var o, i, destViews, sourceViews, sourceAnims, destAnims;
         _.extend(this.options, options);
         o = this.options;
-
+        var self = this;
         this.timestamp = (new Date()).getTime();
-
         this.undone = false;
-
         // before changing model, start preview animation
-        this.getContexts();
+        this.addQueue('sourceContext', [], function() {
+            self.getOldContext();
+        });
+        this.addQueue('destContext', [], function() {
+            self.getNewContext();
+        });
+        var outlines = diathink.OutlineManager.outlines;
         if (!o.excludeAllViews) {
             for (i in outlines) {
                 if (o.excludeView && (o.excludeView === i)) continue;
-                this.preview(outlines[i], o.focusView===i);
+                this.preview(outlines[i], o.dragView===i);
             }
         }
 
-        diathink.UndoController.log(this);
-        this.execModel();
+        this.addQueue('log', ['sourceContext', 'destContext'], function() {
+            diathink.UndoController.log(self);
+        });
         // todo: assumptions and issue-handling
-        var outlines = diathink.OutlineManager.outlines;
+        this.execModel();
+
         if (!o.excludeAllViews) {
             for (i in outlines) {
                 if (o.excludeView && (o.excludeView === i)) continue;
                 this.execView(outlines[i], o.focusView===i);
             }
         }
-        diathink.UndoController.refreshButtons();
+
+        // todo: increase undo-dependencies
+        this.addQueue('undobuttons', ['model'],
+            function() {diathink.UndoController.refreshButtons();});
+
         // diathink.validateMVC();
+        this.nextQueue();
     },
     getModel: function(id) {
         return Backbone.Relational.store.find(diathink.OutlineNodeModel, id);
@@ -148,143 +287,266 @@ diathink.Action = Backbone.RelationalModel.extend({
         this.options.targetID = target.cid;
         return target;
     },
-    restoreContext: function(context) {
-        var target = this.getModel(this.options.targetID);
-        var collection, rank;
-        var oldCollection = target.parentCollection();
-        if (oldCollection != null) { // if it's in a collection
-            oldCollection.remove(target);
-        }
-        if (context != null) { // if there was a prior location to revert to
-            target.deleted = false;
-            if (context.parent != null) {
-                collection = this.getModel(context.parent).get('children');
-            } else {
-                collection = diathink.data;
+    restoreContext: function() {
+        var target, collection, rank, oldCollection;
+        var that = this;
+        this.addQueue('sourceCollection', ['targetCreate'], function() {
+            target = that.getModel(that.options.targetID);
+            oldCollection = target.parentCollection();
+        });
+        this.addQueue('sourceModel', ['sourceCollection'], function() {
+            if (oldCollection != null) { // if it's in a collection
+                oldCollection.remove(target);
             }
-            if (context.prev === null) {
-                rank = 0;
+        });
+        this.addQueue('targetCollection', ['sourceModel'], function() {
+            var context;
+            if (that.undone) {
+                context = that.oldContext;
             } else {
-                rank = this.getModel(context.prev).rank()+1;
+                context = that.newContext;
             }
-            collection.add(target, {at: rank});
-        } else { // mark it as deleted
-            target.deleted = true;
-            // target.views = null; // todo: negate views individually
-            target.set({parent: null});
+            if (context != null) { // if there was a prior location to revert to
+                target.deleted = false;
+                if (context.parent != null) {
+                    collection = that.getModel(context.parent).get('children');
+                } else {
+                    collection = diathink.data;
+                }
+            } else {
+                target.deleted = true;
+            }
+        });
+        this.addQueue('targetRank', ['targetCollection'], function() {
+            var context;
+            if (that.undone) {
+                context = that.oldContext;
+            } else {
+                context = that.newContext;
+            }
+            if (context != null) {
+                if (context.prev === null) {
+                    rank = 0;
+                } else {
+                    rank = that.getModel(context.prev).rank()+1;
+                }
+            }
+        });
+        this.addQueue('model', ['targetRank'], function() {
+            var context;
+            if (that.undone) {
+                context = that.oldContext;
+            } else {
+                context = that.newContext;
+            }
+            if (context != null) {
+                collection.add(target, {at: rank});
+            } else {
+                target.set({parent: null});
+            }
+        });
+    },
+    preview:function (outline, dragView) {
+        var that = this;
+            // todo: for non-dragged targets, add fade-out on mousedown in nestedSortable.
+        this.addQueue(['sourcePlace', outline.rootID], ['sourceContext'], function() {
+            if (that.options.targetID) {
+                var target = that.getView(that.options.targetID, outline.rootID);
+                // vanish if not already hidden & shrink over 80ms
+                var placeholder = $('<div></div>').addClass('li-placeholder').css('height',$('#'+target.id).css('height'));
+                var oldTarget = $('#'+target.id).addClass('drag-hidden').replaceWith(placeholder);
+                that.targetHeight[outline.rootID] = oldTarget.css('height');
+                that.sourcePlaceholder[outline.rootID] = placeholder.get(0);
+                that.movingTarget[outline.rootID] = oldTarget.get(0);
+            }
+        });
+        this.addAsync(['sourceAnim', outline.rootID], [['sourcePlace', outline.rootID]], function() {
+            if (that.sourcePlaceholder[outline.rootID]) {
+                $(that.sourcePlaceholder[outline.rootID]).animate({
+                    height: 0
+                }, 200, function() {
+                    // console.log("Updating status after finishing async sourceAnim:"+outline.rootID);
+                    that.status.sourceAnim[outline.rootID] = 2;
+                    that.nextQueue();
+                });
+            }
+        });
+        // ready for removal, let model run now.
+        // create preview-spacer in the right spot
+        this.addQueue(['destPlace', outline.rootID], ['destContext'], function() {
+            if (that.newContext) {
+                var place = $('<div></div>').addClass('li-placeholder');
+                that.targetPlaceholder[outline.rootID] = place.get(0);
+                if (that.newContext.next) {
+                    place.insertBefore('#'+that.getView(that.newContext.next, outline.rootID).id);
+                } else if (that.newContext.prev) {
+                    place.insertAfter('#'+that.getView(that.newContext.prev, outline.rootID).id);
+                } else if (that.newContext.parent) {
+                    place.appendTo('#'+that.getView(that.newContext.parent, outline.rootID).id+' > ul');
+                }
+            }
+        });
+
+        this.addAsync(['destAnim', outline.rootID], [['destPlace', outline.rootID]], function() {
+            if (that.targetPlaceholder[outline.rootID]) {
+                $(that.targetPlaceholder[outline.rootID]).animate({height: that.targetHeight[outline.rootID]}, 200, function() {
+                    // console.log("Updating status after finishing async destAnim:"+outline.rootID);
+                    that.status.destAnim[outline.rootID] = 2;
+                    that.nextQueue();
+                });
+            }
+        });
+        //  todo: for non-docking, start fade-in after restoreContext before focus
+        // dock the dragged-helper
+        if (diathink.helper && dragView) {
+            this.addAsync('dockAnim', [['destPlace', outline.rootID]], function () {
+                var cur = $(that.targetPlaceholder[outline.rootID]).offset();
+                // todo: placeholder may move during animation
+                $(diathink.helper).animate({
+                    left: cur.left,
+                    top: cur.top
+                }, 200, function() {
+                    // console.log("Updating status after finishing async dockAnim");
+                    $(document.body).removeClass('drop-mode');
+                    $(diathink.helper).remove();
+                    diathink.helper = null;
+                    that.status.dockAnim = 2;
+                    that.nextQueue();
+                });
+            });
         }
     },
-    preview:function (outline, focus) {
-        if (this.oldContext) {
-            var target = this.getView(this.options.targetID, outline.rootID);
-            // fade-out and shrink
-        }
-        if (this.newContext) {
-            // create spacer, expand and dock-if-helper (start fade-in after restoreContext before focus)
-        }
-        // no instantiation or parameter-saving
-    },
-    restoreViewContext: function(context, outline) {
-        var collection, rank;
-        var li, elem, oldspot, neighbor, neighborType, parent, createTarget=false;
+    restoreViewContext: function(outline) {
+        var that = this;
+        this.addQueue(['view', outline.rootID], ['model', ['sourcePlace', outline.rootID], ['destPlace', outline.rootID]], function() {
+            var collection, rank;
+            var context, li, elem, oldspot, neighbor, neighborType, parent, createTarget=false;
 
-        // (1) does target exist in view, or does it need to be created
-        // (2) will destination exist in view, or does it need to be deleted
-        // (3) is destination at top-level of view, with undefined parent
+            if (that.undone) {
+                context = that.oldContext;
+            } else {
+                context = that.newContext;
+            }
+            // (1) does target exist in view, or does it need to be created
+            // (2) will destination exist in view, or does it need to be deleted
+            // (3) is destination at top-level of view, with undefined parent
 
-        var target = this.getView(this.options.targetID, outline.rootID);
-        if (target!=null) { // if target wasn't deleted from this view
-            oldspot = this._saveOldSpot(target);
-            neighbor = oldspot.obj;
-            neighborType = oldspot.type;
-        }
+            // target is a view here.
+            var target = that.getView(that.options.targetID, outline.rootID);
+            if (target!=null) {
+                oldspot = that._saveOldSpot(target);
+                neighbor = oldspot.obj;
+                neighborType = oldspot.type;
+            }
 
-        // if context is outside view, then set to null
-        if (context != null) {
-            if (context.parent != null) {
-                var parent = this.getView(context.parent, outline.rootID);
-                if (parent != null) {
-                    parent = parent.children;
-                } else { // parent is outside view, is it one level or more?
-                    if (this.getModel(context.parent).get('children') ===
-                        M.ViewManager.getViewById(outline.rootID).value) {
+            // get parent listview; unless context is outside view then null
+            if (context != null) {
+                if (context.parent != null) {
+                    var parent = that.getView(context.parent, outline.rootID);
+                    if (parent != null) {
+                        parent = parent.children;
+                    } else { // parent is outside view, is it one level or more?
+                        if (that.getModel(context.parent).get('children') ===
+                            M.ViewManager.getViewById(outline.rootID).value) {
+                            parent = M.ViewManager.getViewById(outline.rootID);
+                        } else { // context is out of scope
+                            context = null;
+                            parent = null;
+                        }
+                    }
+                } else { // outline-root diathink.data
+                    if (M.ViewManager.getViewById(outline.rootID).value === diathink.data) {
                         parent = M.ViewManager.getViewById(outline.rootID);
-                    } else { // context is out of scope
+                    } else {
                         context = null;
                         parent = null;
                     }
                 }
-            } else { // outline-root diathink.data
-                if (M.ViewManager.getViewById(outline.rootID).value === diathink.data) {
-                    parent = M.ViewManager.getViewById(outline.rootID);
+            }
+
+            if (context === null) {
+                if (target != null) {target.destroy();}
+                // destroy() also detaches view-reference from model
+            } else { // undo-move/edit
+                // get views corresponding to context
+                if (target == null) { // create target
+                    target = that.newListItemView(parent);
+                    // todo: add text in?
+                    target.value.setView(target.rootID, target);
+                    elem = target.render();
+                    createTarget = true;
+                } else { // move
+                    if (that.movingTarget[outline.rootID] && that.movingTarget[outline.rootID].id === target.id) {
+                        elem = $(that.movingTarget[outline.rootID]);
+                        that.movingTarget[outline.rootID] = undefined;
+                    } else {
+                        elem = $('#'+target.id).detach();
+                    }
+                    // restore height if it was lost
+                    elem.css('height','').removeClass('drag-hidden');
+                    target.parentView = parent;
+                }
+
+                // put elem into context
+                // this cleans up destination-placeaholder; what about source-placeholder?
+                //   it could vanish automatically?
+                if (that.targetPlaceholder[outline.rootID]) {
+                    $(that.targetPlaceholder[outline.rootID]).replaceWith(elem).remove();
                 } else {
-                    context = null;
-                    parent = null;
+                    if (context.prev == null) {
+                        var parentElem = $('#'+parent.id);
+                        parentElem.prepend(elem);
+                    } else {
+                        var prevElem = $('#'+that.getView(context.prev, outline.rootID).id);
+                        prevElem.after(elem);
+                    }
+                }
+
+                if (createTarget) {
+                    target.registerEvents(); // should phase-out with event-delegation
+                    parent.themeUpdate(); // hack to theme list-item; could be optimized more
+                    target.theme(); // add classes and if there is content, fixHeight
+                    $('#'+target.id).addClass('leaf').addClass('expanded');
+                }
+
+                // fix target's top/bottom corners
+                target.themeFirst(); // could check if this two are strictly necessary
+                target.themeLast();
+
+                // fixup new neighborhood
+                if (context.next && (context.prev == null)) {
+                    $('#'+target.id).next().removeClass('ui-first-child');
+                }
+                if (context.prev && (context.next == null)) {
+                    $('#'+target.id).prev().removeClass('ui-last-child');
+                }
+                if ((context.prev==null)&&(context.next==null)) {
+                    target.parentView.parentView.themeParent();
                 }
             }
-        }
-
-        if (context === null) { // undo creation
-            if (target != null) {target.destroy();}
-              // destroy() also detaches view-reference from model
-        } else { // undo-move/edit
-            // get views corresponding to context
-            if (target == null) {
-                // undo deletion - test later; target doesn't exist in this case
-                target = this.newListItemView(parent);
-                // add text in?
-                target.value.setView(target.rootID, target);
-                elem = target.render();
-                createTarget = true;
-            } else { // undo move
-                elem = $('#'+target.id).detach();
-                target.parentView = parent;
+            // remove source-placeholder
+            if (that.sourcePlaceholder[outline.rootID]) {
+                $(that.sourcePlaceholder[outline.rootID]).remove();
+                that.sourcePlaceholder[outline.rootID] = undefined;
             }
 
-            // put elem into context
-            if (context.prev == null) {
-                $('#'+parent.id).prepend(elem);
-            } else {
-                $('#'+this.getView(context.prev, outline.rootID).id).after(elem);
-            }
-            if (createTarget) {
-                target.registerEvents(); // should phase-out with event-delegation
-                parent.themeUpdate(); // hack to theme list-item; could be optimized more
-                target.theme(); // add classes and if there is content, fixHeight
-                $('#'+target.id).addClass('leaf').addClass('expanded');
-            }
-
-            // fix target's top/bottom corners
-            target.themeFirst(); // could check if this two are strictly necessary
-            target.themeLast();
-
-            // fixup new neighborhood
-            if (context.next && (context.prev == null)) {
-                $('#'+target.id).next().removeClass('ui-first-child');
-            }
-            if (context.prev && (context.next == null)) {
-                $('#'+target.id).prev().removeClass('ui-last-child');
-            }
-            if ((context.prev==null)&&(context.next==null)) {
-                target.parentView.parentView.themeParent();
-            }
-        }
-        if (neighbor) { // fixup old location
-            var neighborElem = $('#'+neighbor.id);
-            if (neighborType==='next') {
-                var prev = neighborElem.prev('li');
-                if (prev.length===0) {
-                    neighborElem.addClass('ui-first-child');
+            if (neighbor) { // fixup old location
+                var neighborElem = $('#'+neighbor.id);
+                if (neighborType==='next') {
+                    var prev = neighborElem.prev('li');
+                    if (prev.length===0) {
+                        neighborElem.addClass('ui-first-child');
+                    }
+                } else if (neighborType==='prev') {
+                    var next = neighborElem.next('li');
+                    if (next.length===0) {
+                        neighborElem.addClass('ui-last-child');
+                    }
+                } else if (neighborType==='parent') {
+                    neighbor.themeParent();
                 }
-            } else if (neighborType==='prev') {
-                var next = neighborElem.next('li');
-                if (next.length===0) {
-                    neighborElem.addClass('ui-last-child');
-                }
-            } else if (neighborType==='parent') {
-                neighbor.themeParent();
             }
-        }
+        });
     },
     // utility functions
     newListItemView:function (parentView) { // (id only if known)
@@ -312,9 +574,15 @@ diathink.Action = Backbone.RelationalModel.extend({
 
     _saveOldSpot: function(view) {
         var type = 'next';
-        var oldspot = $('#'+view.id).next('li');
+        var elem;
+        if (this.movingTarget[view.rootID] && (this.movingTarget[view.rootID].id === view.id)) {
+            elem = $(this.sourcePlaceholder[view.rootID]);
+        } else {
+            elem = $('#'+view.id);
+        }
+        var oldspot = elem.next('li');
         if (oldspot.length===0) {
-            oldspot = $('#'+view.id).prev('li');
+            oldspot = elem.prev('li');
             type = 'prev';
         }
         if (oldspot.length>0) {
@@ -327,7 +595,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
         }
     },
-    getContexts: function() {
+    getOldContext: function() {
         if (! this.options.targetID) {
             this.oldContext = null;
         } else {
@@ -335,19 +603,24 @@ diathink.Action = Backbone.RelationalModel.extend({
                 this.oldContext = this.getContextAt(this.options.targetID);
             }
         }
-        this.getNewContext();
     },
     execModel: function () {
-        if (!this.options.targetID) {
-            var target = new diathink.OutlineNodeModel({text: this.options.lineText, children: null});
-            this.options.targetID = target.cid;
-        }
+        var that = this;
+        this.addQueue('targetCreate', ['log'], function() {
+            if (!that.options.targetID) {
+                var target = new diathink.OutlineNodeModel({text: that.options.lineText, children: null});
+                that.options.targetID = target.cid;
+            }
+        });
         this.restoreContext(this.newContext);
     },
     execView:function (outline, focus) {
-        this.restoreViewContext(this.newContext, outline);
+        var that = this;
+        this.restoreViewContext(outline);
         if (focus) {
-            $('#' + this.getView(this.options.targetID, outline.rootID).header.name.text.id).focus();
+            this.addQueue('focus', [['destAnim', outline.rootID], ['view', outline.rootID]], function() {
+                $('#' + that.getView(that.options.targetID, outline.rootID).header.name.text.id).focus();
+            });
         }
         return;
     },
@@ -355,7 +628,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         this.restoreContext(this.oldContext);
     },
     undoView:function (outline, focus) {
-        this.restoreViewContext(this.oldContext, outline);
+        this.restoreViewContext(outline);
     },
 
     // SHOW methods - various visualization actions,
@@ -491,20 +764,28 @@ diathink.DeleteAction = diathink.Action.extend({
 diathink.TextAction= diathink.Action.extend({
     type:"TextAction",
     options: {targetID: null, text: null, transition: false},
-    getContexts: function() {},
+    getOldContext: function() {},
+    getNewContext: function() {},
+    preview: function() {},
     execModel: function () {
-        var target= this.getModel(this.options.targetID);
-        this.oldText = target.get('text');
-        target.set('text', this.options.text);
+        var that = this;
+        that.addQueue('model', ['log'], function() {
+            var target= that.getModel(that.options.targetID);
+            that.oldText = target.get('text');
+            target.set('text', that.options.text);
+        });
     },
     execView:function (outline, focus) {
-        var target = this.getView(this.options.targetID, outline.rootID);
-        if (target != null) {
-            target.header.name.text.value = this.options.text;
-            // console.log("Updating view "+target.header.name.text.id+" to value "+this.options.text);
-            $('#'+target.header.name.text.id).val(this.options.text);
-            target.header.name.text.themeUpdate();
-        }
+        var that = this;
+        this.addQueue(['view', outline.rootID], ['model'], function() {
+            var target = that.getView(that.options.targetID, outline.rootID);
+            if (target != null) {
+                target.header.name.text.value = that.options.text;
+                // console.log("Updating view "+target.header.name.text.id+" to value "+this.options.text);
+                $('#'+target.header.name.text.id).val(that.options.text);
+                target.header.name.text.themeUpdate();
+            }
+        });
     },
     undoModel: function () {
         var target = this.getModel(this.options.targetID);

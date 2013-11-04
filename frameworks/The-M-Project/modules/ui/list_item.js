@@ -295,7 +295,7 @@ M.ListItemView = M.View.extend(
     },
     themeParent: function() {
         var elem = $('#'+this.id);
-        if (elem.children('div').children('ul').children().length>0) {
+        if (elem.children('ul').children().length>0) {
             elem.addClass('branch').removeClass('leaf');
             if (!elem.hasClass('collapsed')) {
                 elem.addClass('expanded');

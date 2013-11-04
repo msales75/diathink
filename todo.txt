@@ -16,6 +16,7 @@ OK Drag-icon should also add ui-focus to list-item and changed focused elem
 OK When dragging, add hover-class for the target list-parent
 
 
+
 * Helper needs to stick around for docking
 * When is helper destroyed?
 

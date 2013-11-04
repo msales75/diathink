@@ -139,6 +139,7 @@ li.ui-li > div.ui-li.ui-btn-inner {
 /* drop-layer fills the page when active */
 .droplayer, .drawlayer {
     display: none;
+    background: transparent;
     z-index: 100;
     width: 100%;
     height: 100%;
@@ -147,6 +148,9 @@ li.ui-li > div.ui-li.ui-btn-inner {
     left: 0;
 }
 
+.transition-mode .drawlayer {
+    display: block;
+}
 .drop-mode .drawlayer, .drop-mode .droplayer {
     display: block;
 }
@@ -272,6 +276,16 @@ li.ui-li {
 }
 
 li.ui-li.drag-hidden {
+    -webkit-transition: height 80ms linear;
+    -moz-transition: height 80ms linear;
+    -o-transition: height 80ms linear;
+    transition: height 80ms linear;
+}
+
+li.li-placeholder {
+    height: 0;
+    width: 100%;
+    background-color: #EEE;
     -webkit-transition: height 80ms linear;
     -moz-transition: height 80ms linear;
     -o-transition: height 80ms linear;

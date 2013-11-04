@@ -2,10 +2,10 @@ M.test = function (test, message) {
     if (!test) {
         if (message) {
             diathink.log([], "INVALID: " + message);
-            // console.log("INVALID: " + message);
+            console.log("INVALID: " + message);
         } else {
             diathink.log([], "INVALID: Unspecified validation error");
-            // console.log("INVALID: Unspecified validation error");
+            console.log("INVALID: Unspecified validation error");
         }
     }
 };
@@ -458,8 +458,11 @@ diathink.validateMVC = function () {
                     M.test(models[views[v].modelId] === views[v].value,
                         "ListItemView "+v+" has modelId different than value");
 
+                    M.test(views[v].value != null,
+                        "ListItemView "+v+" has null value though modelId = "+views[v].modelId);
+
                     M.test(models[views[v].modelId].attributes.children === views[v].children.value,
-                       "ListItemView "+v+" has modelId-children differnet than view-children");
+                       "ListItemView "+v+" has modelId-children different than view-children");
 
                     M.test(views[v].parentView.type === 'M.ListView',
                         "View "+v+" has type ListItemView but parentView is not a ListView");
@@ -506,6 +509,8 @@ diathink.validateMVC = function () {
                 } else if (views[v].type === 'M.TextFieldView') {
                     M.test(views[v].parentView.parentView.type === 'M.ListItemView',
                         "TextFieldView "+v+" does not appear inside a ListItem View");
+                    M.test(views[v].parentView.parentView.value != null,
+                        "TextFieldView "+v+" parent-parent has no value");
                     M.test(views[v].value === views[v].parentView.parentView.value.attributes.text,
                         "TextFieldView "+v+" does not match value "+views[v].value+" with listitem-parent");
                 } else {
@@ -581,9 +586,6 @@ diathink.validateMVC = function () {
             "List-item does not have a long enough id");
         M.test($(this).hasClass('ui-li'),
             "List-item "+$(this).attr('id')+" does not ahve class ui-li");
-        M.test($(this).hasClass('ui-btn'),
-                "List-item "+$(this).attr('id')+" does not have class ui-btn");
-        // $(this).hasClass('ui-btn-icon-right');
 
         if ($(this).next().length>0) {
             M.test(! $(this).hasClass('ui-last-child'),
@@ -600,7 +602,7 @@ diathink.validateMVC = function () {
                 "LI "+$(this).attr('id')+" is at beginning but does not have class ui-first-child");
         }
 
-        var childlist = $(this).children('div').children('ul');
+        var childlist = $(this).children('ul');
         M.test(childlist.length===1,
             "Child list ul not found inside li "+$(this).attr('id'));
 
