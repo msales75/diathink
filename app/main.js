@@ -204,8 +204,10 @@ diathink.app.createPage = function(pageName, root) {
                                             // make it the last child of its previous sibling
                                             diathink.Action.checkTextChange(id);
                                             diathink.MoveIntoAction.createAndExec({
+                                                anim: 'indent',
                                                 referenceID: collection.models[rank-1].cid,
                                                 targetID: liView.modelId,
+                                                dragView: liView.rootID,
                                                 focusView: liView.rootID
                                             });
                                             e.preventDefault();
@@ -219,8 +221,10 @@ diathink.app.createPage = function(pageName, root) {
                                         // make it the last child of its previous sibling
                                         diathink.Action.checkTextChange(id);
                                         diathink.MoveIntoAction.createAndExec({
+                                            anim: 'indent',
                                             referenceID: collection.models[rank-1].cid,
                                             targetID: liView.modelId,
+                                            dragView: liView.rootID,
                                             focusView: liView.rootID
                                         });
                                         e.preventDefault();
@@ -238,8 +242,10 @@ diathink.app.createPage = function(pageName, root) {
                                             // make it the next child of its parent
                                             diathink.Action.checkTextChange(id);
                                             diathink.OutdentAction.createAndExec({
+                                                anim: 'indent',
                                                 referenceID: liView.value.attributes.parent.cid,
                                                 targetID: liView.modelId,
+                                                dragView: liView.rootID,
                                                 focusView: liView.rootID
                                             });
                                             e.preventDefault();
@@ -247,6 +253,7 @@ diathink.app.createPage = function(pageName, root) {
                                             if ($('#'+id).val() === "") {
                                                 diathink.Action.checkTextChange(id);
                                                 diathink.DeleteAction.createAndExec({
+                                                    anim: 'delete',
                                                     targetID: liView.modelId
                                                 });
                                             }
@@ -256,6 +263,7 @@ diathink.app.createPage = function(pageName, root) {
                                     // todo: split line if in middle of text
                                     diathink.Action.checkTextChange(id);
                                     diathink.InsertAfterAction.createAndExec({
+                                        anim: 'create',
                                         referenceID: liView.modelId,
                                         focusView: liView.rootID
                                     });

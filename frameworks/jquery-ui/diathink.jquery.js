@@ -88,6 +88,28 @@ jQuery.fn.mouseIsOver = function () {
     return $(this).parent().find($(this).selector + ":hover").length > 0;
 };
 
+function animStep(f, duration, start, end) {
+    var frac = ((new Date()).getTime()-start)/duration;
+    if (frac >= 1) {frac=1;}
+    f(frac);
+    if (frac===1) {
+        end();
+    } else {
+        setTimeout(function() {
+          animStep(f, duration, start, end);
+        }, 20);
+    }
+}
+
+jQuery.anim = function(f, duration, end) {
+    // f receives a fractional argument between 0 and 1,
+    //  indicating how close it is to the end.
+    var start = (new Date()).getTime();
+    setTimeout(function() {
+        animStep(f, duration, start, end);
+    }, 0);
+
+},
 // MS utility addition for finding a child/parent at a fixed-depth.
 jQuery.fn.childDepth = function(n) {
         var i, that = this;

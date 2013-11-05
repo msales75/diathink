@@ -51,11 +51,6 @@
 				throw new Error('nestedSortable: Please check that the listType option is set to your actual list type');
 				*/
 
-			// mjs - force 'intersect' tolerance method if we have a tree with expanding/collapsing functionality
-			if (this.options.isTree && this.options.expandOnHover) {
-				this.options.tolerance = 'intersect';
-			}
-
 			$.ui.sortable.prototype._create.apply(this, arguments);
 
 			// mjs - prepare the tree by applying the right classes (the CSS is responsible for actual hide/show functionality)
@@ -180,7 +175,7 @@
             }
         },
         _showDropLines: function() {
-            $('body').addClass('drop-mode');
+            $(document.body).addClass('drop-mode');
         },
 
         _hideDropLines: function() {
@@ -303,14 +298,6 @@
             var d;
             item.dropboxes = [];
             if (item.dropnull != null) {
-                /*
-                d = item.dropboxes[item.dropboxes.length] =
-                {type: 'dropnull', elem: item.dropnull, item: item};
-                d.top = item.top+2;
-                d.bottom = item.top+item.height+2;
-                d.left = item.left+3;
-                d.right = item.left+item.width-3+2;
-                */
             }
             if (item.droptop != null) {
                 d = item.dropboxes[item.dropboxes.length] =
@@ -476,49 +463,13 @@
 
 		_mouseStop: function(event, noPropagation) {
 
-			// mjs - if the item is in a position not allowed, send it back
-            /*
-			if (this.beyondMaxLevels) {
-				this._trigger("revert", event, this._uiHash());
-			}
-			*/
-
 			// mjs - clear the expansion-hovering timeout, just to be sure
 			  // $('.'+this.options.hoveringClass).removeClass(this.options.hoveringClass);
 			this.hovering && window.clearTimeout(this.hovering);
 			this.hovering = null;
 
-            // hide boxes
-            // var outlines = diathink.OutlineManager.outlines;
-            // for (var o in outlines) {
-            //    $('#'+outlines[o].rootID).nestedSortable('hideDropLines');
-            // }
-            // this.hideDropLines();
-
             // Beginning of of prototype._mouseStop
-            // $.ui.sortable.prototype._mouseStop.apply(this, arguments);
-
             if(!event) return;
-
-            //If we are using droppables, inform the manager about the drop
-            /*
-            if ($.ui.ddmanager && !this.options.dropBehaviour)
-                $.ui.ddmanager.drop(this, event);
-            */
-
-            if (this.options.revert) { // MS Note that this won't work without placeholder
-                /* todo: remove drag-hidden if aborted
-                setTimeout(function() {
-                    $('#'+target.id).removeClass('drag-hidden');
-                }, 80); */
-            } else {
-                // todo: don't destroy helper here any more?
-                // this._clear(event, noPropagation);
-            }
-            // when we want to remove helper we do this:
-
-
-
             // End of prototype._mouseStop
 
             // TODO: some of this should probably be done before calling _clear?
@@ -589,12 +540,6 @@
 
             this.drawDropLines();
 
-
-            // loop over outlines, each with a different dropLayer
-            // var outlines = diathink.OutlineManager.outlines;
-            // for (var o in outlines) {
-            //    $('#'+outlines[o].rootID).nestedSortable('drawDropLines');
-            // }
            // this._previewDropBoxes();
         },
 
@@ -635,167 +580,6 @@
                 }
             }
             return null;
-        },
-
-        // todo: stop using containers
-		_contactContainers: function(event) {
-            /*
-			if (this.options.protectRoot && this.currentItem[0].parentNode == this.element[0] ) {
-				return;
-			}
-			$.ui.sortable.prototype._contactContainers.apply(this, arguments);
-            // (contactContainers needs to be adjusted)
-            */
-		},
-
-        // MS - incorporating _clear code from sortable.js to customize
-        _clear: function(event, noPropagation) {
-
-            // this.reverting = false;
-            // We delay all events that have to be triggered to after the point where the placeholder has been removed and
-            // everything else normalized again
-            // var delayedTriggers = [];
-
-            // We first have to update the dom position of the actual currentItem
-            // Note: don't do it if the current item is already removed (by a user), or it gets reappended (see #4088)
-
-            // MS - do not use placeholder to place currentItem, but we still have
-            //  to remove it after it was created in _mouseStart
-
-            // if(!this._noFinalSort && this.currentItem.parent().length) this.placeholder.before(this.currentItem);
-            // this._noFinalSort = null;
-
-            // this.currentItem.removeClass('drag-hidden');
-            /*
-            if (this.placeholder[0].parentNode.tagName.toLowerCase()!== 'ul') {
-                console.log("ERROR: place-holder was not added at a valid location, before currentItem addition");
-            }
-            if (this.currentItem[0].parentNode.tagName.toLowerCase()!== 'ul') {
-                console.log("ERROR: current-item was not added at a valid location");
-            }*/
-
-            /*
-            if(this.fromOutside && !noPropagation) delayedTriggers.push(function(event) { this._trigger("receive", event, this._uiHash(this.fromOutside)); });
-            if((this.fromOutside || this.domPosition.prev !=
-                this.currentItem.prev().not(".ui-sortable-helper")[0] ||
-                this.domPosition.parent != this.currentItem.parent()[0]) &&
-                !noPropagation) delayedTriggers.push(function(event) { this._trigger("update", event, this._uiHash()); }); //Trigger update callback if the DOM position has changed
-
-            // Check if the items Container has Changed and trigger appropriate
-            // events.
-            if (this !== this.currentContainer) {
-                if(!noPropagation) {
-                    delayedTriggers.push(function(event) { this._trigger("remove", event, this._uiHash()); });
-                    delayedTriggers.push((function(c) { return function(event) { c._trigger("receive", event, this._uiHash(this)); };  }).call(this, this.currentContainer));
-                    delayedTriggers.push((function(c) { return function(event) { c._trigger("update", event, this._uiHash(this));  }; }).call(this, this.currentContainer));
-                }
-            }
-
-
-            //Post events to containers
-            for (var i = this.containers.length - 1; i >= 0; i--){
-                if(!noPropagation) delayedTriggers.push((function(c) { return function(event) { c._trigger("deactivate", event, this._uiHash(this)); };  }).call(this, this.containers[i]));
-                if(this.containers[i].containerCache.over) {
-                    delayedTriggers.push((function(c) { return function(event) { c._trigger("out", event, this._uiHash(this)); };  }).call(this, this.containers[i]));
-                    this.containers[i].containerCache.over = 0;
-                }
-            }
-
-            //Do what was originally in plugins
-            if(this._storedCursor) $('body').css("cursor", this._storedCursor); //Reset cursor
-            if(this._storedOpacity) this.helper.css("opacity", this._storedOpacity); //Reset opacity
-            // MS override zIndex to go away completely after done
-            // if(this._storedZIndex) this.helper.css("zIndex", this._storedZIndex == 'auto' ? '' : this._storedZIndex); //Reset z-index
-             */
-            // this.helper.css("zIndex", ''); //Reset z-index
-
-            this.dragging = false;
-            // if(this.cancelHelperRemoval) {
-                /*
-                if(!noPropagation) {
-                    this._trigger("beforeStop", event, this._uiHash());
-                    for (var i=0; i < delayedTriggers.length; i++) { delayedTriggers[i].call(this, event); }; //Trigger all delayed events
-                    this._trigger("stop", event, this._uiHash());
-                }
-                this.fromOutside = false;
-                 */
-                // return false;
-            // }
-
-            // if(!noPropagation) this._trigger("beforeStop", event, this._uiHash());
-
-            /*
-            if (this.placeholder[0].parentNode.tagName.toLowerCase() !== 'ul') {
-                console.log("ERROR: place-holder was not in correct spot before being removed");
-            }*/
-
-            //$(this.placeholder[0]).remove(); would have been the jQuery way - unfortunately, it unbinds ALL events from the original node!
-            // MS remove it here, since it was probably created in _mouseStart
-            // if (this.placeholder && (this.placeholder.length>0)) {
-                // this.placeholder[0].parentNode.removeChild(this.placeholder[0]);
-            // }
-
-            // if(this.helper[0] != this.currentItem[0]) this.helper.remove(); this.helper = null;
-
-            /*
-            if(!noPropagation) {
-                for (var i=0; i < delayedTriggers.length; i++) { delayedTriggers[i].call(this, event); }; //Trigger all delayed events
-                this._trigger("stop", event, this._uiHash());
-            }
-
-            this.fromOutside = false;
-
-            // mjs - clean last empty ul/ol
-            for (var i = this.items.length - 1; i >= 0; i--) {
-                var item = this.items[i].item[0];
-                this._clearEmpty(item);
-            }
-            */
-
-            return true;
-
-        },
-
-		_clearEmpty: function(item) {
-			var o = this.options;
-
-			var emptyList = $(item).childDepth(o.buryDepth).children(o.listType);
-
-			if (emptyList.length && !emptyList.children().length && !o.doNotClear) {
-				o.isTree && $(item).removeClass(o.branchClass + ' ' + o.expandedClass).addClass(o.leafClass);
-				emptyList.remove();
-			} else if (o.isTree && emptyList.length && emptyList.children().length && emptyList.is(':visible')) {
-				$(item).removeClass(o.leafClass).addClass(o.branchClass + ' ' + o.expandedClass);
-			} else if (o.isTree && emptyList.length && emptyList.children().length && !emptyList.is(':visible')) {
-				$(item).removeClass(o.leafClass).addClass(o.branchClass + ' ' + o.collapsedClass);
-			} else if (o.isTree && emptyList.length && ! emptyList.children().length ) {
-                $(item).removeClass(o.branchClass).addClass(o.leafClass).removeClass(o.collapsedClass).addClass(o.expandedClass);
-            }
-
-		},
-
-        _trigger: function() {
-            // console.log("Calling _trigger of type "+arguments[0]);
-            // console.log(this);
-            // console.log(arguments);
-            if ($.Widget.prototype._trigger.apply(this, arguments) === false) {
-                this.cancel();
-                // might need cancel()?
-            }
-        },
-
-        _uiHash: function(_inst) {
-            var inst = _inst || this;
-            return {
-                helper: inst.helper,
-                // placeholder: inst.placeholder || $([]),
-                position: inst.position,
-                originalPosition: inst.originalPosition,
-                offset: inst.positionAbs,
-                item: inst.currentItem,
-                sender: _inst ? _inst.element : null,
-                originalDOM: inst.domPosition
-            };
         }
 
 	}));

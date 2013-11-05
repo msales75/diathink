@@ -334,10 +334,27 @@ diathink.Action = Backbone.RelationalModel.extend({
     },
     preview:function (outline, dragView) {
         var that = this;
+        if (that.options.anim==='indent') {diathink.helper = true;}
             // todo: for non-dragged targets, add fade-out on mousedown in nestedSortable.
         this.addQueue(['sourcePlace', outline.rootID], ['context'], function() {
             if (that.options.targetID) {
                 var target = that.getView(that.options.targetID, outline.rootID);
+                if ((that.options.anim==='indent')&&dragView) {
+                    // create virtual diathink.helper for animation
+                    diathink.helper = $('#'+target.id)[0].cloneNode(true);
+                    diathink.helper.id = '';
+                    var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+                    drawlayer[0].appendChild(diathink.helper);
+                    var offset = $('#'+target.id).offset();
+                    $(diathink.helper).css({
+                        position: 'absolute',
+                        left: offset.left+'px',
+                        top: offset.top+'px',
+                        width: $('#'+target.id)[0].clientWidth,
+                        height: $('#'+target.id)[0].clientHeight
+                    });
+                    $(document.body).addClass('drop-mode');
+                }
                 // vanish if not already hidden & shrink over 80ms
                 var oldHeight = $('#'+target.id)[0].clientHeight;
                 var placeholder = $('<div></div>').addClass('li-placeholder').css('height',oldHeight);
@@ -349,9 +366,10 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
         });
         this.addAsync(['sourceAnim', outline.rootID], [['sourcePlace', outline.rootID]], function() {
-            if (that.sourcePlaceholder[outline.rootID]) {
-                $(that.sourcePlaceholder[outline.rootID]).animate({
-                    height: 0
+            if (that.sourcePlaceholder[outline.rootID] && (that.options.anim !== 'indent')) {
+                var startHeight = that.sourcePlaceholder[outline.rootID].clientHeight;
+                $.anim(function(frac) {
+                    $(that.sourcePlaceholder[outline.rootID]).css('height',String(Math.round(startHeight*(1-frac)))+'px');
                 }, 200, function() {
                     // console.log("Updating status after finishing async sourceAnim:"+outline.rootID);
                     that.status.sourceAnim[outline.rootID] = 2;
@@ -379,9 +397,14 @@ diathink.Action = Backbone.RelationalModel.extend({
         });
 
         this.addAsync(['destAnim', outline.rootID], [['destPlace', outline.rootID]], function() {
-            if (that.targetPlaceholder[outline.rootID]) {
-                $(that.targetPlaceholder[outline.rootID]).animate({height: that.targetHeight[outline.rootID]}, 200, function() {
-                    // console.log("Updating status after finishing async destAnim:"+outline.rootID);
+            if (that.targetPlaceholder[outline.rootID] && (that.options.anim !== 'indent')) {
+                var endHeight = that.targetHeight[outline.rootID];
+                if (!endHeight) {
+                    endHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
+                }
+                $.anim(function(frac) {
+                    $(that.targetPlaceholder[outline.rootID]).css('height', String(Math.round(frac*endHeight))+'px');
+                }, 200, function() {
                     that.status.destAnim[outline.rootID] = 2;
                     that.nextQueue();
                 });
@@ -395,14 +418,19 @@ diathink.Action = Backbone.RelationalModel.extend({
         if (diathink.helper && dragView) {
             this.addAsync('dockAnim', [['destPlace', outline.rootID], ['sourcePlace', outline.rootID]], function () {
                 // Is destPlace for this view above or below source?
+                var startX = diathink.helper.offsetLeft;
+                var startY = diathink.helper.offsetTop;
                 var source = $(that.sourcePlaceholder[outline.rootID]).offset();
                 var cur = $(that.targetPlaceholder[outline.rootID]).offset();
                 if (cur.top > source.top) {cur.top -= that.targetHeight[outline.rootID];}
-                $(diathink.helper).animate({
-                    left: cur.left,
-                    top: cur.top
+                $.anim(function(frac) {
+                    var left = String(Math.round(frac*cur.left+(1-frac)*startX));
+                    var top = String(Math.round(frac*cur.top +(1-frac)*startY));
+                    $(diathink.helper).css({
+                       left: left+'px',
+                       top: top+'px'
+                    });
                 }, 200, function() {
-                    // console.log("Updating status after finishing async dockAnim");
                     $(document.body).removeClass('drop-mode');
                     diathink.helper.parentNode.removeChild(diathink.helper);
                     // remove();

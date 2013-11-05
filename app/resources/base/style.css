@@ -286,10 +286,6 @@ li.li-placeholder {
     height: 0;
     width: 100%;
     background-color: #EEE;
-    -webkit-transition: height 80ms linear;
-    -moz-transition: height 80ms linear;
-    -o-transition: height 80ms linear;
-    transition: height 80ms linear;
 }
 
 li.ui-li.drag-hidden > div, li.ui-li.drag-hidden > ul {

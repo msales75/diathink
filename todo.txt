@@ -19,13 +19,22 @@ OK LI have nestedSortableItem: object
 OK all data and bindings removed from inside panels
 OK Helper needs to stick around for docking
 OK When is helper destroyed?
+OK Optimize remove and replaceWith
+OK Don't use animate() - make a recursive function
+
+* Remove lastclicked from data in .disclose
+
+* nestedSortable "items" can point to Views
+* items parameters stored in view-object
+* cache height/width/offset in view-object
+* update cache during resize or redraws
+
+
+TODO: main.js: disclose uses lastclicked
+TODO: Test Deletion issue: are we dirtying jQuery's cache?
 
 Don't use height() or width() or offset()
   - Cache height/width and offset.
-
-Optimize remove and replaceWith
-Don't use animate() - make a recursive function
-    with setTimeout=20, base height/position/opacity on time.
 
 Check these after optimizations:
    dockAnim 12.55
@@ -36,10 +45,10 @@ Check these after optimizations:
    sourceAnim 31.98
 
 
-
 Fix transitions for indent/outdent
 Fix transitions for newline & delete
 Fix undo
+
 Check performance again
 
 
