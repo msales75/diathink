@@ -295,7 +295,11 @@ diathink.app.createPage = function(pageName, root) {
                         keyboard: diathink.keyboard,
                         dropLayers: '.droplayer',
                         helper: function (e, item) {
-                            return item.clone().appendTo('.drawlayer').css({
+                            var newNode = item[0].cloneNode(true);
+                            newNode.id = '';
+                            var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+                            drawlayer[0].appendChild(newNode);
+                            return $(newNode).css({
                                 position: 'absolute',
                                 left: $(item).offset().left+'px',
                                 top: $(item).offset().top+'px'

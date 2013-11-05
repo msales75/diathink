@@ -24,12 +24,10 @@ diathink.Action = Backbone.RelationalModel.extend({
         this.targetHeight = {};
         this.movingTarget = {};
         this.status = {
-            sourceContext: 0,
-            destContext: 0,
+            context: 0,
             log: 0,
             undobuttons: 0,
             sourceCollection: 0,
-            targetCollection: 0,
             targetRank: 0,
             model: 0,
             dockAnim: 0,
@@ -150,10 +148,8 @@ diathink.Action = Backbone.RelationalModel.extend({
         this.timestamp = (new Date()).getTime();
         this.undone = false;
         // before changing model, start preview animation
-        this.addQueue('sourceContext', [], function() {
+        this.addQueue('context', [], function() {
             self.getOldContext();
-        });
-        this.addQueue('destContext', [], function() {
             self.getNewContext();
         });
         var outlines = diathink.OutlineManager.outlines;
@@ -164,7 +160,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
         }
 
-        this.addQueue('log', ['sourceContext', 'destContext'], function() {
+        this.addQueue('log', ['context'], function() {
             diathink.UndoController.log(self);
         });
         // todo: assumptions and issue-handling
@@ -299,7 +295,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                 oldCollection.remove(target);
             }
         });
-        this.addQueue('targetCollection', ['sourceModel'], function() {
+        this.addQueue('targetRank', ['sourceModel'], function() {
             var context;
             if (that.undone) {
                 context = that.oldContext;
@@ -313,23 +309,13 @@ diathink.Action = Backbone.RelationalModel.extend({
                 } else {
                     collection = diathink.data;
                 }
-            } else {
-                target.deleted = true;
-            }
-        });
-        this.addQueue('targetRank', ['targetCollection'], function() {
-            var context;
-            if (that.undone) {
-                context = that.oldContext;
-            } else {
-                context = that.newContext;
-            }
-            if (context != null) {
                 if (context.prev === null) {
                     rank = 0;
                 } else {
                     rank = that.getModel(context.prev).rank()+1;
                 }
+            } else {
+                target.deleted = true;
             }
         });
         this.addQueue('model', ['targetRank'], function() {
@@ -349,16 +335,17 @@ diathink.Action = Backbone.RelationalModel.extend({
     preview:function (outline, dragView) {
         var that = this;
             // todo: for non-dragged targets, add fade-out on mousedown in nestedSortable.
-        this.addQueue(['sourcePlace', outline.rootID], ['sourceContext'], function() {
+        this.addQueue(['sourcePlace', outline.rootID], ['context'], function() {
             if (that.options.targetID) {
                 var target = that.getView(that.options.targetID, outline.rootID);
                 // vanish if not already hidden & shrink over 80ms
-                var oldHeight = $('#'+target.id).css('height');
+                var oldHeight = $('#'+target.id)[0].clientHeight;
                 var placeholder = $('<div></div>').addClass('li-placeholder').css('height',oldHeight);
-                var oldTarget = $('#'+target.id).addClass('drag-hidden').replaceWith(placeholder);
+                var oldTarget = $('#'+target.id).addClass('drag-hidden');
+                oldTarget[0].parentNode.replaceChild(placeholder[0],oldTarget[0]);
                 that.targetHeight[outline.rootID] = oldHeight;
-                that.sourcePlaceholder[outline.rootID] = placeholder.get(0);
-                that.movingTarget[outline.rootID] = oldTarget.get(0);
+                that.sourcePlaceholder[outline.rootID] = placeholder[0];
+                that.movingTarget[outline.rootID] = oldTarget[0];
             }
         });
         this.addAsync(['sourceAnim', outline.rootID], [['sourcePlace', outline.rootID]], function() {
@@ -377,7 +364,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         });
         // ready for removal, let model run now.
         // create preview-spacer in the right spot
-        this.addQueue(['destPlace', outline.rootID], ['destContext', ['sourcePlace', outline.rootID]], function() {
+        this.addQueue(['destPlace', outline.rootID], ['context', ['sourcePlace', outline.rootID]], function() {
             if (that.newContext) {
                 var place = $('<div></div>').addClass('li-placeholder');
                 that.targetPlaceholder[outline.rootID] = place.get(0);
@@ -410,15 +397,15 @@ diathink.Action = Backbone.RelationalModel.extend({
                 // Is destPlace for this view above or below source?
                 var source = $(that.sourcePlaceholder[outline.rootID]).offset();
                 var cur = $(that.targetPlaceholder[outline.rootID]).offset();
-                if (cur.top > source.top) {cur.top -= Number(that.targetHeight[outline.rootID].replace(/px/,''));}
-                // todo: placeholder may move during animation
+                if (cur.top > source.top) {cur.top -= that.targetHeight[outline.rootID];}
                 $(diathink.helper).animate({
                     left: cur.left,
                     top: cur.top
                 }, 200, function() {
                     // console.log("Updating status after finishing async dockAnim");
                     $(document.body).removeClass('drop-mode');
-                    $(diathink.helper).remove();
+                    diathink.helper.parentNode.removeChild(diathink.helper);
+                    // remove();
                     diathink.helper = null;
                     that.status.dockAnim = 2;
                     that.nextQueue();
@@ -483,7 +470,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                     target = that.newListItemView(parent);
                     // todo: add text in?
                     target.value.setView(target.rootID, target);
-                    elem = target.render();
+                    elem = $(target.render());
                     createTarget = true;
                 } else { // move
                     if (that.movingTarget[outline.rootID] && that.movingTarget[outline.rootID].id === target.id) {
@@ -501,7 +488,8 @@ diathink.Action = Backbone.RelationalModel.extend({
                 // this cleans up destination-placeaholder; what about source-placeholder?
                 //   it could vanish automatically?
                 if (that.targetPlaceholder[outline.rootID]) {
-                    $(that.targetPlaceholder[outline.rootID]).replaceWith(elem).remove();
+                    that.targetPlaceholder[outline.rootID].parentNode.
+                        replaceChild(elem[0], that.targetPlaceholder[outline.rootID]);
                 } else {
                     if (context.prev == null) {
                         var parentElem = $('#'+parent.id);
@@ -536,7 +524,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
             // remove source-placeholder
             if (that.sourcePlaceholder[outline.rootID]) {
-                $(that.sourcePlaceholder[outline.rootID]).remove();
+                that.sourcePlaceholder[outline.rootID].parentNode.removeChild(that.sourcePlaceholder[outline.rootID]);
                 that.sourcePlaceholder[outline.rootID] = undefined;
             }
 

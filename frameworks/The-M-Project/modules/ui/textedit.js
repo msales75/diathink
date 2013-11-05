@@ -463,7 +463,7 @@ M.TextEditView = M.View.extend(
                 return;
             } */
 
-            var currentWidth = thisel.width();
+            var currentWidth = thisel[0].clientWidth;
             if (!(currentWidth > 0)) {
                 return;
             }
@@ -489,14 +489,17 @@ M.TextEditView = M.View.extend(
 
             if (this.lastFont !== currentFont) {
                 this.lineHeight = Number(hiddendiv.css('line-height').replace(/px/,''));
-                this.padding = Number(thisel.css('padding-top').replace(/px/,'')) +
+                this.paddingY = Number(thisel.css('padding-top').replace(/px/,'')) +
                     Number(thisel.css('padding-bottom').replace(/px/,''));
+                this.paddingX = Number(thisel.css('padding-left').replace(/px/,'')) +
+                    Number(thisel.css('padding-right').replace(/px/,''));
             }
             var lineHeight = this.lineHeight;
-            var padding = this.padding;
+            var paddingX = this.paddingX;
+            var paddingY = this.paddingY;
 
 
-            hiddendiv.width(currentWidth);
+            hiddendiv.css('width',String(currentWidth-paddingX)+'px');
             var lastchar = this.value.substr(this.value.length-1,1);
             var rest = this.value.substr(0, this.value.length-1);
             hiddendiv.html($.escapeHtml(rest)+'<span class="marker">'+
@@ -507,10 +510,10 @@ M.TextEditView = M.View.extend(
 
             var nlines= Math.round((hiddendiv.children('span').position().top / lineHeight) - 0.4) + 1;
             var height = nlines * lineHeight;
-            if (Math.abs(this.parentDiv.height()-height-padding) > 0.5) {
+            if (Math.abs(this.parentDiv[0].clientHeight-height-paddingY) > 0.5) {
                 //console.log("Setting id="+thisel.parent('div').attr('id')+" to height "+
                   //  height+" plus padding "+padding);
-                this.parentDiv.height(height+padding);
+                this.parentDiv.css('height', String(height+paddingY)+'px');
             }
             this.lastValue = this.value;
             this.lastWidth = currentWidth;

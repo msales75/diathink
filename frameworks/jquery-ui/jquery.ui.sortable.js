@@ -101,6 +101,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
 		this._refreshItems(event);
 
 		//Find out if the clicked node (or one of its parents) is a actual item in this.items
+        /*
 		var currentItem = null, nodes = $(event.target).parents().each(function() {
 			if($.data(this, that.widgetName + '-item') == that) {
 				currentItem = $(this);
@@ -108,6 +109,19 @@ $.widget2("ui.sortable", $.ui.mouse, {
 			}
 		});
 		if($.data(event.target, that.widgetName + '-item') == that) currentItem = $(event.target);
+         */
+        var currentItem = null, captureElem = event.target;
+        while (captureElem) {
+            var ntype = captureElem.nodeName.toLowerCase();
+            if (ntype==='li') {
+                currentItem = $(captureElem);
+                break;
+            } else if (ntype==='body') {
+                break;
+            }
+            captureElem = captureElem.parentNode;
+        }
+        // for now just test for 'li'
 
 		if(!currentItem) return false;
 		if(this.options.handle && !overrideHandle) {
@@ -133,7 +147,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 		//Create and append the visible helper
 		this.helper = this._createHelper(event);
-        diathink.helper = this.helper;
+        diathink.helper = this.helper[0];
 
 		//Cache the helper size
 		this._cacheHelperProportions();
@@ -562,7 +576,8 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 	_removeCurrentsFromItems: function() {
 
-		var list = this.currentItem.find(":data(" + this.widgetName + "-item)");
+		// var list = this.currentItem.find(":data(" + this.widgetName + "-item)");
+        var list = this.currentItem.find("li"); // MS edit.
 
 		this.items = $.grep(this.items, function (item) {
 			for (var j=0; j < list.length; j++) {
@@ -617,7 +632,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
                 var parentPanel = $(this._closestPanel(item.get(0)));
 
                 // MS Todo: probably can get rid of this data-binding?
-				item.data(this.widgetName + '-item', targetData); // Data for target checking (mouse manager)
+				// item.data(this.widgetName + '-item', targetData); // Data for target checking (mouse manager)
 
 				items.push({
 					item: item,
@@ -837,8 +852,6 @@ $.widget2("ui.sortable", $.ui.mouse, {
 	},
 
 	_getParentOffset: function() {
-
-
 		//Get the offsetParent and cache its position
 		this.offsetParent = this.helper.offsetParent();
 		var po = this.offsetParent.offset();

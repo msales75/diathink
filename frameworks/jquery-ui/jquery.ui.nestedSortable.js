@@ -107,7 +107,7 @@
         },
         softKeyboardOpen: function() {
             // scroll to active element in active-panel
-
+/*
             var input = $('li.ui-focus');
             if (input.length>0) {
                 var panel = input.closest('.ui-scrollview-clip');
@@ -118,9 +118,10 @@
                 panel.scrollview('scrollTo', 0, newScrollY);
             }
             alert("softKeyboardOpen");
+*/
         },
         softKeyboardClose: function() {
-            alert("softKeyboardClose");
+//            alert("softKeyboardClose");
         },
         _drawDropLine: function(o) {
             /* Implement this when doing drag/drop changes
@@ -372,10 +373,10 @@
 
             //Set the helper position
             if(!this.options.axis || this.options.axis !== "y") {
-                diathink.helper[0].style.left = this.position.left+"px";
+                diathink.helper.style.left = this.position.left+"px";
             }
             if(!this.options.axis || this.options.axis !== "x") {
-                diathink.helper[0].style.top = this.position.top+"px";
+                diathink.helper.style.top = this.position.top+"px";
             }
 
             if (this.scrollPanel) {
@@ -566,7 +567,7 @@
                     top: cur.top
                 }, 200, function() {
                     that.currentItem.removeClass('drag-hidden');
-                    $(diathink.helper).remove();
+                    diathink.helper.parentNode.removeChild(diathink.helper);
                     diathink.helper = null;
                     that.hideDropLines();
                     that.reverting = false;

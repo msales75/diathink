@@ -14,11 +14,35 @@ OK Does ui-focus match focus - class for hide-selection.
 OK Text-cursor remains separately focused from mouse-dragging
 OK Drag-icon should also add ui-focus to list-item and changed focused elem
 OK When dragging, add hover-class for the target list-parent
+OK Lists have data: 'list2view', inset: true
+OK LI have nestedSortableItem: object
+OK all data and bindings removed from inside panels
+OK Helper needs to stick around for docking
+OK When is helper destroyed?
+
+Don't use height() or width() or offset()
+  - Cache height/width and offset.
+
+Optimize remove and replaceWith
+Don't use animate() - make a recursive function
+    with setTimeout=20, base height/position/opacity on time.
+
+Check these after optimizations:
+   dockAnim 12.55
+   view 18.05 (replaceWith, remove)
+   sourcePlace 26.46
+    (mostly from replaceWith/remove and height/width)
+   destAnim 28.93
+   sourceAnim 31.98
 
 
 
-* Helper needs to stick around for docking
-* When is helper destroyed?
+Fix transitions for indent/outdent
+Fix transitions for newline & delete
+Fix undo
+Check performance again
+
+
 
 * Changes in width due to new-location-indenting are not noticed by fixHeight
 

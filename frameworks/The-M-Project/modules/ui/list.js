@@ -240,7 +240,7 @@ M.ListView = M.View.extend(
         }
 
         var listTagName = this.isNumberedList ? 'ol' : 'ul';
-        this.html += '<' + listTagName + ' id="' + this.id + '" data-role="list2view"' + this.style() + '></' + listTagName + '>';
+        this.html += '<' + listTagName + ' id="' + this.id + '"' + this.style() + '></' + listTagName + '>';
 
         return this.html;
     },
@@ -298,7 +298,7 @@ M.ListView = M.View.extend(
 
         // MS -- override destroy to remove child-list-items
         destroy: function() {
-            if(this.id && $('#' + this.id)) {
+            if (this.id) {
                 this.removeAllItems(); // MS modification to destroy()
                 var childViews = this.getChildViewsAsArray();
                 for(var i in childViews) {
@@ -306,9 +306,13 @@ M.ListView = M.View.extend(
                         this[childViews[i]].destroy();
                     }
                 }
-                M.EventDispatcher.unregisterEvents(this);
+                // M.EventDispatcher.unregisterEvents(this);
                 M.ViewManager.unregister(this);
-                $('#' + this.id).remove();
+            }
+            if(this.id && $('#' + this.id).length) {
+                var elem = $('#'+this.id)[0];
+                elem.parentNode.removeChild(elem);
+                // $('#' + this.id).remove();
             }
             delete this;
         },
@@ -685,6 +689,7 @@ M.ListView = M.View.extend(
                 + (!this.isInset && this.doNotOverlapAtBottom ? ' listview-do-not-overlap-at-bottom' : '')
                 + '"';
         }
+        /*
         if(this.isDividedList && this.cssClassForDivider) {
             html += ' data-dividertheme="' + this.cssClassForDivider + '"';
         }
@@ -700,6 +705,7 @@ M.ListView = M.View.extend(
         if(this.hasSearchBar && this.usesDefaultSearchBehaviour) {
             html += ' data-filter="true" data-filter-placeholder="' + this.searchBarInitialText + '"';
         }
+         */
         return html;
     },
 

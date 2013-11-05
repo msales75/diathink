@@ -192,8 +192,7 @@ M.ListItemView = M.View.extend(
 
         // MS -- override destroy to remove view from model-outline
         destroy: function() {
-            if(this.id && $('#' + this.id)) {
-                // MS modification to clear views from associated model
+            if (this.id) {
                 if (this.value && this.rootID) {
                     this.value.clearView(this.rootID);
                 }
@@ -203,9 +202,14 @@ M.ListItemView = M.View.extend(
                         this[childViews[i]].destroy();
                     }
                 }
-                M.EventDispatcher.unregisterEvents(this);
+                // M.EventDispatcher.unregisterEvents(this);
                 M.ViewManager.unregister(this);
-                $('#' + this.id).remove();
+            }
+            if(this.id && $('#' + this.id).length) {
+                // MS modification to clear views from associated model
+                // $('#' + this.id).remove();
+                var elem = $('#'+this.id)[0];
+                elem.parentNode.removeChild(elem);
             }
             delete this;
         },
