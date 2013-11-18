@@ -271,6 +271,20 @@ li.ui-li.ui-focus, li.ui-li.ui-focus:hover {
     background-color: #FFF;
 }
 
+li.ui-li.ui-last-child {
+    -webkit-border-bottom-left-radius:0.6em;
+    border-bottom-left-radius:0.6em;
+    -webkit-border-bottom-right-radius:0.6em;
+    border-bottom-right-radius:0.6em;
+}
+
+li.ui-li.ui-first-child {
+    -webkit-border-top-left-radius:0.6em;
+    border-top-left-radius:0.6em;
+    -webkit-border-top-right-radius:0.6em;
+    border-top-right-radius:0.6em
+}
+
 li.ui-li {
     background-color: #EEE;
 }
@@ -282,7 +296,7 @@ li.ui-li.drag-hidden {
     transition: height 80ms linear;
 }
 
-li.li-placeholder {
+li.li-placeholder, div.li-placeholder {
     height: 0;
     width: 100%;
     background-color: #EEE;

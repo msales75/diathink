@@ -30,26 +30,6 @@ diathink.MyListItem = M.ListItemView.extend({
                 cssClass: 'outline-content ui-input-text ui-body-c ui-corner-all ui-shadow-inset',
                 hasMultipleLines: true,
                 valuePattern:'<%= text %>'
-                /*
-                events: {
-                    focus: {
-                        action:function(id, e) {
-                            // alert("Textarea focused");
-                        }
-                    },
-                    blur: { // update model with action
-                        action:function(id, e) {
-                            console.log("Textarea blurred");
-                        }
-                    },
-                    keyup: {
-                        action:function(id, e) {
-                            // var view = M.ViewManager.findViewById(id);
-                            // view.setValueFromDOM();
-                        }
-                    }
-                }
-                */
             })
         })
     }),

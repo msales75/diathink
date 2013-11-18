@@ -108,17 +108,23 @@ M.Object =
     /**
      * This method will remove an object from the DOM and then delete it. 
      */
-    destroy: function() {
-        if(this.id && $('#' + this.id)) {
-            var childViews = this.getChildViewsAsArray();
-            for(var i in childViews) {
-                if(this[childViews[i]]) {
-                    this[childViews[i]].destroy();
+    destroy: function(elem) {
+        if (this.type==='M.ContainerView') {
+            console.log("Destroying containerView");
+        }
+        if(this.id) {
+            if (!elem) {elem = $('#'+this.id)[0];}
+            if (elem) {
+                var childViews = this.getChildViewsAsArray();
+                for(var i in childViews) {
+                    if(this[childViews[i]]) {
+                        this[childViews[i]].destroy($(elem).find('#'+this[childViews[i]].id)[0]);
+                    }
                 }
+                M.EventDispatcher.unregisterEvents(this);
+                M.ViewManager.unregister(this);
+                $(elem).remove();
             }
-            M.EventDispatcher.unregisterEvents(this);
-            M.ViewManager.unregister(this);
-            $('#' + this.id).remove();
         }
         delete this;
     },

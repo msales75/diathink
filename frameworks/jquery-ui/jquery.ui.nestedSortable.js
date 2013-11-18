@@ -53,16 +53,6 @@
 
 			$.ui.sortable.prototype._create.apply(this, arguments);
 
-			// mjs - prepare the tree by applying the right classes (the CSS is responsible for actual hide/show functionality)
-            this.refreshStyle();
-
-
-            // MS - identify the OutlineView we are in
-            // var view = M.ViewManager.findViewById(this.element.attr('id'));
-            // if ((view.type != 'M.ListView') || (view.rootID != view.id)) {
-                // console.log("ERROR: View rootID is not here, for view-id="+view.id);
-            // }
-            // this.rootView = view;
             if (this.options.keyboard) {
                 // override open/close keyboard methods
                 this.options.keyboard.softKeyboardOpen = this.softKeyboardOpen;
@@ -84,22 +74,6 @@
 			return $.ui.sortable.prototype._destroy.apply(this, arguments);
 		},
 
-        refreshStyle: function() {
-            if (this.options.isTree) {
-                var self = this;
-                $(this.items).each(function() {
-                    var $li = this.item;
-                    if ($li.childDepth(self.options.buryDepth).children(self.options.listType).children().length) {
-                        $li.addClass(self.options.branchClass);
-                        // expand/collapse class only if they have children
-                        if (self.options.startCollapsed) $li.addClass(self.options.collapsedClass);
-                        else $li.addClass(self.options.expandedClass);
-                    } else {
-                        $li.addClass(self.options.leafClass).addClass(self.options.expandedClass);
-                    }
-                });
-            }
-        },
         softKeyboardOpen: function() {
             // scroll to active element in active-panel
 /*
@@ -125,61 +99,63 @@
              // each candidate needs to identify its compatibility, action-type and assumptions
              }
              */
-            var item = o.item;
-            var canvas = o.canvas;
-            var type = o.type;
-            var ctop = o.offset.top;
-            var cleft = o.offset.left;
-            d = item.dropboxes[item.dropboxes.length] =
-              {type: type, item: item};
+            setTimeout(function() {
+                var item = o.item;
+                var canvas = o.canvas;
+                var type = o.type;
+                var ctop = o.offset.top;
+                var cleft = o.offset.left;
+                d = item.dropboxes[item.dropboxes.length] =
+                {type: type, item: item};
 
-            if (type==='droptop') {
-                // boundaries for drawn box (smaller than active hover area)
-                item[type] = $('<div></div>').appendTo(canvas)
-                    .addClass('dropborder')
-                    .css('top', (item.top-ctop)+'px')
-                    .css('left', (item.left-cleft+item.height)+'px')
-                    .css('height', '0px')
-                    .css('width', (item.width-item.height-item.height/2)+'px');
-                // boundaries for active hover-area, (larger than drawn area)
-                d.top = item.top - (item.height/2);
-                d.bottom = item.top + (item.height/2);
-                d.left = item.left + item.height; // stay clear of handle
-                d.right = item.left+item.width-item.height/2;
-                d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
-            } else if (type==='dropbottom') {
-                item[type] = $('<div></div>').appendTo(canvas)
-                    .addClass('dropborder')
-                    .css('top', (item.top+item.height-ctop-1)+'px')
-                    .css('left', (item.left-cleft+item.height)+'px')
-                    .css('width',(item.width-item.height-item.height/2)+'px')
-                    .css('height', '0px');
-                d.top = item.top + (item.height/2);
-                d.bottom = item.top + (3*item.height/2);
-                d.left = item.left + item.height; // stay clear of handle
-                d.right = item.left+item.width-item.height/2;
-                d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
-            } else if (type==='drophandle') {
-                item[type] = $('<div></div>').appendTo(canvas)
-                    .addClass('droparrow')
-                    .css('top', (item.top-ctop-1)+'px')
-                    .css('left', (item.left-cleft-1)+'px');
-                d.top = item.top;
-                d.bottom = item.top + item.height;
-                d.left = item.left;
-                d.right = item.left + item.height;
-                d.parentView = M.ViewManager.getViewById(item.item[0].id);
-            }
-            if (item[type]) {
-                d.elem = item[type];
-            }
+                if (type==='droptop') {
+                    // boundaries for drawn box (smaller than active hover area)
+                    item[type] = $('<div></div>').appendTo(canvas)
+                        .addClass('dropborder')
+                        .css('top', (item.top-ctop)+'px')
+                        .css('left', (item.left-cleft+item.height)+'px')
+                        .css('height', '0px')
+                        .css('width', (item.width-item.height-item.height/2)+'px');
+                    // boundaries for active hover-area, (larger than drawn area)
+                    d.top = item.top - (item.height/2);
+                    d.bottom = item.top + (item.height/2);
+                    d.left = item.left + item.height; // stay clear of handle
+                    d.right = item.left+item.width-item.height/2;
+                    d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
+                } else if (type==='dropbottom') {
+                    item[type] = $('<div></div>').appendTo(canvas)
+                        .addClass('dropborder')
+                        .css('top', (item.top+item.height-ctop-1)+'px')
+                        .css('left', (item.left-cleft+item.height)+'px')
+                        .css('width',(item.width-item.height-item.height/2)+'px')
+                        .css('height', '0px');
+                    d.top = item.top + (item.height/2);
+                    d.bottom = item.top + (3*item.height/2);
+                    d.left = item.left + item.height; // stay clear of handle
+                    d.right = item.left+item.width-item.height/2;
+                    d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
+                } else if (type==='drophandle') {
+                    item[type] = $('<div></div>').appendTo(canvas)
+                        .addClass('droparrow')
+                        .css('top', (item.top-ctop-1)+'px')
+                        .css('left', (item.left-cleft-1)+'px');
+                    d.top = item.top;
+                    d.bottom = item.top + item.height;
+                    d.left = item.left;
+                    d.right = item.left + item.height;
+                    d.parentView = M.ViewManager.getViewById(item.item[0].id);
+                }
+                if (item[type]) {
+                    d.elem = item[type];
+                }
+            }, 2);
         },
         _showDropLines: function() {
             $(document.body).addClass('drop-mode');
         },
 
         _hideDropLines: function() {
-            $('body').removeClass('drop-mode');
+            $('body').removeClass('drop-mode').removeClass('transition-mode');
             if (this.activeBox!=null) {
                 this.activeBox.elem.removeClass('active');
             }
@@ -240,57 +216,61 @@
             // determine whether to draw top or bottom line
             // determine position to draw at
             diathink.log(['debug','drag'],"Redrawing dropLines");
+            var that = this;
 
-            this._emptyDropLayers();
-            this._showDropLines();
+            setTimeout(function() {
+                that._emptyDropLayers();
+                that._showDropLines();
+                // foreach M.ScrollView, cache offset top/left
+                var panelParent = M.ViewManager.getCurrentPage().content;
+                var canvas1 = panelParent.scroll1.outline.droplayer;
+                var canvas2 = panelParent.scroll2.outline.droplayer;
+                canvas1.cacheOffset = $('#'+canvas1.id).offset();
+                canvas2.cacheOffset = $('#'+canvas2.id).offset();
 
-            // foreach M.ScrollView, cache offset top/left
-            var panelParent = M.ViewManager.getCurrentPage().content;
-            var canvas1 = panelParent.scroll1.outline.droplayer;
-            var canvas2 = panelParent.scroll2.outline.droplayer;
-            canvas1.cacheOffset = $('#'+canvas1.id).offset();
-            canvas2.cacheOffset = $('#'+canvas2.id).offset();
+                for (var i = that.items.length - 1; i >= 0; i--) {
+                    var item = that.items[i], itemEl = item.item;
 
-            for (var i = this.items.length - 1; i >= 0; i--) {
-                var item = this.items[i], itemEl = item.item;
+                    item.droptop = null;
+                    item.dropbottom = null;
+                    item.drophandle = null;
+                    item.dropboxes = [];
 
-                item.droptop = null;
-                item.dropbottom = null;
-                item.drophandle = null;
-                item.dropboxes = [];
+                    var validate = that._validateDropItem(itemEl);
+                    if (!validate) {continue;}
 
-                var validate = this._validateDropItem(itemEl);
-                if (!validate) {continue;}
+                    var view = M.ViewManager.getViewById(item.parentPanel[0].id);
+                    var canvas = $('#'+view.droplayer.id);
 
-                var view = M.ViewManager.getViewById(item.parentPanel[0].id);
-                var canvas = $('#'+view.droplayer.id);
-
-                if (validate.top) {
-                    this._drawDropLine({
-                        type: 'droptop',
-                        item: item,
-                        canvas: canvas,
-                        offset: view.droplayer.cacheOffset
-                    });
+                    if (validate.top) {
+                        that._drawDropLine({
+                            type: 'droptop',
+                            item: item,
+                            canvas: canvas,
+                            offset: view.droplayer.cacheOffset
+                        });
+                    }
+                    if (validate.handle) {
+                        that._drawDropLine({
+                            type: 'drophandle',
+                            item: item,
+                            canvas: canvas,
+                            offset: view.droplayer.cacheOffset
+                        });
+                    }
+                    if (validate.bottom) {
+                        that._drawDropLine({
+                            type: 'dropbottom',
+                            item: item,
+                            canvas: canvas,
+                            offset: view.droplayer.cacheOffset
+                        });
+                    }
                 }
-                if (validate.handle) {
-                    this._drawDropLine({
-                        type: 'drophandle',
-                        item: item,
-                        canvas: canvas,
-                        offset: view.droplayer.cacheOffset
-                    });
-                }
-                if (validate.bottom) {
-                    this._drawDropLine({
-                        type: 'dropbottom',
-                        item: item,
-                        canvas: canvas,
-                        offset: view.droplayer.cacheOffset
-                    });
-                }
-            }
-            // this._previewDropBoxes();
+                // that._previewDropBoxes();
+
+            }, 5);
+
         },
 
         // cache drop-coordinates
@@ -353,7 +333,6 @@
 
             // define this.overflowOffset (done in _mouseStart)
             // todo: do we need to update boxes more often when scrolling?
-            // todo: which panel are we over?
 
             // todo: loop over panels first, then items by-panel second?
             // for now, just loop over panels independently
@@ -445,14 +424,19 @@
                     if (o.expandOnHover) {
                         if (!this.hovering) {
                             // hoverItem.addClass(o.hoveringClass);
+                            /*
                             var self = this;
-                            this.hovering = window.setTimeout(function() {
-                                diathink.log(['debug','drag'],"Trying to expand on hover")
-                                hoverItem.removeClass(o.collapsedClass).addClass(o.expandedClass);
-                                self.refreshPositions();
-                                self._drawDropLines();
-                                // self._trigger("expand", event, self._uiHash());
-                            }, o.expandOnHover);
+                            if (hoverItem.hasClass('collapsed')) {
+                                this.hovering = window.setTimeout(function() {
+                                    diathink.log(['debug','drag'],"Trying to expand on hover");
+                                    hoverItem.removeClass(o.collapsedClass).addClass(o.expandedClass);
+                                    M.ViewManager.getViewById(hoverItem[0].id).children.renderUpdate();
+                                    self.refreshPositions();
+                                    self._drawDropLines();
+                                    // self._trigger("expand", event, self._uiHash());
+                                }, o.expandOnHover);
+                            }
+                             */
                             this.hoveringBox = this.activeBox;
                         }
                     }
@@ -472,10 +456,7 @@
             if(!event) return;
             // End of prototype._mouseStop
 
-            // TODO: some of this should probably be done before calling _clear?
-            // todo: make a temporary border/focus/animation for object docking,
-            // todo: (including vertical-gap-adjustments).  Also make animation for reversion.
-
+            $(document.body).addClass('transition-mode').removeClass('drop-mode');
             var rootID = M.ViewManager.findViewById(this.currentItem[0].id).rootID;
             // check for active drop-target and execute move
             if (this.activeBox != null) {
@@ -492,21 +473,30 @@
 
                 if (this.activeBox.type==='droptop') {
                     diathink.MoveBeforeAction.createAndExec({
-                        dragView: refview.rootID,
+                        activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
-                        targetID: targetview.value.cid
+                        oldView: targetview.rootID,
+                        newView: refview.rootID,
+                        anim: 'dock',
+                        focus: false
                     });
                 } else if (this.activeBox.type==='dropbottom') {
                     diathink.MoveAfterAction.createAndExec({
-                        dragView: refview.rootID,
+                        activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
-                        targetID: targetview.value.cid
+                        oldView: targetview.rootID,
+                        newView: refview.rootID,
+                        anim: 'dock',
+                        focus: false
                     });
                 } else if (this.activeBox.type==='drophandle') {
                     diathink.MoveIntoAction.createAndExec({
-                        dragView: refview.rootID,
                         referenceID: refview.value.cid,
-                        targetID: targetview.value.cid
+                        activeID: targetview.value.cid,
+                        oldView: targetview.rootID,
+                        newView: refview.rootID,
+                        anim: 'dock',
+                        focus: false
                     });
                 }
             } else { // cancel action
@@ -536,7 +526,6 @@
             this.panelScrollStart = {};
 
             $.ui.sortable.prototype._mouseStart.apply(this, arguments);
-            // MS Warning todo: - this creates a placeholder
 
             this.drawDropLines();
 

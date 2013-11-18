@@ -123,7 +123,7 @@ diathink.keyboardSetup = M.Object.extend({
                 if (self.is_mobile_ios) {
                 setTimeout(function() {
                     if (self.isOpen) {
-                        alert("test-close keyboard-height = "+self._virtualKeyboardHeight());
+                        // alert("test-close keyboard-height = "+self._virtualKeyboardHeight());
                         if (self._virtualKeyboardHeight()<10) {
                             self.softKeyboardClose();
                             self.isOpen = false;

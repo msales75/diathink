@@ -28,6 +28,17 @@ jQuery.fn.selectText = function() {
     return this;
 };
 
+$.randomString = function(size) {
+    if (!size) {
+        size = 12;
+    }
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var charlist = [];
+    for (var i = 0; i < size; i++)
+        charlist.push(possible.charAt(Math.floor(Math.random() * possible.length)));
+    return charlist.join('');
+};
+
 function getTextNodesIn(node) {
     var textNodes = [];
     if (node.nodeType == 3) {

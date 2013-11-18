@@ -1,127 +1,237 @@
+
+
 Next:
-----
-
-OK Fix autogrow called when needed
-OK Don't call fixHeight when content is empty.
-OK Ensure we call fixheight on keyup change input paste
-OK Ensure we call resize after window.load
-OK Fix validations for new list-item html
-OK Reduce console.logs.
-?OK Fix scrolling while dragging
-OK Adjust icon position for green arrow
-OK Fixup dotted-line appearance
-OK Does ui-focus match focus - class for hide-selection.
-OK Text-cursor remains separately focused from mouse-dragging
-OK Drag-icon should also add ui-focus to list-item and changed focused elem
-OK When dragging, add hover-class for the target list-parent
-OK Lists have data: 'list2view', inset: true
-OK LI have nestedSortableItem: object
-OK all data and bindings removed from inside panels
-OK Helper needs to stick around for docking
-OK When is helper destroyed?
-OK Optimize remove and replaceWith
-OK Don't use animate() - make a recursive function
-
-* Remove lastclicked from data in .disclose
-
-* nestedSortable "items" can point to Views
-* items parameters stored in view-object
-* cache height/width/offset in view-object
-* update cache during resize or redraws
+---------
 
 
-TODO: main.js: disclose uses lastclicked
-TODO: Test Deletion issue: are we dirtying jQuery's cache?
+* Fix bug with unfinished expand/contract during changeRoot
 
-Don't use height() or width() or offset()
-  - Cache height/width and offset.
-
-Check these after optimizations:
-   dockAnim 12.55
-   view 18.05 (replaceWith, remove)
-   sourcePlace 26.46
-    (mostly from replaceWith/remove and height/width)
-   destAnim 28.93
-   sourceAnim 31.98
+* Fix asynchronous function-calling:
+ * Disable undo/redo buttons when waiting for non-undo/redo actions to finish
+ * Make target-options & contingency-test asynchronous for text-commands
+ * Handle if a conflicting action is scheduled
+    before prior action finishes - (context is changed?)
 
 
-Fix transitions for indent/outdent
-Fix transitions for newline & delete
-Fix undo
+* Make sure inherited variables are not mixed between object-classes (e.g. in Views)
+* Disable background-color when exchanging dock
+* Make it easier to find/organize logging/breakpoints (log-tags?)
+* Make it easier to pause in animation or when dragging
 
-Check performance again
+*** UI Enhancements: ***
+ * Fix flicker/jiggle of lower items during indent/outdent or drag
+ * Focus on previous line when backspacing
+ * Add animation for change-root
+ * Add font-change button (and update textarea heights)
+ * Add shift-tab keyboard-command
+ * Up and down arrows should change lines
+
+ * Improve Scrolling (hard)
+   - while dragging
+   - during end/animation of action
+ * Drag-to-vertical-line (hard)
+  - Add design-space for vertical line
+  - Keep track of panels like items in nestedSortable
+  - Determine its coordinates relative to panels
+  - Add line into drawDropLines & updateDropBoxes
+  - Add action or non-action event?
+ * Horizontal swipe
+ * NOTE: If an outline is deleted, undo re-creates it with the same rootID,
+ * NOTE: ViewManager must reserve view-ID when deleting root view.
+
+ * Re-enable open-while-hovering without messing up drop?
+ * Improve Handle graphics
+  - handle: black Circle with grey gridlines with optional black-triangle inside (right/down)
+       Vary transparency from very faint to black
+ * Improve drop-icon graphics
+ * Improve Undo/redo animations - show for all visible panels?
+   - Show transitions between same panels if visible?
+   - Make up a start/end-location if none exists?
+
+ * Add line-split and line-merge for return/backspace
+ * Trash (footer when dragging?)
+ * Expand/contract animation
+
+*** Save locally, remotely
 
 
+*** Performance: **
+* Mobile-UI: Remove double-click effect on disclose-tap
+Wait on: Focus and replaceChild
+ Try blur/focus-preventDefault to avoid keyboard-delay
+Focus is hopefully improved by smarter keyboard management with phonegap.
+  - replaceChild seems capped in slowness?
+ Feasibility of quickly adding/removing list-items for long-scroll?
+ Use expansion/contraction as test for replaceChild benchmarking
 
-* Changes in width due to new-location-indenting are not noticed by fixHeight
-
-UI Enhancements:
-* currentItem should have solid background when hidden.
-* Add docking animation for drop or revert
-* Add transition animation for return/backspace
-* Focus on previous line when backspacing
-* Expand/contract animation
-* Undo-helper animations
-* Add line-split and line-merge for return/backspace
-* Up and down arrows should change lines
-* Transition animation for change-root
-* Need ellipses and horizontal scroll for breadcrumbs
-
-* Add font-change button (and update textarea heights)
-
-* Connect drop-line-hover with parent-drop-into icon & border
-* Connect drop-into-icon-hover with staggered line into target-location
+*** Phonegap: ***
+* Setup on Mac
+* Test keyboard open/close & scrolling
+* Test Keyboard-strokes after focus for autoscroll
+* Test panel-scrolling
 
 
+** Validations **
+On text focus:  Hide cursor and background-change, verify not scrolling
 * validate classes used for bindings like .disclose are only used in designated view.
-
- (maybe with some items open?)
- Can be dragged or opened like regular links?
-
-
-* Add docking-preview animation for long hovers
-* Expand/contract preview for hover
-* Select-text-and-drag-down causes pixel-jiggle up and down
-* Add shift-tab keyboard-command
-
-* Drag-to-vertical-line (view in separate page)
- - Keep track of panels like items in nestedSortable
- - Add design-space for vertical line, inbox, trash, settings
- - Determine its coordinates relative to panels
- - Add line into drawDropLines & updateDropBoxes
- - Add non-action event
-* Horizontal swipe
-* Find real-estate for inbox, trash
-* Inbox
-
-
-* Remove alerts from keyboard
-* Check/debug keyboard popup & autoscrolling
-* iPhone not scrolling to correct line
-* Keyboard-strokes after focus also cause autoscroll
-* Port to phonegap and test panel-scrolling
-
-* Do we need autocorrect/complete attributes?
-* Do we need scroll-checker every 200ms?
-
-* validate that scroll-spacer has height
-* validate that panel extends to bottom of page
+* Test Deletion issue: are we dirtying jQuery's cache?
+    delete item, re-create one with same ID, examine selection.
+ validate that scroll-spacer has height
+ validate that panel extends to bottom of page
    ui-scrollview-clip 305px?
-validate all M.ScrollViews are at:
-* Validate that all elements in page fit inside the page/screen
-* Validate that scrollview and textarea heights are up to date,
+ Validate all M.ScrollViews are in content-place
+ Validate that all elements in page fit inside the page/screen
+ Validate that scrollview and textarea heights are up to date,
     and that spacers are present.
-Show an exception or alert or something when exceptions are thrown loading application in index.html
+ Show an exception or alert or something when exceptions are thrown loading application in index.html
+ Check if ui-focus classes are being added elsewhere in jquery-mobile?
+* Verify arrows always highlight when dragging (overlapping, ambiguous or empty insideBox?)
+* Add in check that disallows two actions running concurrently
+   (like with blur event)
+* Why is action-model not showing up in relational-model list
+* Why is Firefox losing hover-state on fast mouseovers?
+* Do we need autocorrect/complete attributes?
+
+
+---------
+Link UI:
+ * When dragging, add drop-box at lower-right of each text-box
+ * Hovering over dropbox highlights line and previews hyperlink-text at end of text
+ * Dropping into text-box adds hyperlink to end of text, creating a new line if necessary
+ * Design appearance of hypertext with dotted border
+ * Where to draw a superimposed-word/symbol can be calculated from a div/span.
+ * Dropping opens the link's edit-box
+ * Edit-box shows breadcrumbs, allows renaming, deletion
+ * Edit-box shows expandable children?
+ * Edit-box has move-left/move-right if there are multiple links in same line
+ * Link is draggable and double-clickable
+ * Breadcrumbs look/click/drag like links
+ * Double-click opens new page
+ * Dropping onto vertical line opens new page
+ * Dropping into text adds reference into line
+ * How to rearrange multiple links?
+
+------
+Docked links:
+  * Dropping between lines adds a docked-link
+  * Design indicator for docked-link vs. regular line
+  * Dragging Handle acts like a regular link
+  * Single-click expands link's children in a nested outline
+  * Docked-link in model internally same as a text-link with empty content
+  * What about double-clicking handle -->
+      preview in "temporary" page to right, like regular link
+
+---------
+Search UI:
+
+Search-results are auto-updated
+Search-list is draggable like a link
+Search-items are draggable like links
+
+
+  Drag from searches into regular
+Suggestions based on visible content
+
+Search returns a list of expandable links,
+ Search results aren't editable, no textareas
+ Only has docked-links, not inline.
+
+Backlinks:
+
+ * Backlinks button with count/new-icon, opens custom-search
+    flags/tabs for: unincluded, unread; tabs for comments,references?)
+* Use different icon if some backlinks are visible on screen,
+  first click highlights them, second link opens full-search.
+* Also different icon if they are unread?
+  Can drag to inbox on viewing?
+
+Saved Searches can be added as links to any line- do you really need more?
+
+Search-button on each used for back-references and similar-pages
+
+---------
+Concurrent Usage
+Login Accounts (Facebook? Google? Twitter?)
+See user-activity (just typed, been a while)
+ (just for those in conversation)
+See user-status online (can check facebook)
+Share-page/conversation-on-facebook
+
+How do you organize discussions:
+  * real-time discussions
+  * asynchronous additions
+    (mark replies-to-comment coming from outside discussion?)
+
+
+--------
+
+Likes & Concerns in threads
+ (User-expertise?)
+Cross-out
+Notification trigger
+Templates & visual design
+
+Resolve/cross-out (trash?)
+Trigger on date/resolve
+
+Database-Views: saved searches
+
+* Special handling of text-indexed-files? (TEXT, HTML/EMAIL, PDF, DOC, OCR)
+   (Select rectangle or text)
+* Search mixes outline with files
+* Drag to migrate to line with source-reference
+* Button to split long text-nodes in-program
+
+ * Notices/Offline
+ * Drop onto breadcrumbs
+ * Improve Breadcrumbs: ellipses and horizontal scroll
+ * Inbox Drop/open
+ * Find real-estate for inbox (settings, search, notices)
+ * Add docking-preview animation for long hovers
+ * Expand/contract preview for hover
+ * Logo
+   Diamond-text: http://images2.layoutsparks.com/1/76256/white-logo-black-design.gif
+   Cute dog: http://www.aaanything.net/wp-content/gallery/super-cute-animals/cute_puppy_in_black_and_white.jpg
+ * Printing
+ * Undo double-click for history
+ * Zoom double-click for size & panel-options
+ * Add iPhone/Safari detection to request homepage install
+
+Future Link UI:
+ * Designated links can select options/checkbox
+ * Constraints & Templates
+ * Clicking on a comment in conversation-page (to link to it)
+
+
+** Refactoring **
+* nestedSortable "items" point to Views
+* cache height/width/offsets in view-object
+*  update cache during resize or redraws
+* Catalog & prune jquery-mobile events
+   (vmouse/generated-events, focusin/out, page/history-handling, startup-tags/css)
+* Write substitutes to jQuery selectors, add/remove-class, etc.
+* Remove events & content-binding from M-project libraries
+* Ensure class-theming happens before DOM-insertion
+* Central event-handler for bubbled events (or focus-events?)
+* Use only target class and id for routing
+* Simplify classes-structure for styling
+* Put many subroutines in global diathink space.
+Rendering uses classes and
 
 
 
-* Retain list-contraction in model
 
-* Add iPhone/Safari detection to request homepage install
+Override selection-default when dragging across lines
+Multi-line selection/dragging
 
-? Intercept setTimeout and jQuery bindings for benchmarking
+* Deal with image-load/error bindings which we removed.
 
-Soft Keyboard assumptions (needs interactive validation for devices)
+3 List-types: Editable vs. Search-results vs. Conversations
+
+
+
+
+ Soft Keyboard assumptions (needs interactive validation for devices)
   Scroll-position on window-click event keeps keyboard in same position
   Suppressing focus/blur keeps keyboard in same position
   Focus/blur on input causes keyboard to appear or disappear
@@ -130,94 +240,6 @@ Soft Keyboard assumptions (needs interactive validation for devices)
   Click is called after focus or blur for keyboard-height
   If IOS, the weird hack detects keyboard height
   If not IOS, resize is called with new dimensions when keyboard changes
-
-On text focus:  Hide cursor and background-change, verify not scrolling
-
-* Clean up drag-helper appearance/classes?
-* Why don't arrows always highlight when dragging
-* Add in check that disallows two actions running concurrently
-   (like with blur event)
-
-
-OK Support multi-line text per draggable-line
-OK Keep drag-icon for dragged element
-
-* Printing
-
-* Enable font-size change
-
-Add white header, with spots for:
- Inbox (draggable?)
- Zoom-small/large (double-click for size & panel-options)
- Undo (double-click for history?)
- Redo
- Search
-
- Notices/Offline (from footer?)
- Trash (footer when dragging?)
-
-Check if ui-focus classes are being added elsewhere in jquery-mobile?
-Black Circle with grey gridlines with optional black-triangle inside (right/down)
-  Vary transparency from very faint to black
-
-Make Breadcrumbs should be draggable, like line-handles.
-
-* Why is action-model not showing up in relational-model list
-* Why is Firefox losing hover-state on fast mouseovers?
-
-
-Logo images
-  Diamond-text: http://images2.layoutsparks.com/1/76256/white-logo-black-design.gif
-  Cute dog: http://www.aaanything.net/wp-content/gallery/super-cute-animals/cute_puppy_in_black_and_white.jpg
-
------
-
-
-Search returns a list of expandable links,
- Search results aren't editable, no textareas
- Only has line-links, not inline.
- Might need links before search.
-
-Override selection-default when dragging across lines
-Multi-line selection/dragging
-
-OK Migrate events to page-level:
-OK Breadcrumb-tap
-OK Collapse/expand-toggle
-OK Text-input focus/blur/keydown
-OK UL mobile-events probably undesired
-OK IMG events groupable for shared file (or eliminate)
-
-* Deal with image-load/error bindings which we removed.
-
-Links: Where to draw a superimposed-word/symbol can be calculated from a div/span.
-
-List-types: Editable vs. Search-results vs. Conversations
-
-Link UI:
- * Dragging link or breadcrumb copies docked-link between lines, copies reference into line-text, or opens target-page, or deletes reference
- * Dragging a line or page-header moves it between lines, copies reference into text, or opens target-page, or deletes line
- * Docked-reference has text-content as a draggable link? (or only when closed?)
- * Clicking link opens box with editable link-text, draggable breadcrumbs, expandable children, and delete-button.
- * Backlinks button opens custom-search
-    (flags (or tabs?) for unincluded,unread; tabs for comments,references?)
- * Designated links can select options/checkbox
- * Constraints & Templates
-
-How do you drag links?
- Clicking on a comment in conversation-page (to link to it)
-
-
-Show uneditable ID code in text-area,
-  pointing above to clipped-link-text,
-    which can optionally be edited.
-
-* Use different icon if some backlinks are visible on screen,
-  first click highlights them, second link opens full-search.
-* Also different icon if they are unread?
-  Can drag to inbox on viewing?
-
-Search-button on each used for back-references and similar-pages
 
 LATER: Separate buttons outside keyboard:
   up/down/left/right/
@@ -288,13 +310,6 @@ Later:
 Notifications
 Version-management
 
-
-See user-status online (can check facebook)
-See user-activity (just typed, been a while)
- (just for those in conversation)
-
-Links will be like annotated text (with pointer when editing),
-  look like hyperlinks when not editing
 
 (event.type != 'mouseover')&&(event.type!='vmouseover')&&(event.type!='mouseout')&&(event.type!='vmouseout')&&(event.type!='resize')&&(event.type!='throttledresize')&&(event.type!='mousemove')&&(event.type!='vmousemove')&&(event.type!='mousedown')&&(event.type!='vmousedown')
 
@@ -461,6 +476,96 @@ Does need .remove?
    scrollview-clip.remove
 breadcrumb tap
 scrollview mousedown
+
+OK Ensure you can't getting stuck in transition-mode or drop-mode.
+OK Ensure rapid actions can't interfere with each other.
+OK Look for bugs
+OK Fix validation-constraints for new list-contraction
+OK Check child list-contraction in renderUpdate recursion
+OK Update model collapsed=false when last child is removed
+OK Stuck in transition-mode after cancelling drag
+OK Error dragging into collapsed items.
+OK Possible to get stuck in transition-mode when dragging collapsed-items
+OK Undo/redo doesn't handle collapse?
+OK Need to change branch to leaf when last child is removed, and ensure collapsed=false
+OK Need to add subaction for collapse-change on remove-all
+OK rename variables more consistently
+OK Keep object-edits from inadvertently changing class-scope
+OK Distinguish properties per-object and per-exec
+OK When adding a child, need to go from leaf to branch.
+OK Test context assumptions, especially for undo/redo
+OK Validate there are no non-empty action-queues in history.
+OK Validate there are no scheduled-actions waiting in main-queue.
+OK Test for valid options at start of function, based on type.
+OK Test existence/properties of active/reference
+OK Test view-assumptions for undo/redo?
+OK Add constraints for dragView, focusView and diathink.helper?
+OK Need to bundle undos/redos for subactions
+OK  (Note: redo doesn't update lastAction)
+OK Eliminate 'undefined' in text (value is not getting initialized)
+OK  - removed option-initialization from init()
+OK Fix Animations
+OK Handle dragging multiple items to/from an invisible place in one view
+
+OK Add/remove View & DOM elements for contraction
+OK* Changes in width due to new-location-indenting
+  - are not noticed by fixHeight
+OK Clean up drag-helper appearance/classes?
+OK Support multi-line text per draggable-line
+OK Keep drag-icon for dragged element
+
+OK Fix undo/redo for text-editing
+OK Add view-expansion to model
+OK Retain list-contraction in model
+
+OK Migrate events to page-level:
+OK Breadcrumb-tap
+OK Collapse/expand-toggle
+OK Text-input focus/blur/keydown
+OK UL mobile-events probably undesired
+OK IMG events groupable for shared file (or eliminate)
+VOID Connect drop-line-hover with parent-drop-into icon & border
+VOID Connect drop-into-icon-hover with staggered line into target-location
+OK Remove alerts from keyboard
+OK Do we need scroll-checker every 200ms?
+
+OK Fix autogrow called when needed
+OK Don't call fixHeight when content is empty.
+OK Ensure we call fixheight on keyup change input paste
+OK Ensure we call resize after window.load
+OK Fix validations for new list-item html
+OK Reduce console.logs.
+?OK Fix scrolling while dragging
+OK Adjust icon position for green arrow
+OK Fixup dotted-line appearance
+OK Does ui-focus match focus - class for hide-selection.
+OK Text-cursor remains separately focused from mouse-dragging
+OK Drag-icon should also add ui-focus to list-item and changed focused elem
+OK When dragging, add hover-class for the target list-parent
+OK Lists have data: 'list2view', inset: true
+OK LI have nestedSortableItem: object
+OK all data and bindings removed from inside panels
+OK Helper needs to stick around for docking
+OK When is helper destroyed?
+OK Optimize remove and replaceWith
+OK Don't use animate() - make a recursive function
+OK Remove lastclicked from data in .disclose
+OK drawLines (make async addressable)
+OK Improve transitions for indent/outdent
+OK Don't show draglines
+OK Round-edges
+OK Go faster
+OK Clip right if sliding right
+OK Hide target-underneath until done
+OK currentItem should have solid background when hidden
+OK Add appropriate corners to transition-items
+OK speedup transitions for newline
+OK Improve transitions for delete
+OK Add docking animation for drop or revert
+OK Add transition animation for return/backspace
+OK Fix undo/redo
+OK Fix undo/redo for insert/delete
+OK Show basic docking for undo/redo
 
 OK Drag Pickup and dropdown-action are slow on iphone
 OK Safari freezes after pressing Return
@@ -1001,7 +1106,7 @@ subtask-flow:
  - How to save searches; setup homepage?
  - Browse by calendar (outline ok)
 
-    - ? Tag-filters for node-types? Not everything's a task?
+ - ? Tag-filters for node-types? Not everything's a task?
  - multiple-parent search is fine
 
  used-for-x and contains-part-y (advanced search; multiple parents)
@@ -1020,6 +1125,15 @@ Browse reverse-references as parents?
 Notices?
 Friends?
 
+* Phase 1: Discussion
+* Phase 2: Collaborative IP
+- Feature requesting and valuation demand
+- IP for development/design work on features
+- Features includes code-quality/documentation
+- Advertising-driven pricing for consumers
+- Voluntary charity trading
+
+
 Spreadsheet interface (from tagged properties)
 2D-UI design (from outline structure?)
 
@@ -1030,3 +1144,8 @@ Checkbox/Selections - for mutually exclusive tags.
 Tag-lists can be annotated as unique, all, required
 Tasks have a status, completed or not.
 Spreadsheet-like functionaltiy?
+// Visually pleasing discussion
+// Visual elastic-content-templates: with permissions, video/calendar, search, forms, shopping-cart
+// Rich-text-editing?
+// Then permit 2D/3D UI
+

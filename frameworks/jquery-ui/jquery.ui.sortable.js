@@ -326,9 +326,8 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 		if(helper[0].style.width == '' || o.forceHelperSize) helper.width(this.currentItem.width());
 		if(helper[0].style.height == '' || o.forceHelperSize) helper.height(this.currentItem.height());
-
+        helper.addClass('ui-first-child').addClass('ui-last-child');
 		return helper;
-
 	},
 
 	_adjustOffsetFromHelper: function(obj) {

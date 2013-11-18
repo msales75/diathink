@@ -525,15 +525,18 @@ M.TextEditView = M.View.extend(
          *
          * @private
          */
-        theme: function() {
+        theme: function(elem) {
+            console.log('Theming textedit box')
             /* trigger keyup event to make the text field autogrow */
-            var jDom = $('#'  + this.id);
+            if (!elem) {elem = $('#' + this.id)[0];}
+            var jDom = $(elem);
             if (typeof this.value === 'string') { // MS edit for theming empty fields
                 // jDom.trigger('keyup'); // .textinput2();
                 if(!this.isEnabled){
                     // jDom.textinput2('disable');
                 }
             }
+            console.log('Adding container to parent-class');
             if (this.cssClass) {
                 var firstclass = this.cssClass.split(' ')[0];
                 /* add container-css class */

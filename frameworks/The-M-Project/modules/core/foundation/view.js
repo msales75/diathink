@@ -306,23 +306,6 @@ M.View = M.Object.extend(
         }
     },
 
-    /**
-     * This method is used internally for removing a view's child views both from DOM and the
-     * view manager.
-     *
-     * @private
-     */
-    removeChildViews: function() {
-        var childViews = this.getChildViewsAsArray();
-        for(var i in childViews) {
-            if(this[childViews[i]].childViews) {
-                this[childViews[i]].removeChildViews();
-            }
-            this[childViews[i]].destroy();
-            M.ViewManager.unregister(this[childViews[i]]);
-        }
-        $('#' + this.id).empty();
-    },
 
     /**
      * This method transforms the child views property (string) into an array.
@@ -436,8 +419,8 @@ M.View = M.Object.extend(
      * themeChildViews method. Most views overwrite this method with a custom theming
      * behaviour.
      */
-    theme: function() {
-        this.themeChildViews();
+    theme: function(elem) {
+        this.themeChildViews(elem);
     },
 
     /**
@@ -494,11 +477,12 @@ M.View = M.Object.extend(
     /**
      * This method triggers the theme method on all children.
      */
-    themeChildViews: function() {
+    themeChildViews: function(elem) {
+        if (!elem) {elem = $('#'+this.id)[0];}
         if(this.childViews) {
             var childViews = this.getChildViewsAsArray();
             for(var i in childViews) {
-                this[childViews[i]].theme();
+                this[childViews[i]].theme($(elem).find('#'+this[childViews[i]].id)[0]);
             }
         }
     },

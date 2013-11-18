@@ -38,65 +38,11 @@ M.ListView = M.View.extend(
     removeItemsOnUpdate: YES,
 
     /**
-     * Determines whether to display the list as a divided list or not.
-     *
-     * @type Boolean
-     */
-    isDividedList: NO,
-
-    /**
-     * If the list view is a divided list, this property can be used to customize the style
-     * of the list's dividers.
-     *
-     * @type String
-     */
-    cssClassForDivider: null,
-
-    /**
-     * Determines whether to display the the number of child items for each list item view.
-     *
-     * @type Boolean
-     */
-    isCountedList: NO,
-
-    /**
-     * If the list view is a counted list, this property can be used to customize the style
-     * of the list item's counter.
-     *
-     * @type String
-     */
-    cssClassForCounter: null,
-
-    /**
-     * This property can be used to customize the style of the list view's split view. For example
-     * the toggleRemove() of a list view uses the built-in split view functionality.
-     *
-     * @type String
-     */
-    cssClassForSplitView: null,
-
-    /**
      * The list view's items, respectively its child views.
      *
      * @type Array
      */
     items: null,
-
-    /**
-     * States whether the list view is currently in edit mode or not. This is mainly used by the
-     * built-in toggleRemove() functionality. 
-     *
-     * @type Boolean
-     */
-    inEditMode: NO,
-
-    /**
-     * This property contains all available options for the edit mode. For example the target and action
-     * of the automatically rendered delete button can be specified using this property.
-     *
-     * @type Object
-     */
-    editOptions: null,
 
     /**
      * Defines if the ListView is rendered with prefixed numbering for each item.
@@ -240,7 +186,9 @@ M.ListView = M.View.extend(
         }
 
         var listTagName = this.isNumberedList ? 'ol' : 'ul';
-        this.html += '<' + listTagName + ' id="' + this.id + '"' + this.style() + '></' + listTagName + '>';
+        this.html += '<' + listTagName + ' id="' + this.id +
+            '" class="ui-listview ui-listview-inset ui-corner-all ui-shadow ui-listview-c"' +
+            this.style() + '></' + listTagName + '>';
 
         return this.html;
     },
@@ -254,26 +202,6 @@ M.ListView = M.View.extend(
      * internal events.
      */
     registerEvents: function() {
-        /*
-        this.internalEvents = {
-            focus: {
-                target: this,
-                action: 'gotFocus'
-            },
-            blur: {
-                target: this,
-                action: 'lostFocus'
-            },
-            keyup: {
-                target: this,
-                action: 'setValueFromDOM'
-            }
-        }
-        this.bindToCaller(this, M.View.registerEvents)();
-        if(this.hasSearchBar && !this.usesDefaultSearchBehaviour) {
-            this.searchBar.registerEvents();
-        }
-         */
     },
     /**
      * This method adds a new list item to the list view by simply appending its html representation
@@ -289,30 +217,32 @@ M.ListView = M.View.extend(
      * This method removes all of the list view's items by removing all of its content in the DOM. This
      * method is based on jQuery's empty().
      */
-    removeAllItems: function() {
-        $('#' + this.id).find('> li').each(function() {
-            M.ViewManager.getViewById($(this).attr('id')).destroy();
+    removeAllItems: function(elem) {
+        if (elem==null) {elem = $('#'+this.id)[0];}
+        $(elem).find('> li').each(function() {
+            M.ViewManager.getViewById($(this).attr('id')).destroy(this);
         });
-        $('#' + this.id).empty();
+        $(elem).empty();
     },
 
         // MS -- override destroy to remove child-list-items
-        destroy: function() {
+        destroy: function(elem) {
+            if (!elem) {elem = $('#'+this.id)[0];}
             if (this.id) {
-                this.removeAllItems(); // MS modification to destroy()
+                this.removeAllItems(elem); // MS modification to destroy()
                 var childViews = this.getChildViewsAsArray();
                 for(var i in childViews) {
                     if(this[childViews[i]]) {
-                        this[childViews[i]].destroy();
+                        this[childViews[i]].destroy($(elem).find('#'+this[childViews[i]].id)[0]);
                     }
                 }
                 // M.EventDispatcher.unregisterEvents(this);
                 M.ViewManager.unregister(this);
             }
-            if(this.id && $('#' + this.id).length) {
-                var elem = $('#'+this.id)[0];
-                elem.parentNode.removeChild(elem);
+            if(this.id && elem) {
+                // MS modification to clear views from associated model
                 // $('#' + this.id).remove();
+                elem.parentNode.removeChild(elem);
             }
             delete this;
         },
@@ -325,77 +255,13 @@ M.ListView = M.View.extend(
      *
      * @private
      */
-    renderUpdate: function() {
-
-        /* Remove all list items if the removeItemsOnUpdate property is set to YES */
+    renderUpdate: function(elem) {
         if(this.removeItemsOnUpdate) {
-            this.removeAllItems();
+            this.removeAllItems(elem);
         }
-
-        /* Save this in variable that for later use within an other scope (e.g. _each()) */
-        var that = this;
-
-        /* Get the list view's content as an object from the assigned content binding */
-        if(this.contentBinding && typeof(this.contentBinding.target) === 'object' && typeof(this.contentBinding.property) === 'string' && this.value) {
-            var content = this.value;
-        } else {
-            M.Logger.log('The specified content binding for the list view (' + this.id + ') is invalid!', M.WARN);
-            return;
-        }
-
-        /* Get the list view's template view for each list item */
-        var templateView = this.listItemTemplateView;
-
-        /* if there is no template, log error and stop */
-        if(!templateView) {
-            M.Logger.log('The template view could not be loaded! Maybe you forgot to use m_require to set up the correct load order?', M.ERR);
-            return;
-        }
-
-        /* check if there is an events propety specified for the template or if we should use the list's events */
-        templateView.events = templateView.events ? templateView.events : this.events;
-
-        /* If there is an items property, re-assign this to content, otherwise iterate through content itself */
-
-        if(this.items) {
-            content = content[this.items];
-        }
-        if(this.isDividedList) {
-            /* @deprecated implementation for old-fashioned data structure */
-            if(!_.isArray(content)) {
-                _.each(content, function(items, divider) {
-                    that.renderListItemDivider(divider);
-                    that.renderListItemView(items, templateView);
-                });
-            /* new implementation with more intelligent data structures */
-            } else {
-                _.each(content, function(item) {
-                    that.renderListItemDivider(item.label);
-                    that.renderListItemView(item.items, templateView);
-                });
-            }
-        } else {
-            this.renderListItemView(content, templateView);
-        }
-
-        /* Finally let the whole list look nice */
-        // this.themeUpdate();
-        // this.fixTextHeights();
+        this.renderListItemView(elem);
     },
 
-    /**
-     * Renders a list item divider based on a string given by its only parameter.
-     *
-     * @param {String} name The name of the list divider to be rendered.
-     * @private
-     */
-    renderListItemDivider: function(name) {
-        var obj = M.ListItemView.design({});
-        obj.value = name;
-        obj.isDivider = YES;
-        this.addItem(obj.render());
-        obj.theme();
-    },
 
     /**
      * This method renders list items based on the passed parameters.
@@ -404,117 +270,65 @@ M.ListView = M.View.extend(
      * @param {M.ListItemView} templateView The template for for each list item.
      * @private
      */
-    renderListItemView: function(content, templateView) {
+    renderListItemView: function(elem) {
         /* Save this in variable that for later use within an other scope (e.g. _each()) */
         var that = this;
-
-        _.each(content, function(item, index) {
-
-            /* Create a new object for the current template view */
-            var obj = templateView.design({});
-
-            /* Determine the "modelId" value of the list item */
-            if(that.useIndexAsId && typeof(index) === 'number') {
-                obj.modelId = index;
-            } else if(item.type === 'M.Model') {
-                if(that.idName) {
-                    obj.modelId = item.get(that.idName);
-                } else {
-                    obj.modelId = item.m_id;
-                }
-            } else if(that.idName) {
-                obj.modelId = item[that.idName] || undefined;
-            } else if(item.id) {
-                obj.modelId = item.id;
-            } else if(typeof(index) === 'number') {
-                obj.modelId = index;
-            }
-
-            obj = that.cloneObject(obj, item);
-            //set the current list item value to the view value. This enables for example to get the value/contentBinding of a list item in a template view.
-            obj.value = item;
-            if (that.rootID) {
-                obj.setRootID(that.rootID);
-            }
-
-            // register view.id in corresponding model
-            obj.modelType.findOrCreate(obj.modelId).addView(obj);
-
-            /* If edit mode is on, render a delete button */
-            if(that.inEditMode) {
-                obj.inEditMode = that.inEditMode;
-                /*
-                obj.deleteButton = obj.deleteButton.design({
-                    modelId: obj.modelId,
-                    events: {
-                        tap: {
-                            target: that.editOptions.target,
-                            action: that.editOptions.action
-                        }
-                    },
-                    internalEvents: {
-                        tap: {
-                            target: that,
-                            action: 'removeListItem'
-                        }
-                    }
-                });
-                 */
-            }
-
-            /* set the list view as 'parent' for the current list item view */
-            obj.parentView = that;
-
-            /* Add the current list view item to the list view ... */
-            that.addItem(obj.render());
-
-            /* register events */
-            obj.registerEvents();
-            // if(obj.deleteButton) {
-                // obj.deleteButton.registerEvents();
-            // }
-
-            /* ... once it is in the DOM, make it look nice */
-            obj.theme();
-
-            // determine list-placement for corner-theming
-            var objElem = $('#'+obj.id);
-            if (index===0) {
-                objElem.addClass('ui-first-child');
-            }
-            if (index===content.length-1) {
-                objElem.addClass('ui-last-child');
-            }
-            /* var childViewsArray = obj.getChildViewsAsArray();
-            for(var i in obj.getChildViewsAsArray()) {
-                obj[childViewsArray[i]].theme();
-            } */
-
-            // MS -- render updated-content for any nested lists
-            //    (must be after rendering/theming, above)
-
-            that.updateNestedLists(obj);
-            obj.themeParent(); // add branch or leaf-classes
+        _.each(this.value[this.items], function(item, index) {
+            that.renderOneItem(that, item, index, elem);
         });
     },
 
-    updateNestedLists: function(obj) {
-            var childViewsArray = obj.getChildViewsAsArray();
-            for (var i in childViewsArray) {
-              if (obj[childViewsArray[i]].type === 'M.ListView') {
-                // set the value for the list and call renderUpdate for it; 
+    renderOneItem: function(parentView, model, index, parentElem) {
+        /* Create a new object for the current template view */
+        var templateView = parentView.listItemTemplateView;
+        var obj = templateView.design({});
+        obj.modelId = model.cid;
+        obj = parentView.cloneObject(obj, model);
+        //set the current list item value to the view value. This enables for example to get the value/contentBinding of a list item in a template view.
+        obj.value = model;
+        if (parentView.rootID) {
+            obj.setRootID(parentView.rootID);
+        }
 
-                  // (.value.attributes for Backbone.Model compatibility)
-                if (obj.value.attributes[childViewsArray[i]]) {
-                  obj[childViewsArray[i]].value = obj.value.attributes[childViewsArray[i]];
-                  obj[childViewsArray[i]].renderUpdate();
-                }
-              } else {  // propogate to this view's children recursively
-                this.updateNestedLists(obj[childViewsArray[i]]);
-              }
+        obj.modelType.findOrCreate(obj.modelId).addView(obj); // register view.id in model
+        obj.parentView = parentView; // set list-view as view's parent
+
+        if (parentElem==null) {
+            parentElem = $('#'+parentView.id)[0];
+        }
+        if (!parentElem) {
+            console.log("ERROR: parentElem doesn't exist in renderOneItem");
+        }
+        parentElem.appendChild($(obj.render())[0]);
+        // this.addItem(obj.render()); // add to DOM
+        var objElem = $(parentElem).find('#'+obj.id);
+
+        obj.theme(objElem[0]);
+
+        // corner-theming
+        if (index===0) {
+            objElem.addClass('ui-first-child');
+        }
+        if (index===parentView.value.models.length-1) {
+            objElem.addClass('ui-last-child');
+        }
+        // MS -- render updated-content for any nested lists
+        //    (must be after rendering/theming, above)
+        obj.children.value = obj.value.attributes.children;
+        if (obj.value.get('collapsed')) {
+            objElem.addClass('branch').removeClass('leaf').
+                addClass('collapsed').removeClass('expanded');
+        } else {
+            obj.children.renderUpdate();
+            if (objElem.children('ul').children().length>0) {
+                objElem.addClass('branch').removeClass('leaf').
+                  addClass('expanded').removeClass('collapsed');
+            } else {
+                objElem.addClass('leaf').removeClass('branch').
+                    addClass('expanded').removeClass('collapsed');
             }
+        }
     },
-
 
     /**
      * This method clones an object of the template including its sub views (recursively).
@@ -527,9 +341,7 @@ M.ListView = M.View.extend(
         /* Get the child views as an array of strings */
         var childViewsArray = obj.childViews ? obj.getChildViewsAsArray() : [];
 
-        /* If the item is a model, read the values from the 'record' property instead */
-        var record = item.type === 'M.Model' ? item.record : item;
-        if (record.attributes) {record = record.attributes;} // For compatibility with Backbone.Model
+        var record = item.attributes; // For compatibility with Backbone.Model
 
         /* Iterate through all views defined in the template view */
         for(var i in childViewsArray) {
@@ -583,24 +395,6 @@ M.ListView = M.View.extend(
      * @private
      */
     theme: function() {
-        // $('#' + this.id).list2view({icon: false});
-        $('#'+this.id).addClass('ui-listview ui-listview-inset ui-corner-all ui-shadow ui-listview-c');
-        /*
-        if(this.searchBar) {
-            // JQM-hack: remove multiple search bars
-            if($('#' + this.id) && $('#' + this.id).parent()) {
-                var searchBarsFound = 0;
-                $('#' + this.id).parent().find('form.ui-listview-filter').each(function() {
-                    searchBarsFound += 1;
-                    if(searchBarsFound == 1) {
-                        return;
-                    }
-                    $(this).remove();
-                });
-            }
-            this.searchBar.theme();
-        }
-        */
     },
 
     /**
@@ -609,30 +403,12 @@ M.ListView = M.View.extend(
      * @private
      */
     themeUpdate: function() {
-        // $('#' + this.id).children('li').each(function() {
-           // M.ViewManager.getViewById(this.id).themeUpdate();
-        // });
-        // $('#' + this.id).list2view('refresh');
-        // call fixHeight for all textareas?
     },
 
     fixTextHeights: function() {
         $('#' + this.id +' textarea').each(function() {
             M.ViewManager.getViewById(this.id).fixHeight();
         });
-    },
-    /**
-     * This method activates the edit mode and forces the list view to re-render itself
-     * and to display a remove button for every list view item.
-     *
-     * @param {Object} options The options for the remove button.
-     */
-    toggleRemove: function(options) {
-        if(this.contentBinding && typeof(this.contentBinding.target) === 'object' && typeof(this.contentBinding.property) === 'string' && this.contentBinding.target[this.contentBinding.property]) {
-            this.inEditMode = !this.inEditMode;
-            this.editOptions = options;
-            this.renderUpdate();
-        }
     },
 
     /**
@@ -689,23 +465,6 @@ M.ListView = M.View.extend(
                 + (!this.isInset && this.doNotOverlapAtBottom ? ' listview-do-not-overlap-at-bottom' : '')
                 + '"';
         }
-        /*
-        if(this.isDividedList && this.cssClassForDivider) {
-            html += ' data-dividertheme="' + this.cssClassForDivider + '"';
-        }
-        if(this.isInset) {
-            html += ' data-inset="true"';
-        }
-        if(this.isCountedList && this.cssClassForCounter) {
-            html += ' data-counttheme="' + this.cssClassForCounter + '"';
-        }
-        if(this.cssClassForSplitView) {
-            html += ' data-splittheme="' + this.cssClassForSplitView + '"';
-        }
-        if(this.hasSearchBar && this.usesDefaultSearchBehaviour) {
-            html += ' data-filter="true" data-filter-placeholder="' + this.searchBarInitialText + '"';
-        }
-         */
         return html;
     },
 

@@ -1,44 +1,64 @@
 
+// Flag for scroll
+// todo: action defines focusID and stores oldFocus and newFocus in context.
+// todo: handle focusID in context, and validate it.
+// todo: undo-scroll (maybe focus)
+
 diathink.Action = Backbone.RelationalModel.extend({
     type:"Action",
-    instance: 0,
-    user: 0,
-    timestamp: null,
-    options:{},
-    oldContext:null,
-    newContext:null,
-    triggers:null,
-    undone: false,
-    lost: false,
-    targetPlaceholder: {},
-    sourcePlaceholder: {},
-    queue: {},
-    targetHeight: {},
-    movingTarget: {},
-    status: {},
+    indentSpeed: 80,
+    createSpeed: 80,
+    deleteSpeed: 80,
+    placeholderSpeed: 160,
+    dockSpeed: 160,
     constructor: function(options) {
+        this.init();
         this.options = _.extend({}, this.options, options);
-        this.targetPlaceholder = {};
-        this.sourcePlaceholder = {};
-        this.queue = {};
-        this.targetHeight = {};
-        this.movingTarget = {};
-        this.status = {
-            context: 0,
-            log: 0,
-            undobuttons: 0,
-            sourceCollection: 0,
-            targetRank: 0,
-            model: 0,
-            dockAnim: 0,
-            focus: 0,
-            sourcePlace: {},
-            destPlace: {},
-            view: {},
-            sourceAnim: {},
-            destAnim: {}
-        };
         return this;
+    },
+    init: function() {
+        _.extend(this, {
+            instance: 0,
+            user: 0,
+            timestamp: null,
+            undone: false,
+            lost: false,
+            oldContext:null,
+            newContext:null,
+            subactions: [],
+            oldViewCollapsed: {},
+            // options: {},
+            runtime: null // variables that initialize each time _exec is called
+        });
+        this.runinit();
+    },
+    runinit: function() {
+        this.runtime = {
+            nextQueueScheduled: null,
+            activeHeight: {},
+            activeElem: {},
+            newPlaceholder: {},
+            oldPlaceholder: {},
+            queue: {},
+            status: {
+                context: 0,
+                log: 0,
+                undobuttons: 0,
+                oldModelCollection: 0,
+                oldModelRemove: 0,
+                modelCreate: 0,
+                newModelRank: 0,
+                newModelAdd: 0,
+                dockAnim: 0,
+                focus: 0,
+                end: 0,
+                oldPlace: {},
+                newPlace: {},
+                oldPlaceAnim: {},
+                newPlaceAnim: {},
+                view: {}
+            }
+        }
     },
     addAsync: function(self, deps, f) {
         this.addQueue(self, deps, f, true);
@@ -46,29 +66,29 @@ diathink.Action = Backbone.RelationalModel.extend({
     addQueue: function(self, deps, f, async) {
         if (!async) {async=false;}
         if (typeof self === 'object') {
-            if (this.queue[self[0]+':'+self[1]]!==undefined) {alert("Queue error"); return;}
-            this.queue[self[0]+':'+self[1]] = [self, deps, f, async];
+            if (this.runtime.queue[self[0]+':'+self[1]]!==undefined) {alert("Queued twice: "+self[0]+':'+self[1]); return;}
+            this.runtime.queue[self[0]+':'+self[1]] = [self, deps, f, async];
         } else {
-            if (this.queue[self]!==undefined) {alert("Queue error"); return;}
-            this.queue[self] = [self, deps, f, async];
+            if (this.runtime.queue[self]!==undefined) {alert("Queued twice: "+self); return;}
+            this.runtime.queue[self] = [self, deps, f, async];
         }
     },
     nextQueue: function() {
         // console.log("Running nextQueue");
-        if (this.nextQueueScheduled) {
-            clearTimeout(this.nextQueueScheduled);
+        if (this.runtime.nextQueueScheduled) {
+            clearTimeout(this.runtime.nextQueueScheduled);
         }
         // loop over the queue and start all items which can be started
-        var i, j, deps, depj, self, self0, f, ready, n= 0, queue=this.queue;
+        var i, j, deps, depj, self, self0, f, ready, n= 0, queue=this.runtime.queue;
         var that = this;
         for (i in queue) {
 
-            if (this.queue[i]===undefined) {continue;}
+            if (this.runtime.queue[i]===undefined) {continue;}
 
             // never start the same job twice
             self = queue[i][0];
             if (typeof self === 'object') { // array
-                self0 = this.status[self[0]];
+                self0 = this.runtime.status[self[0]];
                 // console.log("Considering queue item "+i+" type="+self[0]+":"+self[1]);
                 if (self0 && self0[self[1]]>0) {
                     // console.log("Aborting queue item "+i+" because already begun");
@@ -76,7 +96,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                 }
             } else {
                 // console.log("Considering queue item "+i+" type="+self);
-                if (this.status[self]>0) {
+                if (this.runtime.status[self]>0) {
                     // console.log("Aborting queue item "+i+" because already begun");
                     continue;
                 }
@@ -88,13 +108,13 @@ diathink.Action = Backbone.RelationalModel.extend({
             // console.log("Checking dependencies for "+i+": "+deps.join(','));
             for (j=0; j<deps.length; ++j) {
                 if (typeof deps[j] === 'object') { // a dependency-array
-                    depj = this.status[deps[j][0]];
+                    depj = this.runtime.status[deps[j][0]];
                     if (!(depj && (depj[deps[j][1]]===2))) {
                         // console.log("Postponing "+i+" because haven't met: "+deps[j][0]+":"+deps[j][1]);
                         ready=0; break;
                     }
                 } else { // a simple/string dependency
-                    if (!(this.status[deps[j]]===2)) {
+                    if (!(this.runtime.status[deps[j]]===2)) {
                         // console.log("Postponing "+i+" because haven't met: "+deps[j]);
                         ready=0; break;
                     }
@@ -107,23 +127,23 @@ diathink.Action = Backbone.RelationalModel.extend({
             }
         }
         if (n>0) {
-            this.nextQueueScheduled = setTimeout(function() {
+            this.runtime.nextQueueScheduled = setTimeout(function() {
                 that.nextQueue();
             }, 0);
         }
     },
     execQueue: function(i) {
         var q, that = this;
-        q = this.queue[i];
+        q = this.runtime.queue[i];
         // console.log("Scheduling "+i);
         if (typeof q[0] === 'object') {
-            that.status[q[0][0]][q[0][1]] = 1;
+            that.runtime.status[q[0][0]][q[0][1]] = 1;
         } else {
-            that.status[q[0]] = 1;
+            that.runtime.status[q[0]] = 1;
         }
         setTimeout(function() {
             // console.log("Removing from queue item "+i);
-            delete that.queue[i];
+            delete that.runtime.queue[i];
         }, 0);
         setTimeout(function() {
             // console.log("Updating status of item "+i+"before execution");
@@ -132,51 +152,378 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (!q[3]) { // unless it ends asynchronously like an animation
                 // console.log("Updating status after finishing non-async item "+i);
                 if (typeof q[0] === 'object') {
-                    that.status[q[0][0]][q[0][1]] = 2;
+                    that.runtime.status[q[0][0]][q[0][1]] = 2;
                 } else {
-                    that.status[q[0]] = 2;
+                    that.runtime.status[q[0]] = 2;
                 }
                 that.nextQueue();
             }
         }, 0);
     },
-    exec:function (options) {
-        var o, i, destViews, sourceViews, sourceAnims, destAnims;
-        _.extend(this.options, options);
-        o = this.options;
-        var self = this;
-        this.timestamp = (new Date()).getTime();
-        this.undone = false;
+    checkStart: function(options) {
+        var that = this;
+        if (diathink.UndoController.readyAction===options.readyCode) {
+            this._exec(options);
+        } else {
+            setTimeout(function() {
+                that.checkStart(options);
+            }, 20);
+        }
+    },
+    exec: function(options) {
+        var i, rank, nsub;
+        if (!options) {options = {};}
+        console.log("Scheduling action "+this.type+" with undo="+options.undo+"; redo="+options.redo);
+        if (options.redo) {options.undo = false;}
+        if (!options.undo) {this.undone=false;}
+        options.readyCode = diathink.UndoController.queueRequest();
+
+        // if this is undo/redo op, and there are subactions, queue those immediately.
+        if (options.redo && (this.subactions.length>0)) {
+            nsub = this.subactions.length;
+            for (i=0; i<nsub; ++i) {
+                rank = diathink.UndoController.nextRedo();
+                if (diathink.UndoController.actions.at(rank) !== this.subactions[i].action) {
+                    console.log("ERROR: Redoing wrong subaction");
+                }
+                diathink.UndoController.redo();
+            }
+        } else if (options.undo && (this.parentAction != null)) {
+            nsub = this.parentAction.subactions.length;
+            if (this !== this.parentAction.subactions[nsub-1].action) {
+                console.log("ERROR: Last subaction in chain was not called first!");
+            }
+            for (i=0; i<nsub; ++i) {
+                rank = diathink.UndoController.nextUndo();
+                if (i===0) {
+                    if (diathink.UndoController.actions.at(rank) !== this.parentAction) {
+                        console.log("ERROR: Undoing something else when should be parentAction");
+                    }
+                } else {
+                    if (diathink.UndoController.actions.at(rank) !== this.subactions[nsub-1-i].action) {
+                        console.log("ERROR: Undoing wrong subaction");
+                    }
+                }
+                diathink.UndoController.undo();
+            }
+        }
+
+        // todo: test if lastAction is where it should be
+        // todo: test if undo/redo/undone parameters match up
+
+        this.checkStart(options); // check if we are next in action-queue
+    },
+    preExec: function(options) {
+        if (!options) {options = {};}
+        console.log("Scheduling preExec action "+this.type+" with undo="+options.undo+"; redo="+options.redo);
+        if (!options.undo) {this.undone=false;}
+        options.readyCode = diathink.UndoController.queuePrepend();
+        this.checkStart(options); // check if we are next in action-queue
+    },
+    validateOptions: function() {
+        var o = this.options, v = this._validateOptions;
+        if ((v.requireActive || o.undo || o.redo) && !o.activeID) {
+            console.log("ERROR: Action "+this.type+" missing activeID");
+        }
+        if (v.requireReference && !o.referenceID) {
+            console.log("ERROR: Action "+this.type+" missing referenceID");
+        }
+        if (!o.oldView || !o.newView) {
+            console.log("ERROR: Action "+this.type+" missing oldView or newView");
+        }
+        if (o.anim) {}
+
+        if (o.activeID) {
+            var activeModel = this.getModel(o.activeID);
+            if (v.requireOld && !o.undo) {
+                if (!activeModel.views[o.oldView] && (o.oldView !== 'all')) {
+                    console.log('ERROR: No old-view found for activeID='+ o.activeID);
+                }
+            }
+            if (v.requireNew && o.undo) {
+                if (!activeModel.views[o.newView] && (o.newView !== 'all')) {
+                    console.log('ERROR: No new-view found for activeID='+ o.activeID);
+                }
+            }
+        }
+        if (o.referenceID) {
+            var refModel = this.getModel(o.referenceID);
+            // reference is only used in newView, not oldView
+            if (v.requireNew) {
+                if (!refModel.views[o.newView]) {
+                    console.log('ERROR: No new-view found for referenceID='+ o.referenceID);
+                }
+            }
+        }
+    },
+    validateOldContext: function() {
+        var context, o = this.options;
+        if ((o.anim==='dock')||(o.anim==='indent')) {
+            if ((this.newContext == null)||(this.oldContext == null)) {
+                console.log("ERROR: Anim="+ o.anim+" but old or new context is null");
+            }
+        }
+        if (o.undo) {
+            context = this.newContext;
+            if (this.type==='DeleteAction') {
+                if (context !== null) {
+                    console.log("ERROR: DeleteAction undo with newContext-not-null");
+                }
+                return;
+            }
+        } else {
+            context = this.oldContext;
+            if (this.type==='InsertAfterAction') {
+                if (context !== null) {
+                    console.log("ERROR: Insert action with oldContext not-null");
+                }
+                return;
+            }
+        }
+        this.validateContext(context);
+    },
+    validateNewContext: function() {
+        // todo: verify that placeholders and helpers are all cleaned up,
+        var context, o = this.options;
+        if (o.undo) {
+            context = this.oldContext;
+            if (this.type==='InsertAfterAction') {
+                if (context !== null) {
+                    console.log("ERROR: Insert action with oldContext not-null");
+                }
+                return;
+            }
+        } else {
+            context = this.newContext;
+            if (this.type==='DeleteAction') {
+                if (context !== null) {
+                    console.log("ERROR: DeleteAction undo with newContext-not-null");
+                }
+                return;
+            }
+        }
+        this.validateContext(context);
+    },
+    validateContext: function(context) {
+        var o = this.options;
+        // otherwise context must exist
+        var model = this.getModel(o.activeID);
+        if (model.get('parent')) {
+            if (context.parent !== model.get('parent').cid) {
+                console.log('ERROR: context.parent does not match');
+            }
+        } else {
+            if (context.parent !== null) {
+                console.log('ERROR: context.parent is not null');
+            }
+        }
+        var collection = model.parentCollection();
+        var rank = model.rank();
+        if (rank===0) {
+            if (context.prev !== null) {
+                console.log('ERROR: context.prev is not null though rank=0')
+            }
+        } else {
+            if (context.prev !== collection.at(rank-1).cid) {
+                console.log('ERROR: context.prev does not match');
+            }
+        }
+        if (rank === collection.length-1) {
+            if (context.next !== null) {
+                console.log('ERROR: context.next is not null');
+            }
+        } else {
+            if (context.next !== collection.at(rank+1).cid) {
+                console.log('ERROR: context.next does not match');
+            }
+        }
+        // todo: put text, collapsed, focus into oldContext and newContext.
+        // (and oldView and newView?)
+        if (o.text) {
+            // todo:
+        }
+        if (o.collapsed !== undefined) {
+            // todo:
+        }
+        if (o.focus) {
+            // todo:
+        }
+    },
+    _exec:function (options) {
+        var o, i, that = this;
+        that.runinit();
+        if (_.isFunction(options)) {
+            _.extend(that.options, options());
+        } else {
+            _.extend(that.options, options);
+        }
+        o = that.options;
+        this.validateOptions();
+        if (options.readyCode !== that.options.readyCode) {
+            console.log("ERROR: option.readyCode doesn't match WTF");
+        }
+        if (o.undo) {
+            console.log("Starting undo "+this.type+"; readyCode = "+options.readyCode);
+        } else if (o.redo) {
+            console.log("Starting redo "+this.type+"; readyCode = "+options.readyCode);
+        } else {
+            console.log("Starting action "+this.type+"; readyCode = "+options.readyCode);
+        }
+        console.log("action- options.text = "+this.options.text);
+
         // before changing model, start preview animation
         this.addQueue('context', [], function() {
-            self.getOldContext();
-            self.getNewContext();
+            that.timestamp = (new Date()).getTime();
+            // the queues must wait until this action is ready to go.
+            if (!o.undo && !o.redo) {
+                if (o.targetIsFocused) { // fix target here, if it depends on current focus
+                    if (diathink.focused) {
+                        that.options.activeID = M.ViewManager.getViewById(diathink.focused.id).parentView.parentView.value.cid;
+                    }
+                } else if (o.referenceIsFocused) {
+                    if (diathink.focused) {
+                        that.options.referenceID = M.ViewManager.getViewById(diathink.focused.id).parentView.parentView.value.cid;
+                    }
+                }
+                that.getOldContext();
+                that.getNewContext();
+            }
+            if (o.undo) {
+                that.oldLocationExists = (that.newContext!=null);
+            } else {
+                that.oldLocationExists = (that.oldContext!=null);
+            }
+            that.validateOldContext();
+        });
+        this.addQueue('preDock', ['context'], function() {
+            if (((that.options.anim==='indent')||(that.options.anim==='dock')) &&
+                (!diathink.helper)) {
+                // create virtual diathink.helper for animation
+                var oldView = that.options.oldView;
+                if (that.options.undo) {oldView = that.options.newView;}
+                var activeView = that.getView(that.options.activeID, oldView);
+                diathink.helper = $('#'+activeView.id)[0].cloneNode(true);
+                diathink.helper.id = '';
+                var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+                drawlayer[0].appendChild(diathink.helper);
+                var offset = $('#'+activeView.id).offset();
+                $(diathink.helper).css({
+                    position: 'absolute',
+                    left: offset.left+'px',
+                    top: offset.top+'px',
+                    width: $('#'+activeView.id)[0].clientWidth,
+                    height: $('#'+activeView.id)[0].clientHeight
+                });
+                $(document.body).addClass('transition-mode');
+            }
         });
         var outlines = diathink.OutlineManager.outlines;
-        if (!o.excludeAllViews) {
-            for (i in outlines) {
-                if (o.excludeView && (o.excludeView === i)) continue;
-                this.preview(outlines[i], o.dragView===i);
-            }
+        for (i in outlines) {
+           this.preview(outlines[i]);
+        }
+
+        // todo: for non-docking, start fade-in after restoreContext before focus
+        // dock the dragged-helper
+        if ((that.options.anim==='dock')||(that.options.anim==='indent')) {
+            var newView = that.options.newView;
+            if (that.options.undo) {newView = that.options.oldView;}
+            this.addAsync('dockAnim', [['newPlace', newView], ['oldPlace', newView]], function () {
+                // Is newPlace for this view above or below source?
+                if ((that.newContext == null)||(that.oldContext == null)) {
+                    console.log("ERROR: docking attempted with null context");
+                }
+                if (! that.runtime.newPlaceholder[newView]) { // nowhere to dock
+                    $(document.body).removeClass('transition-mode');
+                    diathink.helper.parentNode.removeChild(diathink.helper);
+                    diathink.helper = null;
+                    that.runtime.status.dockAnim = 2;
+                    that.nextQueue();
+                    return;
+                }
+                var speed;
+                if (that.options.anim==='dock') {speed = that.dockSpeed;}
+                else if (that.options.anim==='indent') {speed = that.indentSpeed;}
+                var startX = diathink.helper.offsetLeft;
+                var startY = diathink.helper.offsetTop;
+                var startWidth = diathink.helper.clientWidth;
+
+                var destination = $(that.runtime.newPlaceholder[newView]).offset();
+                if (that.runtime.oldPlaceholder[newView]) {
+                    var oldOffset = $(that.runtime.oldPlaceholder[newView]).offset();
+                    if (destination.top > oldOffset.top) {destination.top -= that.runtime.activeHeight[newView];}
+                }
+                $(diathink.helper).addClass('ui-first-child').addClass('ui-last-child');
+                $.anim(function(frac) {
+                    var left = String(Math.round(frac*destination.left+(1-frac)*startX));
+                    var top = String(Math.round(frac*destination.top +(1-frac)*startY));
+                    var css = {
+                        left: left+'px',
+                        top: top+'px'
+                    };
+                    if ((that.options.anim==='indent')&&(left > startX)) {
+                        css.width = String(startWidth-(left-startX))+'px';
+                    }
+                    $(diathink.helper).css(css);
+                }, speed, function() {
+                    $(document.body).removeClass('transition-mode');
+                    diathink.helper.parentNode.removeChild(diathink.helper);
+                    // remove();
+                    diathink.helper = null;
+                    that.runtime.status.dockAnim = 2;
+                    that.nextQueue();
+                });
+            });
+        } else {
+            this.runtime.status.dockAnim = 2;
         }
 
         this.addQueue('log', ['context'], function() {
-            diathink.UndoController.log(self);
+            diathink.UndoController.log(that);
         });
         // todo: assumptions and issue-handling
         this.execModel();
-
-        if (!o.excludeAllViews) {
-            for (i in outlines) {
-                if (o.excludeView && (o.excludeView === i)) continue;
-                this.execView(outlines[i], o.focusView===i);
-            }
+        var focusDeps = [];
+        for (i in outlines) {
+           this.execView(outlines[i]);
+           focusDeps.push(['newPlaceAnim', outlines[i].rootID]);
+           focusDeps.push(['view', outlines[i].rootID]);
         }
+        this.addQueue('focus', focusDeps, function() {
+            var o = that.options;
+            if (o.focus) {
+                if (o.undo) {
+                    if (that.oldContext != null) {
+                        $('#' + that.getView(o.activeID, o.oldView).header.name.text.id).focus();
+                    }
+                } else {
+                    if (that.newContext != null) {
+                        $('#' + that.getView(o.activeID, o.newView).header.name.text.id).focus();
+                    }
+                }
+            }
+        });
 
         // todo: increase undo-dependencies
-        this.addQueue('undobuttons', ['model'],
+        this.addQueue('undobuttons', ['newModelAdd'],
             function() {diathink.UndoController.refreshButtons();});
 
+        this.addQueue('end',['focus', 'undobuttons'], function() {
+            var i, sub;
+            that.validateNewContext();
+            if (!that.options.undo && !that.options.redo) {
+                for (i=that.subactions.length-1; i>=0; --i) {
+                    sub = that.subactions[i];
+                    sub.options.undo = false;
+                    sub.options.redo = false;
+                    sub.action = new sub.action(sub.options);
+                    sub.action.parentAction = that;
+                    sub.action.undone = false;
+                    console.log("Scheduling sub-action "+sub.action.type);
+                    sub.action.preExec();
+                }
+            }
+            diathink.UndoController.queueComplete(that.options.readyCode, that);
+        });
         // diathink.validateMVC();
         this.nextQueue();
     },
@@ -189,18 +536,11 @@ diathink.Action = Backbone.RelationalModel.extend({
         return model.views[rootid];
     },
     undo:function (options) {
-        var o, i;
-        _.extend(this.options, options);
-        o = this.options;
-        o.undo = true;
-        this.undoTimestamp = (new Date()).getTime();
+        if (!options) {options = {};}
+        options.undo = true;
+        options.redo = false;
         this.undone = true;
-        this.undoModel();
-        var outlines = diathink.OutlineManager.outlines;
-        for (i in outlines) {
-            this.undoView(outlines[i], focus);
-        }
-        diathink.UndoController.refreshButtons();
+        return this.exec(options);
         // diathink.validateMVC();
     },
     // todo: should make node-model a doubly-linked list without relying on collection rank?
@@ -279,284 +619,349 @@ diathink.Action = Backbone.RelationalModel.extend({
         return context;
     },
     newModel: function() {
-        var target = new diathink.OutlineNodeModel({text: this.options.lineText, children: null});
-        this.options.targetID = target.cid;
-        return target;
+        var activeModel = new diathink.OutlineNodeModel({text: this.options.text, children: null});
+        this.options.activeID = activeModel.cid;
+        return activeModel;
+    },
+    contextParentVisible: function(context, outline) {
+        if (!context) {return null;}
+
+        if (context.parent != null) {
+            var parent = this.getView(context.parent, outline.rootID);
+            if (parent != null) {
+                if ($('#'+parent.id).hasClass('collapsed')) {
+                    parent.children.collapsed = true;
+                    return parent.children;
+                } else {
+                    parent.children.collapsed = false;
+                    return parent.children;
+                }
+            } else { // parent is outside view, is it one level or more?
+                if (this.getModel(context.parent).get('children') ===
+                    M.ViewManager.getViewById(outline.rootID).value) {
+                    return M.ViewManager.getViewById(outline.rootID);
+                } else { // context is out of scope
+                    return null;
+                }
+            }
+        } else { // outline-root diathink.data
+            if (M.ViewManager.getViewById(outline.rootID).value === diathink.data) {
+                return M.ViewManager.getViewById(outline.rootID);
+            } else {
+                return null;
+            }
+        }
     },
     restoreContext: function() {
-        var target, collection, rank, oldCollection;
+        var activeModel, collection, rank, oldCollection;
         var that = this;
-        this.addQueue('sourceCollection', ['targetCreate'], function() {
-            target = that.getModel(that.options.targetID);
-            oldCollection = target.parentCollection();
+        this.addQueue('oldModelCollection', ['modelCreate'], function() {
+            activeModel = that.getModel(that.options.activeID);
+            oldCollection = activeModel.parentCollection();
         });
-        this.addQueue('sourceModel', ['sourceCollection'], function() {
+        this.addQueue('oldModelRemove', ['oldModelCollection'], function() {
             if (oldCollection != null) { // if it's in a collection
-                oldCollection.remove(target);
+                // if parent-collection is empty, reset collapse
+                if ((!that.options.undo)&&(!that.options.redo)&&
+                    (oldCollection.models.length===1)&&(that.type!=='OpenCloseAction')) {
+                    var parent = activeModel.get('parent');
+                    // don't do this with an openclose action.
+                    if (parent) {
+                        that.subactions.push({
+                            action: diathink.OpenCloseAction,
+                            options: {
+                              activeID: parent.cid,
+                              collapsed: false,
+                              oldView: 'all',
+                              newView: 'all',
+                              focus: false
+                            }});
+                    }
+                }
+                oldCollection.remove(activeModel);
             }
         });
-        this.addQueue('targetRank', ['sourceModel'], function() {
-            var context;
-            if (that.undone) {
-                context = that.oldContext;
+        this.addQueue('newModelRank', ['oldModelRemove'], function() {
+            var newContext;
+            if (that.options.undo) {
+                newContext = that.oldContext;
             } else {
-                context = that.newContext;
+                newContext = that.newContext;
             }
-            if (context != null) { // if there was a prior location to revert to
-                target.deleted = false;
-                if (context.parent != null) {
-                    collection = that.getModel(context.parent).get('children');
+            if (newContext != null) { // if there was a prior location to revert to
+                activeModel.deleted = false;
+                if (newContext.parent != null) {
+                    collection = that.getModel(newContext.parent).get('children');
                 } else {
                     collection = diathink.data;
                 }
-                if (context.prev === null) {
+                if (newContext.prev === null) {
                     rank = 0;
                 } else {
-                    rank = that.getModel(context.prev).rank()+1;
+                    rank = that.getModel(newContext.prev).rank()+1;
                 }
             } else {
-                target.deleted = true;
+                activeModel.deleted = true;
             }
         });
-        this.addQueue('model', ['targetRank'], function() {
-            var context;
-            if (that.undone) {
-                context = that.oldContext;
+        this.addQueue('newModelAdd', ['newModelRank'], function() {
+            var newContext;
+            if (that.options.undo) {
+                newContext = that.oldContext;
             } else {
-                context = that.newContext;
+                newContext = that.newContext;
             }
-            if (context != null) {
-                collection.add(target, {at: rank});
+            if (newContext != null) {
+                collection.add(activeModel, {at: rank});
             } else {
-                target.set({parent: null});
+                activeModel.set({parent: null});
             }
         });
     },
-    preview:function (outline, dragView) {
+    preview:function (outline) {
         var that = this;
-        if (that.options.anim==='indent') {diathink.helper = true;}
-            // todo: for non-dragged targets, add fade-out on mousedown in nestedSortable.
-        this.addQueue(['sourcePlace', outline.rootID], ['context'], function() {
-            if (that.options.targetID) {
-                var target = that.getView(that.options.targetID, outline.rootID);
-                if ((that.options.anim==='indent')&&dragView) {
-                    // create virtual diathink.helper for animation
-                    diathink.helper = $('#'+target.id)[0].cloneNode(true);
-                    diathink.helper.id = '';
-                    var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
-                    drawlayer[0].appendChild(diathink.helper);
-                    var offset = $('#'+target.id).offset();
-                    $(diathink.helper).css({
-                        position: 'absolute',
-                        left: offset.left+'px',
-                        top: offset.top+'px',
-                        width: $('#'+target.id)[0].clientWidth,
-                        height: $('#'+target.id)[0].clientHeight
-                    });
-                    $(document.body).addClass('drop-mode');
+            // todo: for visible non-dragged sources, add fade-out on mousedown in nestedSortable.
+        this.addQueue(['oldPlace', outline.rootID], ['preDock'], function() {
+            if (that.options.excludeView && (that.options.excludeView === outline.rootID)) {
+                return;
+            }
+            if (that.oldLocationExists) {
+                var activeView = that.getView(that.options.activeID, outline.rootID);
+
+                // if view doesn't exist, insert no placeholder because it's invisible
+                if (activeView == null) {
+                    // console.log("activeView is null in oldPlace for action type="+
+                        // that.type+"; undo="+that.options.undo+"; redo="+
+                        // that.options.redo+"; activeID="+that.options.activeID+
+                        // "; rootID="+outline.rootID);
+                    return;
                 }
                 // vanish if not already hidden & shrink over 80ms
-                var oldHeight = $('#'+target.id)[0].clientHeight;
-                var placeholder = $('<div></div>').addClass('li-placeholder').css('height',oldHeight);
-                var oldTarget = $('#'+target.id).addClass('drag-hidden');
-                oldTarget[0].parentNode.replaceChild(placeholder[0],oldTarget[0]);
-                that.targetHeight[outline.rootID] = oldHeight;
-                that.sourcePlaceholder[outline.rootID] = placeholder[0];
-                that.movingTarget[outline.rootID] = oldTarget[0];
+                var activeObj = $('#'+activeView.id).addClass('drag-hidden');
+                var activeHeight = activeObj[0].clientHeight;
+                var oldPlaceholder = $('<div></div>').addClass('li-placeholder').css('height',activeHeight);
+                if (activeObj.hasClass('ui-first-child')) {
+                    oldPlaceholder.addClass('ui-first-child');
+                }
+                if (activeObj.hasClass('ui-last-child')) {
+                    oldPlaceholder.addClass('ui-last-child');
+                }
+                // if placeholder is present, old activeView-element must be removed.
+                activeObj[0].parentNode.replaceChild(oldPlaceholder[0],activeObj[0]);
+                // activeObj is here removed from DOM, though still has a view.
+                that.runtime.activeHeight[outline.rootID] = activeHeight;
+                that.runtime.oldPlaceholder[outline.rootID] = oldPlaceholder[0];
+                that.runtime.activeElem[outline.rootID] = activeObj[0];
             }
         });
-        this.addAsync(['sourceAnim', outline.rootID], [['sourcePlace', outline.rootID]], function() {
-            if (that.sourcePlaceholder[outline.rootID] && (that.options.anim !== 'indent')) {
-                var startHeight = that.sourcePlaceholder[outline.rootID].clientHeight;
+        this.addAsync(['oldPlaceAnim', outline.rootID], [['oldPlace', outline.rootID]], function() {
+            if (that.runtime.oldPlaceholder[outline.rootID] && (that.options.anim !== 'indent')) {
+                var speed;
+                if (that.options.anim==='delete') {speed = that.deleteSpeed;}
+                else if (that.options.anim==='create') {speed = that.createSpeed;}
+                else {speed = that.placeholderSpeed;}
+                var startHeight = that.runtime.oldPlaceholder[outline.rootID].clientHeight;
                 $.anim(function(frac) {
-                    $(that.sourcePlaceholder[outline.rootID]).css('height',String(Math.round(startHeight*(1-frac)))+'px');
-                }, 200, function() {
+                    $(that.runtime.oldPlaceholder[outline.rootID]).css('height',String(Math.round(startHeight*(1-frac)))+'px');
+                }, speed, function() {
                     // console.log("Updating status after finishing async sourceAnim:"+outline.rootID);
-                    that.status.sourceAnim[outline.rootID] = 2;
+                    that.runtime.status.oldPlaceAnim[outline.rootID] = 2;
                     that.nextQueue();
                 });
             } else {
-                that.status.sourceAnim[outline.rootID] = 2;
+                that.runtime.status.oldPlaceAnim[outline.rootID] = 2;
                 that.nextQueue();
             }
         });
-        // ready for removal, let model run now.
-        // create preview-spacer in the right spot
-        this.addQueue(['destPlace', outline.rootID], ['context', ['sourcePlace', outline.rootID]], function() {
-            if (that.newContext) {
-                var place = $('<div></div>').addClass('li-placeholder');
-                that.targetPlaceholder[outline.rootID] = place.get(0);
-                if (that.newContext.next) {
-                    place.insertBefore('#'+that.getView(that.newContext.next, outline.rootID).id);
-                } else if (that.newContext.prev) {
-                    place.insertAfter('#'+that.getView(that.newContext.prev, outline.rootID).id);
-                } else if (that.newContext.parent) {
-                    place.appendTo('#'+that.getView(that.newContext.parent, outline.rootID).id+' > ul');
+        this.addQueue(['newPlace', outline.rootID], ['context', ['oldPlace', outline.rootID]], function() {
+            var newContext;
+            if (that.options.excludeView && (that.options.excludeView === outline.rootID)) {
+                return;
+            }
+            if (that.options.undo) {
+                newContext = that.oldContext;
+            } else {
+                newContext = that.newContext;
+            }
+            var parentView = that.contextParentVisible(newContext, outline);
+            if (parentView) {
+                if (! parentView.collapsed) { // don't add a placeholder if parent is collapsed
+                    var place = $('<div></div>').addClass('li-placeholder');
+                    that.runtime.newPlaceholder[outline.rootID] = place.get(0);
+                    if (! newContext.prev) {
+                        place.addClass('ui-first-child');
+                    }
+                    if (! newContext.next) {
+                        place.addClass('ui-last-child');
+                    }
+                    if (newContext.next) {
+                        place.insertBefore('#'+that.getView(newContext.next, outline.rootID).id);
+                    } else if (newContext.prev) {
+                        place.insertAfter('#'+that.getView(newContext.prev, outline.rootID).id);
+                    } else if (newContext.parent) {
+                        place.appendTo('#'+parentView.id);
+                    }
                 }
             }
         });
 
-        this.addAsync(['destAnim', outline.rootID], [['destPlace', outline.rootID]], function() {
-            if (that.targetPlaceholder[outline.rootID] && (that.options.anim !== 'indent')) {
-                var endHeight = that.targetHeight[outline.rootID];
+        this.addAsync(['newPlaceAnim', outline.rootID], [['newPlace', outline.rootID]], function() {
+            if (that.runtime.newPlaceholder[outline.rootID] && (that.options.anim !== 'indent')) {
+                var endHeight = that.runtime.activeHeight[outline.rootID];
                 if (!endHeight) {
                     endHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
                 }
+                var speed;
+                if (that.options.anim==='delete') {speed = that.deleteSpeed;}
+                else if (that.options.anim==='create') {speed = that.createSpeed;}
+                else {speed = that.placeholderSpeed;}
                 $.anim(function(frac) {
-                    $(that.targetPlaceholder[outline.rootID]).css('height', String(Math.round(frac*endHeight))+'px');
-                }, 200, function() {
-                    that.status.destAnim[outline.rootID] = 2;
+                    $(that.runtime.newPlaceholder[outline.rootID]).css('height', String(Math.round(frac*endHeight))+'px');
+                }, speed, function() {
+                    that.runtime.status.newPlaceAnim[outline.rootID] = 2;
                     that.nextQueue();
                 });
             } else {
-                that.status.destAnim[outline.rootID] = 2;
+                that.runtime.status.newPlaceAnim[outline.rootID] = 2;
                 that.nextQueue();
             }
         });
-        //  todo: for non-docking, start fade-in after restoreContext before focus
-        // dock the dragged-helper
-        if (diathink.helper && dragView) {
-            this.addAsync('dockAnim', [['destPlace', outline.rootID], ['sourcePlace', outline.rootID]], function () {
-                // Is destPlace for this view above or below source?
-                var startX = diathink.helper.offsetLeft;
-                var startY = diathink.helper.offsetTop;
-                var source = $(that.sourcePlaceholder[outline.rootID]).offset();
-                var cur = $(that.targetPlaceholder[outline.rootID]).offset();
-                if (cur.top > source.top) {cur.top -= that.targetHeight[outline.rootID];}
-                $.anim(function(frac) {
-                    var left = String(Math.round(frac*cur.left+(1-frac)*startX));
-                    var top = String(Math.round(frac*cur.top +(1-frac)*startY));
-                    $(diathink.helper).css({
-                       left: left+'px',
-                       top: top+'px'
-                    });
-                }, 200, function() {
-                    $(document.body).removeClass('drop-mode');
-                    diathink.helper.parentNode.removeChild(diathink.helper);
-                    // remove();
-                    diathink.helper = null;
-                    that.status.dockAnim = 2;
-                    that.nextQueue();
-                });
-            });
-        }
     },
     restoreViewContext: function(outline) {
         var that = this;
-        this.addQueue(['view', outline.rootID], ['model', ['sourceAnim', outline.rootID], ['destAnim', outline.rootID]], function() {
-            var collection, rank;
-            var context, li, elem, oldspot, neighbor, neighborType, parent, createTarget=false;
+        var deps = ['newModelAdd', ['oldPlaceAnim', outline.rootID], ['newPlaceAnim', outline.rootID]];
+        if ((that.options.anim==='dock')||(that.options.anim==='indent')) {
+            deps.push('dockAnim');
+        }
+        this.addQueue(['view', outline.rootID], deps, function() {
+            var collection, rank, oldParent, oldParentView=null;
+            var newContext, li, elem, oldspot, neighbor, neighborType, newParentView, createActiveView=false;
 
-            if (that.undone) {
-                context = that.oldContext;
+            if (that.options.undo) {
+                newContext = that.oldContext;
             } else {
-                context = that.newContext;
+                newContext = that.newContext;
             }
-            // (1) does target exist in view, or does it need to be created
-            // (2) will destination exist in view, or does it need to be deleted
-            // (3) is destination at top-level of view, with undefined parent
-
-            // target is a view here.
-            var target = that.getView(that.options.targetID, outline.rootID);
-            if (target!=null) {
-                oldspot = that._saveOldSpot(target);
+            // todo: this is a mess, with placeholders and undo.  Need to simplify.
+            var activeView = that.getView(that.options.activeID, outline.rootID);
+            // activeView should not be affected by oldPlaceholder, except for DOM presence
+            if (activeView!=null) { // original element was visible in this view
+                oldspot = that._saveOldSpot(activeView);
+                if (!oldspot) {
+                    console.log("ERROR: Oldspot does not exist for action "+that.type+
+                        "; undo="+that.options.undo+"; redo="+that.options.redo+
+                        "; activeID="+that.options.activeID+"; view="+outline.rootID);
+                }
                 neighbor = oldspot.obj;
                 neighborType = oldspot.type;
-            }
-
-            // get parent listview; unless context is outside view then null
-            if (context != null) {
-                if (context.parent != null) {
-                    var parent = that.getView(context.parent, outline.rootID);
-                    if (parent != null) {
-                        parent = parent.children;
-                    } else { // parent is outside view, is it one level or more?
-                        if (that.getModel(context.parent).get('children') ===
-                            M.ViewManager.getViewById(outline.rootID).value) {
-                            parent = M.ViewManager.getViewById(outline.rootID);
-                        } else { // context is out of scope
-                            context = null;
-                            parent = null;
-                        }
+            } else { // if old-view isn't visible, check if parent needs collapse-update
+                // todo: can oldParent be replaced with a newContext-newParentView instead?
+                if (that.options.undo) {
+                    if (that.newContext) {
+                        oldParent = that.getModel(that.newContext.parent);
                     }
-                } else { // outline-root diathink.data
-                    if (M.ViewManager.getViewById(outline.rootID).value === diathink.data) {
-                        parent = M.ViewManager.getViewById(outline.rootID);
-                    } else {
-                        context = null;
-                        parent = null;
-                    }
+                } else if (that.oldContext) {
+                    oldParent = that.getModel(that.oldContext.parent);
+                }
+                if (oldParent && oldParent.views[outline.rootID]) {
+                    oldParentView = oldParent.views[outline.rootID];
                 }
             }
+            // oldParentView != null means it needs to be checked if it changed to a leaf
 
-            if (context === null) {
-                if (target != null) {target.destroy();}
-                // destroy() also detaches view-reference from model
-            } else { // undo-move/edit
-                // get views corresponding to context
-                if (target == null) { // create target
-                    target = that.newListItemView(parent);
+            // get parent listview; unless newContext is not in this view, then null
+            newParentView = that.contextParentVisible(newContext, outline);
+            if (newParentView && newParentView.collapsed) {
+                // adding child to collapsed parent
+                $('#'+newParentView.parentView.id).addClass('branch').removeClass('leaf');
+                newParentView = null;
+            }
+
+            if (!newParentView) {newParentView=null; newContext = null;}
+
+            if (newContext === null) {
+                if (activeView != null) {activeView.destroy(that.runtime.activeElem[outline.rootID]);}
+                  // destroy() also detaches view-reference from model
+            } else {
+                if (activeView == null) { // create
+                    activeView = that.newListItemView(newParentView);
                     // todo: add text in?
-                    target.value.setView(target.rootID, target);
-                    elem = $(target.render());
-                    createTarget = true;
+                    activeView.value.setView(activeView.rootID, activeView);
+                    elem = $(activeView.render());
+                    // enable recursive creation when moving out of collapsed view
+                    if (! activeView.value.get('collapsed')) {
+                        console.log('Calling renderUpdate from execView');
+                        activeView.children.renderUpdate(elem.find('#'+activeView.children.id)[0]);
+                    }
+                    createActiveView = true;
                 } else { // move
-                    if (that.movingTarget[outline.rootID] && that.movingTarget[outline.rootID].id === target.id) {
-                        elem = $(that.movingTarget[outline.rootID]);
-                        that.movingTarget[outline.rootID] = undefined;
+                    if (that.runtime.activeElem[outline.rootID] && that.runtime.activeElem[outline.rootID].id === activeView.id) {
+                        elem = $(that.runtime.activeElem[outline.rootID]);
+                        that.runtime.activeElem[outline.rootID] = undefined;
                     } else {
-                        elem = $('#'+target.id).detach();
+                        elem = $('#'+activeView.id).detach();
                     }
                     // restore height if it was lost
                     elem.css('height','').removeClass('drag-hidden');
-                    target.parentView = parent;
+                    activeView.parentView = newParentView;
                 }
 
-                // put elem into context
+                // put elem into newContext
                 // this cleans up destination-placeaholder; what about source-placeholder?
                 //   it could vanish automatically?
-                if (that.targetPlaceholder[outline.rootID]) {
-                    that.targetPlaceholder[outline.rootID].parentNode.
-                        replaceChild(elem[0], that.targetPlaceholder[outline.rootID]);
+                if (that.runtime.newPlaceholder[outline.rootID]) {
+                    that.runtime.newPlaceholder[outline.rootID].parentNode.
+                        replaceChild(elem[0], that.runtime.newPlaceholder[outline.rootID]);
                 } else {
-                    if (context.prev == null) {
-                        var parentElem = $('#'+parent.id);
+                    if (newContext.prev == null) {
+                        var parentElem = $('#'+newParentView.id);
                         parentElem.prepend(elem);
                     } else {
-                        var prevElem = $('#'+that.getView(context.prev, outline.rootID).id);
+                        var prevElem = $('#'+that.getView(newContext.prev, outline.rootID).id);
                         prevElem.after(elem);
                     }
                 }
 
-                if (createTarget) {
-                    target.registerEvents(); // should phase-out with event-delegation
-                    parent.themeUpdate(); // hack to theme list-item; could be optimized more
-                    target.theme(); // add classes and if there is content, fixHeight
-                    $('#'+target.id).addClass('leaf').addClass('expanded');
+                if (createActiveView) { // todo: add classes in detached-mode instead of here?
+                    activeView.theme(); // add classes and if there is content, fixHeight
+                    if (activeView.value.get('collapsed')) {
+                        $('#'+activeView.id).addClass('collapsed').addClass('branch');
+                    } else {
+                        if (activeView.value.get('children').length>0) {
+                            $('#'+activeView.id).addClass('expanded').addClass('branch').removeClass('leaf');
+                        } else {
+                            $('#'+activeView.id).addClass('expanded').addClass('leaf').removeClass('branch');
+                        }
+                    }
                 }
 
-                // fix target's top/bottom corners
-                target.themeFirst(); // could check if this two are strictly necessary
-                target.themeLast();
+                // fix activeView's top/bottom corners
+                activeView.themeFirst(); // could check if this two are strictly necessary
+                activeView.themeLast();
 
                 // fixup new neighborhood
-                if (context.next && (context.prev == null)) {
-                    $('#'+target.id).next().removeClass('ui-first-child');
+                if (newContext.next && (newContext.prev == null)) {
+                    $('#'+activeView.id).next().removeClass('ui-first-child');
                 }
-                if (context.prev && (context.next == null)) {
-                    $('#'+target.id).prev().removeClass('ui-last-child');
+                if (newContext.prev && (newContext.next == null)) {
+                    $('#'+activeView.id).prev().removeClass('ui-last-child');
                 }
-                if ((context.prev==null)&&(context.next==null)) {
-                    target.parentView.parentView.themeParent();
+                if ((newContext.prev==null)&&(newContext.next==null)) {
+                    // todo: could parentView be outline-root?
+                    // adding child to expanded parent
+                    var elem = $('#'+activeView.parentView.parentView.id);
+                    elem.addClass('branch').removeClass('leaf');
                 }
             }
             // remove source-placeholder
-            if (that.sourcePlaceholder[outline.rootID]) {
-                that.sourcePlaceholder[outline.rootID].parentNode.removeChild(that.sourcePlaceholder[outline.rootID]);
-                that.sourcePlaceholder[outline.rootID] = undefined;
+            if (that.runtime.oldPlaceholder[outline.rootID]) {
+                that.runtime.oldPlaceholder[outline.rootID].parentNode.removeChild(that.runtime.oldPlaceholder[outline.rootID]);
+                that.runtime.oldPlaceholder[outline.rootID] = undefined;
+                that.runtime.activeElem[outline.rootID] = undefined;
+                that.runtime.activeHeight[outline.rootID] = undefined;
             }
 
-            if (neighbor) { // fixup old location
+            if (neighbor) { // fixup old location (expanded)
                 var neighborElem = $('#'+neighbor.id);
                 if (neighborType==='next') {
                     var prev = neighborElem.prev('li');
@@ -569,7 +974,15 @@ diathink.Action = Backbone.RelationalModel.extend({
                         neighborElem.addClass('ui-last-child');
                     }
                 } else if (neighborType==='parent') {
-                    neighbor.themeParent();
+                    // removing last child from expanded parent
+                    var elem = $('#'+neighbor.id);
+                    elem.addClass('leaf').removeClass('branch').
+                        addClass('expanded').removeClass('collapsed');
+                }
+            } else if (oldParentView) { // (collapsed)
+                if (oldParent.get('children').models.length===0) {
+                    // removing last child from collapsed parent
+                    $('#'+oldParentView.id).removeClass('branch').addClass('leaf');
                 }
             }
         });
@@ -582,9 +995,9 @@ diathink.Action = Backbone.RelationalModel.extend({
         templateView.events = templateView.events ? templateView.events : parentView.events;
 
         var li = templateView.design({cssClass: 'leaf'}); // todo -- merge with nestedsortable
-        if (this.options.targetID) {
-            li.modelId = this.options.targetID;
-            var item = diathink.OutlineNodeModel.getById(this.options.targetID);
+        if (this.options.activeID) {
+            li.modelId = this.options.activeID;
+            var item = diathink.OutlineNodeModel.getById(this.options.activeID);
         } else {
             // if view is rendered without a model
             // {text: this.options.lineText}; // from list
@@ -594,15 +1007,16 @@ diathink.Action = Backbone.RelationalModel.extend({
         li.value = item; // enables getting the value/contentBinding of a list item in a template view.
         li.parentView = parentView;
         li.setRootID(parentView.rootID);
-        parentView.updateNestedLists(li);
+        li.children.value = li.value.attributes.children;
+
         return li;
     },
 
     _saveOldSpot: function(view) {
         var type = 'next';
         var elem;
-        if (this.movingTarget[view.rootID] && (this.movingTarget[view.rootID].id === view.id)) {
-            elem = $(this.sourcePlaceholder[view.rootID]);
+        if (this.runtime.activeElem[view.rootID] && (this.runtime.activeElem[view.rootID].id === view.id)) {
+            elem = $(this.runtime.oldPlaceholder[view.rootID]);
         } else {
             elem = $('#'+view.id);
         }
@@ -617,46 +1031,37 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (view.parentView.parentView && view.parentView.parentView.type==='M.ListItemView') {
                 return {type: 'parent', obj: view.parentView.parentView};
             } else {
+                console.log("_saveOldSpot returning null for view "+view.id);
                 return null;
             }
         }
     },
     getOldContext: function() {
-        if (! this.options.targetID) {
+        if (! this.options.activeID) {
             this.oldContext = null;
         } else {
-            if (! this.options.redo) {
-                this.oldContext = this.getContextAt(this.options.targetID);
-            }
+            this.oldContext = this.getContextAt(this.options.activeID);
         }
     },
     execModel: function () {
-        var that = this;
-        this.addQueue('targetCreate', ['log'], function() {
-            if (!that.options.targetID) {
-                var target = new diathink.OutlineNodeModel({text: that.options.lineText, children: null});
-                that.options.targetID = target.cid;
+        var that = this, newContext;
+        if (this.undo) {
+            newContext = this.oldContext;
+        } else {
+            newContext = this.newContext;
+        }
+        this.addQueue('modelCreate', ['log'], function() {
+            if (!that.options.activeID) {
+                var activeModel = new diathink.OutlineNodeModel({text: that.options.text, children: null});
+                that.options.activeID = activeModel.cid;
             }
         });
-        this.restoreContext(this.newContext);
+        this.restoreContext();
     },
-    execView:function (outline, focus) {
+    execView:function (outline) {
         var that = this;
         this.restoreViewContext(outline);
-        if (focus) {
-            this.addQueue('focus', [['destAnim', outline.rootID], ['view', outline.rootID]], function() {
-                $('#' + that.getView(that.options.targetID, outline.rootID).header.name.text.id).focus();
-            });
-        }
-        return;
     },
-    undoModel: function () {
-        this.restoreContext(this.oldContext);
-    },
-    undoView:function (outline, focus) {
-        this.restoreViewContext(outline);
-    },
-
     // SHOW methods - various visualization actions,
     //  often overriden by each action-type
     _showDisplacement:function () {
@@ -689,62 +1094,53 @@ diathink.Action = Backbone.RelationalModel.extend({
 },{ // static functions
     createAndExec:function (options) { // create a new action object
         var action = new this(options);
-        action.exec();
+        action.exec(options);
         return action;
     },
     checkTextChange:function(id) {
         // console.log("Checking text change for id="+id);
         var value = $('#'+id).val();
-        var model = M.ViewManager.findViewById(id).parentView.parentView.parentView.value;
+        var view = M.ViewManager.findViewById(id).parentView.parentView.parentView;
+        var model = view.value;
         if (model.get('text') !== value) {
             //console.log("TextAction for id="+id+"; model="+
               //  model.cid+" with value="+$('#'+id).val());
             diathink.TextAction.createAndExec({
-                targetID: model.cid,
-                text: $('#'+id).val()
+                activeID: model.cid,
+                text: value,
+                oldView: view.rootID,
+                newView: view.rootID,
+                focus: false
             });
         }
     }
-    /*
-     Action execution in different contexts
-
-     Action contexts (methods in top-level actions)
-     * previewing a change when dragging (various drop-targets)
-     * showing change from keyboard-command (focus change)
-     * finalizing a change that's previewed
-     * showing previewed change in another part of screen
-     * showing finalized change in another part of screen
-     * showing remote real-time change
-     * showing a change from undo/redo buttons
-     * showing remote asynchronous change from syncing
-     * showing a selected change from the history
-     * showing a selected change from the issue-list
-
-     */
-
 });
 
 // commuting operations don't have to be undone/redone - optimization
 
 diathink.InsertAfterAction = diathink.Action.extend({
     type:"InsertAfterAction",
-    options: {targetID: null, referenceID: null, lineText: "", transition: false},
+    options: {activeID: null, referenceID: null, text: ""},
+    _validateOptions: {
+        requireActive: false,
+        requireReference: true,
+        requireOld: false,
+        requireNew: true
+    },
     getNewContext: function() {
         this.newContext = this.getContextAfter(this.options.referenceID);
     }
 });
 
-diathink.InsertBeforeAction = diathink.Action.extend({
-    type:"InsertBeforeAction",
-    options: {targetID: null, referenceID: null, lineText: "", transition: false},
-    getNewContext: function() {
-        this.newContext = this.getContextBefore(this.options.referenceID);
-    }
-});
-
 diathink.MoveAfterAction = diathink.Action.extend({
     type:"MoveAfterAction",
-    options: {targetID: null, referenceID: null, transition: false},
+    _validateOptions: {
+        requireActive: true,
+        requireReference: true,
+        requireOld: true,
+        requireNew: true
+    },
+    options: {activeID: null, referenceID: null, transition: false},
     getNewContext: function() {
         this.newContext = this.getContextAfter(this.options.referenceID);
     }
@@ -752,7 +1148,13 @@ diathink.MoveAfterAction = diathink.Action.extend({
 
 diathink.MoveBeforeAction = diathink.Action.extend({
     type:"MoveBeforeAction",
-    options: {targetID: null, referenceID: null, transition: false},
+    _validateOptions: {
+        requireActive: true,
+        requireReference: true,
+        requireOld: true,
+        requireNew: true
+    },
+    options: {activeID: null, referenceID: null, transition: false},
     getNewContext: function() {
         this.newContext = this.getContextBefore(this.options.referenceID);
     }
@@ -760,7 +1162,13 @@ diathink.MoveBeforeAction = diathink.Action.extend({
 
 diathink.MoveIntoAction = diathink.Action.extend({
     type:"MoveIntoAction",
-    options: {targetID: null, referenceID: null, transition: false},
+    _validateOptions: {
+        requireActive: true,
+        requireReference: true,
+        requireOld: true,
+        requireNew: true
+    },
+    options: {activeID: null, referenceID: null, transition: false},
     getNewContext: function() {
         this.newContext = this.getContextIn(this.options.referenceID);
     }
@@ -769,7 +1177,13 @@ diathink.MoveIntoAction = diathink.Action.extend({
 // todo: merge outdent with moveafter action?
 diathink.OutdentAction = diathink.Action.extend({
     type:"OutdentAction",
-    options: {targetID: null, referenceID: null, transition: false},
+    _validateOptions: {
+        requireActive: true,
+        requireReference: true,
+        requireOld: true,
+        requireNew: true
+    },
+    options: {activeID: null, referenceID: null, transition: false},
     getNewContext: function() {
         this.newContext = this.getContextAfter(this.options.referenceID);
     }
@@ -781,7 +1195,13 @@ diathink.ActionCollection = Backbone.Collection.extend({
 
 diathink.DeleteAction = diathink.Action.extend({
     type:"DeleteAction",
-    options: {targetID: null, transition: false},
+    _validateOptions: {
+        requireActive: true,
+        requireReference: false,
+        requireOld: true,
+        requireNew: false
+    },
+    options: {activeID: null, transition: false},
     getNewContext: function() {
         this.newContext = null;
     }
@@ -789,41 +1209,123 @@ diathink.DeleteAction = diathink.Action.extend({
 
 diathink.TextAction= diathink.Action.extend({
     type:"TextAction",
-    options: {targetID: null, text: null, transition: false},
-    getOldContext: function() {},
-    getNewContext: function() {},
+    options: {activeID: null, text: null, transition: false},
+    _validateOptions: {
+        requireActive: true,
+        requireReference: false,
+        requireOld: true,
+        requireNew: true
+    },
+    getNewContext: function() {
+        this.newContext = this.oldContext;
+    },
     preview: function() {},
     execModel: function () {
         var that = this;
-        that.addQueue('model', ['log'], function() {
-            var target= that.getModel(that.options.targetID);
-            that.oldText = target.get('text');
-            target.set('text', that.options.text);
-        });
-    },
-    execView:function (outline, focus) {
-        var that = this;
-        this.addQueue(['view', outline.rootID], ['model'], function() {
-            var target = that.getView(that.options.targetID, outline.rootID);
-            if (target != null) {
-                target.header.name.text.value = that.options.text;
-                // console.log("Updating view "+target.header.name.text.id+" to value "+this.options.text);
-                $('#'+target.header.name.text.id).val(that.options.text);
-                target.header.name.text.themeUpdate();
+        that.addQueue('newModelAdd', ['log'], function() {
+            var text;
+            if (that.options.undo) {
+                text = that.oldText;
+            } else {
+                text = that.options.text;
             }
+            var activeModel = that.getModel(that.options.activeID);
+            if ((!that.options.undo) && (!that.options.redo)) {
+                that.oldText = activeModel.get('text');
+            }
+            activeModel.set('text', text);
         });
     },
-    undoModel: function () {
-        var target = this.getModel(this.options.targetID);
-        target.set('text', this.oldText);
+    execView:function (outline) {
+        var that = this;
+        this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
+            var text;
+            if (that.options.undo) {
+                text = that.oldText;
+            } else {
+                text = that.options.text;
+            }
+            var activeView = that.getView(that.options.activeID, outline.rootID);
+            if (activeView != null) {
+                activeView.header.name.text.value = text;
+                // console.log("Updating view "+activeView.header.name.text.id+" to value "+this.options.text);
+                $('#'+activeView.header.name.text.id).val(text);
+                activeView.header.name.text.themeUpdate();
+            }
+            // satisfy additional dependencies that are never used in this actiontype
+            that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+        });
+    }
+});
+
+
+diathink.OpenCloseAction= diathink.Action.extend({
+    type:"OpenCloseAction",
+    options: {activeID: null, collapsed: false},
+    _validateOptions: {
+        requireActive: true,
+        requireReference: false,
+        requireOld: true,
+        requireNew: true
     },
-    undoView:function (outline, focus) {
-        var target = this.getView(this.options.targetID, outline.rootID);
-        if (target != null) {
-            target.header.name.text.value = this.oldText;
-            // console.log("Updating view "+target.header.name.text.id+" to value "+this.oldText);
-            $('#'+target.header.name.text.id).val(this.oldText);
-            target.header.name.text.themeUpdate();
-        }
+    getNewContext: function() {
+        this.newContext = this.oldContext;
+    },
+    preview: function() {},
+    execModel: function () {
+        var that = this;
+        that.addQueue('newModelAdd', ['log'], function() {
+            var collapsed;
+            if (that.options.undo) {
+                collapsed = that.oldCollapsed;
+            } else {
+                collapsed = that.options.collapsed;
+            }
+            var activeModel= that.getModel(that.options.activeID);
+            if ((!that.options.undo) && (!that.options.redo)) {
+                that.oldCollapsed = activeModel.get('collapsed');
+                if (!that.oldCollapsed) {that.oldCollapsed = false;}
+            }
+            console.log("Setting model "+that.options.activeID+" collapsed = "+collapsed);
+            activeModel.set('collapsed', collapsed);
+        });
+    },
+    execView:function (outline) {
+        var that = this;
+        this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
+            if (((that.options.oldView === outline.rootID)||
+                    (that.options.oldView==='all')) ||
+                ((that.options.undo || that.options.redo)&&
+                    that.oldViewCollapsed[outline.rootID]!==undefined) ) {
+                var collapsed;
+                if (that.options.undo) {
+                    // oldCollapsed depends on view.
+                    collapsed = that.oldViewCollapsed[outline.rootID];
+                    console.log("Undo retrieved collapsed = "+collapsed+" for view="+outline.rootID);
+                } else {
+                    collapsed = that.options.collapsed;
+                }
+                var activeView = that.getView(that.options.activeID, outline.rootID);
+                if (!activeView) {
+                    console.log("Action collapse="+collapsed+" has no activeView, with activeID="+
+                        that.options.activeID+"; oldView="+outline.rootID+
+                        "; undo="+that.options.undo);
+                    return;
+                }
+                if (!that.options.undo && !that.options.redo) {
+                    that.oldViewCollapsed[outline.rootID] = $('#'+activeView.id).hasClass('collapsed');
+                    console.log("Set oldViewCollapsed for "+outline.rootID+" to "+that.oldViewCollapsed[outline.rootID]);
+                }
+                if (collapsed) {
+                    $('#'+activeView.id).removeClass('expanded').addClass('collapsed');
+                    activeView.children.removeAllItems();
+                } else {
+                    $('#'+activeView.id).addClass('expanded').removeClass('collapsed');
+                    activeView.children.renderUpdate();
+                }
+            }
+            // satisfy additional dependencies that are never used in this actiontype
+            that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+        });
     }
 });

@@ -439,16 +439,30 @@ diathink.validateMVC = function () {
                         M.test(models[views[v].value._byId[i].cid] === views[v].value._byId[i],
                             "ListView "+v+" child-model "+views[v].value._byId[i].cid+" is not in the models list");
                     }
-                    for (var i in views[v].value.models) {
-                        // rank is i
-                        var vid = $($('#'+v).children().get(i)).attr('id');
-                        M.test(typeof vid === 'string',
-                            "Unable to find id of DOM-child "+i+" of view "+v);
-                        M.test(views[vid] !== undefined,
-                            "DOM-child "+i+" of view "+v+" is not in the views list: "+vid);
-                        M.test(views[vid].modelId === views[v].value.models[i].cid,
-                            "Parent-view "+v+" with DOMm-child id="+vid+" does not have the same modelId");
+                    var vElemParent = $('#'+v).parent('li');
+                    if ((vElemParent.length===0)||(vElemParent.hasClass('expanded'))) {
+                        if (vElemParent.length>0) {
+                            M.test(! vElemParent.hasClass('collapsed'),
+                                "List-item "+vElemParent[0].id+" has collapsed and expanded classes");
+                        }
+                        for (var i in views[v].value.models) {
+                            // rank is i
+                            var vid = $($('#'+v).children().get(i)).attr('id');
+                            M.test(typeof vid === 'string',
+                                "Unable to find id of DOM-child "+i+" of view "+v);
+                            M.test(views[vid] !== undefined,
+                                "DOM-child "+i+" of view "+v+" is not in the views list: "+vid);
+                            M.test(views[vid].modelId === views[v].value.models[i].cid,
+                                "Parent-view "+v+" with DOMm-child id="+vid+" does not have the same modelId");
+                        }
+                    } else {
+                        M.test(vElemParent.hasClass('collapsed'),
+                           "List-item "+vElemParent[0].id+" has neither collapsed or expanded class");
+                        // no children should be defined
+                        M.test($('#'+v).children().length===0,
+                            "Collapsed list "+v+" still has children");
                     }
+
                 } else if (views[v].type === 'M.ListItemView') {
                     M.test(views[v].modelId != null,
                         "ListItemView "+v+" has a null modelId");
@@ -612,10 +626,17 @@ diathink.validateMVC = function () {
             M.test(! $(this).hasClass('leaf'),
                 "LI "+$(this).attr('id')+" has children but has leaf class");
         } else {
-            M.test(! $(this).hasClass('branch'),
-                "LI "+$(this).attr('id')+" has no children but has branch class");
-            M.test($(this).hasClass('leaf'),
-                "LI "+$(this).attr('id')+" has no children but does not have leaf class");
+            if ($(this).hasClass('expanded')) {
+                M.test(! $(this).hasClass('branch'),
+                    "LI "+$(this).attr('id')+" has no children but has branch class");
+                M.test($(this).hasClass('leaf'),
+                    "LI "+$(this).attr('id')+" has no children but does not have leaf class");
+            } else {
+                M.test($(this).hasClass('branch'),
+                    "LI "+$(this).attr('id')+" has no children but has branch class");
+                M.test(! $(this).hasClass('leaf'),
+                    "LI "+$(this).attr('id')+" has no children but does not have leaf class");
+            }
         }
 
         M.test($(this).hasClass('expanded') || $(this).hasClass('collapsed'),
@@ -681,14 +702,45 @@ diathink.validateMVC = function () {
             "Actions.length>0 but lastaction is null");
         M.test(actions.at(lastaction).lost === false,
             "Last action cannot be lost");
-        for (var i=lastaction+1; i<actions.length; ++i) {
-            M.test(actions.at(i).undone === true,
-                "Action at "+i+" is after last-action "+lastaction+", but is not undone");
+        for (var i=0; i<actions.length; ++i) {
+            var act = actions.at(i);
+            if (i >= lastaction+1) {
+                M.test(actions.at(i).undone === true,
+                    "Action at "+i+" is after last-action "+lastaction+", but is not undone");
+            }
+            M.test(_.size(act.runtime.queue)===0,
+                "Action at "+i+" has non-empty runtime queue");
+            if (act.parentAction) {
+                M.test(act.parentAction.subactions.length>0,
+                    "Parent action of "+i+" has no subactions");
+                foundit=false;
+                for (var j=0; j<act.parentAction.subactions.length; ++j) {
+                    var subact = act.parentAction.subactions[j].action;
+                    if (subact === act) {
+                        foundit=true;
+                        M.test(actions.at(i-j-1) === act.parentAction,
+                            "Action at "+i+" does not have parent-action at "+(i-j-1));
+                        break;
+                    }
+                }
+                M.test(foundit, "Action at "+i+" is not on list of subactions for parentAction");
+            }
+            if (act.subactions.length>0) {
+                for (var j=0; j<act.subactions.length; ++j) {
+                    var subact = act.subactions[j].action;
+                    M.test(actions.at(i+j+1) === subact,
+                        "Action at "+i+" cannot find subaction offset by "+j);
+                    M.test(subact.parentAction === act,
+                        "Action "+i+" subaction "+j+" does not have matching parentAction");
+                }
+            }
         }
     } else {
         M.test(lastaction === null,
             "There are no actions, but lastaction is not null")
     }
+    M.test(_.size(diathink.UndoController.queue)===0,
+        "diathink.UndoController.queue is not empty");
 
     // undo-buttons should be up to date
     var b = M.ViewManager.getCurrentPage().header.undobuttons;

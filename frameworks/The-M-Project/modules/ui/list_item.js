@@ -191,7 +191,9 @@ M.ListItemView = M.View.extend(
     },
 
         // MS -- override destroy to remove view from model-outline
-        destroy: function() {
+        destroy: function(elem) {
+            if (!elem) {elem = $('#'+this.id)[0];}
+            var subelem = null;
             if (this.id) {
                 if (this.value && this.rootID) {
                     this.value.clearView(this.rootID);
@@ -199,17 +201,18 @@ M.ListItemView = M.View.extend(
                 var childViews = this.getChildViewsAsArray();
                 for(var i in childViews) {
                     if(this[childViews[i]]) {
-                        this[childViews[i]].destroy();
+                        this[childViews[i]].destroy($(elem).find('#'+this[childViews[i]].id)[0]);
                     }
                 }
                 // M.EventDispatcher.unregisterEvents(this);
                 M.ViewManager.unregister(this);
             }
-            if(this.id && $('#' + this.id).length) {
+            if(this.id && elem) {
                 // MS modification to clear views from associated model
                 // $('#' + this.id).remove();
-                var elem = $('#'+this.id)[0];
-                elem.parentNode.removeChild(elem);
+                if (elem.parentNode) {
+                    elem.parentNode.removeChild(elem);
+                }
             }
             delete this;
         },
@@ -223,28 +226,6 @@ M.ListItemView = M.View.extend(
      * their internal events.
      */
     registerEvents: function() {
-        /*
-        this.internalEvents = {};
-        this.internalEvents = {
-            tap: {
-                target: this.parentView,
-                action: 'setActiveListItem'
-            }
-        };
-        if(this.swipeButton) {
-            $.extend(this.internalEvents, {
-                swipeleft: {
-                    target: this.parentView,
-                    action: 'showSwipeButton'
-                },
-                swiperight: {
-                    target: this.parentView,
-                    action: 'showSwipeButton'
-                }
-            })
-        }
-        this.bindToCaller(this, M.View.registerEvents)();
-         */
     },
 
     /**
@@ -297,23 +278,13 @@ M.ListItemView = M.View.extend(
             elem.addClass('ui-last-child');
         }
     },
-    themeParent: function() {
-        var elem = $('#'+this.id);
-        if (elem.children('ul').children().length>0) {
-            elem.addClass('branch').removeClass('leaf');
-            if (!elem.hasClass('collapsed')) {
-                elem.addClass('expanded');
-            }
-        } else {
-            elem.addClass('leaf').removeClass('branch').
-                addClass('expanded').removeClass('collapsed');
+    theme: function(elem) {
+        if (!elem) {
+            elem = $('#'+this.id)[0];
         }
-    },
-    theme: function() {
-        // check for change to adjacency affecting borders
-        // check for change to child-content affecting leaf/branch
-        $('#'+this.id).addClass('ui-li ui-li-static and ui-btn-up-c');
-        this.themeChildViews();
+        $(elem).addClass('ui-li ui-li-static ui-btn-up-c');
+        this.themeChildViews(elem);
+            // todo: will this propagate without elem?
         // fixHeight is only called on nonempty list-elements.
         if (this.header.name.text.value.length>3) {
             this.header.name.text.fixHeight();
