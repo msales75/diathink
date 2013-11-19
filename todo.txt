@@ -2,9 +2,9 @@
 
 Next:
 ---------
+OK Fix bug with unfinished expand/contract during changeRoot
 
-
-* Fix bug with unfinished expand/contract during changeRoot
+* Test...
 
 * Fix asynchronous function-calling:
  * Disable undo/redo buttons when waiting for non-undo/redo actions to finish
@@ -63,6 +63,12 @@ Focus is hopefully improved by smarter keyboard management with phonegap.
   - replaceChild seems capped in slowness?
  Feasibility of quickly adding/removing list-items for long-scroll?
  Use expansion/contraction as test for replaceChild benchmarking
+
+Setup an asynchronous garbage collector for removing slow things
+Save element-reference in views once they are rendered
+Modify rendering/theming/destroying to use use cached-elements and work detached
+Clean up the list-item recursive-rendering so there is a single subroutine
+  with single DOM rendering and no redundant theming
 
 *** Phonegap: ***
 * Setup on Mac

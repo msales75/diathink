@@ -120,14 +120,15 @@ diathink.app.createPage = function(pageName, root) {
                                 // process double-click
                                 // liElem.toggleClass('expanded').toggleClass('collapsed');
                                 var li= M.ViewManager.getViewById(view.parentView.parentView.id);
-                                var rootID = li.rootID;
-                                var rootView = M.ViewManager.getViewById(rootID);
-                                var panelView = rootView.parentView.parentView;
-                                panelView.changeRoot(li.value);
+                                diathink.RootAction.createAndExec({
+                                    activeID: li.value.cid,
+                                    oldView: li.rootID,
+                                    newView: 'new'
+                                });
                             } else { // single-click
                                 view.lastClicked = now;
                                 if (liElem.hasClass('branch')) {
-                                    diathink.OpenCloseAction.createAndExec({
+                                    diathink.CollapseAction.createAndExec({
                                         activeID: view.parentView.parentView.value.cid,
                                         collapsed: ! liElem.hasClass('collapsed'),
                                         oldView: view.parentView.parentView.rootID,

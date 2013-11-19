@@ -663,12 +663,12 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (oldCollection != null) { // if it's in a collection
                 // if parent-collection is empty, reset collapse
                 if ((!that.options.undo)&&(!that.options.redo)&&
-                    (oldCollection.models.length===1)&&(that.type!=='OpenCloseAction')) {
+                    (oldCollection.models.length===1)&&(that.type!=='CollapseAction')) {
                     var parent = activeModel.get('parent');
-                    // don't do this with an openclose action.
+                    // don't do this with a collapse action.
                     if (parent) {
                         that.subactions.push({
-                            action: diathink.OpenCloseAction,
+                            action: diathink.CollapseAction,
                             options: {
                               activeID: parent.cid,
                               collapsed: false,
@@ -1259,8 +1259,8 @@ diathink.TextAction= diathink.Action.extend({
 });
 
 
-diathink.OpenCloseAction= diathink.Action.extend({
-    type:"OpenCloseAction",
+diathink.CollapseAction= diathink.Action.extend({
+    type:"CollapseAction",
     options: {activeID: null, collapsed: false},
     _validateOptions: {
         requireActive: true,
@@ -1329,3 +1329,60 @@ diathink.OpenCloseAction= diathink.Action.extend({
         });
     }
 });
+
+
+diathink.RootAction= diathink.Action.extend({
+    type:"RootAction",
+    options: {activeID: null, collapsed: false},
+    _validateOptions: {
+        requireActive: true,
+        requireReference: false,
+        requireOld: true,
+        requireNew: false
+    },
+    getNewContext: function() {
+        this.newContext = this.oldContext;
+    },
+    preview: function() {},
+    execModel: function () {
+        var that = this;
+        that.addQueue('newModelAdd', ['log'], function() {
+            if ((!that.options.undo) && (!that.options.redo)) {
+                var c = diathink.UndoController;
+                if (c.actions.at(c.lastAction) !== that) {
+                    console.log('ERROR: lastAction is not this');
+                }
+                var prevAction = c.actions.at(c.lastAction-1);
+                if ((prevAction.type==='CollapseAction')&&
+                    (prevAction.options.activeID === that.options.activeID)) {
+                    var activeModel= that.getModel(that.options.activeID);
+                    activeModel.set('collapsed', !activeModel.get('collapsed'));
+                    prevAction.undone = true;
+                    prevAction.lost = true;
+                    // update undo-buttons?
+                }
+            }
+            // todo: save current perspective into model?
+        });
+    },
+    execView:function (outline) {
+        var that = this;
+        this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
+            var model;
+            if (outline.rootID === that.options.oldView) {
+                if (that.options.undo) {
+                    model = that.oldRootModel;
+                } else {
+                    if (!that.options.redo) {
+                        that.oldRootModel = M.ViewManager.getViewById(that.options.oldView).rootModel;
+                    }
+                    model = that.getModel(that.options.activeID);
+                }
+                M.ViewManager.getViewById(that.options.oldView).parentView
+                    .parentView.changeRoot(model);
+            }
+            that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+        });
+    }
+});
+
