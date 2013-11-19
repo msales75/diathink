@@ -3,22 +3,21 @@
 Next:
 ---------
 OK Fix bug with unfinished expand/contract during changeRoot
+OK Fixed bug where oldParent needed to check for view-existence
+OK validateOptions won't work when undoing a drag into a collapsed place
+OK preDock won't work when undoing a drag into a collapsed place
 
-* Test...
 
 * Fix asynchronous function-calling:
  * Disable undo/redo buttons when waiting for non-undo/redo actions to finish
  * Make target-options & contingency-test asynchronous for text-commands
  * Handle if a conflicting action is scheduled
     before prior action finishes - (context is changed?)
+ * diathink.helper could be reset when dragging while another actions animates
 
-
-* Make sure inherited variables are not mixed between object-classes (e.g. in Views)
-* Disable background-color when exchanging dock
-* Make it easier to find/organize logging/breakpoints (log-tags?)
-* Make it easier to pause in animation or when dragging
 
 *** UI Enhancements: ***
+ * Fix uneven background-color when exchanging dock
  * Fix flicker/jiggle of lower items during indent/outdent or drag
  * Focus on previous line when backspacing
  * Add animation for change-root
@@ -97,6 +96,7 @@ On text focus:  Hide cursor and background-change, verify not scrolling
 * Why is action-model not showing up in relational-model list
 * Why is Firefox losing hover-state on fast mouseovers?
 * Do we need autocorrect/complete attributes?
+* Make sure inherited variables are not mixed between object-classes (e.g. in Views)
 
 
 ---------

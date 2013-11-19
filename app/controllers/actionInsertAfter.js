@@ -236,22 +236,35 @@ diathink.Action = Backbone.RelationalModel.extend({
         if (o.activeID) {
             var activeModel = this.getModel(o.activeID);
             if (v.requireOld && !o.undo) {
-                if (!activeModel.views[o.oldView] && (o.oldView !== 'all')) {
-                    console.log('ERROR: No old-view found for activeID='+ o.activeID);
+                if (o.oldView !== 'all') {
+                    if (!activeModel.views || !activeModel.views[o.oldView]) {
+                        console.log('ERROR: No old-view found for activeID='+ o.activeID);
+                    }
                 }
             }
             if (v.requireNew && o.undo) {
-                if (!activeModel.views[o.newView] && (o.newView !== 'all')) {
-                    console.log('ERROR: No new-view found for activeID='+ o.activeID);
+                if (o.newView !== 'all') {
+                    if (!activeModel.views || !activeModel.views[o.newView]) {
+                        console.log('ERROR: No new-view found for activeID='+ o.activeID);
+                    }
                 }
             }
         }
         if (o.referenceID) {
             var refModel = this.getModel(o.referenceID);
             // reference is only used in newView, not oldView
-            if (v.requireNew) {
-                if (!refModel.views[o.newView]) {
+            if (v.requireNew || v.requireNewReference) {
+                if (!refModel.views || !refModel.views[o.newView]) {
                     console.log('ERROR: No new-view found for referenceID='+ o.referenceID);
+                }
+            }
+            if (v.requireNewReference && o.undo) {
+                if (o.newView !== 'all') {
+                    if (!activeModel.views || !activeModel.views[o.newView]) {
+                        if (! $('#'+refModel.views[o.newView].id).hasClass('collapsed')) {
+                            console.log('ERROR: Missing newView for activeID='+ o.activeID);
+                        }
+                    }
                 }
             }
         }
@@ -402,6 +415,9 @@ diathink.Action = Backbone.RelationalModel.extend({
                 var oldView = that.options.oldView;
                 if (that.options.undo) {oldView = that.options.newView;}
                 var activeView = that.getView(that.options.activeID, oldView);
+                if (!activeView) { // no find item to dock, e.g. undoing drag-into collapse
+                    return;
+                }
                 diathink.helper = $('#'+activeView.id)[0].cloneNode(true);
                 diathink.helper.id = '';
                 var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
@@ -436,6 +452,11 @@ diathink.Action = Backbone.RelationalModel.extend({
                     $(document.body).removeClass('transition-mode');
                     diathink.helper.parentNode.removeChild(diathink.helper);
                     diathink.helper = null;
+                    that.runtime.status.dockAnim = 2;
+                    that.nextQueue();
+                    return;
+                }
+                if (!diathink.helper) { // nothing to dock
                     that.runtime.status.dockAnim = 2;
                     that.nextQueue();
                     return;
@@ -863,7 +884,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                 } else if (that.oldContext) {
                     oldParent = that.getModel(that.oldContext.parent);
                 }
-                if (oldParent && oldParent.views[outline.rootID]) {
+                if (oldParent && oldParent.views && oldParent.views[outline.rootID]) {
                     oldParentView = oldParent.views[outline.rootID];
                 }
             }
@@ -1166,7 +1187,8 @@ diathink.MoveIntoAction = diathink.Action.extend({
         requireActive: true,
         requireReference: true,
         requireOld: true,
-        requireNew: true
+        requireNew: false,
+        requireNewReference: true
     },
     options: {activeID: null, referenceID: null, transition: false},
     getNewContext: function() {
@@ -1310,6 +1332,8 @@ diathink.CollapseAction= diathink.Action.extend({
                     console.log("Action collapse="+collapsed+" has no activeView, with activeID="+
                         that.options.activeID+"; oldView="+outline.rootID+
                         "; undo="+that.options.undo);
+                    // Action collapse=false has no activeView, with activeID=c14; oldView=m_16; undo=false
+                    that.runtime.status.newPlaceAnim[outline.rootID] = 2;
                     return;
                 }
                 if (!that.options.undo && !that.options.redo) {
