@@ -49,26 +49,19 @@ M.BreadcrumbView = M.View.extend(
             return this.html
         },
 
-        /**
-         * This method is responsible for registering events for view elements and its child views. It
-         * basically passes the view's event-property to M.EventDispatcher to bind the appropriate
-         * events.
-         *
-         * It extend M.View's registerEvents method with some special stuff for list views and their
-         * internal events.
-         */
-            /*
-        registerEvents: function() {
-            if(!this.internalEvents) {
-                this.internalEvents = {
-                    tap: {
-                        target: this,
-                        action: 'dispatchEvent'
-                    }
-                }
+        renderUpdate: function() {
+            var html = '';
+            html += '<a data-href="home">Home</a> &gt;&gt;';
+            if (this.value.length>0) {
+               for (i=0; i<this.value.length-1; ++i) {
+                  // todo: secure displayed text
+                  html += '<a data-href="'+this.value[i].cid+'">'+this.value[i].get('text')+'</a> &gt;&gt;';
+               }
+               html += ' <strong>'+this.value[i].get('text')+'</strong>';
             }
-            this.bindToCaller(this, M.View.registerEvents)();
-        }, */
+            $('#'+this.id).html(html);
+        },
+
 
         /**
          * Triggers the rendering engine, jQuery mobile, to style the button.
@@ -77,10 +70,10 @@ M.BreadcrumbView = M.View.extend(
          */
         theme: function() {
             /* theme only if not already done */
-            if(!$('#' + this.id).hasClass('ui-breadcrumb')) {
+            //if(!$('#' + this.id).hasClass('ui-breadcrumb')) {
                 $('#'+this.id).addClass('ui-breadcrumb');
                 $('#'+this.id).children('a').addClass('ui-breadcrumb-link').addClass('ui-link');
-            }
+            //}
         },
 
         /**
@@ -99,20 +92,5 @@ M.BreadcrumbView = M.View.extend(
             }
             return html;
         }
-
-        /**
-         * This method is called right before the page is loaded. If a beforeLoad-action is defined
-         * for the page, it is now called.
-         *
-         * @param {String} id The DOM id of the event target.
-         * @param {Object} event The DOM event.
-         * @param {Object} nextEvent The next event (external event), if specified.
-         */
-            /*
-        dispatchEvent: function(id, event, nextEvent) {
-            if(this.isEnabled && nextEvent) {
-                M.EventDispatcher.callHandler(nextEvent, event, YES);
-            }
-        } */
 
     });

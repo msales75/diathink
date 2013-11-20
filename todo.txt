@@ -6,6 +6,9 @@ OK Fix bug with unfinished expand/contract during changeRoot
 OK Fixed bug where oldParent needed to check for view-existence
 OK validateOptions won't work when undoing a drag into a collapsed place
 OK preDock won't work when undoing a drag into a collapsed place
+OK Triple-click sets root twice
+OK Breadcrumbs get lost on changeRoot
+OK Branch class added somewhere without removing leaf class.
 
 
 * Fix asynchronous function-calling:

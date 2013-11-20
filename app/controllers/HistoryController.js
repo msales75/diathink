@@ -44,6 +44,7 @@ diathink.UndoController = M.Controller.extend({
         if (this.queue.length===1) {
             if (this.readyAction !== null) {
                 console.log("ERROR: this is very bad");
+                debugger;
             }
             this.readyAction = readyCode;
         }
@@ -54,6 +55,7 @@ diathink.UndoController = M.Controller.extend({
         // injects action immediately after active-one in the queue
         if ((this.readyAction==null)||(this.readyAction !== this.queue[0])) {
             console.log("ERROR: queuePrepend called without an active action")
+            debugger;
         }
         var readyCode = this.codeRequest();
         this.queue.splice(1,0,readyCode);
@@ -64,13 +66,16 @@ diathink.UndoController = M.Controller.extend({
     queueComplete: function(code, action) {
         if (!code) {
             console.log("ERROR: queueCompelte called without code");
+            debugger;
         }
         if (this.readyAction !== code) {
             console.log("ERROR: this is bad");
+            debugger;
         }
         var lastQueue = this.queue.shift();
         if (lastQueue !== code) {
             console.log("ERROR: This is also bad");
+            debugger;
         }
         // console.log(this.queue);
         // ensure the completed action has no remaining queue items

@@ -17,11 +17,12 @@ diathink.PanelOutlineView = M.ContainerView.extend({
           // will get added back in with alist.onDesign:bindView
         this.rootModel = model;
         this.breadcrumbs.onDesign();
+        // need to redraw breadcrumbs
+        // this.outline.alist.removeAllItems();
         this.outline.alist.onDesign();
-        $('#'+this.id).replaceWith(this.render()); // is this necessary?
-        // todo: garbage collection on old html/event-handlers?
+        this.breadcrumbs.renderUpdate();
         this.theme();
-        this.registerEvents();
+        this.registerEvents(); // calls renderUpdate for children recursively
         $('#'+M.ViewManager.getCurrentPage().id).nestedSortable('update');
         $(window).resize(); // fix height of new panel, spacer
     },

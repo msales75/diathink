@@ -185,6 +185,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                 rank = diathink.UndoController.nextRedo();
                 if (diathink.UndoController.actions.at(rank) !== this.subactions[i].action) {
                     console.log("ERROR: Redoing wrong subaction");
+                    debugger;
                 }
                 diathink.UndoController.redo();
             }
@@ -192,16 +193,19 @@ diathink.Action = Backbone.RelationalModel.extend({
             nsub = this.parentAction.subactions.length;
             if (this !== this.parentAction.subactions[nsub-1].action) {
                 console.log("ERROR: Last subaction in chain was not called first!");
+                debugger;
             }
             for (i=0; i<nsub; ++i) {
                 rank = diathink.UndoController.nextUndo();
                 if (i===0) {
                     if (diathink.UndoController.actions.at(rank) !== this.parentAction) {
                         console.log("ERROR: Undoing something else when should be parentAction");
+                        debugger;
                     }
                 } else {
                     if (diathink.UndoController.actions.at(rank) !== this.subactions[nsub-1-i].action) {
                         console.log("ERROR: Undoing wrong subaction");
+                        debugger;
                     }
                 }
                 diathink.UndoController.undo();
@@ -222,23 +226,44 @@ diathink.Action = Backbone.RelationalModel.extend({
     },
     validateOptions: function() {
         var o = this.options, v = this._validateOptions;
-        if ((v.requireActive || o.undo || o.redo) && !o.activeID) {
+        if ((v.requireActive || o.undo || o.redo) && !o.activeID && (this.type !== 'RootAction')) {
             console.log("ERROR: Action "+this.type+" missing activeID");
+            debugger;
         }
         if (v.requireReference && !o.referenceID) {
             console.log("ERROR: Action "+this.type+" missing referenceID");
+            debugger;
         }
         if (!o.oldView || !o.newView) {
             console.log("ERROR: Action "+this.type+" missing oldView or newView");
+            debugger;
         }
+        if (o.oldView !== 'all') {
+            if (!diathink.OutlineManager.outlines[o.oldView]) {
+                console.log('ERROR: Action '+this.type+' has invalid oldView');
+                debugger;
+            }
+        }
+        if ((o.newView !== 'all')&&(o.newView!=='new'))  {
+            if (!diathink.OutlineManager.outlines[o.newView]) {
+                console.log('ERROR: Action '+this.type+' has invalid newView');
+                debugger;
+            }
+        }
+
         if (o.anim) {}
 
         if (o.activeID) {
             var activeModel = this.getModel(o.activeID);
+            if (!activeModel) {
+                console.log('ERROR: invalid activeModel for activeID='+ o.activeID);
+                debugger;
+            }
             if (v.requireOld && !o.undo) {
                 if (o.oldView !== 'all') {
                     if (!activeModel.views || !activeModel.views[o.oldView]) {
                         console.log('ERROR: No old-view found for activeID='+ o.activeID);
+                        debugger;
                     }
                 }
             }
@@ -246,16 +271,22 @@ diathink.Action = Backbone.RelationalModel.extend({
                 if (o.newView !== 'all') {
                     if (!activeModel.views || !activeModel.views[o.newView]) {
                         console.log('ERROR: No new-view found for activeID='+ o.activeID);
+                        debugger;
                     }
                 }
             }
         }
         if (o.referenceID) {
             var refModel = this.getModel(o.referenceID);
+            if (!refModel) {
+                console.log('ERROR: invalid refModel for activeID='+ o.activeID);
+                debugger;
+            }
             // reference is only used in newView, not oldView
             if (v.requireNew || v.requireNewReference) {
                 if (!refModel.views || !refModel.views[o.newView]) {
                     console.log('ERROR: No new-view found for referenceID='+ o.referenceID);
+                    debugger;
                 }
             }
             if (v.requireNewReference && o.undo) {
@@ -263,6 +294,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                     if (!activeModel.views || !activeModel.views[o.newView]) {
                         if (! $('#'+refModel.views[o.newView].id).hasClass('collapsed')) {
                             console.log('ERROR: Missing newView for activeID='+ o.activeID);
+                            debugger;
                         }
                     }
                 }
@@ -274,6 +306,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         if ((o.anim==='dock')||(o.anim==='indent')) {
             if ((this.newContext == null)||(this.oldContext == null)) {
                 console.log("ERROR: Anim="+ o.anim+" but old or new context is null");
+                debugger;
             }
         }
         if (o.undo) {
@@ -281,6 +314,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (this.type==='DeleteAction') {
                 if (context !== null) {
                     console.log("ERROR: DeleteAction undo with newContext-not-null");
+                    debugger;
                 }
                 return;
             }
@@ -289,6 +323,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (this.type==='InsertAfterAction') {
                 if (context !== null) {
                     console.log("ERROR: Insert action with oldContext not-null");
+                    debugger;
                 }
                 return;
             }
@@ -303,6 +338,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (this.type==='InsertAfterAction') {
                 if (context !== null) {
                     console.log("ERROR: Insert action with oldContext not-null");
+                    debugger;
                 }
                 return;
             }
@@ -311,6 +347,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (this.type==='DeleteAction') {
                 if (context !== null) {
                     console.log("ERROR: DeleteAction undo with newContext-not-null");
+                    debugger;
                 }
                 return;
             }
@@ -320,34 +357,42 @@ diathink.Action = Backbone.RelationalModel.extend({
     validateContext: function(context) {
         var o = this.options;
         // otherwise context must exist
-        var model = this.getModel(o.activeID);
-        if (model.get('parent')) {
-            if (context.parent !== model.get('parent').cid) {
-                console.log('ERROR: context.parent does not match');
+        if (o.activeID != null) {
+            var model = this.getModel(o.activeID);
+            if (model.get('parent')) {
+                if (context.parent !== model.get('parent').cid) {
+                    console.log('ERROR: context.parent does not match');
+                    debugger;
+                }
+            } else {
+                if (context.parent !== null) {
+                    console.log('ERROR: context.parent is not null');
+                    debugger;
+                }
             }
-        } else {
-            if (context.parent !== null) {
-                console.log('ERROR: context.parent is not null');
+            var collection = model.parentCollection();
+            var rank = model.rank();
+            if (rank===0) {
+                if (context.prev !== null) {
+                    console.log('ERROR: context.prev is not null though rank=0')
+                    debugger;
+                }
+            } else {
+                if (context.prev !== collection.at(rank-1).cid) {
+                    console.log('ERROR: context.prev does not match');
+                    debugger;
+                }
             }
-        }
-        var collection = model.parentCollection();
-        var rank = model.rank();
-        if (rank===0) {
-            if (context.prev !== null) {
-                console.log('ERROR: context.prev is not null though rank=0')
-            }
-        } else {
-            if (context.prev !== collection.at(rank-1).cid) {
-                console.log('ERROR: context.prev does not match');
-            }
-        }
-        if (rank === collection.length-1) {
-            if (context.next !== null) {
-                console.log('ERROR: context.next is not null');
-            }
-        } else {
-            if (context.next !== collection.at(rank+1).cid) {
-                console.log('ERROR: context.next does not match');
+            if (rank === collection.length-1) {
+                if (context.next !== null) {
+                    console.log('ERROR: context.next is not null');
+                    debugger;
+                }
+            } else {
+                if (context.next !== collection.at(rank+1).cid) {
+                    console.log('ERROR: context.next does not match');
+                    debugger;
+                }
             }
         }
         // todo: put text, collapsed, focus into oldContext and newContext.
@@ -374,6 +419,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         this.validateOptions();
         if (options.readyCode !== that.options.readyCode) {
             console.log("ERROR: option.readyCode doesn't match WTF");
+            debugger;
         }
         if (o.undo) {
             console.log("Starting undo "+this.type+"; readyCode = "+options.readyCode);
@@ -418,6 +464,10 @@ diathink.Action = Backbone.RelationalModel.extend({
                 if (!activeView) { // no find item to dock, e.g. undoing drag-into collapse
                     return;
                 }
+                if ($('#'+activeView.id).length===0) {
+                    console.log('ERROR: activeView exists with missing element');
+                    debugger;
+                }
                 diathink.helper = $('#'+activeView.id)[0].cloneNode(true);
                 diathink.helper.id = '';
                 var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
@@ -447,6 +497,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                 // Is newPlace for this view above or below source?
                 if ((that.newContext == null)||(that.oldContext == null)) {
                     console.log("ERROR: docking attempted with null context");
+                    debugger;
                 }
                 if (! that.runtime.newPlaceholder[newView]) { // nowhere to dock
                     $(document.body).removeClass('transition-mode');
@@ -758,6 +809,10 @@ diathink.Action = Backbone.RelationalModel.extend({
                     return;
                 }
                 // vanish if not already hidden & shrink over 80ms
+                if ($('#'+activeView.id).length===0) {
+                    console.log('ERROR: activeView '+activeView.id+' exists but has not element for oldPlace');
+                    debugger;
+                }
                 var activeObj = $('#'+activeView.id).addClass('drag-hidden');
                 var activeHeight = activeObj[0].clientHeight;
                 var oldPlaceholder = $('<div></div>').addClass('li-placeholder').css('height',activeHeight);
@@ -872,6 +927,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                     console.log("ERROR: Oldspot does not exist for action "+that.type+
                         "; undo="+that.options.undo+"; redo="+that.options.redo+
                         "; activeID="+that.options.activeID+"; view="+outline.rootID);
+                    debugger;
                 }
                 neighbor = oldspot.obj;
                 neighborType = oldspot.type;
@@ -946,7 +1002,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                 if (createActiveView) { // todo: add classes in detached-mode instead of here?
                     activeView.theme(); // add classes and if there is content, fixHeight
                     if (activeView.value.get('collapsed')) {
-                        $('#'+activeView.id).addClass('collapsed').addClass('branch');
+                        $('#'+activeView.id).addClass('collapsed').addClass('branch').removeClass('leaf');
                     } else {
                         if (activeView.value.get('children').length>0) {
                             $('#'+activeView.id).addClass('expanded').addClass('branch').removeClass('leaf');
@@ -999,6 +1055,8 @@ diathink.Action = Backbone.RelationalModel.extend({
                     var elem = $('#'+neighbor.id);
                     elem.addClass('leaf').removeClass('branch').
                         addClass('expanded').removeClass('collapsed');
+                } else if (neighborType==='root') {
+                    // todo: add a placeholder for empty panel
                 }
             } else if (oldParentView) { // (collapsed)
                 if (oldParent.get('children').models.length===0) {
@@ -1052,8 +1110,9 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (view.parentView.parentView && view.parentView.parentView.type==='M.ListItemView') {
                 return {type: 'parent', obj: view.parentView.parentView};
             } else {
-                console.log("_saveOldSpot returning null for view "+view.id);
-                return null;
+                return {type: 'root', obj: M.ViewManager.getViewById(view.rootID)}
+                // console.log("_saveOldSpot returning null for view "+view.id);
+                // return null;
             }
         }
     },
@@ -1359,9 +1418,9 @@ diathink.RootAction= diathink.Action.extend({
     type:"RootAction",
     options: {activeID: null, collapsed: false},
     _validateOptions: {
-        requireActive: true,
+        requireActive: false,
         requireReference: false,
-        requireOld: true,
+        requireOld: false,
         requireNew: false
     },
     getNewContext: function() {
@@ -1375,6 +1434,7 @@ diathink.RootAction= diathink.Action.extend({
                 var c = diathink.UndoController;
                 if (c.actions.at(c.lastAction) !== that) {
                     console.log('ERROR: lastAction is not this');
+                    debugger;
                 }
                 var prevAction = c.actions.at(c.lastAction-1);
                 if ((prevAction.type==='CollapseAction')&&
@@ -1392,7 +1452,7 @@ diathink.RootAction= diathink.Action.extend({
     execView:function (outline) {
         var that = this;
         this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
-            var model;
+            var model=null;
             if (outline.rootID === that.options.oldView) {
                 if (that.options.undo) {
                     model = that.oldRootModel;
@@ -1400,7 +1460,9 @@ diathink.RootAction= diathink.Action.extend({
                     if (!that.options.redo) {
                         that.oldRootModel = M.ViewManager.getViewById(that.options.oldView).rootModel;
                     }
-                    model = that.getModel(that.options.activeID);
+                    if (that.options.activeID) {
+                        model = that.getModel(that.options.activeID);
+                    }
                 }
                 M.ViewManager.getViewById(that.options.oldView).parentView
                     .parentView.changeRoot(model);

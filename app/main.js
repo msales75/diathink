@@ -116,9 +116,10 @@ diathink.app.createPage = function(pageName, root) {
                             // $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
                             var view = M.ViewManager.getViewById(this.id);
                             var liElem = $('#'+view.parentView.parentView.id);
-                            if (view.lastClicked && (view.lastClicked > now - 500)) {
+                            if (view.lastClicked && (view.lastClicked > now - 500) && !view.lastDouble) {
                                 // process double-click
                                 // liElem.toggleClass('expanded').toggleClass('collapsed');
+                                view.lastDouble = true;
                                 var li= M.ViewManager.getViewById(view.parentView.parentView.id);
                                 diathink.RootAction.createAndExec({
                                     activeID: li.value.cid,
@@ -140,13 +141,22 @@ diathink.app.createPage = function(pageName, root) {
                     });
 
                     $('#'+id).on('tap', '.ui-breadcrumb-link', function(e) {
+                        // $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
+                        var view = M.ViewManager.getViewById($(this).parent().attr('id'));
+                        var now = (new Date()).getTime();
+                        if (!view.lastClicked || (view.lastClicked < now - 1000)) {
+                            view.lastClicked = now;
                             var modelid= $(this).attr('data-href');
                             var panelview = M.ViewManager.getViewById($(this).parent().attr('id')).parentView;
                             if (modelid==='home') {
-                                panelview.changeRoot(null);
-                            } else {
-                                panelview.changeRoot(diathink.OutlineNodeModel.getById(modelid));
+                                modelid = null;
                             }
+                            diathink.RootAction.createAndExec({
+                                activeID: modelid,
+                                oldView: panelview.outline.alist.rootID,
+                                newView: 'new'
+                            });
+                        }
                     });
 
                     function closestListItem( element ) {
