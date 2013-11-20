@@ -204,6 +204,13 @@ diathink.app.createPage = function(pageName, root) {
                         view.setValueFromDOM();
                         view.themeUpdate();
                     });
+                    $(window).on('keydown', function(e) {
+                        if (e.target.nodeName.toLowerCase()!=='textarea') {
+                            if (e.which === 8) { // prevent backspace-back
+                                e.preventDefault();
+                            }
+                        }
+                    });
                     $('#'+id).on('keydown','textarea', function(e) {
                                 var id = this.id;
                                 var liView = M.ViewManager.findViewById(id).parentView.parentView.parentView;
@@ -269,14 +276,16 @@ diathink.app.createPage = function(pageName, root) {
                                             e.preventDefault();
                                         } else { // delete or merge-lines?
                                             if ($('#'+id).val() === "") {
-                                                diathink.Action.checkTextChange(id);
-                                                diathink.DeleteAction.createAndExec({
-                                                    anim: 'delete',
-                                                    activeID: liView.modelId,
-                                                    oldView: liView.rootID,
-                                                    newView: liView.rootID,
-                                                    focus: true
-                                                });
+                                                if (liView.value.get('children').length===0) {
+                                                    diathink.Action.checkTextChange(id);
+                                                    diathink.DeleteAction.createAndExec({
+                                                        anim: 'delete',
+                                                        activeID: liView.modelId,
+                                                        oldView: liView.rootID,
+                                                        newView: liView.rootID,
+                                                        focus: true
+                                                    });
+                                                }
                                             }
                                         }
                                     }

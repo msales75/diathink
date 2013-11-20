@@ -9,7 +9,9 @@ OK preDock won't work when undoing a drag into a collapsed place
 OK Triple-click sets root twice
 OK Breadcrumbs get lost on changeRoot
 OK Branch class added somewhere without removing leaf class.
+OK Don't delete item with children via backspace
 
+* prevent backspace-back for uncaught keystroke
 
 * Fix asynchronous function-calling:
  * Disable undo/redo buttons when waiting for non-undo/redo actions to finish
@@ -22,15 +24,18 @@ OK Branch class added somewhere without removing leaf class.
 *** UI Enhancements: ***
  * Fix uneven background-color when exchanging dock
  * Fix flicker/jiggle of lower items during indent/outdent or drag
+
+ * Improve Scrolling (hard)
+   - while dragging
+   - during end/animation of action
+
  * Focus on previous line when backspacing
  * Add animation for change-root
  * Add font-change button (and update textarea heights)
  * Add shift-tab keyboard-command
  * Up and down arrows should change lines
 
- * Improve Scrolling (hard)
-   - while dragging
-   - during end/animation of action
+
  * Drag-to-vertical-line (hard)
   - Add design-space for vertical line
   - Keep track of panels like items in nestedSortable
