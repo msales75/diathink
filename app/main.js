@@ -121,22 +121,25 @@ diathink.app.createPage = function(pageName, root) {
                                 // liElem.toggleClass('expanded').toggleClass('collapsed');
                                 view.lastDouble = true;
                                 var li= M.ViewManager.getViewById(view.parentView.parentView.id);
-                                diathink.RootAction.createAndExec({
+                                diathink.ActionManager.schedule(function() {return {
+                                    action: diathink.RootAction,
                                     activeID: li.value.cid,
                                     oldView: li.rootID,
                                     newView: 'new'
-                                });
+                                };});
                             } else { // single-click
                                 view.lastClicked = now;
-                                if (liElem.hasClass('branch')) {
-                                    diathink.CollapseAction.createAndExec({
-                                        activeID: view.parentView.parentView.value.cid,
-                                        collapsed: ! liElem.hasClass('collapsed'),
-                                        oldView: view.parentView.parentView.rootID,
-                                        newView: view.parentView.parentView.rootID,
-                                        focus: false
-                                    });
-                                }
+                                diathink.ActionManager.schedule(function() {
+                                    if (!liElem.hasClass('branch')) {return false;}
+                                    return {
+                                            action: diathink.CollapseAction,
+                                            activeID: view.parentView.parentView.value.cid,
+                                            collapsed: ! liElem.hasClass('collapsed'),
+                                            oldView: view.parentView.parentView.rootID,
+                                            newView: view.parentView.parentView.rootID,
+                                            focus: false
+                                        };
+                                });
                             }
                     });
 
@@ -151,11 +154,12 @@ diathink.app.createPage = function(pageName, root) {
                             if (modelid==='home') {
                                 modelid = null;
                             }
-                            diathink.RootAction.createAndExec({
+                            diathink.ActionManager.schedule(function() {return {
+                                action: diathink.RootAction,
                                 activeID: modelid,
                                 oldView: panelview.outline.alist.rootID,
                                 newView: 'new'
-                            });
+                            };});
                         }
                     });
 
@@ -212,93 +216,109 @@ diathink.app.createPage = function(pageName, root) {
                         }
                     });
                     $('#'+id).on('keydown','textarea', function(e) {
-                                var id = this.id;
-                                var liView = M.ViewManager.findViewById(id).parentView.parentView.parentView;
+                        var id, liView, sel, collection, rank;
+                                id = this.id;
+                                liView = M.ViewManager.findViewById(id).parentView.parentView.parentView;
                                 if (e.which === 32) { // spacebar
-                                    var sel = $('#'+id).selection();
+                                    sel = $('#'+id).selection();
                                     // check if cursor is on far left of textbox
                                     if (sel && (sel[0] === 0) && (sel[1] === 0)) {
                                         // get parent-collection and rank
-                                        var collection = liView.parentView.value;
-                                        var rank = _.indexOf(collection.models, liView.value);
+                                        collection = liView.parentView.value;
+                                        rank = _.indexOf(collection.models, liView.value);
                                         // validate rank >=0
                                         if (rank>0) { // indent the line
                                             // make it the last child of its previous sibling
-                                            diathink.Action.checkTextChange(id);
-                                            diathink.MoveIntoAction.createAndExec({
+                                            diathink.ActionManager.schedule(function() {
+                                                return diathink.Action.checkTextChange(id);
+                                            });
+                                            diathink.ActionManager.schedule(function() { return {
+                                                action: diathink.MoveIntoAction,
                                                 anim: 'indent',
                                                 activeID: liView.modelId,
                                                 referenceID: collection.models[rank-1].cid,
                                                 oldView: liView.rootID,
                                                 newView: liView.rootID,
                                                 focus: true
-                                            });
+                                            };});
                                             e.preventDefault();
                                         }
                                     }
                                 } else if (e.which === 9) { // tab
-                                    var collection = liView.parentView.value;
-                                    var rank = _.indexOf(collection.models, liView.value);
+                                    collection = liView.parentView.value;
+                                    rank = _.indexOf(collection.models, liView.value);
                                     // validate rank >=0
                                     if (rank>0) { // indent the line
                                         // make it the last child of its previous sibling
-                                        diathink.Action.checkTextChange(id);
-                                        diathink.MoveIntoAction.createAndExec({
+                                        diathink.ActionManager.schedule(function() {
+                                            return diathink.Action.checkTextChange(id);
+                                        });
+                                        diathink.ActionManager.schedule(function() { return {
+                                            action: diathink.MoveIntoAction,
                                             anim: 'indent',
                                             activeID: liView.modelId,
                                             referenceID: collection.models[rank-1].cid,
                                             oldView: liView.rootID,
                                             newView: liView.rootID,
                                             focus: true
-                                        });
+                                        };});
                                         e.preventDefault();
                                     }
                                 } else if (e.which === 8) { // backspace
-                                    var sel = $('#'+id).selection();
+                                    sel = $('#'+id).selection();
                                     if (sel && (sel[0] === 0) && (sel[1] === 0)) {
                                         // get parent-collection and rank
-                                        var collection = liView.parentView.value;
-                                        var rank = _.indexOf(collection.models, liView.value);
+                                        collection = liView.parentView.value;
+                                        rank = _.indexOf(collection.models, liView.value);
                                         // if it is the last item in its collection
                                         if ((liView.parentView.parentView != null) &&
                                             (liView.parentView.parentView.type==='M.ListItemView')&&
                                             (rank===collection.models.length-1)) {
                                             // make it the next child of its parent
-                                            diathink.Action.checkTextChange(id);
-                                            diathink.OutdentAction.createAndExec({
+                                            diathink.ActionManager.schedule(function() {
+                                                return diathink.Action.checkTextChange(id);
+                                            });
+                                            diathink.ActionManager.schedule(function() { return {
+                                                action: diathink.OutdentAction,
                                                 anim: 'indent',
                                                 activeID: liView.modelId,
                                                 referenceID: liView.value.attributes.parent.cid,
                                                 oldView: liView.rootID,
                                                 newView: liView.rootID,
                                                 focus: true
-                                            });
+                                            };});
                                             e.preventDefault();
                                         } else { // delete or merge-lines?
                                             if ($('#'+id).val() === "") {
                                                 if (liView.value.get('children').length===0) {
-                                                    diathink.Action.checkTextChange(id);
-                                                    diathink.DeleteAction.createAndExec({
+                                                    diathink.ActionManager.schedule(function() {
+                                                        return diathink.Action.checkTextChange(id);
+                                                    });
+                                                    diathink.ActionManager.schedule(function() { return {
+                                                        action: diathink.DeleteAction,
                                                         anim: 'delete',
                                                         activeID: liView.modelId,
                                                         oldView: liView.rootID,
                                                         newView: liView.rootID,
                                                         focus: true
-                                                    });
+                                                    };});
                                                 }
                                             }
                                         }
                                     }
                                 } else if (e.which === 13) { // enter
                                     // todo: split line if in middle of text
-                                    diathink.Action.checkTextChange(id);
-                                    diathink.InsertAfterAction.createAndExec({
+                                    diathink.ActionManager.schedule(function() {
+                                        return diathink.Action.checkTextChange(id);
+                                    });
+                                    diathink.ActionManager.schedule(function() { return {
+                                        action: diathink.InsertAfterAction,
                                         anim: 'create',
                                         referenceID: liView.modelId,
                                         oldView: liView.rootID,
                                         newView: liView.rootID,
                                         focus: true
-                                    });
+                                    };});
                                     e.preventDefault();
                                     // var scrollid = $('#'+id).closest('.ui-scrollview-clip').attr('id');
                                     // M.ViewManager.findViewById(scrollid).themeUpdate();
@@ -312,7 +332,7 @@ diathink.app.createPage = function(pageName, root) {
                     });
                     // ? also on: mobile.document pagechange
 
-                    diathink.UndoController.refreshButtons();
+                    diathink.ActionManager.refreshButtons();
                     diathink.keyboard = diathink.keyboardSetup.extend({});
                     diathink.keyboard.init();
                     $('#'+id).nestedSortable({
@@ -386,7 +406,7 @@ diathink.app.createPage = function(pageName, root) {
                     cssClass:'undo-button',
                     events: {
                         tap: {
-                            target:diathink.UndoController,
+                            target:diathink.ActionManager,
                             action:'undo'
                         }
                     }
@@ -396,7 +416,7 @@ diathink.app.createPage = function(pageName, root) {
                     cssClass:'redo-button',
                     events: {
                         tap: {
-                            target:diathink.UndoController,
+                            target:diathink.ActionManager,
                             action:'redo'
                         }
                     }

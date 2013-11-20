@@ -472,32 +472,35 @@
                 }
 
                 if (this.activeBox.type==='droptop') {
-                    diathink.MoveBeforeAction.createAndExec({
+                    diathink.ActionManager.schedule(function () {return {
+                        action: diathink.MoveBeforeAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
                         oldView: targetview.rootID,
                         newView: refview.rootID,
                         anim: 'dock',
                         focus: false
-                    });
+                    };});
                 } else if (this.activeBox.type==='dropbottom') {
-                    diathink.MoveAfterAction.createAndExec({
+                    diathink.ActionManager.schedule(function() {return {
+                        action: diathink.MoveAfterAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
                         oldView: targetview.rootID,
                         newView: refview.rootID,
                         anim: 'dock',
                         focus: false
-                    });
+                    };});
                 } else if (this.activeBox.type==='drophandle') {
-                    diathink.MoveIntoAction.createAndExec({
+                    diathink.ActionManager.schedule(function() {return {
+                        action: diathink.MoveIntoAction,
                         referenceID: refview.value.cid,
                         activeID: targetview.value.cid,
                         oldView: targetview.rootID,
                         newView: refview.rootID,
                         anim: 'dock',
                         focus: false
-                    });
+                    };});
                 }
             } else { // cancel action
                 var that = this;

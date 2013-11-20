@@ -695,8 +695,8 @@ diathink.validateMVC = function () {
     });
 
 
-    var actions = diathink.UndoController.actions;
-    var lastaction = diathink.UndoController.lastAction;
+    var actions = diathink.ActionManager.actions;
+    var lastaction = diathink.ActionManager.lastAction;
     if (actions.length>0) {
         M.test(lastaction !== null,
             "Actions.length>0 but lastaction is null");
@@ -739,8 +739,8 @@ diathink.validateMVC = function () {
         M.test(lastaction === null,
             "There are no actions, but lastaction is not null")
     }
-    M.test(_.size(diathink.UndoController.queue)===0,
-        "diathink.UndoController.queue is not empty");
+    M.test(_.size(diathink.ActionManager.queue)===0,
+        "diathink.ActionManager.queue is not empty");
 
     // undo-buttons should be up to date
     var b = M.ViewManager.getCurrentPage().header.undobuttons;
@@ -753,15 +753,15 @@ diathink.validateMVC = function () {
     M.test($('#'+b.redobutton.id).length===1,
         "Cannot find redo button element");
     M.test(
-        ((diathink.UndoController.nextUndo()===false)&&
+        ((diathink.ActionManager.nextUndo()===false)&&
             ($('#'+ b.undobutton.id).children('div.ui-disabled').length===1)) ||
-        ((diathink.UndoController.nextUndo()!==false)&&
+        ((diathink.ActionManager.nextUndo()!==false)&&
             ($('#'+ b.undobutton.id).children('div.ui-disabled').length===0)),
         "Undo button does not match nextUndo()");
     M.test(
-        ((diathink.UndoController.nextRedo()===false)&&
+        ((diathink.ActionManager.nextRedo()===false)&&
             ($('#'+ b.redobutton.id).children('div.ui-disabled').length===1)) ||
-            ((diathink.UndoController.nextRedo()!==false)&&
+            ((diathink.ActionManager.nextRedo()!==false)&&
                 ($('#'+ b.redobutton.id).children('div.ui-disabled').length===0)),
         "Redo button does not match nextRedo()");
 

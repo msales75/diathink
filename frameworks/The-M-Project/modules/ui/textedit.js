@@ -278,12 +278,15 @@ M.TextEditView = M.View.extend(
         },
         blur: function() {
             // update value/listeners
+            var that = this;
             var focusedEl = $('#'+this.id);
             focusedEl.removeClass( 'ui-focus' );
             var parentListId = M.ViewManager.getViewById(focusedEl.attr('id')).parentView.parentView.parentView.id;
             $('#'+parentListId).removeClass('ui-focus');
             this.setValueFromDOM();
-            diathink.Action.checkTextChange(this.id);
+            diathink.ActionManager.schedule(function() {
+                return diathink.Action.checkTextChange(that.id);
+            });
         },
 
         /**

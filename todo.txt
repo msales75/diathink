@@ -10,15 +10,16 @@ OK Triple-click sets root twice
 OK Breadcrumbs get lost on changeRoot
 OK Branch class added somewhere without removing leaf class.
 OK Don't delete item with children via backspace
+OK prevent backspace-back for uncaught keystroke
+OK Make target-options & contingency-test asynchronous for text-commands
 
-* prevent backspace-back for uncaught keystroke
+* Disable undo/redo buttons when waiting for non-undo/redo actions to finish
+* Collapsed objects inside other collapsed objects lost when outer-collapse (or root) is undone.
 
-* Fix asynchronous function-calling:
- * Disable undo/redo buttons when waiting for non-undo/redo actions to finish
- * Make target-options & contingency-test asynchronous for text-commands
- * Handle if a conflicting action is scheduled
+* Handle text-buffer overflow if typing in undefined-space while performing actions
+* Handle if a conflicting action is scheduled
     before prior action finishes - (context is changed?)
- * diathink.helper could be reset when dragging while another actions animates
+* diathink.helper could be reset when dragging while another actions animates
 
 
 *** UI Enhancements: ***

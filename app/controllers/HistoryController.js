@@ -13,13 +13,13 @@ createAndExec
   queueRequest
    add readyCode to queue
   checkStart
-   wait for UndoController.readyAction
+   wait for ActionManager.readyAction
    _exec
     runinit()
     validateOptions
     addQueue/addAsync:
-      UndoController.log
-      UndoController.refreshButtons
+      ActionManager.log
+      ActionManager.refreshButtons
       end
         define subactions
         checkStart for subactions
@@ -28,60 +28,66 @@ createAndExec
          Add subactions to queue
  */
 
-diathink.UndoController = M.Controller.extend({
+diathink.ActionManager = M.Controller.extend({
     actions: null,
     lastAction: null,
     queue: [],
-    readyAction: null,
     // need to hold args for the action here.
     codeRequest: function() {
         return $.randomString(16);
     },
-    queueRequest: function() {
-        var readyCode = this.codeRequest();
-        this.queue.push(readyCode);
-        // generate a ready-code to return
+    schedule: function(f) {
+        this.queue.push(f);
         if (this.queue.length===1) {
-            if (this.readyAction !== null) {
-                console.log("ERROR: this is very bad");
-                debugger;
+            this.next();
+        }
+    },
+    subschedule: function(f) {
+        if (this.queue.length<1) {
+            console.log('ERROR: preschedule called with empty queue');
+            debugger;
+        }
+        this.queue.splice(1,0,f);
+    },
+    next: function() {
+        var that = this;
+        if (this.queue.length>0) {
+            var f = this.queue[0];
+            var options = f();
+            if (!options) { // abort action without history
+                this.queueComplete(f, null);
+                return;
             }
-            this.readyAction = readyCode;
+            // delete options['action'];
+            options.done = function() {
+                that.queueComplete(f, options.action);
+            };
+            if (options.undo) {
+                options.action.undo(options);
+            } else if (options.redo) {
+                options.action.exec(options);
+            } else {
+                options.action = options.action.createAndExec(options);
+            }
+            diathink.ActionManager.log(options.action);
         }
-        // console.log(this.queue);
-        return readyCode;
     },
-    queuePrepend: function() {
-        // injects action immediately after active-one in the queue
-        if ((this.readyAction==null)||(this.readyAction !== this.queue[0])) {
-            console.log("ERROR: queuePrepend called without an active action")
-            debugger;
-        }
-        var readyCode = this.codeRequest();
-        this.queue.splice(1,0,readyCode);
-        // generate a ready-code to return
-        // console.log(this.queue);
-        return readyCode;
-    },
-    queueComplete: function(code, action) {
-        if (!code) {
-            console.log("ERROR: queueCompelte called without code");
-            debugger;
-        }
-        if (this.readyAction !== code) {
-            console.log("ERROR: this is bad");
+    queueComplete: function(f, action) {
+        if (!f) {
+            console.log("ERROR: queueComplete called without code");
             debugger;
         }
         var lastQueue = this.queue.shift();
-        if (lastQueue !== code) {
-            console.log("ERROR: This is also bad");
+        if (f !== lastQueue) {
+            console.log('ERROR: QueueComplete called with wrong code');
             debugger;
         }
-        // console.log(this.queue);
-        // ensure the completed action has no remaining queue items
-        if (_.size(action.queue)!==0) {
-            // console.log();
+        if (this.queue.length>0) {
+            this.next();
         }
+
+        // ensure the completed action has no remaining queue items
+        /*
         for (var i in action.status) {
             var s = action.status[i];
             if (typeof s === 'object') {
@@ -98,13 +104,8 @@ diathink.UndoController = M.Controller.extend({
                 }
             }
         }
-        // console.log(this.queue);
+        */
 
-        if (this.queue.length>0) {
-            this.readyAction = this.queue[0];
-        } else {
-            this.readyAction = null;
-        }
     },
     log: function(action) {
         if (action.options.undo) {
@@ -152,18 +153,48 @@ diathink.UndoController = M.Controller.extend({
         return rank;
     },
     undo:function () {
-        var rank = this.nextUndo();
-        if (rank !== false) {
-            this.lastAction = rank;
-            this.actions.at(rank).undo();
-        }
+        this.schedule(function() {
+            var rank = diathink.ActionManager.nextUndo();
+            if (rank === false) {return false;}
+            diathink.ActionManager.lastAction = rank;
+            return {
+                    action: diathink.ActionManager.actions.at(rank),
+                    undo: true
+            };
+        });
     },
     redo:function () {
-        var rank = this.nextRedo();
-        if (rank !== false) {
-            this.lastAction = rank;
-            this.actions.at(rank).exec({redo: true});
-        }
+        this.schedule(function() {
+            var rank = diathink.ActionManager.nextRedo();
+            if (rank === false) {return false;}
+            diathink.ActionManager.lastAction = rank;
+            return {
+                action: diathink.ActionManager.actions.at(rank),
+                redo: true
+            };
+        });
+    },
+    subUndo:function () {
+        this.subschedule(function() {
+            var rank = diathink.ActionManager.nextUndo();
+            if (rank === false) {return false;}
+            diathink.ActionManager.lastAction = rank;
+            return {
+                action: diathink.ActionManager.actions.at(rank),
+                undo: true
+            };
+        });
+    },
+    subRedo:function () {
+        this.subschedule(function() {
+            var rank = diathink.ActionManager.nextRedo();
+            if (rank === false) {return false;}
+            diathink.ActionManager.lastAction = rank;
+            return {
+                action: diathink.ActionManager.actions.at(rank),
+                redo: true
+            };
+        });
     },
     // enable/disable undo buttons on screen
     refreshButtons: function() {
