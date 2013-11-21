@@ -12,10 +12,20 @@ OK Branch class added somewhere without removing leaf class.
 OK Don't delete item with children via backspace
 OK prevent backspace-back for uncaught keystroke
 OK Make target-options & contingency-test asynchronous for text-commands
+OK Disable undo/redo buttons when waiting for non-undo/redo actions to finish
 
-* Disable undo/redo buttons when waiting for non-undo/redo actions to finish
-* Collapsed objects inside other collapsed objects lost when outer-collapse (or root) is undone.
 
+Each outline has to remember collapsed/expanded nodes
+Outlines must be preserved/restored when deleted/undone
+
+Each action has to remember collapsed/expanded exceptions
+Each undone item has to adjust appearance without modifying history
+Rendering must be able to use view-specific model
+
+* in actions, replace outline.rootID with single-var
+
+* Collapsed objects inside other collapsed objects lost
+    when outer-collapse (or root) is undone.
 * Handle text-buffer overflow if typing in undefined-space while performing actions
 * Handle if a conflicting action is scheduled
     before prior action finishes - (context is changed?)
@@ -25,7 +35,6 @@ OK Make target-options & contingency-test asynchronous for text-commands
 *** UI Enhancements: ***
  * Fix uneven background-color when exchanging dock
  * Fix flicker/jiggle of lower items during indent/outdent or drag
-
  * Improve Scrolling (hard)
    - while dragging
    - during end/animation of action
@@ -100,7 +109,7 @@ On text focus:  Hide cursor and background-change, verify not scrolling
  Show an exception or alert or something when exceptions are thrown loading application in index.html
  Check if ui-focus classes are being added elsewhere in jquery-mobile?
 * Verify arrows always highlight when dragging (overlapping, ambiguous or empty insideBox?)
-* Add in check that disallows two actions running concurrently
+OK Add in check that disallows two actions running concurrently
    (like with blur event)
 * Why is action-model not showing up in relational-model list
 * Why is Firefox losing hover-state on fast mouseovers?

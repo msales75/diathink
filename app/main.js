@@ -39,8 +39,6 @@ diathink.data = new diathink.OutlineNodeCollection([
     {text: "Test 2"}
 ]);
 
-diathink.mainOutline = diathink.OutlineController.extend({});
-
 diathink.app = M.Application.design({
     entryPage:'page1' // required for start-page
 });

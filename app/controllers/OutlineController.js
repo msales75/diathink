@@ -5,11 +5,21 @@
 diathink.OutlineManager = M.Object.extend({
     type: 'OutlineManager',
     outlines: {},
+    deleted: {},
     add: function(id, controller) {
-        this.outlines[id] = controller;
+        if (this.deleted[id]) {
+            if (controller !== this.deleted[id]) {
+                console.log('ERROR: incompatible deleted outline');
+                debugger;
+            }
+            this.outlines[id] = this.deleted[id];
+            delete this.deleted[id];
+        } else {
+            this.outlines[id] = controller;
+        }
     },
     remove: function(id) {
-        this.outlines[id].destroy();
+        this.deleted[id] = this.outlines[id];
         delete this.outlines[id];
     }
 
@@ -22,17 +32,21 @@ diathink.OutlineController = M.Controller.extend({
     bindView: function(view) { // bind this constructor-instance to this view
         this.rootID = view.id;
         view.setRootID();
+        this.deleted = false;
         diathink.OutlineManager.add(this.rootID, this);
     },
     destroy: function() {
         var i, v, view, models;
+        diathink.OutlineManager.remove(this.rootID);
+        this.deleted = true;
         view = M.ViewManager.getViewById(this.rootID);
         models = view.value.models;
         for (i=0; i<models.length; ++i) {
             models[i].views[this.rootID].destroy();
         }
+        // don't destroy outline-ul-shell-view?
     },
-    listObject:[]
+    listObject: []
 });
 
 diathink.dummyController = M.Controller.extend({

@@ -225,13 +225,13 @@ diathink.Action = Backbone.RelationalModel.extend({
             debugger;
         }
         if (o.oldView !== 'all') {
-            if (!diathink.OutlineManager.outlines[o.oldView]) {
+            if (!diathink.OutlineManager.outlines[o.oldView] && !diathink.OutlineManager.deleted[o.oldView]) {
                 console.log('ERROR: Action '+this.type+' has invalid oldView');
                 debugger;
             }
         }
         if ((o.newView !== 'all')&&(o.newView!=='new'))  {
-            if (!diathink.OutlineManager.outlines[o.newView]) {
+            if (!diathink.OutlineManager.outlines[o.newView] && !diathink.OutlineManager.deleted[o.newView]) {
                 console.log('ERROR: Action '+this.type+' has invalid newView');
                 debugger;
             }
@@ -1435,19 +1435,32 @@ diathink.RootAction= diathink.Action.extend({
         var that = this;
         this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
             var model=null;
-            if (outline.rootID === that.options.oldView) {
-                if (that.options.undo) {
+            if (that.options.undo) {
+                if (outline.rootID === that.options.newView) {
                     model = that.oldRootModel;
-                } else {
-                    if (!that.options.redo) {
-                        that.oldRootModel = M.ViewManager.getViewById(that.options.oldView).rootModel;
-                    }
-                    if (that.options.activeID) {
-                        model = that.getModel(that.options.activeID);
+                    var view = M.ViewManager.getViewById(that.options.newView).parentView
+                        .parentView.changeRoot(model, that.options.oldView);
+                    if (view !== that.options.oldView) {
+                        console.log('Invalid return from changeRoot');
+                        debugger;
                     }
                 }
-                M.ViewManager.getViewById(that.options.oldView).parentView
-                    .parentView.changeRoot(model);
+            } else {
+                if (outline.rootID === that.options.oldView) {
+                    model = that.getModel(that.options.activeID);
+                    if (that.options.redo) {
+                        var view = M.ViewManager.getViewById(that.options.oldView).parentView
+                            .parentView.changeRoot(model, that.options.newView);
+                        if (view !== that.options.newView) {
+                            console.log('Invalid return from changeRoot');
+                            debugger;
+                        }
+                    } else {
+                        that.oldRootModel = M.ViewManager.getViewById(that.options.oldView).rootModel;
+                        that.options.newView = M.ViewManager.getViewById(that.options.oldView).parentView
+                            .parentView.changeRoot(model);
+                    }
+                }
             }
             that.runtime.status.newPlaceAnim[outline.rootID] = 2;
         });

@@ -12,19 +12,40 @@ diathink.PanelOutlineView = M.ContainerView.extend({
            });
         }
     },
-    changeRoot: function(model) { // id is name of model-id or null
-        diathink.OutlineManager.remove(this.outline.alist.rootID);
+    changeRoot: function(model, rootID) { // id is name of model-id or null
+        var newlist;
+        diathink.OutlineManager.outlines[this.outline.alist.rootID].destroy();
+        // diathink.OutlineManager.remove(this.outline.alist.rootID);
           // will get added back in with alist.onDesign:bindView
         this.rootModel = model;
+        if (rootID) {
+            this.rootController = diathink.OutlineManager.deleted[rootID];
+            if (!this.rootController || (this.rootController.panelView !== this)) {
+                console.log('rootController not found in graveyard');
+                debugger;
+            }
+        } else {
+            this.rootController = diathink.OutlineController.extend({
+                panelView: this
+            });
+        }
+        this.outline.alist.detachContentBinding();
+        // need to give view an old rootID
+        if (rootID) {
+            newlist = this.outline.alist.designWithID({id: rootID}); // new rootID
+        } else {
+            newlist = this.outline.alist.design({}); // new rootID
+        }
+        this.outline.alist.destroy();
+        this.outline.alist = newlist;
+        $('#'+this.outline.id).children('.ui-scrollview-view').prepend(this.outline.alist.render());
         this.breadcrumbs.onDesign();
-        // need to redraw breadcrumbs
-        // this.outline.alist.removeAllItems();
-        this.outline.alist.onDesign();
         this.breadcrumbs.renderUpdate();
         this.theme();
         this.registerEvents(); // calls renderUpdate for children recursively
         $('#'+M.ViewManager.getCurrentPage().id).nestedSortable('update');
         $(window).resize(); // fix height of new panel, spacer
+        return newlist.id;
     },
     breadcrumbs:M.BreadcrumbView.extend({
         rootModel: null,
