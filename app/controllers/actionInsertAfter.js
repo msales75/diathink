@@ -1356,35 +1356,62 @@ diathink.CollapseAction= diathink.Action.extend({
     execView:function (outline) {
         var that = this;
         this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
-            if (((that.options.oldView === outline.rootID)||
-                    (that.options.oldView==='all')) ||
-                ((that.options.undo || that.options.redo)&&
-                    that.oldViewCollapsed[outline.rootID]!==undefined) ) {
-                var collapsed;
-                if (that.options.undo) {
-                    // oldCollapsed depends on view.
-                    collapsed = that.oldViewCollapsed[outline.rootID];
-                    // console.log("Undo retrieved collapsed = "+collapsed+" for view="+outline.rootID);
-                } else {
+            // Each node starts with collapsed=null.
+            // On expand/collapse, all visible nodes go to collapsed=true/false.
+            // On undo, all nodes revert to prior-state of null/true/false.
+            // On changeroot, any non-virgin contained-nodes remember their state.
+            // On undoing changeroot, outline remembers former state for all nodes modified before changeroot.
+            // Collapsed node similarly remember based on current outline-state.
+            // Each expand/collapse migrates all visible matching-items to use
+            //   their current view-specific settings.
+            // If they previously used model settings, it's because they
+            //   were never visible during a matching collapse.
+            // Undoing the first expand/collapse should restore collapsed=null
+            //   to the node, along with reverting the model-collapsed state.
+            // Undoing future changes should record the change in view-status.
+            //  between open/closed/null
+
+            var activeModel = that.getModel(that.options.activeID);
+            var activeView = that.getView(that.options.activeID, outline.rootID);
+            if (!activeView) {
+                console.log("Action collapse="+collapsed+" has no activeView, with activeID="+
+                    that.options.activeID+"; oldView="+outline.rootID+
+                    "; undo="+that.options.undo);
+                // Action collapse=false has no activeView, with activeID=c14; oldView=m_16; undo=false
+                that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+                return;
+            }
+            var collapsed;
+            if (that.options.undo) {
+                // oldCollapsed depends on view, can be true, false, or null.
+                collapsed = that.oldViewCollapsed[outline.rootID];
+                // console.log("Undo retrieved collapsed = "+collapsed+" for view="+outline.rootID);
+            } else {
+                if (!that.options.redo) {
+                  that.oldViewCollapsed[outline.rootID] = outline.getData(that.options.activeID);
+                }
+                if ((that.options.oldView === outline.rootID)||
+                    (that.options.oldView==='all')) {
                     collapsed = that.options.collapsed;
+                } else {
+                    collapsed = $('#'+activeView.id).hasClass('collapsed');
                 }
-                var activeView = that.getView(that.options.activeID, outline.rootID);
-                if (!activeView) {
-                    console.log("Action collapse="+collapsed+" has no activeView, with activeID="+
-                        that.options.activeID+"; oldView="+outline.rootID+
-                        "; undo="+that.options.undo);
-                    // Action collapse=false has no activeView, with activeID=c14; oldView=m_16; undo=false
-                    that.runtime.status.newPlaceAnim[outline.rootID] = 2;
-                    return;
+            }
+            outline.setData(that.options.activeID, collapsed);
+
+            if (collapsed == null) {
+                if (!that.options.undo) {
+                    console.log('ERROR collapsed is null not on undo'); debugger;
                 }
-                if (!that.options.undo && !that.options.redo) {
-                    that.oldViewCollapsed[outline.rootID] = $('#'+activeView.id).hasClass('collapsed');
-                    // console.log("Set oldViewCollapsed for "+outline.rootID+" to "+that.oldViewCollapsed[outline.rootID]);
-                }
-                if (collapsed) {
+                collapsed = activeModel.get('collapsed');
+            }
+            if (collapsed) {
+                if (! $('#'+activeView.id).hasClass('collapsed')) {
                     $('#'+activeView.id).removeClass('expanded').addClass('collapsed');
                     activeView.children.removeAllItems();
-                } else {
+                }
+            } else {
+                if ($('#'+activeView.id).hasClass('collapsed')) {
                     $('#'+activeView.id).addClass('expanded').removeClass('collapsed');
                     activeView.children.renderUpdate();
                 }
@@ -1421,11 +1448,16 @@ diathink.RootAction= diathink.Action.extend({
                 var prevAction = c.actions.at(c.lastAction-1);
                 if ((prevAction.type==='CollapseAction')&&
                     (prevAction.options.activeID === that.options.activeID)) {
+
                     var activeModel= that.getModel(that.options.activeID);
-                    activeModel.set('collapsed', !activeModel.get('collapsed'));
+                    activeModel.set('collapsed', prevAction.oldCollapsed);
+                    for (var o in diathink.OutlineManager.outlines) {
+                        diathink.OutlineManager.outlines[o].setData(
+                            that.options.activeID,
+                            prevAction.oldViewCollapsed[o]);
+                    }
                     prevAction.undone = true;
                     prevAction.lost = true;
-                    // update undo-buttons?
                 }
             }
             // todo: save current perspective into model?

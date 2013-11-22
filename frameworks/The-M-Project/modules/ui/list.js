@@ -315,7 +315,15 @@ M.ListView = M.View.extend(
         // MS -- render updated-content for any nested lists
         //    (must be after rendering/theming, above)
         obj.children.value = obj.value.attributes.children;
-        if (obj.value.get('collapsed')) {
+        // check outline and value for collapse-status
+        var isCollapsed = obj.value.get('collapsed');
+
+        var outline = diathink.OutlineManager.outlines[obj.rootID];
+        var collapseTest = outline.getData(obj.value.cid);
+        if (collapseTest != null) {
+            isCollapsed = collapseTest;
+        }
+        if (isCollapsed) {
             objElem.addClass('branch').removeClass('leaf').
                 addClass('collapsed').removeClass('expanded');
         } else {

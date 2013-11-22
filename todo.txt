@@ -2,30 +2,12 @@
 
 Next:
 ---------
-OK Fix bug with unfinished expand/contract during changeRoot
-OK Fixed bug where oldParent needed to check for view-existence
-OK validateOptions won't work when undoing a drag into a collapsed place
-OK preDock won't work when undoing a drag into a collapsed place
-OK Triple-click sets root twice
-OK Breadcrumbs get lost on changeRoot
-OK Branch class added somewhere without removing leaf class.
-OK Don't delete item with children via backspace
-OK prevent backspace-back for uncaught keystroke
-OK Make target-options & contingency-test asynchronous for text-commands
-OK Disable undo/redo buttons when waiting for non-undo/redo actions to finish
 
 
-Each outline has to remember collapsed/expanded nodes
-Outlines must be preserved/restored when deleted/undone
+* Update breadcrumbs if view moved to new parent (or undone)
+* Add plus and drag/drop-line for blank views
 
-Each action has to remember collapsed/expanded exceptions
-Each undone item has to adjust appearance without modifying history
-Rendering must be able to use view-specific model
 
-* in actions, replace outline.rootID with single-var
-
-* Collapsed objects inside other collapsed objects lost
-    when outer-collapse (or root) is undone.
 * Handle text-buffer overflow if typing in undefined-space while performing actions
 * Handle if a conflicting action is scheduled
     before prior action finishes - (context is changed?)
@@ -45,7 +27,7 @@ Rendering must be able to use view-specific model
  * Add shift-tab keyboard-command
  * Up and down arrows should change lines
 
-
+ * Handle deleted views (wait for multi-panels)
  * Drag-to-vertical-line (hard)
   - Add design-space for vertical line
   - Keep track of panels like items in nestedSortable
@@ -53,6 +35,7 @@ Rendering must be able to use view-specific model
   - Add line into drawDropLines & updateDropBoxes
   - Add action or non-action event?
  * Horizontal swipe
+ * Make panel-title editable
  * NOTE: If an outline is deleted, undo re-creates it with the same rootID,
  * NOTE: ViewManager must reserve view-ID when deleting root view.
 
@@ -228,6 +211,7 @@ Future Link UI:
 
 
 ** Refactoring **
+* in actions, replace outline.rootID with single-var
 * nestedSortable "items" point to Views
 * cache height/width/offsets in view-object
 *  update cache during resize or redraws
@@ -500,6 +484,25 @@ Does need .remove?
    scrollview-clip.remove
 breadcrumb tap
 scrollview mousedown
+
+OK Fix bug with unfinished expand/contract during changeRoot
+OK Fixed bug where oldParent needed to check for view-existence
+OK validateOptions won't work when undoing a drag into a collapsed place
+OK preDock won't work when undoing a drag into a collapsed place
+OK Triple-click sets root twice
+OK Breadcrumbs get lost on changeRoot
+OK Branch class added somewhere without removing leaf class.
+OK Don't delete item with children via backspace
+OK prevent backspace-back for uncaught keystroke
+OK Make target-options & contingency-test asynchronous for text-commands
+VOID Disable undo/redo buttons when waiting for non-undo/redo actions to finish
+OK Each outline has to remember collapsed/expanded nodes
+OK Outlines must be preserved/restored when deleted/undone
+OK Collapsed objects inside other collapsed objects lost
+OK    when outer-collapse (or root) is undone.
+OK - Each action and/or outline has to remember collapsed/expanded exceptions
+OK - update controller with each collapse
+OK - renderUpdate must be able to use view-specific model
 
 OK Ensure you can't getting stuck in transition-mode or drop-mode.
 OK Ensure rapid actions can't interfere with each other.

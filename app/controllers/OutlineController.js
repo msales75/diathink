@@ -46,6 +46,19 @@ diathink.OutlineController = M.Controller.extend({
         }
         // don't destroy outline-ul-shell-view?
     },
+    setData: function(key, val) {
+        if (!this.data) {this.data = {};}
+        if (val!=null) {
+            this.data[key] = val;
+        } else {
+            delete this.data[key];
+        }
+    },
+    getData: function(key) {
+        if (!this.data) {return null;}
+        else if (this.data[key] == null) {return null;}
+        else {return this.data[key];}
+    },
     listObject: []
 });
 
