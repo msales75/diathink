@@ -932,6 +932,7 @@ diathink.Action = Backbone.RelationalModel.extend({
 
             if (!newParentView) {newParentView=null; newContext = null;}
 
+
             if (newContext === null) {
                 if (activeView != null) {activeView.destroy(that.runtime.activeElem[outline.rootID]);}
                   // destroy() also detaches view-reference from model
@@ -1038,6 +1039,19 @@ diathink.Action = Backbone.RelationalModel.extend({
                 if (oldParent.get('children').models.length===0) {
                     // removing last child from collapsed parent
                     $('#'+oldParentView.id).removeClass('branch').addClass('leaf');
+                }
+            }
+
+            // check if this view breadcrumbs were modified, if activeID is ancestor of outline.
+            if (!activeView) {
+                var model = outline.rootModel;
+                while (model && (model.cid !== that.options.activeID)) {
+                    model = model.get('parent');
+                }
+                if (model) {
+                    outline.panelView.breadcrumbs.onDesign();
+                    outline.panelView.breadcrumbs.renderUpdate();
+                    outline.panelView.breadcrumbs.theme();
                 }
             }
         });

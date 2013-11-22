@@ -32,6 +32,7 @@ diathink.OutlineController = M.Controller.extend({
     bindView: function(view) { // bind this constructor-instance to this view
         this.rootID = view.id;
         view.setRootID();
+        this.rootModel = view.rootModel;
         this.deleted = false;
         diathink.OutlineManager.add(this.rootID, this);
     },

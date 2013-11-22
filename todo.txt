@@ -3,9 +3,7 @@
 Next:
 ---------
 
-
-* Update breadcrumbs if view moved to new parent (or undone)
-* Add plus and drag/drop-line for blank views
+OK Update breadcrumbs if view moved to new parent (or undone)
 
 
 * Handle text-buffer overflow if typing in undefined-space while performing actions
@@ -28,6 +26,7 @@ Next:
  * Up and down arrows should change lines
 
  * Handle deleted views (wait for multi-panels)
+ * Add plus and drag/drop-line for blank views
  * Drag-to-vertical-line (hard)
   - Add design-space for vertical line
   - Keep track of panels like items in nestedSortable
