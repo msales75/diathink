@@ -7,9 +7,9 @@ Next:
 OK Update breadcrumbs if view moved to new parent (or undone)
 OK Handle text-buffer overflow if typing in undefined-space while performing actions
 
+* diathink.helper could be reset when dragging while another actions animates
 * Handle if a conflicting action is scheduled
     before prior action finishes - (context is changed?)
-* diathink.helper could be reset when dragging while another actions animates
 
 
 *** UI Enhancements: ***
@@ -77,6 +77,7 @@ Clean up the list-item recursive-rendering so there is a single subroutine
 
 
 ** Validations **
+How to test obscure parts of delayed keyboard-code?
 On text focus:  Hide cursor and background-change, verify not scrolling
 * validate classes used for bindings like .disclose are only used in designated view.
 * Test Deletion issue: are we dirtying jQuery's cache?

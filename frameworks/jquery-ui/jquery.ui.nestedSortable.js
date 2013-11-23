@@ -339,10 +339,10 @@
 
             //Set the helper position
             if(!this.options.axis || this.options.axis !== "y") {
-                diathink.helper.style.left = this.position.left+"px";
+                this.helper[0].style.left = this.position.left+"px";
             }
             if(!this.options.axis || this.options.axis !== "x") {
-                diathink.helper.style.top = this.position.top+"px";
+                this.helper[0].style.top = this.position.top+"px";
             }
 
             if (this.scrollPanel) {
@@ -447,6 +447,7 @@
 
 		_mouseStop: function(event, noPropagation) {
 
+            var that = this;
 			// mjs - clear the expansion-hovering timeout, just to be sure
 			  // $('.'+this.options.hoveringClass).removeClass(this.options.hoveringClass);
 			this.hovering && window.clearTimeout(this.hovering);
@@ -479,6 +480,7 @@
                         oldView: targetview.rootID,
                         newView: refview.rootID,
                         anim: 'dock',
+                        helper: that.helper[0],
                         focus: false
                     };});
                 } else if (this.activeBox.type==='dropbottom') {
@@ -489,6 +491,7 @@
                         oldView: targetview.rootID,
                         newView: refview.rootID,
                         anim: 'dock',
+                        helper: that.helper[0],
                         focus: false
                     };});
                 } else if (this.activeBox.type==='drophandle') {
@@ -499,6 +502,7 @@
                         oldView: targetview.rootID,
                         newView: refview.rootID,
                         anim: 'dock',
+                        helper: that.helper[0],
                         focus: false
                     };});
                 }
@@ -506,13 +510,13 @@
                 var that = this;
                 var cur = this.currentItem.offset();
                 this.reverting = true;
-                $(diathink.helper).animate({
+                this.helper.animate({
                     left: cur.left,
                     top: cur.top
                 }, 200, function() {
                     that.currentItem.removeClass('drag-hidden');
-                    diathink.helper.parentNode.removeChild(diathink.helper);
-                    diathink.helper = null;
+                    that.helper[0].parentNode.removeChild(this.helper[0]);
+                    that.helper = null;
                     that.hideDropLines();
                     that.reverting = false;
                 });

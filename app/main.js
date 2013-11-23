@@ -50,10 +50,10 @@ function scheduleKey(simulated, id, opts) {
             return diathink.Action.checkTextChange(id);
         });
     } else {
-        diathink.ActionManager.schedule(opts);
         diathink.ActionManager.schedule(function() {
             return diathink.Action.checkTextChange(id);
         });
+        diathink.ActionManager.schedule(opts);
     }
 };
 

@@ -426,7 +426,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         });
         this.addQueue('preDock', ['context'], function() {
             if (((that.options.anim==='indent')||(that.options.anim==='dock')) &&
-                (!diathink.helper)) {
+                (!that.options.helper)) {
                 // create virtual diathink.helper for animation
                 var oldView = that.options.oldView;
                 if (that.options.undo) {oldView = that.options.newView;}
@@ -438,12 +438,12 @@ diathink.Action = Backbone.RelationalModel.extend({
                     console.log('ERROR: activeView exists with missing element');
                     debugger;
                 }
-                diathink.helper = $('#'+activeView.id)[0].cloneNode(true);
-                diathink.helper.id = '';
+                that.options.helper = $('#'+activeView.id)[0].cloneNode(true);
+                that.options.helper.id = '';
                 var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
-                drawlayer[0].appendChild(diathink.helper);
+                drawlayer[0].appendChild(that.options.helper);
                 var offset = $('#'+activeView.id).offset();
-                $(diathink.helper).css({
+                $(that.options.helper).css({
                     position: 'absolute',
                     left: offset.left+'px',
                     top: offset.top+'px',
@@ -471,13 +471,13 @@ diathink.Action = Backbone.RelationalModel.extend({
                 }
                 if (! that.runtime.newPlaceholder[newView]) { // nowhere to dock
                     $(document.body).removeClass('transition-mode');
-                    diathink.helper.parentNode.removeChild(diathink.helper);
-                    diathink.helper = null;
+                    that.options.helper.parentNode.removeChild(that.options.helper);
+                    that.options.helper = undefined;
                     that.runtime.status.dockAnim = 2;
                     that.nextQueue();
                     return;
                 }
-                if (!diathink.helper) { // nothing to dock
+                if (!that.options.helper) { // nothing to dock
                     that.runtime.status.dockAnim = 2;
                     that.nextQueue();
                     return;
@@ -485,16 +485,16 @@ diathink.Action = Backbone.RelationalModel.extend({
                 var speed;
                 if (that.options.anim==='dock') {speed = that.dockSpeed;}
                 else if (that.options.anim==='indent') {speed = that.indentSpeed;}
-                var startX = diathink.helper.offsetLeft;
-                var startY = diathink.helper.offsetTop;
-                var startWidth = diathink.helper.clientWidth;
+                var startX = that.options.helper.offsetLeft;
+                var startY = that.options.helper.offsetTop;
+                var startWidth = that.options.helper.clientWidth;
 
                 var destination = $(that.runtime.newPlaceholder[newView]).offset();
                 if (that.runtime.oldPlaceholder[newView]) {
                     var oldOffset = $(that.runtime.oldPlaceholder[newView]).offset();
                     if (destination.top > oldOffset.top) {destination.top -= that.runtime.activeHeight[newView];}
                 }
-                $(diathink.helper).addClass('ui-first-child').addClass('ui-last-child');
+                $(that.options.helper).addClass('ui-first-child').addClass('ui-last-child');
                 $.anim(function(frac) {
                     var left = String(Math.round(frac*destination.left+(1-frac)*startX));
                     var top = String(Math.round(frac*destination.top +(1-frac)*startY));
@@ -505,12 +505,12 @@ diathink.Action = Backbone.RelationalModel.extend({
                     if ((that.options.anim==='indent')&&(left > startX)) {
                         css.width = String(startWidth-(left-startX))+'px';
                     }
-                    $(diathink.helper).css(css);
+                    $(that.options.helper).css(css);
                 }, speed, function() {
                     $(document.body).removeClass('transition-mode');
-                    diathink.helper.parentNode.removeChild(diathink.helper);
+                    that.options.helper.parentNode.removeChild(that.options.helper);
                     // remove();
-                    diathink.helper = null;
+                    that.options.helper = undefined;
                     that.runtime.status.dockAnim = 2;
                     that.nextQueue();
                 });
