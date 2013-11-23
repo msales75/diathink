@@ -505,6 +505,9 @@
                         helper: that.helper[0],
                         focus: false
                     };});
+                } else {
+                    console.log('ERROR: Invalid boxtype');
+                    debugger;
                 }
             } else { // cancel action
                 var that = this;
@@ -515,16 +518,14 @@
                     top: cur.top
                 }, 200, function() {
                     that.currentItem.removeClass('drag-hidden');
-                    that.helper[0].parentNode.removeChild(this.helper[0]);
+                    that.helper[0].parentNode.removeChild(that.helper[0]);
+                    that.helper[0] = null;
                     that.helper = null;
                     that.hideDropLines();
                     that.reverting = false;
                 });
             }
             this.activeBox = null;
-
-            this.helper = null; // no more internal references to helper, though
-            //  diathink.helper may persist.
 
             return false;
 		},

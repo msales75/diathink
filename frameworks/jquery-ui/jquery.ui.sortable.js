@@ -122,7 +122,6 @@ $.widget2("ui.sortable", $.ui.mouse, {
 
 		//Create and append the visible helper
 		this.helper = this._createHelper(event);
-        diathink.helper = this.helper[0];
 
 		//Cache the helper size
 		this._cacheHelperProportions();

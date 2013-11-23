@@ -1,20 +1,21 @@
 
 
 
-
 Next:
 ---------
 OK Update breadcrumbs if view moved to new parent (or undone)
 OK Handle text-buffer overflow if typing in undefined-space while performing actions
+OK diathink.helper could be reset when dragging while another actions animates
 
-* diathink.helper could be reset when dragging while another actions animates
 * Handle if a conflicting action is scheduled
     before prior action finishes - (context is changed?)
 
+ * Fix flicker/jiggle of lower items during indent/outdent or drag
+     -- combine two height animations into one.
+ * Flicker on typing first letter into blank field
+ * Fix uneven background-color when exchanging dock
 
 *** UI Enhancements: ***
- * Fix uneven background-color when exchanging dock
- * Fix flicker/jiggle of lower items during indent/outdent or drag
  * Improve Scrolling (hard)
    - while dragging
    - during end/animation of action
@@ -30,6 +31,7 @@ OK Handle text-buffer overflow if typing in undefined-space while performing act
  * Drag-to-vertical-line (hard)
   - Add design-space for vertical line
   - Keep track of panels like items in nestedSortable
+     (views do this)
   - Determine its coordinates relative to panels
   - Add line into drawDropLines & updateDropBoxes
   - Add action or non-action event?
