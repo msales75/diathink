@@ -109,11 +109,11 @@ diathink.ActionManager = M.Controller.extend({
     },
     log: function(action) {
         if (action.options.undo) {
-            console.log("Undoing action "+action.historyRank);
+            console.log("Done undoing action "+action.historyRank+': '+action.type);
         } else if (action.options.redo) {
-            console.log("Redoing action "+action.historyRank);
+            console.log("Done redoing action "+action.historyRank+': '+action.type);
         } else {
-            console.log("Executing action "+this.actions.length);
+            console.log("Done executing action "+this.actions.length+': '+action.type);
         }
         // note: log for original could be called after undo is requested,
         //   but then options.undo would not have been set yet, so its ok

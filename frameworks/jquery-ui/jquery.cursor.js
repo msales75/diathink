@@ -1,11 +1,11 @@
 
 $.fn.setSelection = function(selectionStart, selectionEnd) {
-    if (this.setSelectionRange) {
-        this.focus();
-        this.setSelectionRange(selectionStart, selectionEnd);
+    if (this[0].setSelectionRange) {
+        this[0].focus();
+        this[0].setSelectionRange(selectionStart, selectionEnd);
     }
-    else if (this.createTextRange) {
-        var range = this.createTextRange();
+    else if (this[0].createTextRange) {
+        var range = this[0].createTextRange();
         range.collapse(true);
         range.moveEnd('character', selectionEnd);
         range.moveStart('character', selectionStart);

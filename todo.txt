@@ -1,12 +1,12 @@
 
 
+
+
 Next:
 ---------
-
 OK Update breadcrumbs if view moved to new parent (or undone)
+OK Handle text-buffer overflow if typing in undefined-space while performing actions
 
-
-* Handle text-buffer overflow if typing in undefined-space while performing actions
 * Handle if a conflicting action is scheduled
     before prior action finishes - (context is changed?)
 * diathink.helper could be reset when dragging while another actions animates

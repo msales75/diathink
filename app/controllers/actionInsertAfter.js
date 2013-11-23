@@ -163,7 +163,7 @@ diathink.Action = Backbone.RelationalModel.extend({
     exec: function(options) {
         var i, rank, nsub;
         if (!options) {options = {};}
-        console.log("Scheduling action "+this.type+" with undo="+options.undo+"; redo="+options.redo);
+        console.log("Starting action "+this.type+" with undo="+options.undo+"; redo="+options.redo);
         if (options.redo) {options.undo = false;}
         if (!options.undo) {this.undone=false;}
         if (options.parentAction) {
@@ -399,13 +399,6 @@ diathink.Action = Backbone.RelationalModel.extend({
         _.extend(that.options, options);
         o = that.options;
         this.validateOptions();
-        if (o.undo) {
-            console.log("Starting undo "+this.historyRank+': '+this.type);
-        } else if (o.redo) {
-            console.log("Starting redo "+this.historyRank+': '+this.type);
-        } else {
-            console.log("Starting action "+this.historyRank+': '+this.type);
-        }
 
         // before changing model, start preview animation
         this.addQueue('context', [], function() {
