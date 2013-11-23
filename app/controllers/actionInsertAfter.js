@@ -54,8 +54,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                 end: 0,
                 oldPlace: {},
                 newPlace: {},
-                oldPlaceAnim: {},
-                newPlaceAnim: {},
+                placeAnim: {},
                 view: {}
             }
         }
@@ -524,7 +523,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         var focusDeps = [];
         for (i in outlines) {
            this.execView(outlines[i]);
-           focusDeps.push(['newPlaceAnim', outlines[i].rootID]);
+           focusDeps.push(['placeAnim', outlines[i].rootID]);
            focusDeps.push(['view', outlines[i].rootID]);
         }
         this.addQueue('focus', focusDeps, function() {
@@ -799,25 +798,6 @@ diathink.Action = Backbone.RelationalModel.extend({
                 that.runtime.activeElem[outline.rootID] = activeObj[0];
             }
         });
-        this.addAsync(['oldPlaceAnim', outline.rootID], [['oldPlace', outline.rootID]], function() {
-            if (that.runtime.oldPlaceholder[outline.rootID] && (that.options.anim !== 'indent')) {
-                var speed;
-                if (that.options.anim==='delete') {speed = that.deleteSpeed;}
-                else if (that.options.anim==='create') {speed = that.createSpeed;}
-                else {speed = that.placeholderSpeed;}
-                var startHeight = that.runtime.oldPlaceholder[outline.rootID].clientHeight;
-                $.anim(function(frac) {
-                    $(that.runtime.oldPlaceholder[outline.rootID]).css('height',String(Math.round(startHeight*(1-frac)))+'px');
-                }, speed, function() {
-                    // console.log("Updating status after finishing async sourceAnim:"+outline.rootID);
-                    that.runtime.status.oldPlaceAnim[outline.rootID] = 2;
-                    that.nextQueue();
-                });
-            } else {
-                that.runtime.status.oldPlaceAnim[outline.rootID] = 2;
-                that.nextQueue();
-            }
-        });
         this.addQueue(['newPlace', outline.rootID], ['context', ['oldPlace', outline.rootID]], function() {
             var newContext;
             if (that.options.excludeView && (that.options.excludeView === outline.rootID)) {
@@ -849,32 +829,52 @@ diathink.Action = Backbone.RelationalModel.extend({
                 }
             }
         });
-
-        this.addAsync(['newPlaceAnim', outline.rootID], [['newPlace', outline.rootID]], function() {
-            if (that.runtime.newPlaceholder[outline.rootID] && (that.options.anim !== 'indent')) {
-                var endHeight = that.runtime.activeHeight[outline.rootID];
-                if (!endHeight) {
-                    endHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
-                }
-                var speed;
+        this.addAsync(['placeAnim', outline.rootID], [['oldPlace', outline.rootID], ['newPlace', outline.rootID]], function() {
+            if ((that.runtime.oldPlaceholder[outline.rootID] || that.runtime.newPlaceholder[outline.rootID])&&
+                (that.options.anim !== 'indent')) {
+                var speed, startOldHeight, endNewHeight, sameHeight=false;
                 if (that.options.anim==='delete') {speed = that.deleteSpeed;}
                 else if (that.options.anim==='create') {speed = that.createSpeed;}
                 else {speed = that.placeholderSpeed;}
+                if (that.runtime.oldPlaceholder[outline.rootID]) {
+                    startOldHeight = that.runtime.oldPlaceholder[outline.rootID].clientHeight;
+                }
+                if (that.runtime.newPlaceholder[outline.rootID]) {
+                    endNewHeight = that.runtime.activeHeight[outline.rootID];
+                    if (!endNewHeight) {
+                        endNewHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
+                    }
+                }
+                if (startOldHeight && endNewHeight && (Math.round(startOldHeight)===Math.round(endNewHeight))) {
+                    sameHeight = true;
+                }
                 $.anim(function(frac) {
-                    $(that.runtime.newPlaceholder[outline.rootID]).css('height', String(Math.round(frac*endHeight))+'px');
+                    if (startOldHeight) {
+                        $(that.runtime.oldPlaceholder[outline.rootID]).css('height',String(Math.round(startOldHeight*(1-frac)))+'px');
+                    }
+                    if (endNewHeight) {
+                        if (sameHeight) {
+                            $(that.runtime.newPlaceholder[outline.rootID]).css('height',
+                                String(startOldHeight - Math.round(startOldHeight*(1-frac)))+'px');
+                        } else {
+                            $(that.runtime.newPlaceholder[outline.rootID]).css('height',
+                                String(Math.round(frac*endNewHeight))+'px');
+                        }
+                    }
                 }, speed, function() {
-                    that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+                    // console.log("Updating status after finishing async sourceAnim:"+outline.rootID);
+                    that.runtime.status.placeAnim[outline.rootID] = 2;
                     that.nextQueue();
                 });
             } else {
-                that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+                that.runtime.status.placeAnim[outline.rootID] = 2;
                 that.nextQueue();
             }
         });
     },
     restoreViewContext: function(outline) {
         var that = this;
-        var deps = ['newModelAdd', ['oldPlaceAnim', outline.rootID], ['newPlaceAnim', outline.rootID]];
+        var deps = ['newModelAdd', ['placeAnim', outline.rootID]];
         if ((that.options.anim==='dock')||(that.options.anim==='indent')) {
             deps.push('dockAnim');
         }
@@ -1323,7 +1323,7 @@ diathink.TextAction= diathink.Action.extend({
                 activeView.header.name.text.themeUpdate();
             }
             // satisfy additional dependencies that are never used in this actiontype
-            that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+            that.runtime.status.placeAnim[outline.rootID] = 2;
         });
     }
 });
@@ -1385,7 +1385,7 @@ diathink.CollapseAction= diathink.Action.extend({
                     that.options.activeID+"; oldView="+outline.rootID+
                     "; undo="+that.options.undo);
                 // Action collapse=false has no activeView, with activeID=c14; oldView=m_16; undo=false
-                that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+                that.runtime.status.placeAnim[outline.rootID] = 2;
                 return;
             }
             var collapsed;
@@ -1424,7 +1424,7 @@ diathink.CollapseAction= diathink.Action.extend({
                 }
             }
             // satisfy additional dependencies that are never used in this actiontype
-            that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+            that.runtime.status.placeAnim[outline.rootID] = 2;
         });
     }
 });
@@ -1501,7 +1501,7 @@ diathink.RootAction= diathink.Action.extend({
                     }
                 }
             }
-            that.runtime.status.newPlaceAnim[outline.rootID] = 2;
+            that.runtime.status.placeAnim[outline.rootID] = 2;
         });
     }
 });
