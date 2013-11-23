@@ -356,7 +356,7 @@ M.TextEditView = M.View.extend(
             if(!preventValueComputing) {
                 this.computeValue();
             }
-            $('#' + this.id).val(this.value);
+            $('#' + this.id).val(this.value).text(this.value);
             this.styleUpdate();
         },
 
@@ -502,11 +502,13 @@ M.TextEditView = M.View.extend(
             var paddingY = this.paddingY;
 
 
-            hiddendiv.css('width',String(currentWidth-paddingX)+'px');
+            hiddendiv.css('width',String(currentWidth-paddingX-1)+'px');
             var lastchar = this.value.substr(this.value.length-1,1);
             var rest = this.value.substr(0, this.value.length-1);
             hiddendiv.html($.escapeHtml(rest)+'<span class="marker">'+
-                $.escapeHtml(lastchar).replace(/ /g, "&nbsp;") +'</span>');
+                $.escapeHtml(lastchar) +'</span>');
+            //hiddendiv.html($.escapeHtml(rest)+'<span class="marker">'+
+            //    $.escapeHtml(lastchar).replace(/ /g, "&nbsp;").replace(/  /g, " &nbsp;") +'</span>');
 
             // cache lineHeight if font-size hasn't changed?
             // cache parent-div

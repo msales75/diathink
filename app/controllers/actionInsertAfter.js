@@ -506,10 +506,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                     }
                     $(that.options.helper).css(css);
                 }, speed, function() {
-                    $(document.body).removeClass('transition-mode');
-                    that.options.helper.parentNode.removeChild(that.options.helper);
-                    // remove();
-                    that.options.helper = undefined;
+                    // don't remove helper here, do it in view after replacing New-placeholder.
                     that.runtime.status.dockAnim = 2;
                     that.nextQueue();
                 });
@@ -783,7 +780,8 @@ diathink.Action = Backbone.RelationalModel.extend({
                 }
                 var activeObj = $('#'+activeView.id).addClass('drag-hidden');
                 var activeHeight = activeObj[0].clientHeight;
-                var oldPlaceholder = $('<div></div>').addClass('li-placeholder').css('height',activeHeight);
+                console.log("Creating placeholder with css-height="+activeHeight);
+                var oldPlaceholder = $('<li></li>').addClass('li-placeholder').css('height',String(activeHeight)+'px');
                 if (activeObj.hasClass('ui-first-child')) {
                     oldPlaceholder.addClass('ui-first-child');
                 }
@@ -803,6 +801,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (that.options.excludeView && (that.options.excludeView === outline.rootID)) {
                 return;
             }
+            // if (that.options.anim==='indent') {return;}
             if (that.options.undo) {
                 newContext = that.oldContext;
             } else {
@@ -811,7 +810,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             var parentView = that.contextParentVisible(newContext, outline);
             if (parentView) {
                 if (! parentView.collapsed) { // don't add a placeholder if parent is collapsed
-                    var place = $('<div></div>').addClass('li-placeholder');
+                    var place = $('<li></li>').addClass('li-placeholder').css('height', 0);
                     that.runtime.newPlaceholder[outline.rootID] = place.get(0);
                     if (! newContext.prev) {
                         place.addClass('ui-first-child');
@@ -967,6 +966,12 @@ diathink.Action = Backbone.RelationalModel.extend({
                         var prevElem = $('#'+that.getView(newContext.prev, outline.rootID).id);
                         prevElem.after(elem);
                     }
+                }
+                // do this after newPlaceholder has been replaced, so correct element is visible.
+                if (that.options.helper) {
+                    $(document.body).removeClass('transition-mode');
+                    that.options.helper.parentNode.removeChild(that.options.helper);
+                    that.options.helper = undefined;
                 }
 
                 if (createActiveView) { // todo: add classes in detached-mode instead of here?
@@ -1319,7 +1324,7 @@ diathink.TextAction= diathink.Action.extend({
             if (activeView != null) {
                 activeView.header.name.text.value = text;
                 // console.log("Updating view "+activeView.header.name.text.id+" to value "+this.options.text);
-                $('#'+activeView.header.name.text.id).val(text);
+                $('#'+activeView.header.name.text.id).val(text).text(text);
                 activeView.header.name.text.themeUpdate();
             }
             // satisfy additional dependencies that are never used in this actiontype

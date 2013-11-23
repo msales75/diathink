@@ -1,30 +1,41 @@
 
-
-
 Next:
 ---------
 OK Update breadcrumbs if view moved to new parent (or undone)
 OK Handle text-buffer overflow if typing in undefined-space while performing actions
 OK diathink.helper could be reset when dragging while another actions animates
-
-* Handle if a conflicting action is scheduled
-    before prior action finishes - (context is changed?)
-
- * Fix flicker/jiggle of lower items during indent/outdent or drag
+OK Fix flicker/jiggle of lower items during indent/outdent or drag
      -- combine two height animations into one.
- * Flicker on typing first letter into blank field
- * Fix uneven background-color when exchanging dock
+OK Sharp-corner when indenting last line
+OK Sharp corner when moving to top line
+OK Fix uneven background-color when exchanging dock
+OK Redraw when typing first letter into blank field
+OK Indent/outdent causes jiggle underneath
+OK Pixel-rounding issue.  Should get all heights normalized to integer pixels.
+OK Double-space issue with fixHeight.
+OK Drag-helper needs to appear earlier when indenting
+OK Drag-helper needs to preserve appearance for sub-outlines
+OK Helper can't disappear until after activeElement replaces newPlaceholder.
 
-*** UI Enhancements: ***
- * Improve Scrolling (hard)
-   - while dragging
-   - during end/animation of action
-
- * Focus on previous line when backspacing
+ * Focus on previous line after backspace-deleting
  * Add animation for change-root
  * Add font-change button (and update textarea heights)
  * Add shift-tab keyboard-command
  * Up and down arrows should change lines
+ * Expand/contract animation
+
+*** UI Enhancements: ***
+ * Improve Scrolling (hard)
+   - firefox textarea-bug
+   - enable scroll-wheel
+   - avoid scrolling when all is visible, (decrease/eliminate buffer-size and adjust for window-resize)
+   - avoid scrolling unintentionally, (e.g. when text is selected?)
+   - avoid scrolling unintentionally when dragging
+   - smarter scroll-speeds when drag-scrolling
+   - auto-adjust on resize
+   - undo/redo scrolling
+   - how to return to focused element like google maps (replace redo button)
+
 
  * Handle deleted views (wait for multi-panels)
  * Add plus and drag/drop-line for blank views
@@ -51,7 +62,6 @@ OK diathink.helper could be reset when dragging while another actions animates
 
  * Add line-split and line-merge for return/backspace
  * Trash (footer when dragging?)
- * Expand/contract animation
 
 *** Save locally, remotely
 
@@ -77,6 +87,8 @@ Clean up the list-item recursive-rendering so there is a single subroutine
 * Test Keyboard-strokes after focus for autoscroll
 * Test panel-scrolling
 
+* Handle if a conflicting action is scheduled
+    before prior action finishes - (context is changed?)
 
 ** Validations **
 How to test obscure parts of delayed keyboard-code?

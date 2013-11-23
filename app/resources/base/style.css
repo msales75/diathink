@@ -19,7 +19,10 @@ body {
     overflow: hidden;
 }
 
-
+ul.ui-listview {
+    overflow: hidden;
+    background-color: #EEE;
+}
 .ui-btn-inner {
     font-size: 1em; /* Override 16px default */
 }
@@ -290,16 +293,21 @@ li.ui-li {
 }
 
 li.ui-li.drag-hidden {
-    -webkit-transition: height 80ms linear;
+/*    -webkit-transition: height 80ms linear;
     -moz-transition: height 80ms linear;
     -o-transition: height 80ms linear;
     transition: height 80ms linear;
+*/
 }
 
 li.li-placeholder, div.li-placeholder {
     height: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
     width: 100%;
     background-color: #EEE;
+    overflow: hidden;
 }
 
 li.ui-li.drag-hidden > div, li.ui-li.drag-hidden > ul {
@@ -312,17 +320,21 @@ li.ui-li.ui-btn-hover-c {
 li.ui-li-static.ui-li {
     padding: 0;
 }
-li.ui-li > ul {
-    padding: 0 0 0 0.8em;
+
+li.ui-li > ul.ui-listview {
+    padding: 0;
+    margin: 0 0 0 0.8em;
 }
 
 li.ui-li .outline-header > div.outline-content_container {
     padding: 1px 2px 1px 1.65em;
     margin: 0;
-    -webkit-transition: height 80ms linear;
+    height: 1.55em;
+/*    -webkit-transition: height 80ms linear;
     -moz-transition: height 80ms linear;
     -o-transition: height 80ms linear;
     transition: height 80ms linear;
+    */
 }
 
 li.ui-li .outline-header > div > textarea.outline-content.ui-input-text {
@@ -343,6 +355,10 @@ li.ui-li .outline-header > div > textarea.outline-content.ui-input-text {
     border: none;
     width: 100%;
     height: 100%;
+    -moz-transition: none;
+    -webkit-transition: none;
+    -o-transition: height 0 ease-in;
+    transition: none;
 }
 
 div.hiddendiv {
@@ -359,7 +375,9 @@ div.hiddendiv {
     font-weight: normal;
     left: 10px;
     top: 10px;
-    z-index: 1500;
+    z-index: -1500;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .hiddendiv span.marker {
@@ -371,6 +389,8 @@ div.hiddendiv {
     padding: 0;
     border: none;
     outline: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 /*

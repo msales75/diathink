@@ -97,6 +97,7 @@ diathink.handleKeypress = function(elem, e) {
             var end = sel[1];
             var value = $(elem).val();
             $(elem).val(value.substr(0, start)+key+value.substr(end));
+            $(elem).text($(elem).val());
             $(elem).setSelection(start+1, start+1);
         }
     }
@@ -186,6 +187,7 @@ diathink.handleKeydown = function(elem, e) {
             var value = $(elem).val();
             if (end>0) {
                 $(elem).val(value.substr(0, start-1)+value.substr(end));
+                $(elem).text($(elem).val());
                 $(elem).setSelection(start-1, start-1);
             }
         }
@@ -207,6 +209,28 @@ diathink.app.createPage = function(pageName, root) {
                     var id = M.ViewManager.getPage(pageName).id;
                     if (pageShown>0) {return;} // first-call
                     ++pageShown;
+
+                    var fontsize = Number($('body').css('font-size').replace(/px/,''));
+                    var $textarea = $.stylesheet('li.ui-li .outline-header > div > textarea.outline-content.ui-input-text');
+                    $textarea.css({
+                        'min-height': String(Math.round(1.25*fontsize))+'px',
+                        'line-height': String(Math.round(1.25*fontsize))+'px',
+                        padding: String(Math.round(0.15*fontsize))+'px '+String(Math.round(0.18*fontsize))+'px'
+                    });
+                    var $textareaParent = $.stylesheet('li.ui-li .outline-header > div.outline-content_container');
+                    $textareaParent.css({
+                        'height': String(Math.round(1.55*fontsize))+'px'
+                    });
+                    var $hiddendiv = $.stylesheet('div.hiddendiv');
+                    $hiddendiv.css({
+                        'min-height': String(Math.round(1.25*fontsize))+'px',
+                        'line-height': String(Math.round(1.25*fontsize))+'px',
+                    });
+                    var $hiddendivSpan = $.stylesheet('div.hiddendiv > span.marker');
+                    $hiddendivSpan.css({
+                        'line-height': String(Math.round(1.25*fontsize))+'px'
+                    });
+
 
                     $('#'+id).on('focusin focusout', 'textarea', function(e) {
                         // todo: does this have performance issues (on Firefox) - stop using this?
