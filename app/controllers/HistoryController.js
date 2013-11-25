@@ -36,16 +36,24 @@ diathink.ActionManager = M.Controller.extend({
     codeRequest: function() {
         return $.randomString(16);
     },
-    schedule: function(f) {
+    schedule: function(f, f2) {
+        var newlength = 1;
         this.queue.push(f);
-        if (this.queue.length===1) {
+        if (f2 != null) {
+            var newlength = 2;
+            this.queue.push(f2);
+        }
+        if (this.queue.length===newlength) {
             this.next();
         }
     },
-    subschedule: function(f) {
+    subschedule: function(f, f2) {
         if (this.queue.length<1) {
             console.log('ERROR: preschedule called with empty queue');
             debugger;
+        }
+        if (f2 != null) {
+            this.queue.splice(1,0,f2);
         }
         this.queue.splice(1,0,f);
     },

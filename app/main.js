@@ -44,16 +44,13 @@ diathink.app = M.Application.design({
 });
 
 function scheduleKey(simulated, id, opts) {
+    var schedule;
     if (simulated) {
-        diathink.ActionManager.subschedule(opts);
         diathink.ActionManager.subschedule(function() {
-            return diathink.Action.checkTextChange(id);
-        });
+            return diathink.Action.checkTextChange(id)}, opts);
     } else {
         diathink.ActionManager.schedule(function() {
-            return diathink.Action.checkTextChange(id);
-        });
-        diathink.ActionManager.schedule(opts);
+            return diathink.Action.checkTextChange(id)}, opts);
     }
 };
 
@@ -61,8 +58,6 @@ diathink.handleKeypress = function(elem, e) {
     var id = elem.id;
     var key = String.fromCharCode(e.charCode);
     var liView, collection, rank, sel;
-    var schedule = diathink.ActionManager.schedule;
-    if (e.simulated) {schedule = diathink.ActionManager.subschedule;}
     liView = M.ViewManager.findViewById(id).parentView.parentView.parentView;
     if (key === ' ') {
         sel = $(elem).selection();
@@ -224,7 +219,7 @@ diathink.app.createPage = function(pageName, root) {
                     var $hiddendiv = $.stylesheet('div.hiddendiv');
                     $hiddendiv.css({
                         'min-height': String(Math.round(1.25*fontsize))+'px',
-                        'line-height': String(Math.round(1.25*fontsize))+'px',
+                        'line-height': String(Math.round(1.25*fontsize))+'px'
                     });
                     var $hiddendivSpan = $.stylesheet('div.hiddendiv > span.marker');
                     $hiddendivSpan.css({
@@ -294,15 +289,27 @@ diathink.app.createPage = function(pageName, root) {
                                 // liElem.toggleClass('expanded').toggleClass('collapsed');
                                 view.lastDouble = true;
                                 var li= M.ViewManager.getViewById(view.parentView.parentView.id);
-                                diathink.ActionManager.schedule(function() {return {
-                                    action: diathink.RootAction,
-                                    activeID: li.value.cid,
-                                    oldView: li.rootID,
-                                    newView: 'new'
-                                };});
+                                // todo-here
+                                diathink.ActionManager.schedule(
+                                    function() {
+                                        return diathink.Action.checkTextChange(li.header.name.text.id);
+                                    },
+                                    function() {
+                                        return {
+                                            action: diathink.RootAction,
+                                            activeID: li.value.cid,
+                                            oldView: li.rootID,
+                                            newView: 'new'
+                                        };
+                                    });
                             } else { // single-click
                                 view.lastClicked = now;
-                                diathink.ActionManager.schedule(function() {
+                                // todo-here
+                                diathink.ActionManager.schedule(
+                                  function() {
+                                      return diathink.Action.checkTextChange(view.parentView.parentView.header.name.text.id);
+                                  },
+                                  function() {
                                     if (!liElem.hasClass('branch')) {return false;}
                                     return {
                                             action: diathink.CollapseAction,
@@ -327,7 +334,10 @@ diathink.app.createPage = function(pageName, root) {
                             if (modelid==='home') {
                                 modelid = null;
                             }
-                            diathink.ActionManager.schedule(function() {return {
+                            // todo-here - see if text changes appropriately.
+                            diathink.ActionManager.schedule(
+                              function() {
+                                  return {
                                 action: diathink.RootAction,
                                 activeID: modelid,
                                 oldView: panelview.outline.alist.rootID,

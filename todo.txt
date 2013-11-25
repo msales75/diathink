@@ -1,4 +1,5 @@
 
+
 Next:
 ---------
 OK Update breadcrumbs if view moved to new parent (or undone)
@@ -16,6 +17,14 @@ OK Double-space issue with fixHeight.
 OK Drag-helper needs to appear earlier when indenting
 OK Drag-helper needs to preserve appearance for sub-outlines
 OK Helper can't disappear until after activeElement replaces newPlaceholder.
+OK Drop-Line-widths shouldn't be shorter for multi-line text
+
+
+OK For dragging, the checkTextChange should act on mousedown
+
+* Text-changes aren't saved before double-click or collapse/expand
+   - make it a subscheduled precursor to all commands.
+
 
  * Focus on previous line after backspace-deleting
  * Add animation for change-root
@@ -141,6 +150,14 @@ Docked links:
   * Docked-link in model internally same as a text-link with empty content
   * What about double-clicking handle -->
       preview in "temporary" page to right, like regular link
+
+------
+Inbox
+  Icon on top row
+  Double-click panel-title to add
+  Drop anything to add (dock-point)
+  Tap inbox once to preview latest 3
+  Drag or double-click to open
 
 ---------
 Search UI:

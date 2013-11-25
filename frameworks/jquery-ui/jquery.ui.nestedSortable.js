@@ -113,26 +113,26 @@
                     item[type] = $('<div></div>').appendTo(canvas)
                         .addClass('dropborder')
                         .css('top', (item.top-ctop)+'px')
-                        .css('left', (item.left-cleft+item.height)+'px')
+                        .css('left', (item.left-cleft+diathink.lineHeight)+'px')
                         .css('height', '0px')
-                        .css('width', (item.width-item.height-item.height/2)+'px');
+                        .css('width', (item.width-1.5*diathink.lineHeight)+'px');
                     // boundaries for active hover-area, (larger than drawn area)
-                    d.top = item.top - (item.height/2);
-                    d.bottom = item.top + (item.height/2);
-                    d.left = item.left + item.height; // stay clear of handle
-                    d.right = item.left+item.width-item.height/2;
+                    d.top = item.top - (diathink.lineHeight/2);
+                    d.bottom = item.top + (diathink.lineHeight/2);
+                    d.left = item.left + diathink.lineHeight; // stay clear of handle
+                    d.right = item.left+item.width-diathink.lineHeight/2;
                     d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
                 } else if (type==='dropbottom') {
                     item[type] = $('<div></div>').appendTo(canvas)
                         .addClass('dropborder')
                         .css('top', (item.top+item.height-ctop-1)+'px')
-                        .css('left', (item.left-cleft+item.height)+'px')
-                        .css('width',(item.width-item.height-item.height/2)+'px')
+                        .css('left', (item.left-cleft+diathink.lineHeight)+'px')
+                        .css('width',(item.width-1.5*diathink.lineHeight)+'px')
                         .css('height', '0px');
-                    d.top = item.top + (item.height/2);
-                    d.bottom = item.top + (3*item.height/2);
-                    d.left = item.left + item.height; // stay clear of handle
-                    d.right = item.left+item.width-item.height/2;
+                    d.top = item.top + item.height - 0.5*diathink.lineHeight;
+                    d.bottom = item.top + item.height + 0.5*diathink.lineHeight;
+                    d.left = item.left + diathink.lineHeight; // stay clear of handle
+                    d.right = item.left+item.width-diathink.lineHeight/2;
                     d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
                 } else if (type==='drophandle') {
                     item[type] = $('<div></div>').appendTo(canvas)
@@ -140,9 +140,9 @@
                         .css('top', (item.top-ctop-1)+'px')
                         .css('left', (item.left-cleft-1)+'px');
                     d.top = item.top;
-                    d.bottom = item.top + item.height;
+                    d.bottom = item.top + diathink.lineHeight;
                     d.left = item.left;
-                    d.right = item.left + item.height;
+                    d.right = item.left + diathink.lineHeight;
                     d.parentView = M.ViewManager.getViewById(item.item[0].id);
                 }
                 if (item[type]) {
@@ -221,6 +221,7 @@
             setTimeout(function() {
                 that._emptyDropLayers();
                 that._showDropLines();
+                diathink.lineHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
                 // foreach M.ScrollView, cache offset top/left
                 var panelParent = M.ViewManager.getCurrentPage().content;
                 var canvas1 = panelParent.scroll1.outline.droplayer;
@@ -267,7 +268,11 @@
                         });
                     }
                 }
-                // that._previewDropBoxes();
+                /*
+                setTimeout(function() {
+                    that._previewDropBoxes();
+                }, 100);
+                */
 
             }, 5);
 
@@ -282,8 +287,8 @@
             if (item.droptop != null) {
                 d = item.dropboxes[item.dropboxes.length] =
                 {type: 'droptop', elem: item.droptop, item: item};
-                d.top = item.top - (item.height/2) - 1;
-                d.bottom = item.top + (item.height/2) + 1;
+                d.top = item.top - (diathink.lineHeight/2) - 1;
+                d.bottom = item.top + (diathink.lineHeight/2) + 1;
                 d.left = item.left + 16; // stay clear of handle
                 d.right = item.left+item.width+2;
             }
@@ -304,9 +309,14 @@
                     view = view.parentView;
                     if (view==null) {debug.log(['error','drag'],'Invalid View'); return;}
                 }
+                var view = M.ViewManager.getViewById(this.items[i].parentPanel[0].id);
                 var canvas = $('#'+view.droplayer.id);
                 var ctop = canvas.offset().top;
                 var cleft = canvas.offset().left;
+                if (!this.items[i].dropboxes) {
+                    console.log("ERROR: Item "+i+" does not have dropboxes?");
+                    continue;
+                }
                 for (j=0; j<this.items[i].dropboxes.length; ++j) {
                     d = this.items[i].dropboxes[j];
                     $('<div></div>').appendTo(canvas)
@@ -473,7 +483,11 @@
                 }
 
                 if (this.activeBox.type==='droptop') {
-                    diathink.ActionManager.schedule(function () {return {
+                    diathink.ActionManager.schedule(
+                      function() {
+                          return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                      },
+                      function () {return {
                         action: diathink.MoveBeforeAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
@@ -484,7 +498,11 @@
                         focus: false
                     };});
                 } else if (this.activeBox.type==='dropbottom') {
-                    diathink.ActionManager.schedule(function() {return {
+                    diathink.ActionManager.schedule(
+                      function() {
+                          return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                      },
+                      function() {return {
                         action: diathink.MoveAfterAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
@@ -495,7 +513,11 @@
                         focus: false
                     };});
                 } else if (this.activeBox.type==='drophandle') {
-                    diathink.ActionManager.schedule(function() {return {
+                    diathink.ActionManager.schedule(
+                        function() {
+                            return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                        },
+                        function() {return {
                         action: diathink.MoveIntoAction,
                         referenceID: refview.value.cid,
                         activeID: targetview.value.cid,
@@ -531,13 +553,18 @@
 		},
 
         _mouseStart: function(event, overrideHandle, noActivation) {
+            var that = this;
+            var args = arguments;
             this.panelScrollStart = {};
-
-            $.ui.sortable.prototype._mouseStart.apply(this, arguments);
-
-            this.drawDropLines();
-
-           // this._previewDropBoxes();
+            var textid = M.ViewManager.getViewById(that.currentItem[0].id).header.name.text.id;
+            // Correct the active textbox in case it doesn't match value.
+            $('#'+textid).text($('#'+textid).val());
+            diathink.ActionManager.schedule(
+                function() {
+                  return diathink.Action.checkTextChange(textid);
+            });
+            $.ui.sortable.prototype._mouseStart.apply(that, args);
+            that.drawDropLines();
         },
 
         drawDropLines: function(o) {
