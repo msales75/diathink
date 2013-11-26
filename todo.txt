@@ -1,4 +1,5 @@
 
+100K ?
 
 Next:
 ---------
@@ -18,20 +19,17 @@ OK Drag-helper needs to appear earlier when indenting
 OK Drag-helper needs to preserve appearance for sub-outlines
 OK Helper can't disappear until after activeElement replaces newPlaceholder.
 OK Drop-Line-widths shouldn't be shorter for multi-line text
-
-
 OK For dragging, the checkTextChange should act on mousedown
+OK Text-changes aren't saved before double-click or collapse/expand
+OK Focus on previous line after backspace-deleting
 
-* Text-changes aren't saved before double-click or collapse/expand
-   - make it a subscheduled precursor to all commands.
 
-
- * Focus on previous line after backspace-deleting
  * Add animation for change-root
  * Add font-change button (and update textarea heights)
- * Add shift-tab keyboard-command
  * Up and down arrows should change lines
  * Expand/contract animation
+ * Add shift-tab keyboard-command
+
 
 *** UI Enhancements: ***
  * Improve Scrolling (hard)
@@ -89,6 +87,7 @@ Save element-reference in views once they are rendered
 Modify rendering/theming/destroying to use use cached-elements and work detached
 Clean up the list-item recursive-rendering so there is a single subroutine
   with single DOM rendering and no redundant theming
+ model-parentCollection/rank needs optimization
 
 *** Phonegap: ***
 * Setup on Mac
@@ -175,8 +174,10 @@ Search returns a list of expandable links,
  Only has docked-links, not inline.
 
 Backlinks:
+  Line backlinks
+  Panel backlinks
 
- * Backlinks button with count/new-icon, opens custom-search
+* Backlinks button with count/new-icon, opens custom-search
     flags/tabs for: unincluded, unread; tabs for comments,references?)
 * Use different icon if some backlinks are visible on screen,
   first click highlights them, second link opens full-search.
@@ -242,7 +243,7 @@ Future Link UI:
 
 
 ** Refactoring **
-* in actions, replace outline.rootID with single-var
+*? in actions, replace outline.rootID with single-var
 * nestedSortable "items" point to Views
 * cache height/width/offsets in view-object
 *  update cache during resize or redraws
@@ -255,6 +256,7 @@ Future Link UI:
 * Use only target class and id for routing
 * Simplify classes-structure for styling
 * Put many subroutines in global diathink space.
+* Syntax cleanup for all colored-boxes etc.
 Rendering uses classes and
 
 

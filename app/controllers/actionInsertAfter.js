@@ -404,15 +404,6 @@ diathink.Action = Backbone.RelationalModel.extend({
             that.timestamp = (new Date()).getTime();
             // the queues must wait until this action is ready to go.
             if (!o.undo && !o.redo) {
-                if (o.targetIsFocused) { // fix target here, if it depends on current focus
-                    if (diathink.focused) {
-                        that.options.activeID = M.ViewManager.getViewById(diathink.focused.id).parentView.parentView.value.cid;
-                    }
-                } else if (o.referenceIsFocused) {
-                    if (diathink.focused) {
-                        that.options.referenceID = M.ViewManager.getViewById(diathink.focused.id).parentView.parentView.value.cid;
-                    }
-                }
                 that.getOldContext();
                 that.getNewContext();
             }
@@ -524,17 +515,8 @@ diathink.Action = Backbone.RelationalModel.extend({
            focusDeps.push(['view', outlines[i].rootID]);
         }
         this.addQueue('focus', focusDeps, function() {
-            var o = that.options;
-            if (o.focus) {
-                if (o.undo) {
-                    if (that.oldContext != null) {
-                        $('#' + that.getView(o.activeID, o.oldView).header.name.text.id).focus();
-                    }
-                } else {
-                    if (that.newContext != null) {
-                        $('#' + that.getView(o.activeID, o.newView).header.name.text.id).focus();
-                    }
-                }
+            if (that.options.focus) {
+                that.focus();
             }
         });
 
@@ -655,6 +637,17 @@ diathink.Action = Backbone.RelationalModel.extend({
             context.prev = collection.at(collection.length-1).cid;
         }
         return context;
+    },
+    focus: function() {
+        // by default, focus on activeID in newView
+        var newView;
+        if (this.options.undo) {
+            newView = this.options.oldView;
+        } else {
+            newView = this.options.newView;
+        }
+        var id = this.getView(this.options.activeID, newView).header.name.text.id;
+        $('#'+id).focus();
     },
     newModel: function() {
         var activeModel = new diathink.OutlineNodeModel({text: this.options.text, children: null});
@@ -1277,6 +1270,45 @@ diathink.DeleteAction = diathink.Action.extend({
         requireNew: false
     },
     options: {activeID: null, transition: false},
+    focus: function() {
+        var newView, li, model, collection, rank, cursorstart=false, cursor;
+        if (this.options.undo) {
+            li = this.getView(this.options.activeID, this.options.oldView.rootID);
+            $('#'+li.header.name.text.id).setCursor(0).focus();
+            return;
+        }
+        newView = this.options.newView;
+        // this won't work because model has been deleted.
+        if (this.oldContext.prev == null) {
+            // check if parent is visible
+            li = null;
+            if (this.oldContext.parent != null) {
+                li = this.getView(this.oldContext.parent, newView);
+            }
+            if (!li) { // try following sibling
+                if (this.oldContext.next == null) {
+                    return; // no other elements in view
+                }
+                li = this.getView(this.oldContext.next, newView);
+                cursorstart = true;
+            }
+        } else { // goto prior sibling.
+            li = this.getView(this.oldContext.prev, newView);
+            if (!li) {
+                console.log('ERROR: Missing prior view for focus');
+                debugger;
+            }
+        }
+        var elem = $('#'+li.header.name.text.id);
+        if (cursorstart) {
+            elem.setCursor(0);
+            elem.focus();
+        } else {
+            cursor = elem.val().length;
+            elem.setCursor(cursor);
+            elem.focus();
+        }
+    },
     getNewContext: function() {
         this.newContext = null;
     }
