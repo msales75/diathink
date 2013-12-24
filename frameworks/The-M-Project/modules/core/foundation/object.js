@@ -127,7 +127,6 @@ M.Object =
             M.EventDispatcher.unregisterEvents(this);
             M.ViewManager.unregister(this);
         }
-        delete this;
     },
 
     detachContentBinding: function(){

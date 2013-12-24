@@ -244,7 +244,6 @@ M.ListView = M.View.extend(
                 // $('#' + this.id).remove();
                 elem.parentNode.removeChild(elem);
             }
-            delete this;
         },
 
     /**

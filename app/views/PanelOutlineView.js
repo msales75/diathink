@@ -48,19 +48,9 @@ diathink.PanelOutlineView = M.ContainerView.extend({
         return newlist.id;
     },
     breadcrumbs:M.BreadcrumbView.extend({
-        rootModel: null,
         value: [],
         onDesign: function() { // once rootModel is defined in design-stage, define breadcrumbs
-            var crumb;
-            this.rootModel = this.parentView.rootModel;
-            this.value = [];
-            if (this.rootModel !== null) {
-                crumb = this.rootModel;
-                while (crumb != null) {
-                    this.value.unshift(crumb);
-                    crumb = crumb.get('parent');
-                }
-            }
+            this.defineFromModel(this.parentView.rootModel);
         }
     }),
     outline: M.ScrollView.extend({

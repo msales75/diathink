@@ -35,6 +35,18 @@ M.BreadcrumbView = M.View.extend(
          */
         recommendedEvents: ['click', 'tap', 'vclick'],
 
+        defineFromModel: function(model) {
+            var crumb;
+            this.value = [];
+            if (model !== null) {
+                crumb = model;
+                while (crumb != null) {
+                    this.value.unshift(crumb);
+                    crumb = crumb.get('parent');
+                }
+            }
+        },
+
         render: function() {
             this.html = '<span id="'+this.id+'"' + this.style() + '>';
             this.html += '<a data-href="home">Home</a> &gt;&gt;';

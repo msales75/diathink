@@ -491,10 +491,10 @@
                         action: diathink.MoveBeforeAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
-                        oldView: targetview.rootID,
-                        newView: refview.rootID,
+                        oldRoot: targetview.rootID,
+                        newRoot: refview.rootID,
                         anim: 'dock',
-                        helper: that.helper[0],
+                        dockElem: that.helper[0],
                         focus: false
                     };});
                 } else if (this.activeBox.type==='dropbottom') {
@@ -506,10 +506,10 @@
                         action: diathink.MoveAfterAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
-                        oldView: targetview.rootID,
-                        newView: refview.rootID,
+                        oldRoot: targetview.rootID,
+                        newRoot: refview.rootID,
                         anim: 'dock',
-                        helper: that.helper[0],
+                        dockElem: that.helper[0],
                         focus: false
                     };});
                 } else if (this.activeBox.type==='drophandle') {
@@ -521,10 +521,10 @@
                         action: diathink.MoveIntoAction,
                         referenceID: refview.value.cid,
                         activeID: targetview.value.cid,
-                        oldView: targetview.rootID,
-                        newView: refview.rootID,
+                        oldRoot: targetview.rootID,
+                        newRoot: refview.rootID,
                         anim: 'dock',
-                        helper: that.helper[0],
+                        dockElem: that.helper[0],
                         focus: false
                     };});
                 } else {

@@ -1,5 +1,40 @@
 
-100K ?
+
+todo: fix explicit loops over panels
+
+context
+  getOld/NewPanelContext
+    defines this.oldPanelContext
+
+oldPlace/newPlace/placeAnim (don't use for panels)
+  (move into separate functions)
+preDock (needs activeView and no-helper)
+dockAnim (sets animOptions)
+  (needs newPlaceholder & helper)
+  (needs modification for docking to panel)
+anim
+
+
+
+
+// (NO) don't do any model-ops in a panel-changing op. (does this work?)
+//     --> dragging panel/breadcrumb into a line as a link
+
+// Flag data for cleanup
+
+UI Development:
+ Variable scopes/types
+ Data-Examples/Constraints
+ Essential/Inferred examples/constraints
+ Benchmarks (flagging exceptional cases)
+ Focus on code-constraints/tests (ability to inject them)
+ User-feedback
+Backtracing in UI (identify characteristics of image)
+
+
+Most efficient way to handle animation-docking?
+DOM Replacement, hmm... make smaller mods & update element-refs?
+
 
 Next:
 ---------
@@ -23,24 +58,20 @@ OK For dragging, the checkTextChange should act on mousedown
 OK Text-changes aren't saved before double-click or collapse/expand
 OK Focus on previous line after backspace-deleting
 
-
  * Add animation for change-root
  * Add font-change button (and update textarea heights)
- * Up and down arrows should change lines
- * Expand/contract animation
- * Add shift-tab keyboard-command
+ * ? Expand/contract animation
 
 
 *** UI Enhancements: ***
  * Improve Scrolling (hard)
-   - firefox textarea-bug
+   - enable scrollbars/disable-drag for mouse
    - enable scroll-wheel
    - avoid scrolling when all is visible, (decrease/eliminate buffer-size and adjust for window-resize)
-   - avoid scrolling unintentionally, (e.g. when text is selected?)
    - avoid scrolling unintentionally when dragging
    - smarter scroll-speeds when drag-scrolling
-   - auto-adjust on resize
    - undo/redo scrolling
+   - auto-adjust on resize
    - how to return to focused element like google maps (replace redo button)
 
 
@@ -54,7 +85,7 @@ OK Focus on previous line after backspace-deleting
   - Add line into drawDropLines & updateDropBoxes
   - Add action or non-action event?
  * Horizontal swipe
- * Make panel-title editable
+ * Make panel-title editable (though double-click inboxes)
  * NOTE: If an outline is deleted, undo re-creates it with the same rootID,
  * NOTE: ViewManager must reserve view-ID when deleting root view.
 
@@ -72,6 +103,10 @@ OK Focus on previous line after backspace-deleting
 
 *** Save locally, remotely
 
+ * Up and down arrows should change lines
+ * Add shift-tab keyboard-command
+ * Make newline/delete jump in/out when expanded
+ * Make newline/delete split/merge text
 
 *** Performance: **
 * Mobile-UI: Remove double-click effect on disclose-tap
@@ -129,16 +164,19 @@ Link UI:
  * Dropping into text-box adds hyperlink to end of text, creating a new line if necessary
  * Design appearance of hypertext with dotted border
  * Where to draw a superimposed-word/symbol can be calculated from a div/span.
- * Dropping opens the link's edit-box
+ * Dropping opens the link's edit-box (temporary-panel to right if children?)
+ * Single-click re-opens temporary-panel to right
  * Edit-box shows breadcrumbs, allows renaming, deletion
- * Edit-box shows expandable children?
  * Edit-box has move-left/move-right if there are multiple links in same line
+ * Edit-box has move-up/down if there are multiple lines with links
+ * Edit-box shows expandable children?
  * Link is draggable and double-clickable
  * Breadcrumbs look/click/drag like links
  * Double-click opens new page
  * Dropping onto vertical line opens new page
- * Dropping into text adds reference into line
+ * Dropping into right-slot adds reference into line
  * How to rearrange multiple links?
+
 
 ------
 Docked links:

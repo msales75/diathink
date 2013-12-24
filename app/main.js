@@ -74,8 +74,8 @@ diathink.handleKeypress = function(elem, e) {
                     anim: 'indent',
                     activeID: liView.modelId,
                     referenceID: collection.models[rank-1].cid,
-                    oldView: liView.rootID,
-                    newView: liView.rootID,
+                    oldRoot: liView.rootID,
+                    newRoot: liView.rootID,
                     focus: true
                 };});
                 e.preventDefault();
@@ -114,8 +114,8 @@ diathink.handleKeydown = function(elem, e) {
                 anim: 'indent',
                 activeID: liView.modelId,
                 referenceID: collection.models[rank-1].cid,
-                oldView: liView.rootID,
-                newView: liView.rootID,
+                oldRoot: liView.rootID,
+                newRoot: liView.rootID,
                 focus: true
             };});
             e.preventDefault();
@@ -137,8 +137,8 @@ diathink.handleKeydown = function(elem, e) {
                     anim: 'indent',
                     activeID: liView.modelId,
                     referenceID: liView.value.attributes.parent.cid,
-                    oldView: liView.rootID,
-                    newView: liView.rootID,
+                    oldRoot: liView.rootID,
+                    newRoot: liView.rootID,
                     focus: true
                 };});
                 e.preventDefault();
@@ -150,8 +150,8 @@ diathink.handleKeydown = function(elem, e) {
                             action: diathink.DeleteAction,
                             anim: 'delete',
                             activeID: liView.modelId,
-                            oldView: liView.rootID,
-                            newView: liView.rootID,
+                            oldRoot: liView.rootID,
+                            newRoot: liView.rootID,
                             focus: true
                         };});
                         e.preventDefault();
@@ -166,8 +166,8 @@ diathink.handleKeydown = function(elem, e) {
             action: diathink.InsertAfterAction,
             anim: 'create',
             referenceID: liView.modelId,
-            oldView: liView.rootID,
-            newView: liView.rootID,
+            oldRoot: liView.rootID,
+            newRoot: liView.rootID,
             focus: true
         };});
         e.preventDefault();
@@ -298,8 +298,8 @@ diathink.app.createPage = function(pageName, root) {
                                         return {
                                             action: diathink.RootAction,
                                             activeID: li.value.cid,
-                                            oldView: li.rootID,
-                                            newView: 'new'
+                                            oldRoot: li.rootID,
+                                            newRoot: 'new'
                                         };
                                     });
                             } else { // single-click
@@ -315,8 +315,8 @@ diathink.app.createPage = function(pageName, root) {
                                             action: diathink.CollapseAction,
                                             activeID: view.parentView.parentView.value.cid,
                                             collapsed: ! liElem.hasClass('collapsed'),
-                                            oldView: view.parentView.parentView.rootID,
-                                            newView: view.parentView.parentView.rootID,
+                                            oldRoot: view.parentView.parentView.rootID,
+                                            newRoot: view.parentView.parentView.rootID,
                                             focus: false
                                         };
                                 });
@@ -340,8 +340,8 @@ diathink.app.createPage = function(pageName, root) {
                                   return {
                                 action: diathink.RootAction,
                                 activeID: modelid,
-                                oldView: panelview.outline.alist.rootID,
-                                newView: 'new'
+                                oldRoot: panelview.outline.alist.rootID,
+                                newRoot: 'new'
                             };});
                         }
                     });

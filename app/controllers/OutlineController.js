@@ -1,4 +1,73 @@
 
+
+diathink.PanelManager = M.Object.extend({
+  type: 'PanelManager',
+  nextpanel: {'': ''},
+  prevpanel: {'': ''},
+  deleted: {},
+  insertAfter: function(newid, previousid) {
+      if ((this.nextpanel[newid]!==undefined) ||
+          (this.prevpanel[newid]!==undefined) || (newid === '')) {
+          console.log('Error inserting invalid id'); // error
+          debugger;
+          return;
+      }
+      if ((this.nextpanel[previousid]===undefined)||
+          (this.prevpanel[previousid]===undefined)) {
+          console.log('Error inserting panel previous-id'); // error
+          debugger;
+          return;
+      }
+      var oldnext = this.nextpanel[previousid];
+      this.nextpanel[previousid] = newid;
+      this.prevpanel[newid] = previousid;
+      this.nextpanel[newid] = oldnext;
+      this.prevpanel[oldnext] = newid;
+      if (this.deleted[newid]) {
+          delete this.deleted[newid];
+      }
+  },
+  remove: function(id) {
+      if ((this.nextpanel[id]===undefined) || (this.prevpanel[id]===undefined) || (id==='')) {
+          console.log('Error removing panel');
+          debugger;
+          return;
+      }
+      var next = this.nextpanel[id];
+      var prev = this.prevpanel[id];
+      this.nextpanel[prev] = next;
+      this.prevpanel[next] = prev;
+      delete this.nextpanel[id];
+      delete this.prevpanel[id];
+      this.deleted[id] = id;
+  },
+  moveAfter: function(id, previousid) {
+      if ((this.nextpanel[id]===undefined) || (this.prevpanel[id]===undefined) || (id==='')) {
+          console.log('Error moving panel');
+          debugger;
+          return;
+      }
+      if ((this.nextpanel[previousid]===undefined)||
+          (this.prevpanel[previousid]===undefined)) {
+          console.log('Error moving panel after previous-id'); // error
+          debugger;
+          return;
+      }
+      // remove id
+      var next = this.nextpanel[id];
+      var prev = this.prevpanel[id];
+      this.nextpanel[prev] = next;
+      this.prevpanel[next] = prev;
+
+      // add-in after previousid
+      var oldnext = this.nextpanel[previousid];
+      this.nextpanel[previousid] = id;
+      this.prevpanel[id] = previousid;
+      this.nextpanel[id] = oldnext;
+      this.prevpanel[oldnext] = id;
+  }
+});
+
 // Note that controllers must be defined before view.
 // TODO later support partial-list loading?
 
@@ -60,7 +129,7 @@ diathink.OutlineController = M.Controller.extend({
         else if (this.data[key] == null) {return null;}
         else {return this.data[key];}
     },
-    listObject: []
+    listObject: [] // list-data for top-level of outline
 });
 
 diathink.dummyController = M.Controller.extend({

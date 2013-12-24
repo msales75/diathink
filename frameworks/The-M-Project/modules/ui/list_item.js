@@ -214,7 +214,6 @@ M.ListItemView = M.View.extend(
                     elem.parentNode.removeChild(elem);
                 }
             }
-            delete this;
         },
 
     /**

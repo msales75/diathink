@@ -1,5 +1,6 @@
 $(function () {
-
+    diathink.log = function() {};
+    return;
 /*    var lastwtop = 0, lastdtop = 0, lastbtop = 0, lastptop = 0, last1top = 0, last2top = 0;
     var scroll = setInterval(function() {
         if ($(window).scrollTop()!=lastwtop) {
