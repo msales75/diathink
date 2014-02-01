@@ -1,4 +1,110 @@
 
+Sequence of newLinePlace regarding outline-ID's
+ (why are you calling newLinePlace for changeRoot?)
+
+1. Get context & neighborhood
+   before doing placeholders
+rOldLinePlaceholder created in oldLinePlace
+ - activeLineElem defined and detached
+rNewLinePlaceholder created in newLinePlace
+dockElem set in options or cloned from activeLineView
+
+Encapsulate animation, placeholder & docking operations
+
+
+restoreViewContext:
+  activeLineView
+  neighbor based on activeLineView or rOldLinePlaceholder
+
+  oldParent
+  newParentView/oldParentView
+
+  activeLineElem
+  activeLineView
+
+
+Question: when/how are elements reused
+  for placeholders and/or docking?
+ChangeRoot creates a new view-id
+  but preserves old one?
+
+* Finish debugging, then move animation-stuff
+    into separate files.
+* Move actions into separate files.
+
+* Endure unused options for now.
+
+
+Make a separate place for animation?
+ general, placeholders, docking, scrolling
+
+Should we setup animations in a separate
+  layer of queueing?
+
+Animation types:
+ Move line/line or line/panel or link/line
+ Some update master-outline, edit links
+ Some update panels, leftPanel, expand/collapse
+ Some update focus/scrolling, change leftPanel
+
+Subpanel linkage & anchoring
+
+Viewport when action happened: panels,
+  leftPanel, expand/collapse
+Actions and undo/redo should update focus
+
+Create/show/hide/delete placeholders
+  - adjust outline height offset
+Create/reuse/Move/delete dock element
+ (if o.dockElem is set)
+Set leftPanel
+Set panel-scroll to focus
+
+Do we create, clone or re-use
+ animated-element?
+
+
+context:
+ oldModelContext, newModelContext,
+ oldPanelContext, newModelContext
+ runinit-vars
+
+createDockElem (context):
+ createDockElem
+dockAnim (newLinePlace, oldLinePlace)
+panelPrep
+oldLinePlace
+newLinePlace
+linePlaceAnim
+anim
+
+'View'->'finalizeView' should not require anim
+
+execModel:modelCreate (overriden)
+ restoreContext:
+  oldModelCollection,
+  oldModelRemove, newModelRank, newModelAdd,
+execView: (overriden)
+ restoreViewContext: view
+focus
+undobuttons
+end
+
+
+
+actionAfterInsert is too long - need to break it up.
+
+
+animStep
+dockAnim
+linePlaceAnim called after oldLinePlace and newLinePlace,
+  after preDock and context
+ ** if using linePlaceHOlderANim
+runinit
+animStep always comes after linePlaceAnim, if it exists
+ But linePlaceAnim doesn't exist here?
+ So how does view get defined?
+
 
 todo: fix explicit loops over panels
 

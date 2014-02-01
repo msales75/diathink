@@ -14,8 +14,9 @@
 // todo: action stores oldFocus and newFocus ? (maybe not)
 // todo: handle focusID in context, and validate it.
 // todo: undo-scroll (maybe focus)
-diathink.animHelpers = {
 
+diathink.animHelpers = {
+    // * Currently unused, precisely orients text in object-boundaries
     getObjectParams: function(obj, textobj) {
         // if old-type = new-type, don't need to deal with this
         var oldParams = {};
@@ -33,20 +34,23 @@ diathink.animHelpers = {
         return oldParams;
     },
 
+    // Used for all animation-frame-steps
     animStep: function(frac) {
         var i, r = this.runtime, o = this.runtime.animOptions;
         // loop over all outlines
         var outlines = diathink.OutlineManager.outlines;
-        for (i in outlines) {
-            if (!o.view[i]) {continue;}
-            if (r.rOldLinePlaceholder[i]) {
-                this.oldLinePlaceAnimStep(frac, o.view[i]);
-            }
-            if (r.rNewLinePlaceholder[i]) {
-                this.newLinePlaceAnimStep(frac, o.view[i]);
-            }
-            if (this.oldType==='panel') {
+        if (o.view) {
+            for (i in outlines) {
+                if (!o.view[i]) {continue;}
+                if (r.rOldLinePlaceholder[i]) {// visually collapse old line
+                    this.oldLinePlaceAnimStep(frac, o.view[i]);
+                }
+                if (r.rNewLinePlaceholder[i]) {// visually expand new line
+                    this.newLinePlaceAnimStep(frac, o.view[i]);
+                }
+                if (this.oldType==='panel') {
 
+                }
             }
         }
         if (o.dock) {
@@ -55,6 +59,7 @@ diathink.animHelpers = {
         }
     },
 
+    // animation-step if the oldLinePlaceholder is animated
     oldLinePlaceAnimStep: function(frac, o) {
         var startOldHeight = o.startOldHeight, rootID = o.rootID;
         $(this.runtime.rOldLinePlaceholder[rootID]).css('height',
@@ -107,6 +112,7 @@ diathink.animHelpers = {
         }
     },
     panelPrep: function() {
+        return;
         var r = this.runtime;
 
         if (r.rOldType !== 'panel') {return;}
@@ -152,7 +158,7 @@ diathink.animHelpers = {
         // fade out any lost-breadcrumbs; transform breadcrumb-hyperlink into text.
     },
 
-    preDock: function() {
+    createDockElem: function() {
         var r = this.runtime;
         if (r.createDockElem) {
             // create virtual diathink.helper for animation
@@ -281,6 +287,7 @@ diathink.animHelpers = {
         // if (this.options.anim==='indent') {return;}
         var r = this.runtime;
         var newModelContext = r.rNewModelContext;
+        if (!outline) {return;}
         if (r.rNewLinePlaceholder[outline.rootID]) {
             var parentView = this.contextParentVisible(newModelContext, outline);
             if (!parentView || parentView.collapsed) {
@@ -907,9 +914,9 @@ diathink.Action = Backbone.RelationalModel.extend({
             that.runinit2();
         });
 
-        this.addQueue('preDock', ['context'], function() {
+        this.addQueue('createDockElem', ['context'], function() {
             if (r.createDockElem) {
-                that.preDock();
+                that.createDockElem();
             }
         });
 
@@ -930,7 +937,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         var outlines = diathink.OutlineManager.outlines;
         for (i in outlines) {
             (function(i) {
-                that.addQueue(['oldLinePlace', i], ['preDock'], function() {
+                that.addQueue(['oldLinePlace', i], ['createDockElem'], function() {
                     that.oldLinePlace(outlines[i]);
                 });
                 that.addQueue(['newLinePlace', i], ['context', ['oldLinePlace', i]], function() {
@@ -1110,7 +1117,9 @@ diathink.Action = Backbone.RelationalModel.extend({
         } else {
             newRoot = this.options.newRoot;
         }
-        var id = this.getLineView(this.options.activeID, newRoot).header.name.text.id;
+        var lineView = this.getLineView(this.options.activeID, newRoot);
+        if (!lineView) { return; }
+        var id = lineView.header.name.text.id;
         $('#'+id).focus();
     },
     newModel: function() {
@@ -1142,6 +1151,8 @@ diathink.Action = Backbone.RelationalModel.extend({
             if (M.ViewManager.getViewById(outline.rootID).value === diathink.data) {
                 return 'parentIsRoot';
             } else {
+                return 'parentInvisible';
+                // context is outside of outline
                 console.log('called getContext with no parent but not at root');
                 debugger;
                 return null;
@@ -1657,7 +1668,7 @@ diathink.DeleteAction = diathink.Action.extend({
     focus: function() {
         var newRoot, li, model, collection, rank, cursorstart=false, cursor;
         if (this.options.undo) {
-            li = this.getLineView(this.options.activeID, this.options.oldRoot.rootID);
+            li = this.getLineView(this.options.activeID, this.options.oldRoot);
             var elem = $('#'+li.header.name.text.id);
             elem.setCursor(0);
             elem.focus();

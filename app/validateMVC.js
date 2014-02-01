@@ -217,8 +217,8 @@ diathink.validateMVC = function () {
                 M.test(panels[v].rootModel === models[panels[v].rootModel.cid],
                     "Panel "+v+" does not have a valid rootModel");
             }
-            M.test(panels[v].rootModel === panels[v].breadcrumbs.rootModel,
-                "Panel "+v+" does not have rootModel match breadcrumbs rootModel");
+            //M.test(panels[v].rootModel === panels[v].breadcrumbs.rootModel,
+            //    "Panel "+v+" does not have rootModel match breadcrumbs rootModel");
             M.test(panels[v].rootModel === panels[v].outline.alist.rootModel,
                 "Panel "+v+" does not have rootModel match outline.alist.rootModel");
             M.test(outlines[panels[v].rootController.rootID] != null,
