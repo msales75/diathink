@@ -1,13 +1,18 @@
 
-Sequence of newLinePlace regarding outline-ID's
- (why are you calling newLinePlace for changeRoot?)
 
-1. Get context & neighborhood
-   before doing placeholders
+
+
+2. Decide how/where to update panel-view
+ - Do we put it into restoreViewContext?
+ - make a separate restore-panel-view?
+ - i think we never need both restores?
+   (so make it separate)
+
 rOldLinePlaceholder created in oldLinePlace
  - activeLineElem defined and detached
 rNewLinePlaceholder created in newLinePlace
 dockElem set in options or cloned from activeLineView
+Separate queue-management functions
 
 Encapsulate animation, placeholder & docking operations
 
@@ -26,7 +31,8 @@ restoreViewContext:
 Question: when/how are elements reused
   for placeholders and/or docking?
 ChangeRoot creates a new view-id
-  but preserves old one?
+  and deletes old views
+- But outlines are stored as deleted
 
 * Finish debugging, then move animation-stuff
     into separate files.

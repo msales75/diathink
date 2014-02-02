@@ -395,6 +395,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             rOldLinePlaceholder: {},
             rOldLineVisible: {},
             rNewLineVisible: {},
+            oldLineContext: {},
             createLineElem: {},
             destroyLineElem: {},
             useLinePlaceholderAnim: {},
@@ -487,6 +488,12 @@ diathink.Action = Backbone.RelationalModel.extend({
             r.rNewContextType[i] = this.getContextType(r.rNewModelContext, outlines[i]);
 
             if (r.rOldType==='line') {
+                if (this.options.activeID) {
+                    var lineView = this.getLineView(this.options.activeID, i);
+                    if (lineView) { // lineView can be null when creating new element
+                        r.oldLineContext[i] = this.getLineContext(lineView);
+                    }
+                }
                 if ((r.rOldContextType[i]==='none')||
                     (r.rOldContextType[i]==='parentInvisible')||
                     (r.rOldContextType[i]==='parentIsCollapsedLine')) {
@@ -1257,6 +1264,15 @@ diathink.Action = Backbone.RelationalModel.extend({
         var that = this;
             // todo: for visible non-dragged sources, add fade-out on mousedown in nestedSortable.
     },
+
+    restorePanelContext: function() { // mutually exclusive with restoreViewContext
+        var that = this;
+        this.addQueue(['view', outline.rootID], ['newModelAdd', 'anim'], function() {
+            var r= that.runtime;
+            var collection, rank, oldParent, oldParentView=null;
+            var newModelContext, li, elem, oldspot, neighbor, neighborType, newParentView, createActiveLineView=false;
+        });
+    },
     restoreViewContext: function(outline) {
         var that = this;
         this.addQueue(['view', outline.rootID], ['newModelAdd', 'anim'], function() {
@@ -1269,15 +1285,15 @@ diathink.Action = Backbone.RelationalModel.extend({
             var activeLineView = that.getLineView(that.options.activeID, outline.rootID);
             // activeLineView should not be affected by rOldLinePlaceholder, except for DOM presence
             if (activeLineView!=null) { // original element was visible in this view
-                oldspot = that._saveOldSpot(activeLineView);
-                if (!oldspot) {
+                if (!r.oldLineContext[outline.rootID]) {
                     console.log("ERROR: Oldspot does not exist for action "+that.type+
                         "; undo="+that.options.undo+"; redo="+that.options.redo+
                         "; activeID="+that.options.activeID+"; view="+outline.rootID);
                     debugger;
                 }
-                neighbor = oldspot.obj;
-                neighborType = oldspot.type;
+                // should get this earlier, per view, like rNewLineContext
+                neighbor = r.oldLineContext[outline.rootID].obj;
+                neighborType = r.oldLineContext[outline.rootID].type;
             } else { // if old-view isn't visible, check if parent needs collapse-update
                 // todo: can oldParent be replaced with a newModelContext-newParentView instead?
                 if (that.options.undo) {
@@ -1462,14 +1478,10 @@ diathink.Action = Backbone.RelationalModel.extend({
         return li;
     },
 
-    _saveOldSpot: function(view) {
+    // must be called before placeholders inserted
+    getLineContext: function(view) {
         var type = 'next', r = this.runtime;
-        var elem;
-        if (r.activeLineElem[view.rootID] && (r.activeLineElem[view.rootID].id === view.id)) {
-            elem = $(r.rOldLinePlaceholder[view.rootID]);
-        } else {
-            elem = $('#'+view.id);
-        }
+        var elem = $('#'+view.id);
         var oldspot = elem.next('li');
         if (oldspot.length===0) {
             oldspot = elem.prev('li');
@@ -1482,8 +1494,6 @@ diathink.Action = Backbone.RelationalModel.extend({
                 return {type: 'parent', obj: view.parentView.parentView};
             } else {
                 return {type: 'root', obj: M.ViewManager.getViewById(view.rootID)}
-                // console.log("_saveOldSpot returning null for view "+view.id);
-                // return null;
             }
         }
     },
@@ -1577,7 +1587,7 @@ diathink.Action = Backbone.RelationalModel.extend({
 
 _.extend(diathink.Action.prototype, diathink.animHelpers);
 
-
+// outline-move op, animation-type,
 // commuting operations don't have to be undone/redone - optimization
 
 diathink.InsertAfterAction = diathink.Action.extend({
@@ -1764,7 +1774,6 @@ diathink.TextAction= diathink.Action.extend({
     }
 });
 
-
 diathink.CollapseAction= diathink.Action.extend({
     type:"CollapseAction",
     useOldLinePlaceholder: false,
@@ -1866,7 +1875,6 @@ diathink.CollapseAction= diathink.Action.extend({
         });
     }
 });
-
 
 diathink.RootAction= diathink.Action.extend({
     type:"RootAction",
@@ -1972,3 +1980,33 @@ diathink.RootAction= diathink.Action.extend({
     }
 });
 
+diathink.PanelAction=diathink.Action.extend({
+    type: "PanelAction",
+    newType: 'panel',
+    useOldLinePlaceholder: false,
+    useNewLinePlaceholder: false,
+    options: {activeID: null, collapsed: false},
+    _validateOptions: {
+        requireActive: false,
+        requireReference: false,
+        requireOld: false,
+        requireNew: false
+    },
+    getNewContext: function() { // no changes to model
+        this.newModelContext = this.oldModelContext;
+    },
+    getOldPanelContext: function() { // define oldPanelContext and newPanelContext
+        this.oldPanelContext = null; // panel newly created
+    },
+    getNewPanelContext: function() {
+        var context = null;
+        if (this.options.activePanel) {
+            var panelid = this.options.activePanel;
+            context = {};
+            context.next = diathink.PanelManager.nextpanel[panelid];
+            context.prev = diathink.PanelManager.prevpanel[panelid];
+            context.root = this.options.activeID;
+        }
+        this.newPanelContext = context;
+    }
+});
