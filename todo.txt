@@ -2,11 +2,48 @@
 
 
 
-2. Decide how/where to update panel-view
- - Do we put it into restoreViewContext?
- - make a separate restore-panel-view?
- - i think we never need both restores?
-   (so make it separate)
+Separate operation-types:
+  EditOutline
+  EditText
+  Expand/Contract
+  PanelEdit
+  LinkEdit
+  DockedLinkEdit
+  Animation-stuff
+
+Decide how/where to update panel-view
+ - Do we put it into restoreViewContext? No,
+    because never do both together, and
+    don't deal with corner-rounding-business.
+ - make a separate restorePanelContext()
+ - what input/output do we need?
+
+ input:
+       whether line or panel (or link) on each end
+       activeID = model-id for panel viewport
+         panelPosition:
+       old/new-panel-location if-exists
+       if line, view ID of original line
+         (and a way to get root/panel from it)
+ for-undo:
+    created panel-id
+    panel/outline/view-id to focus-on
+
+    create or remove panel
+      edit active/removed outline-roots and panels
+      Do we need oldPanel & newPanel, in addition to
+        oldRoot and newRoot?
+      What about location?
+      render in DOM
+       render at: page.content.scroll{i}
+       PanelOutlineView, like in
+
+    if line, focus on line
+
+    Add graphical indicator for additional panels to right/left
+    Add horizontal-swipe layer
+    (Don't render outlines outside-view?)
+
 
 rOldLinePlaceholder created in oldLinePlace
  - activeLineElem defined and detached
