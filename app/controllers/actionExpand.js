@@ -1,7 +1,5 @@
 diathink.CollapseAction= diathink.Action.extend({
     type:"CollapseAction",
-    useOldLinePlaceholder: false,
-    useNewLinePlaceholder: false,
     options: {activeID: null, collapsed: false},
     _validateOptions: {
         requireActive: true,
@@ -9,10 +7,6 @@ diathink.CollapseAction= diathink.Action.extend({
         requireOld: true,
         requireNew: true
     },
-    getNewContext: function() {
-        this.newModelContext = this.oldModelContext;
-    },
-    preview: function() {},
     execModel: function () {
         var that = this;
         that.addQueue('newModelAdd', ['context'], function() {

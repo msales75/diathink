@@ -1,4 +1,7 @@
 diathink.animDock = {
+    indentSpeed: 80,
+    dockSpeed: 160,
+
     getObjectParams: function(obj, textobj) {
 // * Currently unused, precisely orients text in object-boundaries
         // if old-type = new-type, don't need to deal with this

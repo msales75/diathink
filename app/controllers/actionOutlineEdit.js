@@ -1,5 +1,6 @@
 
-diathink.InsertAfterAction = diathink.Action.extend({
+
+diathink.InsertAfterAction = diathink.OutlineAction.extend({
     type:"InsertAfterAction",
     options: {activeID: null, referenceID: null, text: ""},
     _validateOptions: {
@@ -13,7 +14,7 @@ diathink.InsertAfterAction = diathink.Action.extend({
     }
 });
 
-diathink.MoveAfterAction = diathink.Action.extend({
+diathink.MoveAfterAction = diathink.OutlineAction.extend({
     type:"MoveAfterAction",
     _validateOptions: {
         requireActive: true,
@@ -27,7 +28,7 @@ diathink.MoveAfterAction = diathink.Action.extend({
     }
 });
 
-diathink.MoveBeforeAction = diathink.Action.extend({
+diathink.MoveBeforeAction = diathink.OutlineAction.extend({
     type:"MoveBeforeAction",
     _validateOptions: {
         requireActive: true,
@@ -41,7 +42,7 @@ diathink.MoveBeforeAction = diathink.Action.extend({
     }
 });
 
-diathink.MoveIntoAction = diathink.Action.extend({
+diathink.MoveIntoAction = diathink.OutlineAction.extend({
     type:"MoveIntoAction",
     _validateOptions: {
         requireActive: true,
@@ -57,7 +58,7 @@ diathink.MoveIntoAction = diathink.Action.extend({
 });
 
 // todo: merge outdent with moveafter action?
-diathink.OutdentAction = diathink.Action.extend({
+diathink.OutdentAction = diathink.OutlineAction.extend({
     type:"OutdentAction",
     _validateOptions: {
         requireActive: true,
@@ -71,7 +72,7 @@ diathink.OutdentAction = diathink.Action.extend({
     }
 });
 
-diathink.DeleteAction = diathink.Action.extend({
+diathink.DeleteAction = diathink.OutlineAction.extend({
     type:"DeleteAction",
     _validateOptions: {
         requireActive: true,

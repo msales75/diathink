@@ -1,4 +1,7 @@
 diathink.animPlaceholder = {
+    createSpeed: 80,
+    deleteSpeed: 80,
+    placeholderSpeed: 160,
     oldLinePlace: function(outline) {
         var r = this.runtime;
         if (r.rOldLinePlaceholder[outline.rootID]) {
