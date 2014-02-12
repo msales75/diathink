@@ -4,7 +4,34 @@ diathink.PanelManager = M.Object.extend({
   type: 'PanelManager',
   nextpanel: {'': ''},
   prevpanel: {'': ''},
+  rootViews: {},
+  rootModels: {},
+  count: 0,
+  leftPanel: '',
+  panelsPerScreen: 2,
   deleted: {},
+  updateRoots: function() {
+      var p=this.leftPanel;
+      while ((p !== '')&&(M.ViewManager.getViewById(p))) {
+          this.rootViews[p] = M.ViewManager.getViewById(p).outline.alist.id;
+          this.rootModels[p] = M.ViewManager.getViewById(p).rootModel;
+          p = this.nextpanel[p];
+      }
+  },
+  getRank: function(id) {
+      var n, panel = this.nextpanel[''];
+      for (n=1; panel !== ''; ++n) {
+          if (panel === id) { return n; }
+          panel = this.nextpanel[panel];
+      }
+      return -1;
+  },
+  initFromDOM: function(grid) {
+      this.insertAfter(grid.scroll2.id, '');
+      this.insertAfter(grid.scroll1.id, '');
+      this.updateRoots();
+
+  },
   insertAfter: function(newid, previousid) {
       if ((this.nextpanel[newid]!==undefined) ||
           (this.prevpanel[newid]!==undefined) || (newid === '')) {
@@ -18,13 +45,39 @@ diathink.PanelManager = M.Object.extend({
           debugger;
           return;
       }
+
       var oldnext = this.nextpanel[previousid];
       this.nextpanel[previousid] = newid;
       this.prevpanel[newid] = previousid;
       this.nextpanel[newid] = oldnext;
       this.prevpanel[oldnext] = newid;
+      ++this.count;
       if (this.deleted[newid]) {
           delete this.deleted[newid];
+      }
+
+      // this.updateRoots();
+
+      // Update leftPanel if necessary
+      // decide whether we push-right or push-left?
+      if (this.count===1) { // first panel
+          this.leftPanel = newid;
+          return 'right';
+      }
+      var leftOffset = this.getRank(this.leftPanel);
+      var newOffset = this.getRank(newid);
+      if ((leftOffset<1)||(newOffset<1)) {
+          console.log("leftOffset or newOffset not defined for insert");
+          debugger;
+      }
+      if (newOffset < leftOffset) {
+          this.leftPanel = newid;
+          return 'right'; // push panels to right
+      } else if (newOffset >= leftOffset + this.panelsPerScreen) {
+          this.leftPanel = this.nextpanel[this.leftPanel];
+          return 'left'; // push panels to left
+      } else {
+          return 'right'; // push right with no change to leftPanel
       }
   },
   remove: function(id) {
@@ -33,13 +86,39 @@ diathink.PanelManager = M.Object.extend({
           debugger;
           return;
       }
+
+      // Update leftPanel after removal
+      // if there are enough panels
+      // to the right to fill the screen,
+      // move them left.  else fill from right, changing leftPanel.
+      var direction = 'left';
+      var offset = this.getRank(this.leftPanel);
+      if (this.leftPanel === id) { // if leftPanel is being removed
+          if ((this.prevpanel[this.leftPanel]==='') ||
+              (this.count-1 >= this.panelsPerScreen + (offset-1))) {
+              this.leftPanel = this.nextpanel[this.leftPanel];
+              direction = 'left';
+          } else {
+              this.leftPanel = this.prevpanel[this.leftPanel];
+              direction = 'right';
+          }
+      } else { // we are not deleting the leftPanel, but might change it
+          if ((this.prevpanel[this.leftPanel]!=='') &&
+              (this.count-1 < this.panelsPerScreen + (offset-1))) {
+              this.leftPanel = this.prevpanel[this.leftPanel];
+              direction = 'right';
+          }
+      }
+
       var next = this.nextpanel[id];
       var prev = this.prevpanel[id];
+      --this.count;
       this.nextpanel[prev] = next;
       this.prevpanel[next] = prev;
       delete this.nextpanel[id];
       delete this.prevpanel[id];
       this.deleted[id] = id;
+      return direction;
   },
   moveAfter: function(id, previousid) {
       if ((this.nextpanel[id]===undefined) || (this.prevpanel[id]===undefined) || (id==='')) {
@@ -109,10 +188,13 @@ diathink.OutlineController = M.Controller.extend({
         var i, v, view, models;
         diathink.OutlineManager.remove(this.rootID);
         this.deleted = true;
+        // destroy the outline-entries but not the root
         view = M.ViewManager.getViewById(this.rootID);
-        models = view.value.models;
-        for (i=0; i<models.length; ++i) {
-            models[i].views[this.rootID].destroy();
+        if (view.value) {
+            models = view.value.models;
+            for (i=0; i<models.length; ++i) {
+                models[i].views[this.rootID].destroy();
+            }
         }
         // don't destroy outline-ul-shell-view?
     },

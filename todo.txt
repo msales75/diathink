@@ -1,104 +1,13 @@
 
+--Panel creation---
 
-init:
-  oldType: 'line', // used for docking & placeholder
-  newType: 'line', // also used for distinguishing actiontypes
+* Associate PanelManager with GridView
 
-init-animation:
-  indentSpeed: 80, (in animDock)
-  dockSpeed: 160, (in animDock)
-  createSpeed: 80, (in animPlaceholder)
-  deleteSpeed: 80, ("")
-  placeholderSpeed: 160, ("")
-
-init-outline:
-  useOldLinePlaceholder: true, // outline only
-  useNewLinePlaceholder: true, // outline-only
-  oldModelContext:null,
-  newModelContext:null,
-  oldPanelContext:null,
-  newPanelContext:null,
-
-  oldViewCollapsed: {}
-
-runinit:
-    rNewRoot
-    rOldRoot
-    rOldType
-    rNewType
-
-    activeLineElem: {}, // animPlaceholder
-    activeLineHeight: {}, // animPlaceholder
-    rNewLinePlaceholder: {},
-    rOldLinePlaceholder: {},
-    useLinePlaceholderAnim: {}, bool
-    rOldContextType: {}, (none/parentInvisible/IsRoot/)
-    rNewContextType: {},
-    createLineElem: {},
-    destroyLineElem: {},
-    rOldModelContext
-    rNewModelContext
-    createModel true/false
-    destroyModel true/false
-    oldLineContext: {},
-    rOldLineVisible: {},
-    rNewLineVisible: {},
-
-    rOldPanelContext
-    rNewPanelContext
-
-runinit.status:
-   context: 0,
-   log: 0,
-   undobuttons: 0,
-   oldModelCollection: 0,
-   oldModelRemove: 0,
-   modelCreate: 0,
-   newModelRank: 0,
-   newModelAdd: 0,
-   dockAnim: 0,
-   focus: 0,
-   end: 0,
-   oldLinePlace: {},
-   newLinePlace: {},
-   linePlaceAnim: {},
-   view: {}
-
-stages vs. steps
-stage 1: get context for runinit
-stage 2: setup animations
-stage 3: setup model-update
-stage 4: view-update
-Note: can have cross-dependencies
-
-stage 2: view-prep
-
-Once-per-App
-Once-per-Panel
-Once-Per-Root
-
-options:
-  anim (dock, indent, paneldock)
-  oldRoot
-  newRoot
-  activeID
-  referenceID
-
-Separate operation-types:
-  EditOutline
-  EditText
-  Expand/Contract
-  PanelEdit
-  LinkEdit
-  DockedLinkEdit
-  Animation-stuff
-
-Decide how/where to update panel-view
- - Do we put it into restoreViewContext? No,
-    because never do both together, and
-    don't deal with corner-rounding-business.
- - make a separate restorePanelContext()
- - what input/output do we need?
+Useful Refactorings:
+  * Need a linked-list-manager
+  * Need global list of visible panels & lines
+  * Need a DOM render-manager in view.js
+  * Need to replace design/extend with Backbone object
 
  input:
        whether line or panel (or link) on each end
@@ -126,45 +35,14 @@ Decide how/where to update panel-view
     Add horizontal-swipe layer
     (Don't render outlines outside-view?)
 
+Subpanel linkage & anchoring
 
-rOldLinePlaceholder created in oldLinePlace
- - activeLineElem defined and detached
-rNewLinePlaceholder created in newLinePlace
-dockElem set in options or cloned from activeLineView
-Separate queue-management functions
+Test PanelManager consistency in validation
 
-Encapsulate animation, placeholder & docking operations
+-------
 
-
-restoreViewContext:
-  activeLineView
-  neighbor based on activeLineView or rOldLinePlaceholder
-
-  oldParent
-  newParentView/oldParentView
-
-  activeLineElem
-  activeLineView
-
-
-Question: when/how are elements reused
-  for placeholders and/or docking?
-ChangeRoot creates a new view-id
-  and deletes old views
-- But outlines are stored as deleted
-
-* Finish debugging, then move animation-stuff
-    into separate files.
-* Move actions into separate files.
-
-* Endure unused options for now.
-
-
-Make a separate place for animation?
- general, placeholders, docking, scrolling
-
-Should we setup animations in a separate
-  layer of queueing?
+ todo: fix explicit loops over panels
+Question: permit placeholder element-reuse?
 
 Animation types:
  Move line/line or line/panel or link/line
@@ -172,7 +50,6 @@ Animation types:
  Some update panels, leftPanel, expand/collapse
  Some update focus/scrolling, change leftPanel
 
-Subpanel linkage & anchoring
 
 Viewport when action happened: panels,
   leftPanel, expand/collapse
@@ -185,72 +62,14 @@ Create/reuse/Move/delete dock element
 Set leftPanel
 Set panel-scroll to focus
 
-Do we create, clone or re-use
- animated-element?
+Options to create, clone or re-use animated-element?
 
 
-context:
- oldModelContext, newModelContext,
- oldPanelContext, newModelContext
- runinit-vars
-
-createDockElem (context):
- createDockElem
-dockAnim (newLinePlace, oldLinePlace)
-panelPrep
-oldLinePlace
-newLinePlace
-linePlaceAnim
-anim
-
-'View'->'finalizeView' should not require anim
-
-execModel:modelCreate (overriden)
- restoreContext:
-  oldModelCollection,
-  oldModelRemove, newModelRank, newModelAdd,
-execView: (overriden)
- restoreViewContext: view
-focus
-undobuttons
-end
-
-
-
-actionAfterInsert is too long - need to break it up.
-
-
-animStep
-dockAnim
-linePlaceAnim called after oldLinePlace and newLinePlace,
-  after preDock and context
- ** if using linePlaceHOlderANim
-runinit
-animStep always comes after linePlaceAnim, if it exists
- But linePlaceAnim doesn't exist here?
- So how does view get defined?
-
-
-todo: fix explicit loops over panels
-
-context
-  getOld/NewPanelContext
-    defines this.oldPanelContext
-
-oldPlace/newPlace/placeAnim (don't use for panels)
-  (move into separate functions)
-preDock (needs activeView and no-helper)
-dockAnim (sets animOptions)
-  (needs newPlaceholder & helper)
-  (needs modification for docking to panel)
-anim
-
-
+'View'->'finalizeView'?
 
 
 // (NO) don't do any model-ops in a panel-changing op. (does this work?)
 //     --> dragging panel/breadcrumb into a line as a link
-
 // Flag data for cleanup
 
 UI Development:
@@ -261,10 +80,6 @@ UI Development:
  Focus on code-constraints/tests (ability to inject them)
  User-feedback
 Backtracing in UI (identify characteristics of image)
-
-
-Most efficient way to handle animation-docking?
-DOM Replacement, hmm... make smaller mods & update element-refs?
 
 
 Next:

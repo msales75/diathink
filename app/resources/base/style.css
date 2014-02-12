@@ -158,13 +158,13 @@ li.ui-li > div.ui-li.ui-btn-inner {
     display: block;
 }
 
-.drop-mode .droplayer > .dropborder {
+.drop-mode .droplayer > .dropborder, .drop-mode .drawlayer > .dropborder {
   position: absolute;
   background-color: transparent;
   border:  dashed #BBB 1px;
 }
 
-.drop-mode .droplayer > .dropborder.active {
+.drop-mode .droplayer > .dropborder.active, .drop-mode .drawlayer > .dropborder.active {
     border-style: solid;
     border-color: #444;
 }
@@ -268,6 +268,8 @@ a:active, a:focus {
 }
 .ui-grid-a > div > div {
     width: 94%;
+    position: relative;
+    left: 3%;
 }
 
 li.ui-li.ui-focus, li.ui-li.ui-focus:hover {
@@ -496,4 +498,32 @@ li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
     height: 40px;
     background-color: #FF0;
 }
+
+.grid-wrapper > .left-button {
+    float: left;
+    text-align: center;
+    display: block;
+    margin-top: 1.5em;
+    width: 5%;
+    font-size: 2.5em;
+    cursor: pointer;
+}
+.grid-wrapper > .right-button {
+    float: right;
+    text-align: center;
+    display: block;
+    margin-top: 1.5em;
+    width: 5%;
+    font-size: 2.5em;
+    cursor: pointer;
+}
+.grid-wrapper > .left-button:hover,
+.grid-wrapper > .right-button:hover {
+    color: #EEE;
+}
+.grid-wrapper > .scroll-container {
+    width: 90%;
+}
+
+
 /* End of debug */

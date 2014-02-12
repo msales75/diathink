@@ -541,8 +541,69 @@ diathink.validateMVC = function () {
             M.test($('#'+v).parents('#'+pid).length === 1,
                 "View "+v+" does not have parent-view "+pid);
         }
+
+        M.test(diathink.OutlineManager.deleted[v]===undefined,
+            "");
+        M.test(diathink.PanelManager.deleted[v]===undefined,
+            "");
     }
 
+    var PM = diathink.PanelManager;
+    var grid = M.ViewManager.getCurrentPage().content.grid;
+
+    M.test(PM.panelsPerScreen === $('#'+grid.id).children().length,
+      "Wrong number of grid-children for panel manager");
+    M.test(_.size(PM.nextpanel) === PM.count+1,
+        "Wrong size for PM.nextpanel");
+    M.test(_.size(PM.prevpanel) === PM.count+1,
+        "Wrong size for PM.prevpanel");
+    M.test(PM.nextpanel[PM.leftPanel]!==undefined,
+        "leftPanel not found in nextpanel");
+    M.test(PM.nextpanel['']!==undefined,
+        "empty not found in nextpanel");
+    M.test(PM.prevpanel[PM.leftPanel]!==undefined,
+        "leftPanel not found in prevpanel");
+    M.test(PM.prevpanel['']!==undefined,
+        "empty not found in prevpanel");
+    var leftRank;
+    for (var n= 0, p=PM.nextpanel['']; p!==''; p=PM.nextpanel[p], ++n) {
+        M.test(PM.nextpanel[PM.prevpanel[p]] === p,
+            "nextpanel and prevpanel don't match at "+p);
+        M.test(PM.prevpanel[PM.nextpanel[p]] === p,
+            "nextpanel and prevpanel don't match at "+p);
+        M.test(PM.deleted[p]===undefined,
+            "Non-deleted view in PM.deleted "+p);
+        if (p===PM.leftPanel) {
+            leftRank = n;
+            M.test($('#'+grid.id).children(':first').children().get(0).id === p,
+                "leftPanel does not match first panel in grid");
+        }
+        if ((n>=leftRank)&&(n<leftRank+PM.panelsPerScreen)) {
+            var pview = grid['scroll'+String(n-leftRank+1)];
+            M.test(pview.id === p,
+                "View doesn't match panelmanager for n="+n+" with p="+p+
+                    " and pview.id="+pview.id);
+            M.test(pview.outline.alist.id===PM.rootViews[p],
+                "RootView doesn't match panelmanager for panel "+p);
+            M.test(pview.rootModel===PM.rootModels[p],
+                "RootModel doesn't match panelmanager for panel "+p);
+        }
+    }
+    M.test(n===PM.count,
+        "Not all panels in array are accessed through nextpanel loop");
+
+    for (n=1; grid['scroll'+String(n+1)]!==undefined; ++n) {;}
+    M.test(n === PM.panelsPerScreen,
+        "scrolln "+n+" doesn't match panelsPerScreen "+PM.panelsPerScreen);
+    for (n=1; n<=PM.panelsPerScreen; ++n) {
+        M.test($($('#'+grid.id).children().get(n-1)).children().length===1,
+            "More than one second-level child of grid for scrolln="+n);
+        M.test($($('#'+grid.id).children().get(n-1)).children().get(0).id ===
+            grid['scroll'+n].id,
+            "grid scrolln "+n+" id doesn't match DOM");
+    }
+
+    // validate panel-button status
 
     // check listview's and list-elements
     $('.ui-listview').each(function() {

@@ -144,6 +144,30 @@
                     d.left = item.left;
                     d.right = item.left + diathink.lineHeight;
                     d.parentView = M.ViewManager.getViewById(item.item[0].id);
+                } else if (type==='dropleft') {
+                    item[type] = $('<div></div>').appendTo(canvas)
+                        .addClass('dropborder')
+                        .css('top', (item.top-ctop)+'px')
+                        .css('left', (item.left-cleft-1-5)+'px')
+                        .css('width', '0px')
+                        .css('height', (item.height)+'px');
+                    d.top = item.top;
+                    d.bottom = item.top + item.height;
+                    d.left = item.left - 5 - 5;
+                    d.right = item.left - 5 + 5;
+                    d.parentView = null;
+                } else if (type==='dropright') {
+                    item[type] = $('<div></div>').appendTo(canvas)
+                        .addClass('dropborder')
+                        .css('top', (item.top-ctop)+'px')
+                        .css('left', (item.left+item.width-cleft-1+5)+'px')
+                        .css('width', '0px')
+                        .css('height', (item.height)+'px');
+                    d.top = item.top;
+                    d.bottom = item.top + item.height;
+                    d.left = item.left + 5 + item.width - 5;
+                    d.right = item.left + 5 + item.width + 5;
+                    d.parentView = null;
                 }
                 if (item[type]) {
                     d.elem = item[type];
@@ -162,6 +186,8 @@
         },
         _emptyDropLayers: function() {
             $(this.options.dropLayers).html('');
+            var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+            drawlayer.children('.dropborder').remove();
         },
         _validateDropItem: function(itemEl) {
 
@@ -223,11 +249,41 @@
                 that._showDropLines();
                 diathink.lineHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
                 // foreach M.ScrollView, cache offset top/left
-                var panelParent = M.ViewManager.getCurrentPage().content;
+                var panelParent = M.ViewManager.getCurrentPage().content.grid;
                 var canvas1 = panelParent.scroll1.outline.droplayer;
                 var canvas2 = panelParent.scroll2.outline.droplayer;
+                var canvas0 = M.ViewManager.getCurrentPage().drawlayer;
                 canvas1.cacheOffset = $('#'+canvas1.id).offset();
                 canvas2.cacheOffset = $('#'+canvas2.id).offset();
+                canvas0.cacheOffset = $('#'+canvas0.id).offset();
+
+                // todo: loop over panels, draw vertical lines
+                var p, n, panel, canvas;
+                var PM = diathink.PanelManager;
+                for (var n= 1, p=PM.leftPanel;
+                     (p!=='') && (n<=PM.panelsPerScreen);
+                     ++n, p = PM.nextpanel[p]) {
+                    panel = M.ViewManager.getViewById(p);
+                    panel.cachePosition();
+                    panel.dropleft = null;
+                    panel.dropright = null;
+                    panel.dropboxes = [];
+                    if (n===1) { // permit dropleft
+                        // count on panel-creation to caching top/left/height/width dims
+                        that._drawDropLine({
+                            type: 'dropleft',
+                            item: panel,
+                            canvas: $('#'+canvas0.id),
+                            offset: canvas0.cacheOffset
+                        });
+                    }
+                    that._drawDropLine({
+                        type: 'dropright',
+                        item: panel,
+                        canvas: $('#'+canvas0.id),
+                        offset: canvas0.cacheOffset
+                    });
+                }
 
                 for (var i = that.items.length - 1; i >= 0; i--) {
                     var item = that.items[i], itemEl = item.item;
@@ -268,17 +324,19 @@
                         });
                     }
                 }
-                /*
+
+            /*
                 setTimeout(function() {
                     that._previewDropBoxes();
                 }, 100);
-                */
+            */
+
 
             }, 5);
 
         },
 
-        // cache drop-coordinates
+        // cache drop-coordinates - currently unused
         _updateDropBoxes: function(item) {
             var d;
             item.dropboxes = [];
@@ -303,6 +361,29 @@
         },
         _previewDropBoxes: function() {
             var i, j, d;
+            var PM = diathink.PanelManager;
+            for (var n= 1, p=PM.leftPanel;
+                 (p!=='') && (n<=PM.panelsPerScreen);
+                 ++n, p = PM.nextpanel[p]) {
+                var panel = M.ViewManager.getViewById(p);
+                var canvas = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+                var ctop = canvas.offset().top;
+                var cleft = canvas.offset().left;
+                if (!panel.dropboxes) {
+                    console.log("ERROR: Item "+i+" does not have dropboxes?");
+                    continue;
+                }
+                for (j=0; j<panel.dropboxes.length; ++j) {
+                    d = panel.dropboxes[j];
+                    $('<div></div>').appendTo(canvas)
+                        .css('position','absolute')
+                        .css('top', (d.top-ctop)+'px')
+                        .css('left', (d.left-cleft)+'px')
+                        .css('width', (d.right-d.left)+'px')
+                        .css('height',(d.bottom-d.top)+'px')
+                        .css('border','dotted red 1px');
+                }
+            }
             for (i=0; i<this.items.length; ++i) {
                 var view = M.ViewManager.getViewById(this.items[i].item.attr('id'));
                 while (view.type !== 'M.ScrollView') {
@@ -376,6 +457,7 @@
             }
             // todo: initialize lists for each panel - outside nestedSortable?
 
+            // TODO: Don't require this.scrollPanel for vertical-lines?
             if (this.scrollPanel) {
                 // do we need to initialize the panel?
                 var panelid = this.scrollPanel.attr('id');
@@ -387,6 +469,7 @@
 
                 this.scrollPanel.scrollview( 'scrollWhileDragging',
                         event.pageY - this.scrollPanel.offset().top);
+            }
 
                 var box = this._insideDropBox();
                 // todo: embed hover-variables into a class?
@@ -394,16 +477,18 @@
                 if (box) {
                     box.elem.addClass('active');
                     // add a virtual-hover over parent-element
-                    if (box.parentView.type==='M.ListItemView') {
-                        var parentEl = $('#'+box.parentView.id).get(0);
-                        if (parentEl !== diathink.hoverItem) {
-                            $(diathink.hoverItem).removeClass('ui-btn-hover-c');
-                        }
-                        $(parentEl).addClass('ui-btn-hover-c');
-                        diathink.hoverItem = parentEl;
-                    } else {
-                        if (diathink.hoverItem) {
-                            $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                    if (box.parentView) {
+                        if (box.parentView.type==='M.ListItemView') {
+                            var parentEl = $('#'+box.parentView.id).get(0);
+                            if (parentEl !== diathink.hoverItem) {
+                                $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                            }
+                            $(parentEl).addClass('ui-btn-hover-c');
+                            diathink.hoverItem = parentEl;
+                        } else {
+                            if (diathink.hoverItem) {
+                                $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                            }
                         }
                     }
                     diathink.log(['debug','drag'],"Defined drop box of type"+box.type);
@@ -451,7 +536,6 @@
                         }
                     }
                 }
-            }
             return false;
         },
 
@@ -473,7 +557,9 @@
             if (this.activeBox != null) {
                 this.reverting = false;
                 // console.log("Dropping with type "+this.activeBox.type+" relative to item: "+this.activeBox.item.item.attr('id'));
-                var refview = M.ViewManager.findViewById(this.activeBox.item.item.attr('id'));
+                var refview = M.ViewManager.findViewById(this.activeBox.item.id);
+                // todo: must set item.id for all line items, too
+                // todo: must set top/left/width/height in each panel-view
                 var targetview = M.ViewManager.findViewById(this.currentItem.attr('id'));
                 if (refview.type != 'M.ListItemView') {
                     console.log("refview is of the wrong type with id="+refview.id);
@@ -527,6 +613,34 @@
                         dockElem: that.helper[0],
                         focus: false
                     };});
+                } else if (this.activeBox.type==='dropleft') {
+                    diathink.ActionManager.schedule(
+                        function() {
+                            return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                        },
+                        function() {return {
+                            action: diathink.PanelAction,
+                            activeID: targetview.value.cid,
+                            prevPanel: diathink.PanelManager.prevpanel[refview.id],
+                            oldRoot: targetview.rootID,
+                            newRoot: 'new',
+                            dockElem: that.helper[0],
+                            focus: false
+                        };});
+                } else if (this.activeBox.type==='dropright') {
+                    diathink.ActionManager.schedule(
+                        function() {
+                            return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                        },
+                        function() {return {
+                            action: diathink.PanelAction,
+                            activeID: targetview.value.cid,
+                            prevPanel: refview.id,
+                            oldRoot: targetview.rootID,
+                            newRoot: 'new',
+                            dockElem: that.helper[0],
+                            focus: false
+                        };});
                 } else {
                     console.log('ERROR: Invalid boxtype');
                     debugger;
@@ -576,7 +690,7 @@
 
 		// mjs - this function is slightly modified to make it easier to hover over a collapsed element and have it expand
         _insideDropBox: function(e) {
-            var i, j, d;
+            var i, j, d, n, p;
             diathink.log(['debug','drag'],"Identifying drop-box");
             // this.position is same, scroll is different for each item
 
@@ -603,6 +717,23 @@
                     }
                 }
             }
+            var PM = diathink.PanelManager;
+            // loop over panels to return correct dropbox
+            for (n= 1, p=PM.leftPanel;
+                 (p!=='') && (n<=PM.panelsPerScreen);
+                 ++n, p = PM.nextpanel[p]) {
+                var panel = M.ViewManager.getViewById(p);
+                if (panel.dropboxes == null) {continue;} // when mousedrag is called before initialization
+                for (j=0; j<panel.dropboxes.length; ++j) {
+                    d = panel.dropboxes[j];
+                    var x = this.positionAbs.left + this.offset.click.left;
+                    var y = this.positionAbs.top + this.offset.click.top;
+                    if (((x>= d.left)&&(x<= d.right)) && ((y>= d.top)&&(y<= d.bottom))) {
+                        return d;
+                    }
+                }
+            }
+
             return null;
         }
 

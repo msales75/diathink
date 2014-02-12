@@ -12,15 +12,39 @@ diathink.PanelOutlineView = M.ContainerView.extend({
            });
         }
     },
-    changeRoot: function(model, rootID) { // id is name of model-id or null
-        var newlist;
+    cachePosition: function() {
+        // todo: cache top/left/height/width
+        this.elem = $('#'+this.id);
+        var offset = this.elem.offset();
+        this.top = offset.top;
+        this.left= offset.left;
+        this.height = this.elem.height();
+        this.width = this.elem.width();
+    },
+    destroyRootOutline: function() {
         diathink.OutlineManager.outlines[this.outline.alist.rootID].destroy();
         // diathink.OutlineManager.remove(this.outline.alist.rootID);
-          // will get added back in with alist.onDesign:bindView
-        this.rootModel = model;
+        // will get added back in with alist.onDesign:bindView
+        this.outline.alist.detachContentBinding();
+        // save context
+        var c = this.outline.alist.saveContext();
+        this.outline.alist.destroy();
+        return c;
+    },
+    destroy: function() {
+        var c = this.saveContext();
+        this.destroyRootOutline();
+        M.Object.destroy.apply(this, arguments);
+        return c;
+    },
+    changeRoot: function(model, rootID) { // id is name of model-id or null
+        var newlist;
+
+        var c = this.destroyRootOutline();
+
         if (rootID) {
             this.rootController = diathink.OutlineManager.deleted[rootID];
-            if (!this.rootController || (this.rootController.panelView !== this)) {
+            if (!this.rootController || (this.rootController.panelView.id !== this.id)) {
                 console.log('rootController not found in graveyard');
                 debugger;
             }
@@ -29,23 +53,33 @@ diathink.PanelOutlineView = M.ContainerView.extend({
                 panelView: this
             });
         }
-        this.outline.alist.detachContentBinding();
+
+        this.rootModel = model;
         // need to give view an old rootID
         if (rootID) {
             newlist = this.outline.alist.designWithID({id: rootID}); // new rootID
         } else {
             newlist = this.outline.alist.design({}); // new rootID
         }
-        this.outline.alist.destroy();
+
+        // newlist.parentView = this.outline;
+
         this.outline.alist = newlist;
-        $('#'+this.outline.id).children('.ui-scrollview-view').prepend(this.outline.alist.render());
+        // problem: ui-scrollview-view doesn't always exist until theming
+        this.outline.alist.renderAt(c);
         this.breadcrumbs.onDesign();
         this.breadcrumbs.renderUpdate();
         this.theme();
         this.registerEvents(); // calls renderUpdate for children recursively
         $('#'+M.ViewManager.getCurrentPage().id).nestedSortable('update');
         $(window).resize(); // fix height of new panel, spacer
+        diathink.PanelManager.rootViews[this.id] = newlist.id;
+        diathink.PanelManager.rootModels[this.id] = model;
+
         return newlist.id;
+    },
+    panelInit: function() {
+
     },
     breadcrumbs:M.BreadcrumbView.extend({
         value: [],
@@ -69,7 +103,7 @@ diathink.PanelOutlineView = M.ContainerView.extend({
                 this.contentBinding.target.bindView(this);
             },
             registerEvents: function() {
-                var collection;
+                var collection, that = this;
                 if (this.rootModel === null) {
                     collection = diathink.data;
                 } else {
@@ -79,6 +113,10 @@ diathink.PanelOutlineView = M.ContainerView.extend({
                 // todo: stop using content-binding to initialize lists,
                 //  but still need to refresh nestedSortable ?
                 this.contentBinding.target.set('listObject', collection);
+                // update the panel's dimensions
+                setTimeout(function() {
+                    that.parentView.parentView.cachePosition();
+                }, 0);
             },
             isInset: true,
             listItemTemplateView:diathink.MyListItem,

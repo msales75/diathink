@@ -7,12 +7,6 @@ diathink.TextAction= diathink.Action.extend({
         requireOld: true,
         requireNew: true
     },
-    useOldLinePlaceholder: false,
-    useNewLinePlaceholder: false,
-    getNewContext: function() {
-        this.newModelContext = this.oldModelContext;
-    },
-    preview: function() {},
     execModel: function () {
         var that = this;
         that.addQueue('newModelAdd', ['context'], function() {

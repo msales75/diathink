@@ -171,15 +171,15 @@ $(window).resize(function() {
     // get scroll-container
     var page = M.ViewManager.getCurrentPage();
     if (!page) {return;}
-    var scrollContainer = $('#'+page.content.id);
+    var scrollContainer = $('#'+page.content.grid.id);
     if (scrollContainer.length===0) {return;}
     var scrollViews = $([
-        $('#'+page.content.scroll1.outline.id).get(0),
-        $('#'+page.content.scroll2.outline.id).get(0)
+        $('#'+page.content.grid.scroll1.outline.id).get(0),
+        $('#'+page.content.grid.scroll2.outline.id).get(0)
     ]);
     var scrollSpacer = $([
-        $('#'+page.content.scroll1.outline.scrollSpacer.id).get(0),
-        $('#'+page.content.scroll2.outline.scrollSpacer.id).get(0)
+        $('#'+page.content.grid.scroll1.outline.scrollSpacer.id).get(0),
+        $('#'+page.content.grid.scroll2.outline.scrollSpacer.id).get(0)
     ]);
     var header = $('#'+page.header.id);
     // might header-height have changed?

@@ -2,43 +2,12 @@
 diathink.RootAction= diathink.Action.extend({
     type:"RootAction",
     newType: 'panel',
-    useOldLinePlaceholder: false,
-    useNewLinePlaceholder: false,
     options: {activeID: null, collapsed: false},
     _validateOptions: {
         requireActive: false,
         requireReference: false,
         requireOld: false,
         requireNew: false
-    },
-    getNewContext: function() {
-        this.newModelContext = this.oldModelContext;
-    },
-    getOldPanelContext: function() { // define oldPanelContext and newPanelContext
-        var context = null;
-        if (this.options.activePanel) {
-            var panelid = this.options.activePanel;
-            context = {};
-            context.next = diathink.PanelManager.nextpanel[panelid];
-            context.prev = diathink.PanelManager.prevpanel[panelid];
-            context.root = M.ViewManager.getViewById(panelid).outline.alist.id;
-        }
-        this.oldPanelContext = context;
-    },
-    getNewPanelContext: function() {
-        var context = null;
-        if (this.options.activePanel) {
-            var panelid = this.options.activePanel;
-            context = {};
-            context.next = diathink.PanelManager.nextpanel[panelid];
-            context.prev = diathink.PanelManager.prevpanel[panelid];
-            context.root = this.options.activeID;
-        }
-        this.newPanelContext = context;
-    },
-    preview: function() {
-        // custom docking function for change-root
-
     },
     execModel: function () {
         var that = this;
@@ -104,74 +73,126 @@ diathink.RootAction= diathink.Action.extend({
 });
 
 diathink.PanelAction=diathink.Action.extend({
-    type: "PanelAction",
-    newType: 'panel',
-    useOldLinePlaceholder: false,
-    useNewLinePlaceholder: false,
-    options: {activeID: null, collapsed: false},
-    _validateOptions: {
-        requireActive: false,
-        requireReference: false,
-        requireOld: false,
-        requireNew: false
-    },
+    type: "PanelCreate",
+    prevPanel: null,
+    newPanel: null,
+    options: {activeID: null, prevPanel: null, oldroot: null, newRoot: 'new'},
     runinit2: function() {
-        // create flags for various operations
-        // if we're moving a panel, creating a panel, collapsing a panel, changing root.
-        r.rOldPanelContext = null;
-        r.rNewPanelContext = null;
-        if ((r.rOldType==='panel')||(r.rNewType==='panel')) {
+    },
+    validateOptions: function() {
+        // activeID
+        // oldRoot
+        // prevPanel
+        // store: newPanel, newRoot
+        // root = M.ViewManager.getViewById(panelid).outline.alist.id
+    },
+    redrawPanel: function(n, p, firsttime) {
+        // should changeRoot it instead?
+        var c;
+        var PM = diathink.PanelManager;
+        var grid = M.ViewManager.getCurrentPage().content.grid;
+        if (grid['scroll'+String(n)]) {
+            c = grid['scroll'+String(n)].destroy(); // save context for this
+            // panel destroy() respects outline graveyard.
+            grid['scroll'+String(n)] = null;
+        } else {
+            c = {
+                prev: null,
+                next: null,
+                parent: $('#'+grid.id).children().get(n-1)
+            };
+        }
+
+        // TODO: What if c doesn't exist if the panel was already destroyed
+
+        // create a new panel with right id, but wrong alist & breadcrumbs.
+        grid['scroll'+String(n)] = diathink.PanelOutlineView.designWithID({
+            id: p,
+            parentView: grid,
+            rootModel: null
+        });
+        grid['scroll'+String(n)].renderAt(c);
+
+        // grid['scroll'+String(n)].theme();
+        // grid['scroll'+String(n)].registerEvents();
+        if (firsttime && (grid['scroll'+String(n)].id === this.newPanel)) {
+            grid['scroll'+String(n)].changeRoot(
+                this.getModel(this.options.activeID)
+            );
+        } else {
+            grid['scroll'+String(n)].changeRoot(
+                PM.rootModels[p],
+                PM.rootViews[p]
+            );
+        }
+    },
+    removePanel: function(n) {
+        var grid = M.ViewManager.getCurrentPage().content.grid;
+        grid['scroll'+String(n)].destroy();
+        grid['scroll'+String(n)] = null;
+    },
+    execModel: function() {
+        var that = this;
+        this.addQueue('newModelAdd', ['context'], function() {
+            var PM = diathink.PanelManager;
+            var grid = M.ViewManager.getCurrentPage().content.grid;
+            var o = that.options;
+            var dir;
             if (o.undo) {
-                r.rOldPanelContext = this.newPanelContext;
-                r.rNewPanelContext = this.oldPanelContext;
+                dir = PM.remove(that.newPanel);
             } else {
-                r.rOldPanelContext = this.oldPanelContext;
-                r.rNewPanelContext = this.newPanelContext;
+                if (!that.newPanel) { // if id isn't chosen yet
+                    var newPanel = diathink.PanelOutlineView.design({
+                        rootModel: that.getModel(that.options.activeID)
+                    });
+                    that.newPanel = newPanel.id;
+                    newPanel.destroy(); // remove from viewmanager - this is counter-intuitive,
+                }
+                dir = PM.insertAfter(that.newPanel, that.options.prevPanel);
+                // we only wanted newPanel for the PanelManager id, not the ViewManager.
             }
-        }
+            PM.updateRoots();
+
+            // move this to grid.renderUpdate(); ??
+            // Define panelid's and rootid's for redraw
+
+            // loop forwards or backwards - to avoid creating duplicate id's
+            //  before we delete the original.
+
+            for (var p = PM.leftPanel, n=1;
+                 (p!=='') && (n<=PM.panelsPerScreen);
+                 ++n, p=PM.nextpanel[p]) {
+                if (dir==='right') {
+                    that.redrawPanel(n, p, !o.undo && !o.redo);
+                }
+            }
+            var n2 = n;
+            for ( ; n2<=PM.panelsPerScreen; ++n2) {
+                that.removePanel(n2);
+            }
+            if (dir==='left') {
+                --n; p=PM.prevpanel[p];
+                for ( ;
+                     (p!=='') && (n>=1);
+                     --n, p=PM.prevpanel[p]) {
+                    that.redrawPanel(n, p, !o.undo && !o.redo);
+                }
+            }
+
+            PM.updateRoots();
+            diathink.updatePanelButtons();
+
+            if (that.options.dockElem) {
+                $(document.body).removeClass('transition-mode');
+                that.options.dockElem.parentNode.removeChild(that.options.dockElem);
+                that.options.dockElem = undefined;
+            }
+        });
     },
-    getNewContext: function() { // no changes to model
-        this.newModelContext = this.oldModelContext;
-    },
-    getOldPanelContext: function() { // define oldPanelContext and newPanelContext
-        this.oldPanelContext = null; // panel newly created
-    },
-    getNewPanelContext: function() {
-        var context = null;
-        if (this.options.activePanel) {
-            var panelid = this.options.activePanel;
-            context = {};
-            context.next = diathink.PanelManager.nextpanel[panelid];
-            context.prev = diathink.PanelManager.prevpanel[panelid];
-            context.root = this.options.activeID;
-        }
-        this.newPanelContext = context;
-    },
-    restorePanelContext: function() { // mutually exclusive with restoreViewContext
+    execView: function(outline) { // mutually exclusive with restoreViewContext
         var that = this;
         this.addQueue(['view', outline.rootID], ['newModelAdd', 'anim'], function() {
             var r= that.runtime;
-            var collection, rank, oldParent, oldParentView=null;
-            var newModelContext, li, elem, oldspot, neighbor, neighborType,
-                newParentView, createActiveLineView=false;
-            if ((r.rNewType!=='panel')&&(r.rOldType!=='panel')) {
-                console.log("restorePanelContext called with no panel-ops");
-                debugger;
-                return;
-            }
-            if ((r.rOldPanelContext==null)&&(r.rNewPanelContext==null)) {
-                console.log('restorePanelContext called with no context');
-                debugger;
-                return;
-            }
-            if (r.rOldPanelContext == null) { // create panel
-
-                diathink.PanelManager.insertAfter(newid, previousid);
-            } else if (r.rNewPanelContext == null) { // destroy panel
-                diathink.PanelManager.remove(r.rNewPanelContext);
-            } else { // move panel
-                // diathink.PanelManager.moveAfter();
-            }
         });
     }
 });

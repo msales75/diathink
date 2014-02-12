@@ -54,6 +54,102 @@ function scheduleKey(simulated, id, opts) {
     }
 };
 
+diathink.updatePanelButtons = function() {
+   var content = M.ViewManager.getCurrentPage().content;
+   var l = $('#'+content.leftbutton.id);
+   var r = $('#'+content.rightbutton.id);
+   var n, p;
+   var allowleft=false, allowright=false;
+   var PM = diathink.PanelManager;
+   if (PM.leftPanel !== '') {
+       if (PM.prevpanel[PM.leftPanel]!=='') {
+           allowleft = true;
+       }
+       for (n=1, p=PM.leftPanel; p!==''; ++n, p=PM.nextpanel[p]) {
+           if (n>PM.panelsPerScreen) {
+               allowright = true;
+               break;
+           }
+       }
+   }
+   if (allowleft) {
+       l.css('visibility', 'visible');
+   } else {
+       l.css('visibility', 'hidden');
+   }
+   if (allowright) {
+       r.css('visibility', 'visible');
+   } else {
+       r.css('visibility', 'hidden');
+   }
+};
+
+diathink.redrawPanels = function(dir) {
+    var p, n;
+    var PM = diathink.PanelManager;
+
+    for (p = PM.leftPanel, n=1;
+         (p!=='') && (n<=PM.panelsPerScreen);
+         ++n, p=PM.nextpanel[p]) {
+        if (dir==='right') {
+            diathink.redrawPanel(n, p, false);
+        }
+    }
+    var n2 = n;
+    for ( ; n2<=PM.panelsPerScreen; ++n2) {
+        diathink.removePanel(n2);
+    }
+    if (dir==='left') {
+        --n; p=PM.prevpanel[p];
+        for ( ;
+            (p!=='') && (n>=1);
+            --n, p=PM.prevpanel[p]) {
+            diathink.redrawPanel(n, p, false);
+        }
+    }
+
+    PM.updateRoots();
+};
+
+diathink.redrawPanel = function(n, p, firsttime) {
+    // should changeRoot it instead?
+    var c;
+    var PM = diathink.PanelManager;
+    var grid = M.ViewManager.getCurrentPage().content.grid;
+    if (grid['scroll'+String(n)]) {
+        c = grid['scroll'+String(n)].destroy(); // save context for this
+        // panel destroy() respects outline graveyard.
+        grid['scroll'+String(n)] = null;
+    } else {
+        c = {
+            prev: null,
+            next: null,
+            parent: $('#'+grid.id).children().get(n-1)
+        };
+    }
+
+    // create a new panel with right id, but wrong alist & breadcrumbs.
+    grid['scroll'+String(n)] = diathink.PanelOutlineView.designWithID({
+        id: p,
+        parentView: grid,
+        rootModel: null
+    });
+    grid['scroll'+String(n)].renderAt(c);
+
+    // grid['scroll'+String(n)].theme();
+    // grid['scroll'+String(n)].registerEvents();
+    grid['scroll'+String(n)].changeRoot(
+            PM.rootModels[p],
+            PM.rootViews[p]
+    );
+};
+
+diathink.removePanel = function(n) {
+    var grid = M.ViewManager.getCurrentPage().content.grid;
+    grid['scroll'+String(n)].destroy();
+    grid['scroll'+String(n)] = null;
+};
+
 diathink.handleKeypress = function(elem, e) {
     var id = elem.id;
     var key = String.fromCharCode(e.charCode);
@@ -322,6 +418,18 @@ diathink.app.createPage = function(pageName, root) {
                                 });
                             }
                     });
+                    $('#'+id).on('tap', '.left-button', function(e) {
+                        var PM = diathink.PanelManager;
+                        PM.leftPanel = PM.prevpanel[PM.leftPanel];
+                        diathink.updatePanelButtons();
+                        diathink.redrawPanels('right');
+                    });
+                    $('#'+id).on('tap', '.right-button', function(e) {
+                        var PM = diathink.PanelManager;
+                        PM.leftPanel = PM.nextpanel[PM.leftPanel];
+                        diathink.updatePanelButtons();
+                        diathink.redrawPanels('left');
+                    });
 
                     $('#'+id).on('tap', '.ui-breadcrumb-link', function(e) {
                         // $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
@@ -465,6 +573,7 @@ diathink.app.createPage = function(pageName, root) {
                     // ? also on: mobile.document pagechange
 
                     diathink.ActionManager.refreshButtons();
+                    diathink.updatePanelButtons();
                     diathink.keyboard = diathink.keyboardSetup.extend({});
                     diathink.keyboard.init();
                     $('#'+id).nestedSortable({
@@ -556,15 +665,28 @@ diathink.app.createPage = function(pageName, root) {
             })
         }),
 
-        content:M.GridView.design({
-            cssClass: "scroll-container",
-            childViews: "scroll1 scroll2",
-            layout: M.TWO_COLUMNS,
-            scroll1:diathink.PanelOutlineView.design({
-                rootModel: root
+        content:M.ContainerView.design({
+            cssClass: "grid-wrapper",
+            childViews: "leftbutton rightbutton grid",
+            leftbutton:M.SpanView.design({
+                cssClass: 'left-button',
+                value:'<'
             }),
-            scroll2:diathink.PanelOutlineView.design({
-                rootModel: root
+            rightbutton:M.SpanView.design({
+                cssClass: 'right-button',
+                value:'>'
+            }),
+            grid: M.GridView.design({
+                cssClass: "scroll-container",
+                panelManager: diathink.PanelManager,
+                childViews: "scroll1 scroll2",
+                layout: M.TWO_COLUMNS,
+                scroll1:diathink.PanelOutlineView.design({
+                    rootModel: root
+                }),
+                scroll2:diathink.PanelOutlineView.design({
+                    rootModel: root
+                })
             })
         }),
 
@@ -573,11 +695,13 @@ diathink.app.createPage = function(pageName, root) {
         })
     });
 
-    // diathink.app.pages[pageName].render();
 
+    // diathink.app.pages[pageName].render();
 };
 
 diathink.app.createPage('page1', null);
+// Update Panel-Manager with grid-panels
+diathink.PanelManager.initFromDOM(diathink.app.pages['page1'].content.grid);
 
 /*
 diathink.app.configure({

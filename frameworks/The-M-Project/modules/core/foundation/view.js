@@ -497,6 +497,52 @@ M.View = M.Object.extend(
         }
     },
 
+    saveContext: function(elem) {
+        if (!elem) {elem = $('#'+this.id)[0];}
+        if (!elem) {return null;}
+        return {
+            prev: elem.previousSibling,
+            next: elem.nextSibling,
+            parent: elem.parentNode
+        };
+    },
+    validateContext: function(context) {
+        if (!context.parent) {
+            debugger;
+            return;
+        }
+        if (context.prev) {
+            if (context.prev.parentNode !== context.parent) {
+                debugger;
+                return;
+            }
+            if (context.prev.nextSibling !== context.next) {
+                debugger;
+                return;
+            }
+        }
+        if (context.next) {
+            if (context.next.parentNode !== context.parent) {
+                debugger;
+                return;
+            }
+            if (context.next.previousSibling !== context.prev) {
+                debugger;
+                return;
+            }
+        }
+    },
+    renderAt: function(context) {
+      this.validateContext(context);
+      if (context.prev) {
+          return $(context.prev).after(this.render());
+      } else if (context.next) {
+          return $(context.next).before(this.render());
+      } else {
+          return $(context.parent).prepend(this.render());
+      }
+    },
+
     /**
      * This method triggers the theme method on all children.
      */

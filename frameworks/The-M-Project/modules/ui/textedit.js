@@ -531,7 +531,7 @@ M.TextEditView = M.View.extend(
          * @private
          */
         theme: function(elem) {
-            console.log('Theming textedit box')
+            // console.log('Theming textedit box')
             /* trigger keyup event to make the text field autogrow */
             if (!elem) {elem = $('#' + this.id)[0];}
             var jDom = $(elem);

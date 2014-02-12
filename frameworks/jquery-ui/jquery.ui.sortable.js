@@ -274,6 +274,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
                 // items.push(item);
                 items.push({
                     instance: targetData,
+                    id: _queries[j].id, // MS: will this work? assumes certain kind of queries?
                     item: $(_queries[j]),
                     parentPanel: $(this._closestPanel(_queries[j])),
                     width: 0,
@@ -281,7 +282,6 @@ $.widget2("ui.sortable", $.ui.mouse, {
                     left: 0,
                     top: 0
                 });
-
 		    }
         };
 
