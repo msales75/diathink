@@ -18,7 +18,7 @@
  *
  * @extends M.View
  */
-M.ButtonView = M.View.extend(
+M.ButtonView = M.View.subclass(
 /** @scope M.ButtonView.prototype */ {
 
     /**
@@ -132,7 +132,7 @@ M.ButtonView = M.View.extend(
                 }
             }
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**

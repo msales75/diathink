@@ -47,7 +47,7 @@ M.VERTICAL = 'vertical';
  * 
  * @extends M.View
  */
-M.ButtonGroupView = M.View.extend(
+M.ButtonGroupView = M.View.subclass(
 /** @scope M.ButtonGroupView.prototype */ {
 
     /**

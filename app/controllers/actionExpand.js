@@ -1,4 +1,6 @@
-diathink.CollapseAction= diathink.Action.extend({
+m_require("app/controllers/actionBase.js");
+
+$D.CollapseAction= $D.Action.extend({
     type:"CollapseAction",
     options: {activeID: null, collapsed: false},
     _validateOptions: {

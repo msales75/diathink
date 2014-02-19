@@ -19,7 +19,7 @@ m_require('ui/button.js');
  *
  * @extends M.View
  */
-M.ListItemView = M.View.extend(
+M.ListItemView = M.View.subclass(
 /** @scope M.ListItemView.prototype */ {
 
     /**

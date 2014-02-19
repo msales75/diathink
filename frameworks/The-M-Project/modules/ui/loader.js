@@ -18,7 +18,7 @@
  *
  * @extends M.View
  */
-M.LoaderView = M.View.extend(
+M.LoaderView = M.View.subclass(
 /** @scope M.LoaderView.prototype */ {
 
     /**

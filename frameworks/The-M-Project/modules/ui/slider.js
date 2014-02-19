@@ -16,7 +16,7 @@
  *
  * @extends M.View
  */
-M.SliderView = M.View.extend(
+M.SliderView = M.View.subclass(
 /** @scope M.ButtonView.prototype */ {
 
     /**
@@ -148,7 +148,7 @@ M.SliderView = M.View.extend(
                 }
             }
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**

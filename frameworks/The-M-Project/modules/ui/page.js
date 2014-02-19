@@ -17,7 +17,7 @@
  *
  * @extends M.View
  */
-M.PageView = M.View.extend(
+M.PageView = M.View.subclass(
 /** @scope M.PageView.prototype */ {
 
     /**
@@ -136,7 +136,7 @@ M.PageView = M.View.extend(
                 action: 'orientationDidChange'
             }
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**
@@ -176,7 +176,7 @@ M.PageView = M.View.extend(
 
         /* initialize the loader for later use (if not already done) */
         if(M.LoaderView) {
-            M.LoaderView.initialize();
+            M.LoaderView.prototype.initialize();
         }
 
         /* call controlgroup plugin on any such element on the page */

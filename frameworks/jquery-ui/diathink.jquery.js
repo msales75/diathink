@@ -155,13 +155,13 @@ $(window).resize(function() {
     changeHeight=false;
     changeWidth=false;
     changeFont=false;
-    if (newHeight !== diathink.lastHeight) {
+    if (newHeight !== $D.lastHeight) {
         changeHeight = true;
     }
-    if (newWidth !== diathink.lastWidth) {
+    if (newWidth !== $D.lastWidth) {
         changeWidth = true;
     }
-    if (newFont !== diathink.lastFont) {
+    if (newFont !== $D.lastFont) {
         changeFont = true;
     }
     })();
@@ -209,9 +209,9 @@ $(window).resize(function() {
         })();
     }
 
-    diathink.lastHeight = newHeight;
-    diathink.lastWidth = newWidth;
-    diathink.lastFont = newFont;
+    $D.lastHeight = newHeight;
+    $D.lastWidth = newWidth;
+    $D.lastFont = newFont;
     // 10px for .scroll-container margin
     // Textarea position/size update
 
@@ -221,11 +221,11 @@ $(window).resize(function() {
     //    (near screen top if focus is working)
     /*
     var input = $('#'+M.ViewManager.getCurrentPage().hiddeninput.id);
-    if (input && diathink.focused) {
-        input.css('left', Math.round($(diathink.focused).offset().left)+'px')
-            .css('top', Math.round($(diathink.focused).offset().top)+'px')
-            .width($(diathink.focused).width())
-            .height($(diathink.focused).height());
+    if (input && $D.focused) {
+        input.css('left', Math.round($($D.focused).offset().left)+'px')
+            .css('top', Math.round($($D.focused).offset().top)+'px')
+            .width($($D.focused).width())
+            .height($($D.focused).height());
     }
     */
 });

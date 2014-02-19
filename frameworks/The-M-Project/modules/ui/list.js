@@ -20,7 +20,7 @@ m_require('ui/search_bar.js');
  *
  * @extends M.View
  */
-M.ListView = M.View.extend(
+M.ListView = M.View.subclass(
 /** @scope M.ListView.prototype */ {
 
     /**
@@ -179,7 +179,7 @@ M.ListView = M.View.extend(
         if(this.hasSearchBar && !this.usesDefaultSearchBehaviour) {
             this.searchBar.isListViewSearchBar = YES;
             this.searchBar.listView = this;
-            this.searchBar = M.SearchBarView.design(this.searchBar);
+            this.searchBar = new M.SearchBarView(this.searchBar);
             this.html = this.searchBar.render();
         } else {
             this.html = '';
@@ -280,7 +280,7 @@ M.ListView = M.View.extend(
     renderOneItem: function(parentView, model, index, parentElem) {
         /* Create a new object for the current template view */
         var templateView = parentView.listItemTemplateView;
-        var obj = templateView.design({});
+        var obj = new templateView({});
         obj.modelId = model.cid;
         obj = parentView.cloneObject(obj, model);
         //set the current list item value to the view value. This enables for example to get the value/contentBinding of a list item in a template view.
@@ -317,7 +317,7 @@ M.ListView = M.View.extend(
         // check outline and value for collapse-status
         var isCollapsed = obj.value.get('collapsed');
 
-        var outline = diathink.OutlineManager.outlines[obj.rootID];
+        var outline = $D.OutlineManager.outlines[obj.rootID];
         var collapseTest = outline.getData(obj.value.cid);
         if (collapseTest != null) {
             isCollapsed = collapseTest;
@@ -353,7 +353,7 @@ M.ListView = M.View.extend(
         /* Iterate through all views defined in the template view */
         for(var i in childViewsArray) {
             /* Create a new object for the current view */
-            obj[childViewsArray[i]] = obj[childViewsArray[i]].design({});
+            obj[childViewsArray[i]] = new obj[childViewsArray[i]];
 
             /* create childViews of the current object */
             obj[childViewsArray[i]] = this.cloneObject(obj[childViewsArray[i]], item);
@@ -500,7 +500,7 @@ M.ListView = M.View.extend(
             }
 
             if(!previouslistItem) {
-                this.swipeButton = M.ButtonView.design(
+                this.swipeButton = new M.ButtonView(
                     listItem.swipeButton
                 );
                 this.swipeButton.value = this.swipeButton.value ? this.swipeButton.value : 'delete';

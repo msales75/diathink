@@ -1,32 +1,33 @@
 
-diathink.RecurseListTemplate = M.ListView.extend({
+
+$D.RecurseListTemplate = M.ListView.subclass({
     /* isTemplate: true, */
     isInset:true,
     listItemTemplateView:null,
     contentBinding:{
-        target:diathink.dummyController,
+        target:$D.dummyController,
         property:'listObject'
     },
     items: 'models', // for Backbone.Collection compatibility
     idName:'cid' // for Backbone.Collection compatibility
 });
 
-diathink.MyListItem = M.ListItemView.extend({
+$D.MyListItem = M.ListItemView.subclass({
     /* isTemplate: true, */
     childViews:'header children',
     hasSingleAction:false,
     isSelectable:false,
-    modelType: diathink.OutlineNodeModel,
-    header:M.ContainerView.extend({
+    modelType: $D.OutlineNodeModel,
+    header:M.ContainerView.subclass({
         cssClass:'outline-header',
         childViews:'handle name',
-        handle:M.ImageView.extend({
+        handle:M.ImageView.subclass({
             value:'theme/images/drag_icon.png',
             cssClass:'drag-handle disclose ui-disable-scroll'
         }),
-        name:M.ContainerView.extend({
+        name:M.ContainerView.subclass({
             childViews: 'text',
-            text: M.TextEditView.extend({
+            text: M.TextEditView.subclass({
                 cssClass: 'outline-content ui-input-text ui-body-c ui-corner-all ui-shadow-inset',
                 hasMultipleLines: true,
                 valuePattern:'<%= text %>'
@@ -34,8 +35,8 @@ diathink.MyListItem = M.ListItemView.extend({
         })
     }),
 
-    children: diathink.RecurseListTemplate
+    children: $D.RecurseListTemplate
 });
 
-diathink.RecurseListTemplate.listItemTemplateView = diathink.MyListItem;
+$D.RecurseListTemplate.prototype.listItemTemplateView = $D.MyListItem;
 

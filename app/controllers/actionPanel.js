@@ -1,5 +1,7 @@
 
-diathink.RootAction= diathink.Action.extend({
+m_require("app/controllers/actionBase.js");
+
+$D.RootAction= $D.Action.extend({
     type:"RootAction",
     newType: 'panel',
     options: {activeID: null, collapsed: false},
@@ -13,7 +15,7 @@ diathink.RootAction= diathink.Action.extend({
         var that = this;
         that.addQueue('newModelAdd', ['context'], function() {
             if ((!that.options.undo) && (!that.options.redo)) {
-                var c = diathink.ActionManager;
+                var c = $D.ActionManager;
                 if (c.actions.at(c.lastAction) !== that) {
                     console.log('ERROR: lastAction is not this');
                     debugger;
@@ -24,8 +26,8 @@ diathink.RootAction= diathink.Action.extend({
 
                     var activeModel= that.getModel(that.options.activeID);
                     activeModel.set('collapsed', prevAction.oldCollapsed);
-                    for (var o in diathink.OutlineManager.outlines) {
-                        diathink.OutlineManager.outlines[o].setData(
+                    for (var o in $D.OutlineManager.outlines) {
+                        $D.OutlineManager.outlines[o].setData(
                             that.options.activeID,
                             prevAction.oldViewCollapsed[o]);
                     }
@@ -72,7 +74,7 @@ diathink.RootAction= diathink.Action.extend({
     }
 });
 
-diathink.PanelAction=diathink.Action.extend({
+$D.PanelAction=$D.Action.extend({
     type: "PanelCreate",
     prevPanel: null,
     newPanel: null,
@@ -89,7 +91,7 @@ diathink.PanelAction=diathink.Action.extend({
     redrawPanel: function(n, p, firsttime) {
         // should changeRoot it instead?
         var c;
-        var PM = diathink.PanelManager;
+        var PM = $D.PanelManager;
         var grid = M.ViewManager.getCurrentPage().content.grid;
         if (grid['scroll'+String(n)]) {
             c = grid['scroll'+String(n)].destroy(); // save context for this
@@ -106,7 +108,7 @@ diathink.PanelAction=diathink.Action.extend({
         // TODO: What if c doesn't exist if the panel was already destroyed
 
         // create a new panel with right id, but wrong alist & breadcrumbs.
-        grid['scroll'+String(n)] = diathink.PanelOutlineView.designWithID({
+        grid['scroll'+String(n)] = $D.PanelOutlineView.designWithID({
             id: p,
             parentView: grid,
             rootModel: null
@@ -134,7 +136,7 @@ diathink.PanelAction=diathink.Action.extend({
     execModel: function() {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function() {
-            var PM = diathink.PanelManager;
+            var PM = $D.PanelManager;
             var grid = M.ViewManager.getCurrentPage().content.grid;
             var o = that.options;
             var dir;
@@ -142,7 +144,7 @@ diathink.PanelAction=diathink.Action.extend({
                 dir = PM.remove(that.newPanel);
             } else {
                 if (!that.newPanel) { // if id isn't chosen yet
-                    var newPanel = diathink.PanelOutlineView.design({
+                    var newPanel = new $D.PanelOutlineView({
                         rootModel: that.getModel(that.options.activeID)
                     });
                     that.newPanel = newPanel.id;
@@ -180,7 +182,7 @@ diathink.PanelAction=diathink.Action.extend({
             }
 
             PM.updateRoots();
-            diathink.updatePanelButtons();
+            $D.updatePanelButtons();
 
             if (that.options.dockElem) {
                 $(document.body).removeClass('transition-mode');

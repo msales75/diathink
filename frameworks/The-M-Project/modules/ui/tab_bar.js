@@ -18,7 +18,7 @@
  * visible an indicates the currently selected tab.
  *
  */
-M.TabBarView = M.View.extend(
+M.TabBarView = M.View.subclass(
 /** @scope M.TabBarView.prototype */ {
 
     /**

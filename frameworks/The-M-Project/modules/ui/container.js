@@ -17,7 +17,7 @@
  *
  * @extends M.View
  */
-M.ContainerView = M.View.extend(
+M.ContainerView = M.View.subclass(
 /** @scope M.ContainerView.prototype */ {
 
     /**

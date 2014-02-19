@@ -1,12 +1,12 @@
 
-diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
+$D.OutlineNodeModel = Backbone.RelationalModel.extend({
     relations: [
         {
             type: Backbone.HasMany, // Use the type, or the string 'HasOne' or 'HasMany'.
             key: 'children', // must match list-view name in OutlineView
-            relatedModel: 'diathink.OutlineNodeModel',
+            relatedModel: '$D.OutlineNodeModel',
             includeInJSON: true,
-            collectionType: 'diathink.OutlineNodeCollection',
+            collectionType: '$D.OutlineNodeCollection',
             reverseRelation: {
                 key: 'parent'
             }
@@ -47,7 +47,7 @@ diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
 
     parentCollection: function() {
         if (this.attributes.parent == null) {
-            if (diathink.data.get(this.cid) === this) {return diathink.data;}
+            if ($D.data.get(this.cid) === this) {return $D.data;}
             else {return null;}
         } else {
             return this.attributes.parent.attributes.children;
@@ -85,8 +85,8 @@ diathink.OutlineNodeModel = Backbone.RelationalModel.extend({
         return Backbone.Relational.store._collections[0]._byId[id];
     }
 });
-diathink.OutlineNodeCollection = Backbone.Collection.extend({
-    model: diathink.OutlineNodeModel
+$D.OutlineNodeCollection = Backbone.Collection.extend({
+    model: $D.OutlineNodeModel
 });
 
 //    __name__:'OutlineNode',

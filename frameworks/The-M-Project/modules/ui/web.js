@@ -15,7 +15,7 @@
  *
  * @extends M.View
  */
-M.WebView = M.View.extend(
+M.WebView = M.View.subclass(
 /** @scope M.WebView.prototype */ {
 
     /**

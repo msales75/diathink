@@ -15,7 +15,7 @@
  *
  * @extends M.View
  */
-M.PopoverView = M.View.extend(
+M.PopoverView = M.View.subclass(
 /** @scope M.PopoverView.prototype */ {
 
     /**

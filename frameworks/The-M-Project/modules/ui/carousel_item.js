@@ -18,7 +18,7 @@
  *
  * @extends M.View
  */
-M.CarouselItemView = M.View.extend(
+M.CarouselItemView = M.View.subclass(
 /** @scope M.CarouselItemView.prototype */ {
 
     /**

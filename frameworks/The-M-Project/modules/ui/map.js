@@ -54,7 +54,7 @@ M.INITIAL_MAP = null;
  *
  * @extends M.View
  */
-M.MapView = M.View.extend(
+M.MapView = M.View.subclass(
 /** @scope M.MapView.prototype */ {
 
     /**
@@ -419,7 +419,7 @@ M.MapView = M.View.extend(
         } else {
             var callback = M.INITIAL_MAP.options ? M.INITIAL_MAP.options.callbacks : null;
             if(callback && M.EventDispatcher.checkHandler(callback.error)){
-                this.bindToCaller(callback.error.target, callback.error.action)();
+                $D.bindToCaller(callback.error.target, callback.error.action)();
             }
         }
     },
@@ -502,7 +502,7 @@ M.MapView = M.View.extend(
 
         /* now call callback of "the outside world" */
         if(!isUpdate && this.callbacks.success && M.EventDispatcher.checkHandler(this.callbacks.success)) {
-            this.bindToCaller(this.callbacks.success.target, this.callbacks.success.action)();
+            $D.bindToCaller(this.callbacks.success.target, this.callbacks.success.action)();
         }
     },
 

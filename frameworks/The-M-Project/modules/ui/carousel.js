@@ -41,7 +41,7 @@ M.CAROUSEL_SIZE_NONE = 3;
  *
  * @extends M.View
  */
-M.CarouselView = M.View.extend(
+M.CarouselView = M.View.subclass(
 /** @scope M.CarouselView.prototype */ {
 
     /**
@@ -185,7 +185,7 @@ M.CarouselView = M.View.extend(
                 action: 'prepareExternalCallback'
             }
         };
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**

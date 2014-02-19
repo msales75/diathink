@@ -19,7 +19,7 @@ m_require('ui/dialog.js');
  *
  * @extends M.DialogView 
  */
-M.ActionSheetDialogView = M.DialogView.extend(
+M.ActionSheetDialogView = M.DialogView.subclass(
 /** @scope M.ActionSheetDialogView.prototype */ {
 
     /**
@@ -209,7 +209,7 @@ M.ActionSheetDialogView = M.DialogView.extend(
         var buttonType = (button.tag === 'destruction' || button.tag === 'cancel') ? button.tag : 'other';
 
         if(this.callbacks && buttonType && M.EventDispatcher.checkHandler(this.callbacks[buttonType])){
-            this.bindToCaller(this.callbacks[buttonType].target, this.callbacks[buttonType].action, button.tag)();
+            $D.bindToCaller(this.callbacks[buttonType].target, this.callbacks[buttonType].action, button.tag)();
         }
     }
 });

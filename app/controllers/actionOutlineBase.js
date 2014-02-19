@@ -14,12 +14,13 @@
 // todo: action stores oldFocus and newFocus ? (maybe not)
 // todo: handle focusID in context, and validate it.
 // todo: undo-scroll (maybe focus)
+m_require("app/controllers/actionBase.js");
+m_require("app/controllers/actionAnimZ.js");
 
-
-diathink.OutlineAction = diathink.Action.extend({
+$D.OutlineAction = $D.Action.extend({
 
     init: function() {
-        diathink.Action.prototype.init.call(this, arguments);
+        $D.Action.prototype.init.call(this, arguments);
         _.extend(this, {
             oldType: 'line',
             newType: 'line',
@@ -33,7 +34,7 @@ diathink.OutlineAction = diathink.Action.extend({
         });
     },
     runinit: function() {
-        diathink.Action.prototype.runinit.call(this, arguments);
+        $D.Action.prototype.runinit.call(this, arguments);
         _.extend(this.runtime, {
             activeLineElem: {},
             activeLineHeight: {},
@@ -109,7 +110,7 @@ diathink.OutlineAction = diathink.Action.extend({
         }
 
 
-        var outlines = diathink.OutlineManager.outlines;
+        var outlines = $D.OutlineManager.outlines;
         for (var i in outlines) {
             // figure out what kind of object activeID is in each outline.
             r.rOldContextType[i] = this.getContextType(r.rOldModelContext, outlines[i]);
@@ -194,13 +195,13 @@ diathink.OutlineAction = diathink.Action.extend({
             debugger;
         }
         if (o.oldRoot !== 'all') {
-            if (!diathink.OutlineManager.outlines[o.oldRoot] && !diathink.OutlineManager.deleted[o.oldRoot]) {
+            if (!$D.OutlineManager.outlines[o.oldRoot] && !$D.OutlineManager.deleted[o.oldRoot]) {
                 console.log('ERROR: Action '+this.type+' has invalid oldRoot');
                 debugger;
             }
         }
         if ((o.newRoot !== 'all')&&(o.newRoot!=='new'))  {
-            if (!diathink.OutlineManager.outlines[o.newRoot] && !diathink.OutlineManager.deleted[o.newRoot]) {
+            if (!$D.OutlineManager.outlines[o.newRoot] && !$D.OutlineManager.deleted[o.newRoot]) {
                 console.log('ERROR: Action '+this.type+' has invalid newRoot');
                 debugger;
             }
@@ -371,7 +372,7 @@ diathink.OutlineAction = diathink.Action.extend({
         this.getNewContext();
     },
     getModel: function(id) {
-        return Backbone.Relational.store.find(diathink.OutlineNodeModel, id);
+        return Backbone.Relational.store.find($D.OutlineNodeModel, id);
     },
     getLineView: function(id, rootid) {
         var model = this.getModel(id);
@@ -443,7 +444,7 @@ diathink.OutlineAction = diathink.Action.extend({
     },
     // return the context for an item inserted inside id, at end of list
     getContextIn: function(id) {
-        var reference = diathink.OutlineNodeModel.getById(id);
+        var reference = $D.OutlineNodeModel.getById(id);
         var collection = reference.get('children');
         var context = {parent: id, next: null};
         if (collection.length===0) {
@@ -467,7 +468,7 @@ diathink.OutlineAction = diathink.Action.extend({
         $('#'+id).focus();
     },
     newModel: function() {
-        var activeModel = new diathink.OutlineNodeModel({text: this.options.text, children: null});
+        var activeModel = new $D.OutlineNodeModel({text: this.options.text, children: null});
         this.options.activeID = activeModel.cid;
         return activeModel;
     },
@@ -491,8 +492,8 @@ diathink.OutlineAction = diathink.Action.extend({
                     // might be under collapsed item or outside it
                 }
             }
-        } else { // outline-root diathink.data
-            if (M.ViewManager.getViewById(outline.rootID).value === diathink.data) {
+        } else { // outline-root $D.data
+            if (M.ViewManager.getViewById(outline.rootID).value === $D.data) {
                 return 'parentIsRoot';
             } else {
                 return 'parentInvisible';
@@ -524,8 +525,8 @@ diathink.OutlineAction = diathink.Action.extend({
                     return null;
                 }
             }
-        } else { // outline-root diathink.data
-            if (M.ViewManager.getViewById(outline.rootID).value === diathink.data) {
+        } else { // outline-root $D.data
+            if (M.ViewManager.getViewById(outline.rootID).value === $D.data) {
                 return M.ViewManager.getViewById(outline.rootID);
             } else {
                 return null;
@@ -548,7 +549,7 @@ diathink.OutlineAction = diathink.Action.extend({
                     // don't do this with a collapse action.
                     if (parent) {
                         that.subactions.push({
-                            action: diathink.CollapseAction,
+                            action: $D.CollapseAction,
                             activeID: parent.cid,
                             collapsed: false,
                             oldRoot: 'all',
@@ -572,7 +573,7 @@ diathink.OutlineAction = diathink.Action.extend({
                 if (newModelContext.parent != null) {
                     collection = that.getModel(newModelContext.parent).get('children');
                 } else {
-                    collection = diathink.data;
+                    collection = $D.data;
                 }
                 if (newModelContext.prev === null) {
                     rank = 0;
@@ -785,10 +786,10 @@ diathink.OutlineAction = diathink.Action.extend({
         M.assert(templateView != null);
         templateView.events = templateView.events ? templateView.events : parentView.events;
 
-        var li = templateView.design({cssClass: 'leaf'}); // todo -- merge with nestedsortable
+        var li = new templateView({cssClass: 'leaf'}); // todo -- merge with nestedsortable
         if (this.options.activeID) {
             li.modelId = this.options.activeID;
-            var item = diathink.OutlineNodeModel.getById(this.options.activeID);
+            var item = $D.OutlineNodeModel.getById(this.options.activeID);
         } else {
             // if view is rendered without a model
             // {text: this.options.lineText}; // from list
@@ -838,7 +839,7 @@ diathink.OutlineAction = diathink.Action.extend({
         }
         this.addQueue('modelCreate', ['context'], function() {
             if (!that.options.activeID) {
-                var activeModel = new diathink.OutlineNodeModel({text: that.options.text, children: null});
+                var activeModel = new $D.OutlineNodeModel({text: that.options.text, children: null});
                 that.options.activeID = activeModel.cid;
             }
         });
@@ -850,6 +851,6 @@ diathink.OutlineAction = diathink.Action.extend({
     }
 });
 
-_.extend(diathink.OutlineAction.prototype, diathink.animHelpers);
+_.extend($D.OutlineAction.prototype, $D.animHelpers);
 
 

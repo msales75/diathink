@@ -6,7 +6,7 @@
  *
  * @extends M.View
  */
-M.HiddenInputView = M.View.extend(
+M.HiddenInputView = M.View.subclass(
     /** @scope M.HiddenInputView.prototype */ {
 
         /**

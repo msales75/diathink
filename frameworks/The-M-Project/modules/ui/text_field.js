@@ -103,7 +103,7 @@ M.INPUT_DATETIME_LOCAL = 'datetime-local';
  *
  * @extends M.View
  */
-M.TextFieldView = M.View.extend(
+M.TextFieldView = M.View.subclass(
 /** @scope M.TextFieldView.prototype */ {
 
    /**
@@ -297,7 +297,7 @@ M.TextFieldView = M.View.extend(
                 action:'handleTap'
             };
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**
@@ -314,7 +314,7 @@ M.TextFieldView = M.View.extend(
         }
 
         /* let M.View do the real job */
-        this.bindToCaller(this, M.View.contentDidChange)();
+        $D.bindToCaller(this, M.View.contentDidChange)();
 
         this.renderUpdate();
         this.delegateValueUpdate();

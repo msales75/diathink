@@ -49,7 +49,7 @@ m_require('ui/selection_list_item.js');
  *
  * @extends M.View
  */
-M.SelectionListView = M.View.extend(
+M.SelectionListView = M.View.subclass(
 /** @scope M.SelectionListView.prototype */ {
 
     /**
@@ -316,7 +316,7 @@ M.SelectionListView = M.View.extend(
                 action: 'itemSelected'
             }
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**

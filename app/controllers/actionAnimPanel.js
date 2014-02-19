@@ -1,4 +1,5 @@
-diathink.animPanel = {
+
+$D.animPanel = {
     panelPrep: function() {
         return;
         var r = this.runtime;
@@ -22,7 +23,7 @@ diathink.animPanel = {
         var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
 
         // dock item to newPanel
-        var hiddenbread = M.BreadcrumbView.design({});
+        var hiddenbread = new M.BreadcrumbView;
         // .breadcrumbs-dock hides last breadcrumb-item
         hiddenbread.defineFromModel(this.getModel(this.options.activeID));
         var item = $(hiddenbread.render()).addClass('breadcrumbs-dock').appendTo(drawlayer);

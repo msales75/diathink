@@ -18,7 +18,7 @@
  *
  * @extends M.View
  */
-M.CanvasView = M.View.extend(
+M.CanvasView = M.View.subclass(
 /** @scope M.CanvasView.prototype */ {
 
     /**

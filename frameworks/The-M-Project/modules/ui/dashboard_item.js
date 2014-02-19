@@ -16,7 +16,7 @@
  *
  * @extends M.View
  */
-M.DashboardItemView = M.View.extend(
+M.DashboardItemView = M.View.subclass(
 /** @scope M.DashboardItemView.prototype */ {
 
     /**
@@ -100,7 +100,7 @@ M.DashboardItemView = M.View.extend(
                 action: 'dispatchTapEvent'
             }
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**

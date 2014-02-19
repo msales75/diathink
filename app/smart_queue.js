@@ -1,6 +1,6 @@
 
 // manage resources
-diathink.QueueManager= M.Object.extend({
+$D.QueueManager= M.Object.extend({
     resources: {'path/123': {}},
     queue: {queueID: ""},
     waitingFor: {'resource': ['queueid']},
@@ -24,7 +24,7 @@ diathink.QueueManager= M.Object.extend({
 //    but should be used very rarely
 
 // determine next event
-diathink.QueueEvent = M.Object.extend({
+$D.QueueEvent = M.Object.extend({
     type: 'QueueEvent',
     eventType: null,
     foregroundLevel: 0, // 0=always hidden from user to 5=urgent

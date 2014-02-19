@@ -16,7 +16,7 @@
 // todo: undo-scroll (maybe focus)
 
 
-diathink.Action = Backbone.RelationalModel.extend({
+$D.Action = Backbone.RelationalModel.extend({
     type:"Action",
     indentSpeed: 80,
     createSpeed: 80,
@@ -193,12 +193,12 @@ diathink.Action = Backbone.RelationalModel.extend({
         if (options.redo && (this.subactions.length>0)) {
             nsub = this.subactions.length;
             for (i=0; i<nsub; ++i) {
-                rank = diathink.ActionManager.nextRedo();
-                if (diathink.ActionManager.actions.at(rank) !== this.subactions[i].action) {
+                rank = $D.ActionManager.nextRedo();
+                if ($D.ActionManager.actions.at(rank) !== this.subactions[i].action) {
                     console.log("ERROR: Redoing wrong subaction");
                     debugger;
                 }
-                diathink.ActionManager.subRedo();
+                $D.ActionManager.subRedo();
             }
         } else if (options.undo && (this.parentAction != null)) {
             nsub = this.parentAction.subactions.length;
@@ -207,19 +207,19 @@ diathink.Action = Backbone.RelationalModel.extend({
                 debugger;
             }
             for (i=0; i<nsub; ++i) {
-                rank = diathink.ActionManager.nextUndo();
+                rank = $D.ActionManager.nextUndo();
                 if (i===0) {
-                    if (diathink.ActionManager.actions.at(rank) !== this.parentAction) {
+                    if ($D.ActionManager.actions.at(rank) !== this.parentAction) {
                         console.log("ERROR: Undoing something else when should be parentAction");
                         debugger;
                     }
                 } else {
-                    if (diathink.ActionManager.actions.at(rank) !== this.subactions[nsub-1-i].action) {
+                    if ($D.ActionManager.actions.at(rank) !== this.subactions[nsub-1-i].action) {
                         console.log("ERROR: Undoing wrong subaction");
                         debugger;
                     }
                 }
-                diathink.ActionManager.subUndo();
+                $D.ActionManager.subUndo();
             }
         }
 
@@ -254,7 +254,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         // todo: assumptions and issue-handling
         this.execModel();
 
-        var outlines = diathink.OutlineManager.outlines;
+        var outlines = $D.OutlineManager.outlines;
         var focusDeps = [];
         for (i in outlines) {
            this.execView(outlines[i]);
@@ -268,7 +268,7 @@ diathink.Action = Backbone.RelationalModel.extend({
 
         // todo: increase undo-dependencies
         this.addQueue('undobuttons', ['newModelAdd'],
-            function() {diathink.ActionManager.refreshButtons();});
+            function() {$D.ActionManager.refreshButtons();});
 
         this.addQueue('end',['focus', 'undobuttons', 'anim'], function() {
             var i, sub;
@@ -280,7 +280,7 @@ diathink.Action = Backbone.RelationalModel.extend({
                     sub.redo = false;
                     sub.parentAction = that;
                     (function(o) {
-                        diathink.ActionManager.subschedule(function() {
+                        $D.ActionManager.subschedule(function() {
                             return o;
                         });
                     })(sub);
@@ -290,11 +290,11 @@ diathink.Action = Backbone.RelationalModel.extend({
             delete that.options['done'];
             done();
         });
-        // diathink.validateMVC();
+        // $D.validateMVC();
         this.nextQueue();
     },
     getModel: function(id) {
-        return Backbone.Relational.store.find(diathink.OutlineNodeModel, id);
+        return Backbone.Relational.store.find($D.OutlineNodeModel, id);
     },
     getLineView: function(id, rootid) {
         var model = this.getModel(id);
@@ -307,7 +307,7 @@ diathink.Action = Backbone.RelationalModel.extend({
         options.redo = false;
         this.undone = true;
         return this.exec(options);
-        // diathink.validateMVC();
+        // $D.validateMVC();
     },
     focus: function() {
         // by default, focus on activeID in newRoot
@@ -352,7 +352,7 @@ diathink.Action = Backbone.RelationalModel.extend({
             //console.log("TextAction for id="+id+"; model="+
               //  model.cid+" with value="+$('#'+id).val());
                 return {
-                    action: diathink.TextAction,
+                    action: $D.TextAction,
                     activeID: model.cid,
                     text: value,
                     oldRoot: view.rootID,
@@ -367,8 +367,8 @@ diathink.Action = Backbone.RelationalModel.extend({
 // outline-move op, animation-type,
 // commuting operations don't have to be undone/redone - optimization
 
-diathink.ActionCollection = Backbone.Collection.extend({
-    model: diathink.Action
+$D.ActionCollection = Backbone.Collection.extend({
+    model: $D.Action
 });
 
 

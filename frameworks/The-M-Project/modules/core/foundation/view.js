@@ -20,241 +20,135 @@ m_require('core/foundation/model.js');
  *
  * @extends M.Object
  */
-M.View = M.Object.extend(
-/** @scope M.View.prototype */ {
 
-    /**
-     * The type of this object.
-     *
-     * @type String
-     */
+
+M.View = $D.Object.subclass({
+
     type: 'M.View',
-
-    /**
-     * A boolean value to definitely recognize a view as a view, independent on its
-     * concrete type, e.g. M.ButtonView or M.LabelView.
-     *
-     * @type Boolean
-     */
     isView: YES,
-
-    /**
-     * The value property is a generic property for all values. Even if not all views
-     * really use it, e.g. the wrapper views like M.ButtonGroupView, most of it do.
-     *
-     * @property {String}
-     */
     value: null,
-
-    /**
-     * This property contains the relevant information about the view's computed value. In
-     * particular it is used to specify the pre-value, the content binding and the just-
-     * in-time performed operation, that computes the view's value.
-     *
-     * @property {Object}
-     */
-    computedValue: null,
-
-    /**
-     * The path to a content that is bound to the view's value. If this content
-     * changes, the view will automatically be updated.
-     *
-     * @property {String}
-     */
-    contentBinding: null,
-
-    /**
-     * The path to a content that is bound to the view's value (reverse). If this
-     * the view's value changes, the bound content will automatically be updated.
-     *
-     * @property {String}
-     */
-    contentBindingReverse: null,
-
-    /**
-     * some kind of ContentBinding for thinks like SelectionListViews if you want to apply some businessdata like a model to it.
-     *
-     * @property {String}
-     */
-    valueBinding: null,
-
-    /**
-     * An array specifying the view's children.
-     *
-     * @type Array
-     */
     childViews: null,
-
-    /**
-     * Indicates whether this view currently has the focus or not.
-     *
-     * @type Boolean
-     */
     hasFocus: NO,
-
-    /**
-     * The id of the view used for the html attribute id. Every view gets its own unique
-     * id during the rendering process.
-     */
     id: null,
 
-    /**
-     * Indicates whether the view should be displayed inline or not. This property isn't
-     * supported by all views, but e.g. by M.LabelView or M.ButtonView.
-     */
-    isInline: NO,
-
-    /*
-     * Indicates whether the view is currently enabled or disabled.
-     */
+    computedValue: null,
+    contentBinding: null,
+    contentBindingReverse: null,
+    valueBinding: null,
+    isInline: NO, // labelview or buttonview
     isEnabled: YES,
-
-    /**
-     * This property can be used to save a reference to the view's parent view.
-     *
-     * @param {Object}
-     */
     parentView: null,
-
-    /**
-     * If a view represents a model, e.g. within a list view, this property is used to save
-     * the model's id. So the view can be used to get to the record.
-     *
-     * @param {Object}
-     */
     modelId: null,
-
-    /**
-     * This property can be used to assign a css class to the view to get a custom styling.
-     *
-     * @type String
-     */
     cssClass: null,
-
-    /**
-     * This property can be used to assign a css style to the view. This allows you to
-     * create your custom styles inline.
-     *
-     * @type String
-     */
     cssStyle: null,
-
-    /**
-     * This property can be used to assign a css class to the view if an error occurs. The
-     * applying of this class is automatically triggered if the validation of the view
-     * goes wrong. This property is mainly used by input views, e.g. M.TextFieldView.
-     *
-     * @type String
-     */
-    cssClassOnError: null,
-
-    /**
-     * This property can be used to assign a css class to the view on its initialization. This
-     * property is mainly used for input ui elements like text fields, that might have a initial
-     * value that should be rendered in a different style than the later value entered by the
-     * user. This property is mainly used by input views, e.g. M.TextFieldView.
-     *
-     * @type String
-     */
-    cssClassOnInit: null,
-
-    /**
-     * This property is used internally to recursively build the pages html representation.
-     * It is once set within the render method and then eventually updated within the
-     * renderUpdate method.
-     *
-     * @type String
-     */
+    cssClassOnError: null, // textfieldview
+    cssClassOnInit: null, // textfieldview
     html: '',
-
-    /**
-     * Determines whether an onChange event will trigger a defined action or not.
-     * This property is basically interesting for input ui elements, e.g. for
-     * text fields.
-     *
-     * @type Boolean
-     */
     triggerActionOnChange: NO,
-
-    /**
-     * Determines whether an onKeyUp event will trigger a defined action or not.
-     * This property is basically interesting for input ui elements, e.g. for
-     * text fields.
-     *
-     * @type Boolean
-     */
     triggerActionOnKeyUp: NO,
-
-    /**
-     * Determines whether an onKeyUp event with the enter button will trigger a defined
-     * action or not. This property is basically interesting for input ui elements, e.g.
-     * for text fields.
-     *
-     * @type Boolean
-     */
     triggerActionOnEnter: NO,
-
-    /**
-     * This property is used to specify a view's events and their corresponding actions.
-     *
-     * @type Object
-     */
     events: null,
-
-    /**
-     * This property is used to specify a view's internal events and their corresponding actions.
-     *
-     * @private
-     * @type Object
-     */
     internalEvents: null,
-
-    /**
-     * This property specifies the recommended events for this type of view.
-     *
-     * @type Array
-     */
     recommendedEvents: null,
-    
-    /**
-     * Cache for getParentPage function.
-     *
-     * @type M.PageView
-     */
-
     parentPage : null,
 
+    childrenArray: false,
+    elem: null,
     rootID: null, // MS which view's controller is in charge of outline-contents
 
-    /**
-     * This method encapsulates the 'extend' method of M.Object for better reading of code syntax.
-     * It triggers the content binding for this view,
-     * gets an ID from and registers itself at the ViewManager.
-     *
-     * @param {Object} obj The mixed in object for the extend call.
-     */
-    design: function(obj) {
-        var view = this.extend(obj);
-        view.id = M.ViewManager.getNextId();
-        M.ViewManager.register(view);
-        view.onDesign();
+    constructor: function(obj) {
+        if ((obj===undefined) || (obj.id === undefined)) {
+            this.id = M.ViewManager.getNextId();
+        } else { // validate it's not being used
+            $D.assert($D(obj.id) == null, "Duplicate id specified in view constructor");
+        }
+        _.extend(this, obj);
+
+        M.ViewManager.register(this);
+        this.onDesign();
         if (this.isTemplate) {
-            // design children too
-            var childViews = view.getChildViewsAsArray();
+            // if children are not yet instantiated, so instantiate them here
+            var childViews = this.getChildViewsAsArray();
             for(var i in childViews) {
-                view[childViews[i]].isTemplate = true;
-                view[childViews[i]].parentView = view;
-                view[childViews[i]] = view[childViews[i]].design({});
+                this[childViews[i]].prototype.isTemplate = true;
+                this[childViews[i]].prototype.parentView = this;
+                this[childViews[i]] = new this[childViews[i]];
             }
         }
 
-        view.attachToObservable();
-
-        return view;
+        this.attachToObservable();
     },
+    create: function() {
+        this.createChildren();
+    },
+    createChildren: function() {
+        // handle child contexts
+
+        if (this.isList) {
+            // check value
+        }
+        if(this.childViews) {
+            var childViews = this.getChildViewsAsArray();
+            for(var i in childViews) {
+                if(this[childViews[i]]) {
+                    this[childViews[i]]._name = childViews[i];
+                    this[childViews[i]].parentView = this;
+                    this.html += this[childViews[i]].render();
+                } else {
+                    this.childViews = this.childViews.replace(childViews[i], ' ');
+                    M.Logger.log('There is no child view \'' + childViews[i] + '\' available for ' + this.type + ' (' + (this._name ? this._name + ', ' : '') + '#' + this.id + ')! It will be excluded from the child views and won\'t be rendered.', M.WARN);
+                }
+
+                if(this.type === 'M.PageView' && this[childViews[i]].type === 'M.TabBarView') {
+                    this.hasTabBarView = YES;
+                    this.tabBarView = this[childViews[i]];
+                }
+            }
+            return this.html;
+        }
+    },
+    insertAt: function(context) {
+
+    },
+    detach: function() {
+
+    },
+    destroy: function(elem) {
+        if(this.id) {
+            if (!elem) {elem = $('#'+this.id)[0];}
+            var childViews = this.getChildViewsAsArray();
+            for(var i in childViews) {
+                if(this[childViews[i]]) {
+                    if (elem) {
+                        this[childViews[i]].destroy($(elem).find('#'+this[childViews[i]].id)[0]);
+                    } else {
+                        this[childViews[i]].destroy();
+                    }
+                }
+            }
+            if (elem) {
+                $(elem).remove();
+            }
+            M.EventDispatcher.unregisterEvents(this);
+            M.ViewManager.unregister(this);
+        }
+    },
+
+    detachContentBinding: function(){
+        if( this.contentBinding && this.contentBinding.target && this.contentBinding.target.observable && this.contentBinding.property){
+            this.contentBinding.target.observable.detach(this.contentBinding.property);
+        }
+        if( this.valueBinding    && this.valueBinding.target    && this.valueBinding.target.observable    && this.valueBinding.property){
+            this.valueBinding.target.observable.detach(this.valueBinding.property);
+        }
+    },
+
+/*
         designWithID: function(obj) {
+            var classtype = this;
+            if (obj != null) {classtype = this.subclass(obj);}
             if (!obj.id || M.ViewManager.getViewById(obj.id)) {
-                console.log('Invalid object for designWithID');
+                console.log('Invalid object id for designWithID');
                 debugger;
             }
             var view = this.extend(obj);
@@ -267,7 +161,7 @@ M.View = M.Object.extend(
                 for(var i in childViews) {
                     view[childViews[i]].isTemplate = true;
                     view[childViews[i]].parentView = view;
-                    view[childViews[i]] = view[childViews[i]].design({});
+                    view[childViews[i]] = new view[childViews[i]];
                 }
             }
 
@@ -275,17 +169,11 @@ M.View = M.Object.extend(
 
             return view;
         },
+        */
     onDesign: function() {
         // place-holder function for any instantiation
     },
 
-     /**
-     * This is the basic render method for any views. It does not specific rendering, it just calls
-     * renderChildViews method. Most views overwrite this method with a custom render behaviour.
-     * 
-     * @private
-     * @returns {String} The list item view's html representation.
-     */
     render: function() {
         this.renderChildViews();
         return this.html;
@@ -301,12 +189,6 @@ M.View = M.Object.extend(
 
     },
 
-    /**
-     * Triggers render() on all children. This method defines a basic behaviour for rendering a view's
-     * child views. If a custom behaviour for a view is desired, the view has to overwrite this method.
-     *
-     * @private
-     */
     renderChildViews: function() {
         if(this.childViews) {
             var childViews = this.getChildViewsAsArray();
@@ -330,11 +212,6 @@ M.View = M.Object.extend(
     },
 
 
-    /**
-     * This method transforms the child views property (string) into an array.
-     *
-     * @returns {Array} The child views as an array.
-     */
     getChildViewsAsArray: function() {
     	try{
     	    return this.childViews ? $.trim(this.childViews.replace(/\s+/g, ' ')).split(' ') : [];

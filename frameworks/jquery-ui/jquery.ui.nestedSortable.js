@@ -113,26 +113,26 @@
                     item[type] = $('<div></div>').appendTo(canvas)
                         .addClass('dropborder')
                         .css('top', (item.top-ctop)+'px')
-                        .css('left', (item.left-cleft+diathink.lineHeight)+'px')
+                        .css('left', (item.left-cleft+$D.lineHeight)+'px')
                         .css('height', '0px')
-                        .css('width', (item.width-1.5*diathink.lineHeight)+'px');
+                        .css('width', (item.width-1.5*$D.lineHeight)+'px');
                     // boundaries for active hover-area, (larger than drawn area)
-                    d.top = item.top - (diathink.lineHeight/2);
-                    d.bottom = item.top + (diathink.lineHeight/2);
-                    d.left = item.left + diathink.lineHeight; // stay clear of handle
-                    d.right = item.left+item.width-diathink.lineHeight/2;
+                    d.top = item.top - ($D.lineHeight/2);
+                    d.bottom = item.top + ($D.lineHeight/2);
+                    d.left = item.left + $D.lineHeight; // stay clear of handle
+                    d.right = item.left+item.width-$D.lineHeight/2;
                     d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
                 } else if (type==='dropbottom') {
                     item[type] = $('<div></div>').appendTo(canvas)
                         .addClass('dropborder')
                         .css('top', (item.top+item.height-ctop-1)+'px')
-                        .css('left', (item.left-cleft+diathink.lineHeight)+'px')
-                        .css('width',(item.width-1.5*diathink.lineHeight)+'px')
+                        .css('left', (item.left-cleft+$D.lineHeight)+'px')
+                        .css('width',(item.width-1.5*$D.lineHeight)+'px')
                         .css('height', '0px');
-                    d.top = item.top + item.height - 0.5*diathink.lineHeight;
-                    d.bottom = item.top + item.height + 0.5*diathink.lineHeight;
-                    d.left = item.left + diathink.lineHeight; // stay clear of handle
-                    d.right = item.left+item.width-diathink.lineHeight/2;
+                    d.top = item.top + item.height - 0.5*$D.lineHeight;
+                    d.bottom = item.top + item.height + 0.5*$D.lineHeight;
+                    d.left = item.left + $D.lineHeight; // stay clear of handle
+                    d.right = item.left+item.width-$D.lineHeight/2;
                     d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
                 } else if (type==='drophandle') {
                     item[type] = $('<div></div>').appendTo(canvas)
@@ -140,9 +140,9 @@
                         .css('top', (item.top-ctop-1)+'px')
                         .css('left', (item.left-cleft-1)+'px');
                     d.top = item.top;
-                    d.bottom = item.top + diathink.lineHeight;
+                    d.bottom = item.top + $D.lineHeight;
                     d.left = item.left;
-                    d.right = item.left + diathink.lineHeight;
+                    d.right = item.left + $D.lineHeight;
                     d.parentView = M.ViewManager.getViewById(item.item[0].id);
                 } else if (type==='dropleft') {
                     item[type] = $('<div></div>').appendTo(canvas)
@@ -241,13 +241,13 @@
             // loop over items
             // determine whether to draw top or bottom line
             // determine position to draw at
-            diathink.log(['debug','drag'],"Redrawing dropLines");
+            $D.log(['debug','drag'],"Redrawing dropLines");
             var that = this;
 
             setTimeout(function() {
                 that._emptyDropLayers();
                 that._showDropLines();
-                diathink.lineHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
+                $D.lineHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
                 // foreach M.ScrollView, cache offset top/left
                 var panelParent = M.ViewManager.getCurrentPage().content.grid;
                 var canvas1 = panelParent.scroll1.outline.droplayer;
@@ -259,7 +259,7 @@
 
                 // todo: loop over panels, draw vertical lines
                 var p, n, panel, canvas;
-                var PM = diathink.PanelManager;
+                var PM = $D.PanelManager;
                 for (var n= 1, p=PM.leftPanel;
                      (p!=='') && (n<=PM.panelsPerScreen);
                      ++n, p = PM.nextpanel[p]) {
@@ -345,8 +345,8 @@
             if (item.droptop != null) {
                 d = item.dropboxes[item.dropboxes.length] =
                 {type: 'droptop', elem: item.droptop, item: item};
-                d.top = item.top - (diathink.lineHeight/2) - 1;
-                d.bottom = item.top + (diathink.lineHeight/2) + 1;
+                d.top = item.top - ($D.lineHeight/2) - 1;
+                d.bottom = item.top + ($D.lineHeight/2) + 1;
                 d.left = item.left + 16; // stay clear of handle
                 d.right = item.left+item.width+2;
             }
@@ -361,7 +361,7 @@
         },
         _previewDropBoxes: function() {
             var i, j, d;
-            var PM = diathink.PanelManager;
+            var PM = $D.PanelManager;
             for (var n= 1, p=PM.leftPanel;
                  (p!=='') && (n<=PM.panelsPerScreen);
                  ++n, p = PM.nextpanel[p]) {
@@ -473,28 +473,28 @@
 
                 var box = this._insideDropBox();
                 // todo: embed hover-variables into a class?
-                if (diathink.timer) {clearTimeout(diathink.timer);}
+                if ($D.timer) {clearTimeout($D.timer);}
                 if (box) {
                     box.elem.addClass('active');
                     // add a virtual-hover over parent-element
                     if (box.parentView) {
                         if (box.parentView.type==='M.ListItemView') {
                             var parentEl = $('#'+box.parentView.id).get(0);
-                            if (parentEl !== diathink.hoverItem) {
-                                $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                            if (parentEl !== $D.hoverItem) {
+                                $($D.hoverItem).removeClass('ui-btn-hover-c');
                             }
                             $(parentEl).addClass('ui-btn-hover-c');
-                            diathink.hoverItem = parentEl;
+                            $D.hoverItem = parentEl;
                         } else {
-                            if (diathink.hoverItem) {
-                                $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                            if ($D.hoverItem) {
+                                $($D.hoverItem).removeClass('ui-btn-hover-c');
                             }
                         }
                     }
-                    diathink.log(['debug','drag'],"Defined drop box of type"+box.type);
+                    $D.log(['debug','drag'],"Defined drop box of type"+box.type);
                 } else { // virtual blur
-                    if (diathink.hoverItem) {
-                        $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                    if ($D.hoverItem) {
+                        $($D.hoverItem).removeClass('ui-btn-hover-c');
                     }
                 }
                 if (this.activeBox && (this.activeBox!=box)) {
@@ -523,7 +523,7 @@
                             var self = this;
                             if (hoverItem.hasClass('collapsed')) {
                                 this.hovering = window.setTimeout(function() {
-                                    diathink.log(['debug','drag'],"Trying to expand on hover");
+                                    $D.log(['debug','drag'],"Trying to expand on hover");
                                     hoverItem.removeClass(o.collapsedClass).addClass(o.expandedClass);
                                     M.ViewManager.getViewById(hoverItem[0].id).children.renderUpdate();
                                     self.refreshPositions();
@@ -569,12 +569,12 @@
                 }
 
                 if (this.activeBox.type==='droptop') {
-                    diathink.ActionManager.schedule(
+                    $D.ActionManager.schedule(
                       function() {
-                          return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                          return $D.Action.checkTextChange(targetview.header.name.text.id);
                       },
                       function () {return {
-                        action: diathink.MoveBeforeAction,
+                        action: $D.MoveBeforeAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
                         oldRoot: targetview.rootID,
@@ -584,12 +584,12 @@
                         focus: false
                     };});
                 } else if (this.activeBox.type==='dropbottom') {
-                    diathink.ActionManager.schedule(
+                    $D.ActionManager.schedule(
                       function() {
-                          return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                          return $D.Action.checkTextChange(targetview.header.name.text.id);
                       },
                       function() {return {
-                        action: diathink.MoveAfterAction,
+                        action: $D.MoveAfterAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
                         oldRoot: targetview.rootID,
@@ -599,12 +599,12 @@
                         focus: false
                     };});
                 } else if (this.activeBox.type==='drophandle') {
-                    diathink.ActionManager.schedule(
+                    $D.ActionManager.schedule(
                         function() {
-                            return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                            return $D.Action.checkTextChange(targetview.header.name.text.id);
                         },
                         function() {return {
-                        action: diathink.MoveIntoAction,
+                        action: $D.MoveIntoAction,
                         referenceID: refview.value.cid,
                         activeID: targetview.value.cid,
                         oldRoot: targetview.rootID,
@@ -614,26 +614,26 @@
                         focus: false
                     };});
                 } else if (this.activeBox.type==='dropleft') {
-                    diathink.ActionManager.schedule(
+                    $D.ActionManager.schedule(
                         function() {
-                            return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                            return $D.Action.checkTextChange(targetview.header.name.text.id);
                         },
                         function() {return {
-                            action: diathink.PanelAction,
+                            action: $D.PanelAction,
                             activeID: targetview.value.cid,
-                            prevPanel: diathink.PanelManager.prevpanel[refview.id],
+                            prevPanel: $D.PanelManager.prevpanel[refview.id],
                             oldRoot: targetview.rootID,
                             newRoot: 'new',
                             dockElem: that.helper[0],
                             focus: false
                         };});
                 } else if (this.activeBox.type==='dropright') {
-                    diathink.ActionManager.schedule(
+                    $D.ActionManager.schedule(
                         function() {
-                            return diathink.Action.checkTextChange(targetview.header.name.text.id);
+                            return $D.Action.checkTextChange(targetview.header.name.text.id);
                         },
                         function() {return {
-                            action: diathink.PanelAction,
+                            action: $D.PanelAction,
                             activeID: targetview.value.cid,
                             prevPanel: refview.id,
                             oldRoot: targetview.rootID,
@@ -673,9 +673,9 @@
             var textid = M.ViewManager.getViewById(that.currentItem[0].id).header.name.text.id;
             // Correct the active textbox in case it doesn't match value.
             $('#'+textid).text($('#'+textid).val());
-            diathink.ActionManager.schedule(
+            $D.ActionManager.schedule(
                 function() {
-                  return diathink.Action.checkTextChange(textid);
+                  return $D.Action.checkTextChange(textid);
             });
             $.ui.sortable.prototype._mouseStart.apply(that, args);
             that.drawDropLines();
@@ -691,7 +691,7 @@
 		// mjs - this function is slightly modified to make it easier to hover over a collapsed element and have it expand
         _insideDropBox: function(e) {
             var i, j, d, n, p;
-            diathink.log(['debug','drag'],"Identifying drop-box");
+            $D.log(['debug','drag'],"Identifying drop-box");
             // this.position is same, scroll is different for each item
 
             // cache scroll-positions of each panel
@@ -717,7 +717,7 @@
                     }
                 }
             }
-            var PM = diathink.PanelManager;
+            var PM = $D.PanelManager;
             // loop over panels to return correct dropbox
             for (n= 1, p=PM.leftPanel;
                  (p!=='') && (n<=PM.panelsPerScreen);

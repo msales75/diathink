@@ -17,7 +17,7 @@
  *
  * @extends M.View
  */
-M.ImageView = M.View.extend(
+M.ImageView = M.View.subclass(
 /** @scope M.ImageView.prototype */ {
 
     /**
@@ -65,7 +65,7 @@ M.ImageView = M.View.extend(
                 action: 'sourceIsValid'
             }
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
 

@@ -6,7 +6,7 @@
  *
  * @extends M.View
  */
-M.SpanView= M.View.extend(
+M.SpanView= M.View.subclass(
     /** @scope M.TextFieldView.prototype */ {
 
         /**
@@ -60,7 +60,7 @@ M.SpanView= M.View.extend(
             }
 
             /* let M.View do the real job */
-            this.bindToCaller(this, M.View.contentDidChange)();
+            $D.bindToCaller(this, M.View.contentDidChange)();
 
             this.renderUpdate();
             this.delegateValueUpdate();

@@ -1,4 +1,6 @@
-diathink.TextAction= diathink.Action.extend({
+m_require("app/controllers/actionBase.js");
+
+$D.TextAction= $D.Action.extend({
     type:"TextAction",
     options: {activeID: null, text: null, transition: false},
     _validateOptions: {

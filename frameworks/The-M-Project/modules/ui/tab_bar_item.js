@@ -17,7 +17,7 @@
  *
  * @extends M.View
  */
-M.TabBarItemView = M.View.extend(
+M.TabBarItemView = M.View.subclass(
 /** @scope M.TabBarItemView.prototype */ {
 
     /**
@@ -76,7 +76,7 @@ M.TabBarItemView = M.View.extend(
                 action: 'switchPage'
             }
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**

@@ -21,7 +21,7 @@
  *
  * @extends M.View
  */
-M.DatePickerView = M.View.extend(
+M.DatePickerView = M.View.subclass(
 /** @scope M.DatePickerView.prototype */ {
 
     /**
@@ -486,13 +486,13 @@ M.DatePickerView = M.View.extend(
             width: (M.Environment.getWidth() - 20) / 3 - 20 > 90 ? 90 : (M.Environment.getWidth() - 20) / 3 - 20,
 
             beforeShow: function(input, scroller) {
-                that.bindToCaller(that, that.beforeShow, [input, scroller])();
+                $D.bindToCaller(that, that.beforeShow, [input, scroller])();
             },
             onClose: function(value, scroller) {
-                that.bindToCaller(that, that.onClose, [value, scroller])();
+                $D.bindToCaller(that, that.onClose, [value, scroller])();
             },
             onSelect: function(value, scroller) {
-                that.bindToCaller(that, that.onSelect, [value, scroller])();
+                $D.bindToCaller(that, that.onSelect, [value, scroller])();
             }
         });
         $('#' + this.source).scroller('show');

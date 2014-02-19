@@ -39,7 +39,7 @@ M.HYPERLINK_PHONE = 'phone';
  *
  * @extends M.View
  */
-M.LabelView = M.View.extend(
+M.LabelView = M.View.subclass(
 /** @scope M.LabelView.prototype */ {
 
     /**

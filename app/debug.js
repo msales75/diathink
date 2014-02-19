@@ -1,29 +1,29 @@
 $(function () {
-    diathink.log = function() {};
+    $D.log = function() {};
     return;
 /*    var lastwtop = 0, lastdtop = 0, lastbtop = 0, lastptop = 0, last1top = 0, last2top = 0;
     var scroll = setInterval(function() {
         if ($(window).scrollTop()!=lastwtop) {
             // clearInterval(scroll);
-            diathink.log(["debug"],"window scrolltop = "+$(window).scrollTop());
+            $D.log(["debug"],"window scrolltop = "+$(window).scrollTop());
             lastwtop = $(window).scrollTop();
         }
         if ($(document).scrollTop()!=lastdtop) {
             // clearInterval(scroll);
-            diathink.log(["debug"],"document scrolltop = "+$(document).scrollTop());
+            $D.log(["debug"],"document scrolltop = "+$(document).scrollTop());
             lastdtop = $(document).scrollTop();
         }
         if ($('body').scrollTop()!=lastbtop) {
             // clearInterval(scroll);
-            diathink.log(["debug"],"body scrolltop = "+$('body').scrollTop());
+            $D.log(["debug"],"body scrolltop = "+$('body').scrollTop());
             lastbtop = $('body').scrollTop();
         }
-        if (diathink.app && diathink.app.pages) {
-            for (var i in diathink.app.pages) {
-                var pid = diathink.app.pages[i].id;
+        if ($D.app && $D.app.pages) {
+            for (var i in $D.app.pages) {
+                var pid = $D.app.pages[i].id;
                 if ($('#'+pid).scrollTop()!=lastptop) {
                     // clearInterval(scroll);
-                    diathink.log(["debug"],"page "+pid+" scrolltop = "+$('#'+pid).scrollTop());
+                    $D.log(["debug"],"page "+pid+" scrolltop = "+$('#'+pid).scrollTop());
                 }
             }
         }
@@ -31,7 +31,7 @@ $(function () {
         $('.ui-scrollview-clip').each(function() {
             if ($(this).scrollTop()!=0) {
                 clearInterval(scroll);
-                diathink.log(['debug'],"ui-scrollable scrolltop= "+$(this).scrollTop());
+                $D.log(['debug'],"ui-scrollable scrolltop= "+$(this).scrollTop());
             }
         });
     }, 200);
@@ -71,7 +71,7 @@ $(function () {
     var blocks = {'main':log};
     var logstack = ['main']; // list of references to the cursor of each nested layer of the logs
 
-    diathink.logReset = function () {
+    $D.logReset = function () {
         log = [];
         tags = {};
         blocks = {'main':log};
@@ -79,39 +79,39 @@ $(function () {
         logCount = 0;
     };
 
-    diathink.logCount = function () {
+    $D.logCount = function () {
         return logCount;
     };
 
-    diathink.logStart = function (t, mesg, id) {
+    $D.logStart = function (t, mesg, id) {
         if (!id) {
             id = randomString(16);
         }
         if (blocks[id] !== undefined) {
-            diathink.log(['error', 'log'],
+            $D.log(['error', 'log'],
                 "Same start-id given twice for logStart message: ");
-            diathink.log(t, mesg);
+            $D.log(t, mesg);
             return null;
         }
         var newblock = [];
         blocks[id] = newblock;
         logstack.push(id);
-        diathink.log(t, mesg, id);
+        $D.log(t, mesg, id);
         return id;
     };
 
-    diathink.logEnd = function (t, mesg, id) {
+    $D.logEnd = function (t, mesg, id) {
         if (blocks[i] === undefined) {
-            diathink.log(['error', 'log'],
+            $D.log(['error', 'log'],
                 "logEnd called without matching logStart: ");
-            diathink.log(t, mesg);
+            $D.log(t, mesg);
             return null;
         }
         logstack.pop();
-        diathink.log(t, mesg, id);
+        $D.log(t, mesg, id);
     };
 
-    diathink.log = function (t, mesg, id) {
+    $D.log = function (t, mesg, id) {
         var now = (new Date()).getTime();
         for (var i = 0; i < t.length; ++i) {
             tags[t[i]] = true;
@@ -146,7 +146,7 @@ $(function () {
 
 // todo: cluster lots of similar/mousemove events
 
-    diathink.showlog = function () {
+    $D.showlog = function () {
         $('#debuglog').html('');
         $('<div></div>').addClass('kill').appendTo('#debuglog');
         drawlog({}, '#debuglog', 'main');
@@ -158,14 +158,14 @@ $(function () {
     });
 
     $('#debugopen').tap(function () {
-        diathink.showlog();
+        $D.showlog();
     });
 
 /*
     $(window).error(function(e) {
         console.log("throwing error:");
         console.log(e);
-        diathink.log(['error','browser'],"Uncaught exception");
+        $D.log(['error','browser'],"Uncaught exception");
     });
 */
 
@@ -186,7 +186,7 @@ $(function () {
 /*
     $('textarea').bind('focus blur mousedown mouseup click tap touchstart touchend',
         function (e) {
-            diathink.log([], "textarea event "+e.type+" with textarea-start="+e.target.selectionStart);
+            $D.log([], "textarea event "+e.type+" with textarea-start="+e.target.selectionStart);
         });
 
     $(window).bind('focus blur mousedown mouseup click tap touchstart touchend',
@@ -196,20 +196,20 @@ $(function () {
             }
 
             if (!e.target || !e.target.nodeName) {
-                diathink.log([],"Window event " + e.type);
+                $D.log([],"Window event " + e.type);
                 return;
             }
             if (e.target.nodeName.toUpperCase() === 'TEXTAREA') {
-                diathink.log([],"Window event " + e.type + " with textarea-start=" + e.target.selectionStart);
+                $D.log([],"Window event " + e.type + " with textarea-start=" + e.target.selectionStart);
                 if (e.type === 'click') {
                     setTimeout(function () {
                         window.scrollTo(0, 0);
                         document.body.scrollTop = 0;
-                        diathink.log([],"Set scroll to 0 by window click-event");
+                        $D.log([],"Set scroll to 0 by window click-event");
                     }, 0);
                 }
             } else {
-                diathink.log([],"Window event " + e.type);
+                $D.log([],"Window event " + e.type);
             }
         });
 

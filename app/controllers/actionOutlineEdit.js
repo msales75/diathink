@@ -1,6 +1,6 @@
+m_require("app/controllers/actionOutlineBase.js");
 
-
-diathink.InsertAfterAction = diathink.OutlineAction.extend({
+$D.InsertAfterAction = $D.OutlineAction.extend({
     type:"InsertAfterAction",
     options: {activeID: null, referenceID: null, text: ""},
     _validateOptions: {
@@ -14,7 +14,7 @@ diathink.InsertAfterAction = diathink.OutlineAction.extend({
     }
 });
 
-diathink.MoveAfterAction = diathink.OutlineAction.extend({
+$D.MoveAfterAction = $D.OutlineAction.extend({
     type:"MoveAfterAction",
     _validateOptions: {
         requireActive: true,
@@ -28,7 +28,7 @@ diathink.MoveAfterAction = diathink.OutlineAction.extend({
     }
 });
 
-diathink.MoveBeforeAction = diathink.OutlineAction.extend({
+$D.MoveBeforeAction = $D.OutlineAction.extend({
     type:"MoveBeforeAction",
     _validateOptions: {
         requireActive: true,
@@ -42,7 +42,7 @@ diathink.MoveBeforeAction = diathink.OutlineAction.extend({
     }
 });
 
-diathink.MoveIntoAction = diathink.OutlineAction.extend({
+$D.MoveIntoAction = $D.OutlineAction.extend({
     type:"MoveIntoAction",
     _validateOptions: {
         requireActive: true,
@@ -58,7 +58,7 @@ diathink.MoveIntoAction = diathink.OutlineAction.extend({
 });
 
 // todo: merge outdent with moveafter action?
-diathink.OutdentAction = diathink.OutlineAction.extend({
+$D.OutdentAction = $D.OutlineAction.extend({
     type:"OutdentAction",
     _validateOptions: {
         requireActive: true,
@@ -72,7 +72,7 @@ diathink.OutdentAction = diathink.OutlineAction.extend({
     }
 });
 
-diathink.DeleteAction = diathink.OutlineAction.extend({
+$D.DeleteAction = $D.OutlineAction.extend({
     type:"DeleteAction",
     _validateOptions: {
         requireActive: true,

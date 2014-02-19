@@ -16,7 +16,7 @@
  *
  * @extends M.View
  */
-M.SplitToolbarView = M.View.extend(
+M.SplitToolbarView = M.View.subclass(
 /** @scope M.SplitToolbarView.prototype */ {
 
     /**

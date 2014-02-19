@@ -17,7 +17,7 @@
  *
  * @extends M.View
  */
-M.SearchBarView = M.View.extend(
+M.SearchBarView = M.View.subclass(
 /** @scope M.SearchBarView.prototype */ {
 
     /**
@@ -92,7 +92,7 @@ M.SearchBarView = M.View.extend(
                 action: 'setValueFromDOM'
             }
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**

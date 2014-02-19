@@ -1,4 +1,5 @@
-diathink.animDock = {
+
+$D.animDock = {
     indentSpeed: 80,
     dockSpeed: 160,
 
@@ -57,7 +58,7 @@ diathink.animDock = {
     createDockElem: function() {
         var r = this.runtime;
         if (r.createDockElem) {
-            // create virtual diathink.helper for animation
+            // create virtual $D.helper for animation
             // is start-location a line or panel
 
             // if (r.rOldType === 'panel')

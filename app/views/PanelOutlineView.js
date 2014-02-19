@@ -1,13 +1,14 @@
 
-diathink.PanelOutlineView = M.ContainerView.extend({
-    type: 'diathink.PanelOutlineView',
+
+$D.PanelOutlineView = M.ContainerView.subclass({
+    type: '$D.PanelOutlineView',
     isTemplate: true, // causes design to run recursively
     rootModel: null,
     rootController: null,
     childViews: "breadcrumbs outline",
     onDesign: function() {
         if (this.rootController == null) { // if one isn't provided in design
-            this.rootController = diathink.OutlineController.extend({
+            this.rootController = $D.OutlineController.extend({
                 panelView: this
            });
         }
@@ -22,8 +23,8 @@ diathink.PanelOutlineView = M.ContainerView.extend({
         this.width = this.elem.width();
     },
     destroyRootOutline: function() {
-        diathink.OutlineManager.outlines[this.outline.alist.rootID].destroy();
-        // diathink.OutlineManager.remove(this.outline.alist.rootID);
+        $D.OutlineManager.outlines[this.outline.alist.rootID].destroy();
+        // $D.OutlineManager.remove(this.outline.alist.rootID);
         // will get added back in with alist.onDesign:bindView
         this.outline.alist.detachContentBinding();
         // save context
@@ -43,13 +44,13 @@ diathink.PanelOutlineView = M.ContainerView.extend({
         var c = this.destroyRootOutline();
 
         if (rootID) {
-            this.rootController = diathink.OutlineManager.deleted[rootID];
+            this.rootController = $D.OutlineManager.deleted[rootID];
             if (!this.rootController || (this.rootController.panelView.id !== this.id)) {
                 console.log('rootController not found in graveyard');
                 debugger;
             }
         } else {
-            this.rootController = diathink.OutlineController.extend({
+            this.rootController = $D.OutlineController.extend({
                 panelView: this
             });
         }
@@ -57,9 +58,9 @@ diathink.PanelOutlineView = M.ContainerView.extend({
         this.rootModel = model;
         // need to give view an old rootID
         if (rootID) {
-            newlist = this.outline.alist.designWithID({id: rootID}); // new rootID
+            newlist = new this.outline.alist({id: rootID}); // new rootID
         } else {
-            newlist = this.outline.alist.design({}); // new rootID
+            newlist = new this.outline.alist({}); // new rootID
         }
 
         // newlist.parentView = this.outline;
@@ -73,24 +74,24 @@ diathink.PanelOutlineView = M.ContainerView.extend({
         this.registerEvents(); // calls renderUpdate for children recursively
         $('#'+M.ViewManager.getCurrentPage().id).nestedSortable('update');
         $(window).resize(); // fix height of new panel, spacer
-        diathink.PanelManager.rootViews[this.id] = newlist.id;
-        diathink.PanelManager.rootModels[this.id] = model;
+        $D.PanelManager.rootViews[this.id] = newlist.id;
+        $D.PanelManager.rootModels[this.id] = model;
 
         return newlist.id;
     },
     panelInit: function() {
 
     },
-    breadcrumbs:M.BreadcrumbView.extend({
+    breadcrumbs:M.BreadcrumbView.subclass({
         value: [],
         onDesign: function() { // once rootModel is defined in design-stage, define breadcrumbs
             this.defineFromModel(this.parentView.rootModel);
         }
     }),
-    outline: M.ScrollView.extend({
+    outline: M.ScrollView.subclass({
         childViews:'alist droplayer scrollSpacer',
-        /* updateScroll: diathink.updateScroll, */ // called whenever scrollview changes
-        alist:M.ListView.extend({
+        /* updateScroll: $D.updateScroll, */ // called whenever scrollview changes
+        alist:M.ListView.subclass({
             rootModel: null,
             onDesign: function() { // once parent's rootModel is defined in design-stage
                 this.rootModel = this.parentView.parentView.rootModel;
@@ -105,11 +106,11 @@ diathink.PanelOutlineView = M.ContainerView.extend({
             registerEvents: function() {
                 var collection, that = this;
                 if (this.rootModel === null) {
-                    collection = diathink.data;
+                    collection = $D.data;
                 } else {
                     collection = this.rootModel.get('children');
                 }
-                // this.bindToCaller(this, M.View.registerEvents)();
+                // this.bindToCaller(this, M.View.prototype.registerEvents)();
                 // todo: stop using content-binding to initialize lists,
                 //  but still need to refresh nestedSortable ?
                 this.contentBinding.target.set('listObject', collection);
@@ -119,14 +120,14 @@ diathink.PanelOutlineView = M.ContainerView.extend({
                 }, 0);
             },
             isInset: true,
-            listItemTemplateView:diathink.MyListItem,
+            listItemTemplateView:$D.MyListItem,
             idName:'cid', // For Backbone.Model compatibility
             items: 'models' // For Backbone.Model compatibility
         }),
-        scrollSpacer:M.ContainerView.extend({
+        scrollSpacer:M.ContainerView.subclass({
             cssClass: 'scroll-spacer'
         }),
-        droplayer: M.ContainerView.extend({
+        droplayer: M.ContainerView.subclass({
             cssClass: 'droplayer'
         })
     })

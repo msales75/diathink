@@ -40,7 +40,7 @@ M.MAP_MARKER_ANIMATION_BOUNCE = 'BOUNCE';
  *
  * @extends M.View
  */
-M.MapMarkerView = M.View.extend(
+M.MapMarkerView = M.View.subclass(
 /** @scope M.MapMarkerView.prototype */ {
 
     /**

@@ -73,13 +73,13 @@
             var event = this.createEvent( type, options );
             // event.diathinkAction = true;
             if (type==='keydown') {
-                diathink.lastKeydown = event;
+                $D.lastKeydown = event;
             }
             if (type==='keypress') {
-                diathink.lastKeypress = event;
+                $D.lastKeypress = event;
             }
             if (type==='keyup') {
-                diathink.lastKeyup = event;
+                $D.lastKeyup = event;
             }
             this.dispatchEvent( elem, type, event, options );
         },

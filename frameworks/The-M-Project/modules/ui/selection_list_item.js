@@ -17,7 +17,7 @@
  *
  * @extends M.View
  */
-M.SelectionListItemView = M.View.extend(
+M.SelectionListItemView = M.View.subclass(
 /** @scope M.SelectionListItemView.prototype */ {
 
     /**

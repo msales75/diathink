@@ -19,7 +19,7 @@
  *
  * @extends M.View
  */
-M.DashboardView = M.View.extend(
+M.DashboardView = M.View.subclass(
 /** @scope M.DashboardView.prototype */ {
 
     /**

@@ -18,7 +18,9 @@
  *
  * @extends M.View
  */
-M.BreadcrumbView = M.View.extend(
+
+
+M.BreadcrumbView = M.View.subclass(
     /** @scope M.BreadcrumbView.prototype */ {
 
         /**

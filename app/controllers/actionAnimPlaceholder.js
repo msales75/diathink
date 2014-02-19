@@ -1,4 +1,5 @@
-diathink.animPlaceholder = {
+
+$D.animPlaceholder = {
     createSpeed: 80,
     deleteSpeed: 80,
     placeholderSpeed: 160,

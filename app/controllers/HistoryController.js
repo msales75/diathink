@@ -27,8 +27,10 @@ createAndExec
          Remove action from queue
          Add subactions to queue
  */
+m_require("app/namespace.js");
 
-diathink.ActionManager = M.Controller.extend({
+
+$D.ActionManager = M.Controller.extend({
     actions: null,
     lastAction: null,
     queue: [],
@@ -77,7 +79,7 @@ diathink.ActionManager = M.Controller.extend({
             } else {
                 options.action = options.action.createAndExec(options);
             }
-            diathink.ActionManager.log(options.action);
+            $D.ActionManager.log(options.action);
         }
     },
     queueComplete: function(f, action) {
@@ -162,44 +164,44 @@ diathink.ActionManager = M.Controller.extend({
     },
     undo:function () {
         this.schedule(function() {
-            var rank = diathink.ActionManager.nextUndo();
+            var rank = $D.ActionManager.nextUndo();
             if (rank === false) {return false;}
-            diathink.ActionManager.lastAction = rank;
+            $D.ActionManager.lastAction = rank;
             return {
-                    action: diathink.ActionManager.actions.at(rank),
+                    action: $D.ActionManager.actions.at(rank),
                     undo: true
             };
         });
     },
     redo:function () {
         this.schedule(function() {
-            var rank = diathink.ActionManager.nextRedo();
+            var rank = $D.ActionManager.nextRedo();
             if (rank === false) {return false;}
-            diathink.ActionManager.lastAction = rank;
+            $D.ActionManager.lastAction = rank;
             return {
-                action: diathink.ActionManager.actions.at(rank),
+                action: $D.ActionManager.actions.at(rank),
                 redo: true
             };
         });
     },
     subUndo:function () {
         this.subschedule(function() {
-            var rank = diathink.ActionManager.nextUndo();
+            var rank = $D.ActionManager.nextUndo();
             if (rank === false) {return false;}
-            diathink.ActionManager.lastAction = rank;
+            $D.ActionManager.lastAction = rank;
             return {
-                action: diathink.ActionManager.actions.at(rank),
+                action: $D.ActionManager.actions.at(rank),
                 undo: true
             };
         });
     },
     subRedo:function () {
         this.subschedule(function() {
-            var rank = diathink.ActionManager.nextRedo();
+            var rank = $D.ActionManager.nextRedo();
             if (rank === false) {return false;}
-            diathink.ActionManager.lastAction = rank;
+            $D.ActionManager.lastAction = rank;
             return {
-                action: diathink.ActionManager.actions.at(rank),
+                action: $D.ActionManager.actions.at(rank),
                 redo: true
             };
         });
@@ -207,7 +209,7 @@ diathink.ActionManager = M.Controller.extend({
     // enable/disable undo buttons on screen
     refreshButtons: function() {
         if (this.actions === null) {
-            this.actions = new diathink.ActionCollection();
+            this.actions = new $D.ActionCollection();
         }
         var b = M.ViewManager.getCurrentPage().header.undobuttons;
         if (this.nextUndo()!==false) {

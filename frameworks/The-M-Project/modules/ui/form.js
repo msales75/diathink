@@ -20,7 +20,7 @@
  * 
  * @extends M.View
  */
-M.FormView = M.View.extend(
+M.FormView = M.View.subclass(
 /** @scope M.FormView.prototype */ {
 
     /**

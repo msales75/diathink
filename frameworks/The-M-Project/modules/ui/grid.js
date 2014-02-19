@@ -60,7 +60,7 @@ M.FOUR_COLUMNS = {
  * 
  * @extends M.View
  */
-M.GridView = M.View.extend(
+M.GridView = M.View.subclass(
 /** @scope M.GridView.prototype */ {
 
     /**

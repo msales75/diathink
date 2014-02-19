@@ -1,11 +1,8 @@
-// ==========================================================================
-// The M-Project - Mobile HTML5 Application Framework
-// Generated with: Espresso 
-//
-// Project: diathink
-// ==========================================================================
 
-var diathink = diathink || {};
+m_require("app/controllers/OutlineController.js");
+m_require("app/views/PanelOutlineView.js");
+m_require("app/controllers/HistoryController.js");
+
 
 // Test for Mobile not on homepage
 var nav = navigator;
@@ -14,13 +11,13 @@ if (nav.userAgent.match(/iPhone/i) ||
     nav.userAgent.match(/iPod/i)) {
 
     if (! nav.standalone) {
-        diathink.isSafari = (/Safari/i).test(nav.appVersion) && !(/CriOS/i).test(nav.appVersion);
+        $D.isSafari = (/Safari/i).test(nav.appVersion) && !(/CriOS/i).test(nav.appVersion);
         var OSVersion = nav.appVersion.match(/OS (\d+_\d+)/i);
-        diathink.OSVersion = OSVersion && OSVersion[1] ? +OSVersion[1].replace('_', '.') : 0;
+        $D.OSVersion = OSVersion && OSVersion[1] ? +OSVersion[1].replace('_', '.') : 0;
         // show message & abort application.
     }
 }
-diathink.is_touch_device = 'ontouchstart' in document.documentElement;
+$D.is_touch_device = 'ontouchstart' in document.documentElement;
 
 
 M.assert = function(test) {
@@ -29,7 +26,7 @@ M.assert = function(test) {
     }
 }
 
-diathink.data = new diathink.OutlineNodeCollection([
+$D.data = new $D.OutlineNodeCollection([
     {text: "Test 1",
         children: [
             {text: "Child 1 1",
@@ -39,28 +36,28 @@ diathink.data = new diathink.OutlineNodeCollection([
     {text: "Test 2"}
 ]);
 
-diathink.app = M.Application.design({
+$D.app = M.Application.design({
     entryPage:'page1' // required for start-page
 });
 
 function scheduleKey(simulated, id, opts) {
     var schedule;
     if (simulated) {
-        diathink.ActionManager.subschedule(function() {
-            return diathink.Action.checkTextChange(id)}, opts);
+        $D.ActionManager.subschedule(function() {
+            return $D.Action.checkTextChange(id)}, opts);
     } else {
-        diathink.ActionManager.schedule(function() {
-            return diathink.Action.checkTextChange(id)}, opts);
+        $D.ActionManager.schedule(function() {
+            return $D.Action.checkTextChange(id)}, opts);
     }
 };
 
-diathink.updatePanelButtons = function() {
+$D.updatePanelButtons = function() {
    var content = M.ViewManager.getCurrentPage().content;
    var l = $('#'+content.leftbutton.id);
    var r = $('#'+content.rightbutton.id);
    var n, p;
    var allowleft=false, allowright=false;
-   var PM = diathink.PanelManager;
+   var PM = $D.PanelManager;
    if (PM.leftPanel !== '') {
        if (PM.prevpanel[PM.leftPanel]!=='') {
            allowleft = true;
@@ -84,37 +81,37 @@ diathink.updatePanelButtons = function() {
    }
 };
 
-diathink.redrawPanels = function(dir) {
+$D.redrawPanels = function(dir) {
     var p, n;
-    var PM = diathink.PanelManager;
+    var PM = $D.PanelManager;
 
     for (p = PM.leftPanel, n=1;
          (p!=='') && (n<=PM.panelsPerScreen);
          ++n, p=PM.nextpanel[p]) {
         if (dir==='right') {
-            diathink.redrawPanel(n, p, false);
+            $D.redrawPanel(n, p, false);
         }
     }
     var n2 = n;
     for ( ; n2<=PM.panelsPerScreen; ++n2) {
-        diathink.removePanel(n2);
+        $D.removePanel(n2);
     }
     if (dir==='left') {
         --n; p=PM.prevpanel[p];
         for ( ;
             (p!=='') && (n>=1);
             --n, p=PM.prevpanel[p]) {
-            diathink.redrawPanel(n, p, false);
+            $D.redrawPanel(n, p, false);
         }
     }
 
     PM.updateRoots();
 };
 
-diathink.redrawPanel = function(n, p, firsttime) {
+$D.redrawPanel = function(n, p, firsttime) {
     // should changeRoot it instead?
     var c;
-    var PM = diathink.PanelManager;
+    var PM = $D.PanelManager;
     var grid = M.ViewManager.getCurrentPage().content.grid;
     if (grid['scroll'+String(n)]) {
         c = grid['scroll'+String(n)].destroy(); // save context for this
@@ -129,7 +126,7 @@ diathink.redrawPanel = function(n, p, firsttime) {
     }
 
     // create a new panel with right id, but wrong alist & breadcrumbs.
-    grid['scroll'+String(n)] = diathink.PanelOutlineView.designWithID({
+    grid['scroll'+String(n)] = $D.PanelOutlineView.designWithID({
         id: p,
         parentView: grid,
         rootModel: null
@@ -144,13 +141,13 @@ diathink.redrawPanel = function(n, p, firsttime) {
     );
 };
 
-diathink.removePanel = function(n) {
+$D.removePanel = function(n) {
     var grid = M.ViewManager.getCurrentPage().content.grid;
     grid['scroll'+String(n)].destroy();
     grid['scroll'+String(n)] = null;
 };
 
-diathink.handleKeypress = function(elem, e) {
+$D.handleKeypress = function(elem, e) {
     var id = elem.id;
     var key = String.fromCharCode(e.charCode);
     var liView, collection, rank, sel;
@@ -166,7 +163,7 @@ diathink.handleKeypress = function(elem, e) {
             if (rank>0) { // indent the line
                 // make it the last child of its previous sibling
                 scheduleKey(e.simulated, id, function() { return {
-                    action: diathink.MoveIntoAction,
+                    action: $D.MoveIntoAction,
                     anim: 'indent',
                     activeID: liView.modelId,
                     referenceID: collection.models[rank-1].cid,
@@ -194,7 +191,7 @@ diathink.handleKeypress = function(elem, e) {
     }
 };
 
-diathink.handleKeydown = function(elem, e) {
+$D.handleKeydown = function(elem, e) {
     var id = elem.id;
     var liView, collection, rank, sel;
     liView = M.ViewManager.findViewById(id).parentView.parentView.parentView;
@@ -206,7 +203,7 @@ diathink.handleKeydown = function(elem, e) {
         if (rank>0) { // indent the line
             // make it the last child of its previous sibling
             scheduleKey(e.simulated, id, function() { return {
-                action: diathink.MoveIntoAction,
+                action: $D.MoveIntoAction,
                 anim: 'indent',
                 activeID: liView.modelId,
                 referenceID: collection.models[rank-1].cid,
@@ -229,7 +226,7 @@ diathink.handleKeydown = function(elem, e) {
                 (rank===collection.models.length-1)) {
                 // make it the next child of its parent
                 scheduleKey(e.simulated, id, function() { return {
-                    action: diathink.OutdentAction,
+                    action: $D.OutdentAction,
                     anim: 'indent',
                     activeID: liView.modelId,
                     referenceID: liView.value.attributes.parent.cid,
@@ -243,7 +240,7 @@ diathink.handleKeydown = function(elem, e) {
                 if ($('#'+id).val() === "") {
                     if (liView.value.get('children').length===0) {
                         scheduleKey(e.simulated, id, function() { return {
-                            action: diathink.DeleteAction,
+                            action: $D.DeleteAction,
                             anim: 'delete',
                             activeID: liView.modelId,
                             oldRoot: liView.rootID,
@@ -259,7 +256,7 @@ diathink.handleKeydown = function(elem, e) {
     } else if (e.which === 13) { // enter
         // todo: split line if in middle of text
         scheduleKey(e.simulated, id, function() { return {
-            action: diathink.InsertAfterAction,
+            action: $D.InsertAfterAction,
             anim: 'create',
             referenceID: liView.modelId,
             oldRoot: liView.rootID,
@@ -286,12 +283,12 @@ diathink.handleKeydown = function(elem, e) {
     }
 };
 
-diathink.app.createPage = function(pageName, root) {
+$D.app.createPage = function(pageName, root) {
     // get breadcrumbs, parent-collection
     // todo: later: do we preserve expand/contract status? maybe not.
     var pageShown = 0;
 
-    diathink.app.pages[pageName] = M.PageView.design({
+    $D.app.pages[pageName] = new M.PageView({
         childViews:'hiddendiv header content drawlayer',
         events: {
             pageshow: {
@@ -330,39 +327,39 @@ diathink.app.createPage = function(pageName, root) {
                         if (e.type=='focusout') {
                             // does this occur on manual keyboard-close?
                             // console.log('blurring keyboard from focusout');
-                            // diathink.keyboard.blur();
-                            if (diathink.focused && diathink.focused.id) {
-                                if (M.ViewManager.getViewById(diathink.focused.id)) {
-                                    M.ViewManager.getViewById(diathink.focused.id).blur();
+                            // $D.keyboard.blur();
+                            if ($D.focused && $D.focused.id) {
+                                if (M.ViewManager.getViewById($D.focused.id)) {
+                                    M.ViewManager.getViewById($D.focused.id).blur();
                                 }
                             }
-                            diathink.focused = null;
+                            $D.focused = null;
                             return;
                         }
                         if (e.target && e.target.nodeName && e.target.nodeName.toLowerCase()==='textarea') {
                             //console.log('focusing keyboard from focusin');
-                            diathink.focused = e.target;
+                            $D.focused = e.target;
                             // check if keyboard opened
-                            // diathink.keyboard.focus();
+                            // $D.keyboard.focus();
                             M.ViewManager.getViewById(e.target.id).focus();
                         } else {
                             // check if keyboard closed
                             // console.log('blurring keyboard from focusin');
-                            // diathink.keyboard.blur();
-                            if (diathink.focused && diathink.focused.id) {
-                                if (M.ViewManager.getViewById(diathink.focused.id)) {
-                                    M.ViewManager.getViewById(diathink.focused.id).blur();
+                            // $D.keyboard.blur();
+                            if ($D.focused && $D.focused.id) {
+                                if (M.ViewManager.getViewById($D.focused.id)) {
+                                    M.ViewManager.getViewById($D.focused.id).blur();
                                 }
                             }
-                            diathink.focused = null;
+                            $D.focused = null;
                         }
                     });
                     var vmousedown = 'mousedown';
-                    if (diathink.is_touch_device) {
+                    if ($D.is_touch_device) {
                         vmousedown = 'touchstart';
                     }
                     var vmouseup = 'mouseup';
-                    if (diathink.is_touch_device) {
+                    if ($D.is_touch_device) {
                         vmouseup = 'touchend';
                     }
                     var vmouse = vmousedown+' '+vmouseup;
@@ -386,13 +383,13 @@ diathink.app.createPage = function(pageName, root) {
                                 view.lastDouble = true;
                                 var li= M.ViewManager.getViewById(view.parentView.parentView.id);
                                 // todo-here
-                                diathink.ActionManager.schedule(
+                                $D.ActionManager.schedule(
                                     function() {
-                                        return diathink.Action.checkTextChange(li.header.name.text.id);
+                                        return $D.Action.checkTextChange(li.header.name.text.id);
                                     },
                                     function() {
                                         return {
-                                            action: diathink.RootAction,
+                                            action: $D.RootAction,
                                             activeID: li.value.cid,
                                             oldRoot: li.rootID,
                                             newRoot: 'new'
@@ -401,14 +398,14 @@ diathink.app.createPage = function(pageName, root) {
                             } else { // single-click
                                 view.lastClicked = now;
                                 // todo-here
-                                diathink.ActionManager.schedule(
+                                $D.ActionManager.schedule(
                                   function() {
-                                      return diathink.Action.checkTextChange(view.parentView.parentView.header.name.text.id);
+                                      return $D.Action.checkTextChange(view.parentView.parentView.header.name.text.id);
                                   },
                                   function() {
                                     if (!liElem.hasClass('branch')) {return false;}
                                     return {
-                                            action: diathink.CollapseAction,
+                                            action: $D.CollapseAction,
                                             activeID: view.parentView.parentView.value.cid,
                                             collapsed: ! liElem.hasClass('collapsed'),
                                             oldRoot: view.parentView.parentView.rootID,
@@ -419,16 +416,16 @@ diathink.app.createPage = function(pageName, root) {
                             }
                     });
                     $('#'+id).on('tap', '.left-button', function(e) {
-                        var PM = diathink.PanelManager;
+                        var PM = $D.PanelManager;
                         PM.leftPanel = PM.prevpanel[PM.leftPanel];
-                        diathink.updatePanelButtons();
-                        diathink.redrawPanels('right');
+                        $D.updatePanelButtons();
+                        $D.redrawPanels('right');
                     });
                     $('#'+id).on('tap', '.right-button', function(e) {
-                        var PM = diathink.PanelManager;
+                        var PM = $D.PanelManager;
                         PM.leftPanel = PM.nextpanel[PM.leftPanel];
-                        diathink.updatePanelButtons();
-                        diathink.redrawPanels('left');
+                        $D.updatePanelButtons();
+                        $D.redrawPanels('left');
                     });
 
                     $('#'+id).on('tap', '.ui-breadcrumb-link', function(e) {
@@ -443,10 +440,10 @@ diathink.app.createPage = function(pageName, root) {
                                 modelid = null;
                             }
                             // todo-here - see if text changes appropriately.
-                            diathink.ActionManager.schedule(
+                            $D.ActionManager.schedule(
                               function() {
                                   return {
-                                action: diathink.RootAction,
+                                action: $D.RootAction,
                                 activeID: modelid,
                                 oldRoot: panelview.outline.alist.rootID,
                                 newRoot: 'new'
@@ -469,23 +466,23 @@ diathink.app.createPage = function(pageName, root) {
                         return element;
                     }
 
-                    diathink.hoverItem = null, diathink.hoverTimer = null;
+                    $D.hoverItem = null, $D.hoverTimer = null;
                     // handle hovering-class, also retain class for 500ms in case it's followed by focus class
-                   if (! diathink.is_touch_device) {
+                   if (! $D.is_touch_device) {
                         $('#'+id).on('mouseover mouseout', function(e) {
                             // find the closest li to the target
                             var li = closestListItem(e.target);
                             if (!li) {return;}
-                            if (diathink.timer) {clearTimeout(diathink.timer);}
+                            if ($D.timer) {clearTimeout($D.timer);}
                             if (e.type==='mouseover') {
-                                if (li !== diathink.hoverItem) {
-                                    $(diathink.hoverItem).removeClass('ui-btn-hover-c');
+                                if (li !== $D.hoverItem) {
+                                    $($D.hoverItem).removeClass('ui-btn-hover-c');
                                 }
                                 $(li).addClass('ui-btn-hover-c');
-                                diathink.hoverItem = li;
+                                $D.hoverItem = li;
                             } else if (e.type==='mouseout') {
-                                if (li === diathink.hoverItem) {
-                                    diathink.timer = setTimeout(function() {
+                                if (li === $D.hoverItem) {
+                                    $D.timer = setTimeout(function() {
                                         $(li).removeClass('ui-btn-hover-c');
                                     }, 500);
                                 } else { // if a different item is hovering do nothing
@@ -502,20 +499,20 @@ diathink.app.createPage = function(pageName, root) {
                     // need to update text and selection-position manually
                     $(window).on('keypress', function(e) {
                         console.log('Acknowledging keypress, char="'+ String.fromCharCode(e.charCode)+'"');
-                        if (diathink.ActionManager.queue.length===0) {
+                        if ($D.ActionManager.queue.length===0) {
                             // retain browser-default behavior
-                            if (diathink.focused) {
-                                diathink.handleKeypress(diathink.focused, e);
+                            if ($D.focused) {
+                                $D.handleKeypress($D.focused, e);
                                 console.log('Handled keypress, char='+ String.fromCharCode(e.charCode));
                             } else {
                                 console.log('Lost keypress with nothing focused')
                             }
                         } else {
                             console.log("Delaying keypress, char="+ String.fromCharCode(e.charCode));
-                            diathink.ActionManager.schedule(function() {
-                                if (diathink.focused) {
+                            $D.ActionManager.schedule(function() {
+                                if ($D.focused) {
                                     e.simulated = true;
-                                    diathink.handleKeypress(diathink.focused, e);
+                                    $D.handleKeypress($D.focused, e);
                                     console.log('Handled delayed keypress, char='+ String.fromCharCode(e.charCode));
                                 } else {
                                     console.log('Lost keypress with nothing focused')
@@ -541,20 +538,20 @@ diathink.app.createPage = function(pageName, root) {
                                 return true; // don't modify other keyboard strokes?
                             }
                         } */
-                        if (diathink.ActionManager.queue.length===0) {
+                        if ($D.ActionManager.queue.length===0) {
                             // retain browser-default behavior
-                            if (diathink.focused) {
-                                diathink.handleKeydown(diathink.focused, e);
+                            if ($D.focused) {
+                                $D.handleKeydown($D.focused, e);
                                 console.log('Handled keydown, code='+ e.which);
                             } else {
                                 console.log('Missed keydown, nothing focused');
                             }
                         } else {
                             console.log('Delaying keydown, code='+ e.which);
-                            diathink.ActionManager.schedule(function() {
-                                if (diathink.focused) {
+                            $D.ActionManager.schedule(function() {
+                                if ($D.focused) {
                                     e.simulated = true;
-                                    diathink.handleKeydown(diathink.focused, e);
+                                    $D.handleKeydown($D.focused, e);
                                     console.log('Handled delayed keydown, code='+ e.which);
                                 } else {
                                     console.log('Missed delayed keydown, nothing focused');
@@ -572,10 +569,10 @@ diathink.app.createPage = function(pageName, root) {
                     });
                     // ? also on: mobile.document pagechange
 
-                    diathink.ActionManager.refreshButtons();
-                    diathink.updatePanelButtons();
-                    diathink.keyboard = diathink.keyboardSetup.extend({});
-                    diathink.keyboard.init();
+                    $D.ActionManager.refreshButtons();
+                    $D.updatePanelButtons();
+                    $D.keyboard = $D.keyboardSetup.extend({});
+                    $D.keyboard.init();
                     $('#'+id).nestedSortable({
                         listType:'ul',
                         items:'li',
@@ -590,7 +587,7 @@ diathink.app.createPage = function(pageName, root) {
                         handle:'> div > .drag-handle',
                         buryDepth:0,
                         scroll:true,
-                        keyboard: diathink.keyboard,
+                        keyboard: $D.keyboard,
                         dropLayers: '.droplayer',
                         helper: function (e, item) {
                             var newNode = item[0].cloneNode(true);
@@ -609,7 +606,7 @@ diathink.app.createPage = function(pageName, root) {
                 }
             }
         },
-        hiddendiv:M.ContainerView.design({
+        hiddendiv: new M.ContainerView({
             cssClass: 'hiddendiv'
         }),
         /*
@@ -621,8 +618,8 @@ diathink.app.createPage = function(pageName, root) {
                 events: {
                     keyup: {
                         action: function(id) {
-                            if (diathink.focused) {
-                                $(diathink.focused).text($('#'+id).val());
+                            if ($D.focused) {
+                                $($D.focused).text($('#'+id).val());
                             }
                         }
                     }
@@ -630,34 +627,34 @@ diathink.app.createPage = function(pageName, root) {
             })
         }),
         */
-        header:M.ToolbarView.design({
+        header:new M.ToolbarView({
             childViews: "title undobuttons",
             // value:'HEADER',
             anchorLocation:M.TOP,
-            title: M.LabelView.design({
+            title: new M.LabelView({
                 anchorLocation: M.LEFT,
                 value: ""
             }),
-            undobuttons: M.ContainerView.design({
+            undobuttons: new M.ContainerView({
                 anchorLocation:M.RIGHT,
                 cssClass: 'undo-container',
                 childViews: "undobutton redobutton",
-                undobutton:M.ButtonView.design({
+                undobutton:new M.ButtonView({
                     isIconOnly: true,
                     cssClass:'undo-button',
                     events: {
                         tap: {
-                            target:diathink.ActionManager,
+                            target:$D.ActionManager,
                             action:'undo'
                         }
                     }
                 }),
-                redobutton:M.ButtonView.design({
+                redobutton:new M.ButtonView({
                     isIconOnly: true,
                     cssClass:'redo-button',
                     events: {
                         tap: {
-                            target:diathink.ActionManager,
+                            target:$D.ActionManager,
                             action:'redo'
                         }
                     }
@@ -665,46 +662,46 @@ diathink.app.createPage = function(pageName, root) {
             })
         }),
 
-        content:M.ContainerView.design({
+        content:new M.ContainerView({
             cssClass: "grid-wrapper",
             childViews: "leftbutton rightbutton grid",
-            leftbutton:M.SpanView.design({
+            leftbutton:new M.SpanView({
                 cssClass: 'left-button',
                 value:'<'
             }),
-            rightbutton:M.SpanView.design({
+            rightbutton:new M.SpanView({
                 cssClass: 'right-button',
                 value:'>'
             }),
-            grid: M.GridView.design({
+            grid: new M.GridView({
                 cssClass: "scroll-container",
-                panelManager: diathink.PanelManager,
+                panelManager: $D.PanelManager,
                 childViews: "scroll1 scroll2",
                 layout: M.TWO_COLUMNS,
-                scroll1:diathink.PanelOutlineView.design({
+                scroll1:new $D.PanelOutlineView({
                     rootModel: root
                 }),
-                scroll2:diathink.PanelOutlineView.design({
+                scroll2:new $D.PanelOutlineView({
                     rootModel: root
                 })
             })
         }),
 
-        drawlayer:M.ContainerView.design({
+        drawlayer:new M.ContainerView({
             cssClass: 'drawlayer'
         })
     });
 
 
-    // diathink.app.pages[pageName].render();
+    // $D.app.pages[pageName].render();
 };
 
-diathink.app.createPage('page1', null);
+$D.app.createPage('page1', null);
 // Update Panel-Manager with grid-panels
-diathink.PanelManager.initFromDOM(diathink.app.pages['page1'].content.grid);
+$D.PanelManager.initFromDOM($D.app.pages['page1'].content.grid);
 
 /*
-diathink.app.configure({
+$D.app.configure({
     outlineView:{
         buryDepth:3,
         listType:'ul',

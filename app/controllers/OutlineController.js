@@ -1,6 +1,6 @@
 
 
-diathink.PanelManager = M.Object.extend({
+$D.PanelManager = M.Object.extend({
   type: 'PanelManager',
   nextpanel: {'': ''},
   prevpanel: {'': ''},
@@ -150,7 +150,7 @@ diathink.PanelManager = M.Object.extend({
 // Note that controllers must be defined before view.
 // TODO later support partial-list loading?
 
-diathink.OutlineManager = M.Object.extend({
+$D.OutlineManager = M.Object.extend({
     type: 'OutlineManager',
     outlines: {},
     deleted: {},
@@ -174,19 +174,19 @@ diathink.OutlineManager = M.Object.extend({
 });
 
 
-diathink.OutlineController = M.Controller.extend({
-    type: 'diathink.OutlineController',
+$D.OutlineController = M.Controller.extend({
+    type: '$D.OutlineController',
     rootID: null,
     bindView: function(view) { // bind this constructor-instance to this view
         this.rootID = view.id;
         view.setRootID();
         this.rootModel = view.rootModel;
         this.deleted = false;
-        diathink.OutlineManager.add(this.rootID, this);
+        $D.OutlineManager.add(this.rootID, this);
     },
     destroy: function() {
         var i, v, view, models;
-        diathink.OutlineManager.remove(this.rootID);
+        $D.OutlineManager.remove(this.rootID);
         this.deleted = true;
         // destroy the outline-entries but not the root
         view = M.ViewManager.getViewById(this.rootID);
@@ -214,7 +214,7 @@ diathink.OutlineController = M.Controller.extend({
     listObject: [] // list-data for top-level of outline
 });
 
-diathink.dummyController = M.Controller.extend({
+$D.dummyController = M.Controller.extend({
     dummyListClicked:function (id, nameId) {
         //console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
     },

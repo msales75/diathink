@@ -18,7 +18,7 @@ m_require('ui/dialog.js');
  *
  * @extends M.DialogView
  */
-M.ConfirmDialogView = M.DialogView.extend(
+M.ConfirmDialogView = M.DialogView.subclass(
 /** @scope M.ConfirmDialogView.prototype */ {
 
     /**
@@ -127,14 +127,14 @@ M.ConfirmDialogView = M.DialogView.extend(
     confirmed: function() {
         this.hide();
         if(this.callbacks && M.EventDispatcher.checkHandler(this.callbacks.confirm)){
-            this.bindToCaller(this.callbacks.confirm.target, this.callbacks.confirm.action)();
+            $D.bindToCaller(this.callbacks.confirm.target, this.callbacks.confirm.action)();
         }
     },
 
     canceled: function() {
         this.hide();
         if(this.callbacks && M.EventDispatcher.checkHandler(this.callbacks.cancel)){
-            this.bindToCaller(this.callbacks.cancel.target, this.callbacks.cancel.action)();
+            $D.bindToCaller(this.callbacks.cancel.target, this.callbacks.cancel.action)();
         }
     }
 

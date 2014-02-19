@@ -18,7 +18,7 @@ m_require('ui/dialog.js');
  *
  * @extends M.DialogView
  */
-M.AlertDialogView = M.DialogView.extend(
+M.AlertDialogView = M.DialogView.subclass(
 /** @scope M.AlertDialogView.prototype */ {
 
     /**
@@ -107,7 +107,7 @@ M.AlertDialogView = M.DialogView.extend(
     handleCallback: function() {
         this.hide();
         if(this.callbacks && M.EventDispatcher.checkHandler(this.callbacks.confirm)){
-            this.bindToCaller(this.callbacks.confirm.target, this.callbacks.confirm.action)();
+            $D.bindToCaller(this.callbacks.confirm.target, this.callbacks.confirm.action)();
         }
     }
 

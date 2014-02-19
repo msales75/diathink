@@ -7,7 +7,7 @@
  *
  * @extends M.View
  */
-M.ToggleSwitchView = M.View.extend(
+M.ToggleSwitchView = M.View.subclass(
     /** @scope M.ToggleSwitchView.prototype */ {
 
         /**

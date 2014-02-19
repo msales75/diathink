@@ -11,6 +11,33 @@
 
 m_require('core/foundation/m.js');
 
+
+$D.Object = function() {};
+$D.Object.subclass = function(protoProps, classProperties) {
+        var child, parent = this;
+        if (protoProps && _.has(protoProps, 'constructor')) {
+            child = protoProps.constructor;
+        } else {
+            child = function(){ return parent.apply(this, arguments); };
+        }
+        _.extend(child, parent, classProperties);
+        var Surrogate = function(){ this.constructor = child; };
+        Surrogate.prototype = parent.prototype;
+        child.prototype = new Surrogate;
+        if (protoProps) _.extend(child.prototype, protoProps);
+        child.__super__ = parent.prototype;
+        return child;
+};
+
+$D.bindToCaller = function(caller, method, arg) {
+    return function() {
+        if(_.isArray(arg)) {
+            return method.apply(caller, arg);
+        }
+        return method.call(caller, arg);
+    }
+};
+
 /**
  * @class
  *

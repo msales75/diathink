@@ -18,7 +18,7 @@
  *
  * @extends M.View
  */
-M.TableView = M.View.extend(
+M.TableView = M.View.subclass(
 /** @scope M.TableView.prototype */ {
 
     /**

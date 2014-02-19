@@ -51,7 +51,7 @@ M.RIGHT = 'RIGHT';
  *
  * @extends M.View
  */
-M.ToolbarView = M.View.extend(
+M.ToolbarView = M.View.subclass(
 /** @scope M.ToolbarView.prototype */ {
 
     /**
@@ -154,7 +154,7 @@ M.ToolbarView = M.View.extend(
     renderChildViews: function() {
         if(this.value && this.showBackButton) {
             /* create the toolbar's back button */
-            this.backButton = M.ButtonView.design({
+            this.backButton = new M.ButtonView({
                 value: 'Back',
                 icon: 'arrow-l',
                 internalEvents: {
@@ -236,7 +236,7 @@ M.ToolbarView = M.View.extend(
         if(this.backButton) {
             this.backButton.registerEvents();
         }
-        this.bindToCaller(this, M.View.registerEvents)();
+        $D.bindToCaller(this, M.View.prototype.registerEvents)();
     },
 
     /**

@@ -17,7 +17,7 @@
  *
  * @extends M.View
  */
-M.ScrollView = M.View.extend(
+M.ScrollView = M.View.subclass(
 /** @scope M.ScrollView.prototype */ {
 
     /**

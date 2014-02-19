@@ -103,7 +103,7 @@ M.INPUT_DATETIME_LOCAL = 'datetime-local';
  *
  * @extends M.View
  */
-M.TextEditView = M.View.extend(
+M.TextEditView = M.View.subclass(
     /** @scope M.TextEditView.prototype */ {
 
         /**
@@ -284,8 +284,8 @@ M.TextEditView = M.View.extend(
             var parentListId = M.ViewManager.getViewById(focusedEl.attr('id')).parentView.parentView.parentView.id;
             $('#'+parentListId).removeClass('ui-focus');
             this.setValueFromDOM();
-            diathink.ActionManager.schedule(function() {
-                return diathink.Action.checkTextChange(that.id);
+            $D.ActionManager.schedule(function() {
+                return $D.Action.checkTextChange(that.id);
             });
         },
 
@@ -322,7 +322,7 @@ M.TextEditView = M.View.extend(
                     action:'handleTap'
                 };
             }
-            this.bindToCaller(this, M.View.registerEvents)();
+            this.bindToCaller(this, M.View.prototype.registerEvents)();
         },
 */
 
@@ -340,7 +340,7 @@ M.TextEditView = M.View.extend(
             }
 
             /* let M.View do the real job */
-            this.bindToCaller(this, M.View.contentDidChange)();
+            $D.bindToCaller(this, M.View.contentDidChange)();
 
             this.renderUpdate();
             this.delegateValueUpdate();

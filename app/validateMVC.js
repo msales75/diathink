@@ -1,18 +1,20 @@
+
+
 M.test = function (test, message) {
     if (!test) {
         if (message) {
-            diathink.log([], "INVALID: " + message);
+            $D.log([], "INVALID: " + message);
             console.log("INVALID: " + message);
         } else {
-            diathink.log([], "INVALID: Unspecified validation error");
+            $D.log([], "INVALID: Unspecified validation error");
             console.log("INVALID: Unspecified validation error");
         }
     }
 };
 
-diathink.validateMVC = function () {
+$D.validateMVC = function () {
     M.test(Backbone.Relational.store._collections.length === 1);
-    var outlines = diathink.OutlineManager.outlines;
+    var outlines = $D.OutlineManager.outlines;
     var models = Backbone.Relational.store._collections[0]._byId;
     var views = M.ViewManager.viewList;
 
@@ -25,7 +27,7 @@ diathink.validateMVC = function () {
     for (var o in outlines) {
         M.test(typeof outlines[o] === 'object',
             "Outline ID " + o + " is not an object");
-        M.test(outlines[o].type === 'diathink.OutlineController',
+        M.test(outlines[o].type === '$D.OutlineController',
             "Outline ID " + o + " is not an OutlineController");
         M.test(outlines[o].rootID === o,
             "Outline " + o + " does not have a valid rootID");
@@ -39,26 +41,26 @@ diathink.validateMVC = function () {
             "Outline " + o + " points to a view with an invalid id");
         M.test(typeof views[o].contentBinding.target === 'object',
             "Outline "+o+" points to a view without a rootController");
-        M.test(views[o].contentBinding.target.type === 'diathink.OutlineController',
+        M.test(views[o].contentBinding.target.type === '$D.OutlineController',
             "Outline "+o+" points to a view without a rootController of the right type");
         M.test(views[o].contentBinding.target.rootID === o,
             "Outline "+o+" points to a view with a rootController with the wrong rootID");
         M.test(views[o].childViews === null,
             "Outline "+o+" points to a view with childViews");
-        M.test(outlines[o].listObject instanceof diathink.OutlineNodeCollection,
-            "Outline "+o+" has listObject that is not a diathink.OutlineNodeCollection");
+        M.test(outlines[o].listObject instanceof $D.OutlineNodeCollection,
+            "Outline "+o+" has listObject that is not a $D.OutlineNodeCollection");
         M.test(outlines[o].listObject === views[o].value,
             "Outline "+o+" has listObject that doesn't match the corresponding ListView-value");
         // temporary constraint until references: parent should be a panel
-        M.test(views[o].parentView.parentView.type === 'diathink.PanelOutlineView',
+        M.test(views[o].parentView.parentView.type === '$D.PanelOutlineView',
             "Outline view "+o+" does not have parent-parent-view a panel");
         M.test(views[o].parentView.parentView.outline.alist === views[o],
             "Outline view "+o+" does not match parent.parent.outline.alist in a panel");
     }
 
     var collections = {};
-    var modelBase = diathink.data._byId;
-    // collections[0] = diathink
+    var modelBase = $D.data._byId;
+    // collections[0] = $D
 
     for (var m in modelBase) {
         M.test(models[m] !== undefined,
@@ -70,7 +72,7 @@ diathink.validateMVC = function () {
         // parent is only undefined for this one node
         M.test(typeof models[m] === 'object',
             "Model " + m + " is not an object");
-        M.test(models[m] instanceof diathink.OutlineNodeModel,
+        M.test(models[m] instanceof $D.OutlineNodeModel,
             "Model " + m + " is not an OutlineNodeModel");
         M.test(models[m].cid === m,
             "Model " + m + " does not have a valid cid");
@@ -80,10 +82,10 @@ diathink.validateMVC = function () {
         if (models[m].deleted === false) {
             if (models[m].attributes.parent == null) {
                 M.test(modelBase[m] != null,
-                    "Unable to find model "+m+" in top-level of diathink.data, despite having parent=null");
+                    "Unable to find model "+m+" in top-level of $D.data, despite having parent=null");
             } else {
                 M.test(modelBase[m] === undefined,
-                    "Model "+m+" has a parent but is not in diathink.data");
+                    "Model "+m+" has a parent but is not in $D.data");
             }
             if (models[m].attributes.children) {
                 collections[m] = models[m].attributes.children;
@@ -125,7 +127,7 @@ diathink.validateMVC = function () {
                 "The model " + m + " does not have ancestry to a root model ");
             // (proves parent-refs are connected & acyclic)
 
-            M.test(p.attributes.children instanceof diathink.OutlineNodeCollection,
+            M.test(p.attributes.children instanceof $D.OutlineNodeCollection,
                 "Parent-model " + p + " does not have children of type OutlineNodeCollection");
             var foundit = false;
             for (var cp in p.attributes.children._byId) {
@@ -143,7 +145,7 @@ diathink.validateMVC = function () {
             "The model " + m + " has a text-attribute that is not a string");
         // parent matches children
         var c = models[m].attributes.children;
-        M.test(c instanceof diathink.OutlineNodeCollection,
+        M.test(c instanceof $D.OutlineNodeCollection,
             "The children of model " + m + " are not an OutlineNodeCollection");
         for (var cm in c._byId) {
             var obj = c._byId[cm];
@@ -195,7 +197,7 @@ diathink.validateMVC = function () {
             M.test($('#'+views[v].id).parent().get(0) === $('body').get(0),
                 "Page "+v+" is not immediately inside body");
         }
-        if (views[v].type === 'diathink.PanelOutlineView') {
+        if (views[v].type === '$D.PanelOutlineView') {
             panels[v] = views[v];
             M.test(panels[v].rootID === null, // panel is not inside an outline-view
                 "Panel "+v+" has rootID defined");
@@ -232,8 +234,8 @@ diathink.validateMVC = function () {
             M.test(panels[v].outline.alist.id === panels[v].outline.alist.rootID,
                 "Panel "+v+" does not have outline.alist with id=rootID for an outline");
             if (panels[v].rootModel === null) {
-                M.test(panels[v].outline.alist.value === diathink.data,
-                    "Panel "+v+" does not have valid alist.value == diathink.data");
+                M.test(panels[v].outline.alist.value === $D.data,
+                    "Panel "+v+" does not have valid alist.value == $D.data");
             } else {
                 M.test(panels[v].outline.alist.value === panels[v].rootModel.get('children'),
                     "Panel "+v+" does not have valid alist.value == rootModel children");
@@ -332,7 +334,7 @@ diathink.validateMVC = function () {
                     "Parent ListView "+p+" has invalid rootID (not a string)");
                 M.test(typeof p.value === 'object',
                     "Parent ListView "+p+" has invalid value (not an object)");
-                M.test(p.value instanceof diathink.OutlineNodeCollection,
+                M.test(p.value instanceof $D.OutlineNodeCollection,
                     "Parent ListView "+p+" has a value that's not an OutlineNodeCollection");
                 M.test(typeof p.value._byId === 'object',
                     "Parent ListView "+p+" has a value without _byId");
@@ -376,13 +378,13 @@ diathink.validateMVC = function () {
                 "View "+v+" has parent "+p+" of type "+ p.type+" but none of parent's children reference "+v);
 
             if (views[v].type === 'M.BreadcrumbView') {
-                M.test(views[v].parentView.type === 'diathink.PanelOutlineView',
+                M.test(views[v].parentView.type === '$D.PanelOutlineView',
                     "Breadcrumb view "+v+" does not have paneloutlineview parent");
                 M.test(views[v].parentView.breadcrumbs === views[v],
                     "Breadcrumb view "+v+" does not match parentview.breadcrumbs");
             }
             if (views[v].type === 'M.ScrollView') {
-                M.test(views[v].parentView.type === 'diathink.PanelOutlineView',
+                M.test(views[v].parentView.type === '$D.PanelOutlineView',
                     "ScrollView "+v+" does not have paneloutlineview parent");
                 M.test(views[v].parentView.outline === views[v],
                     "ScrollView "+v+" does not have match parentview.outline");
@@ -422,11 +424,11 @@ diathink.validateMVC = function () {
                         "View "+v+" has type ListView but has childViews not null");
                     M.test(typeof views[v].value === 'object',
                         "ListView "+v+" does not have a value");
-                    M.test(views[v].value instanceof diathink.OutlineNodeCollection,
+                    M.test(views[v].value instanceof $D.OutlineNodeCollection,
                         "ListView "+v+" value is not a OutlineNodeCollection");
                     M.test(typeof views[v].value._byId === 'object',
                         "ListView "+v+" value does not have _byId attribute");
-                    if (views[v].value === diathink.data) {
+                    if (views[v].value === $D.data) {
 
                     } else {
                         M.test(_.contains(collections, views[v].value),
@@ -434,7 +436,7 @@ diathink.validateMVC = function () {
                     }
                     // make sure all children are represented in model
                     for (var i in views[v].value._byId) {
-                        M.test(views[v].value._byId[i] instanceof diathink.OutlineNodeModel,
+                        M.test(views[v].value._byId[i] instanceof $D.OutlineNodeModel,
                             "ListView "+v+" has child-model rank "+i+" is not an OutlineNodeModel");
                         M.test(models[views[v].value._byId[i].cid] === views[v].value._byId[i],
                             "ListView "+v+" child-model "+views[v].value._byId[i].cid+" is not in the models list");
@@ -481,7 +483,7 @@ diathink.validateMVC = function () {
                     M.test(views[v].parentView.type === 'M.ListView',
                         "View "+v+" has type ListItemView but parentView is not a ListView");
 
-                    M.test(views[v].parentView.value instanceof diathink.OutlineNodeCollection,
+                    M.test(views[v].parentView.value instanceof $D.OutlineNodeCollection,
                         "ListItemView "+v+" parent view does not have value OutlineNodeCollection");
 
                     M.test(views[v].parentView.value._byId[views[v].modelId] === models[views[v].modelId],
@@ -542,13 +544,13 @@ diathink.validateMVC = function () {
                 "View "+v+" does not have parent-view "+pid);
         }
 
-        M.test(diathink.OutlineManager.deleted[v]===undefined,
+        M.test($D.OutlineManager.deleted[v]===undefined,
             "");
-        M.test(diathink.PanelManager.deleted[v]===undefined,
+        M.test($D.PanelManager.deleted[v]===undefined,
             "");
     }
 
-    var PM = diathink.PanelManager;
+    var PM = $D.PanelManager;
     var grid = M.ViewManager.getCurrentPage().content.grid;
 
     M.test(PM.panelsPerScreen === $('#'+grid.id).children().length,
@@ -756,8 +758,8 @@ diathink.validateMVC = function () {
     });
 
 
-    var actions = diathink.ActionManager.actions;
-    var lastaction = diathink.ActionManager.lastAction;
+    var actions = $D.ActionManager.actions;
+    var lastaction = $D.ActionManager.lastAction;
     if (actions.length>0) {
         M.test(lastaction !== null,
             "Actions.length>0 but lastaction is null");
@@ -800,8 +802,8 @@ diathink.validateMVC = function () {
         M.test(lastaction === null,
             "There are no actions, but lastaction is not null")
     }
-    M.test(_.size(diathink.ActionManager.queue)===0,
-        "diathink.ActionManager.queue is not empty");
+    M.test(_.size($D.ActionManager.queue)===0,
+        "$D.ActionManager.queue is not empty");
 
     // undo-buttons should be up to date
     var b = M.ViewManager.getCurrentPage().header.undobuttons;
@@ -814,15 +816,15 @@ diathink.validateMVC = function () {
     M.test($('#'+b.redobutton.id).length===1,
         "Cannot find redo button element");
     M.test(
-        ((diathink.ActionManager.nextUndo()===false)&&
+        (($D.ActionManager.nextUndo()===false)&&
             ($('#'+ b.undobutton.id).children('div.ui-disabled').length===1)) ||
-        ((diathink.ActionManager.nextUndo()!==false)&&
+        (($D.ActionManager.nextUndo()!==false)&&
             ($('#'+ b.undobutton.id).children('div.ui-disabled').length===0)),
         "Undo button does not match nextUndo()");
     M.test(
-        ((diathink.ActionManager.nextRedo()===false)&&
+        (($D.ActionManager.nextRedo()===false)&&
             ($('#'+ b.redobutton.id).children('div.ui-disabled').length===1)) ||
-            ((diathink.ActionManager.nextRedo()!==false)&&
+            (($D.ActionManager.nextRedo()!==false)&&
                 ($('#'+ b.redobutton.id).children('div.ui-disabled').length===0)),
         "Redo button does not match nextRedo()");
 
@@ -881,7 +883,7 @@ diathink.validateMVC = function () {
     // todo: textarea not exceed height/width of parent boxes
     // todo: textarea height/width change must always match with content
     // todo: check height/width footprint of li and ul
-    // todo: diathink.focused should be focused and match hiddendiv
+    // todo: $D.focused should be focused and match hiddendiv
     // todo: hiddendiv should have properties matching focused-div
     // todo: recalculated widths/heights should match up after resize
     // todo: ui-focus should always/only be on focused textarea and parent li.

@@ -54,7 +54,7 @@ M.ImagePreloader = M.Object.extend(
     },
 
     preloadSingleImage: function(image) {
-        var imageView = M.ImageView.design({
+        var imageView = new M.ImageView({
             value: image,
             cssClass: 'tmp-image-preloading',
             events: {

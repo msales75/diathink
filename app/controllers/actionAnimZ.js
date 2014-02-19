@@ -1,4 +1,8 @@
-diathink.animHelpers = {
+m_require("app/controllers/actionAnimDock.js");
+m_require("app/controllers/actionAnimPanel.js");
+m_require("app/controllers/actionAnimPlaceholder.js");
+
+$D.animHelpers = {
 
     animSetup: function() {
         var that = this;
@@ -23,7 +27,7 @@ diathink.animHelpers = {
         this.addQueue('panelPrep', ['context'], function() {
             that.panelPrep();
         });
-        var outlines = diathink.OutlineManager.outlines;
+        var outlines = $D.OutlineManager.outlines;
         for (i in outlines) {
             (function(i) {
                 that.addQueue(['oldLinePlace', i], ['createDockElem'], function() {
@@ -63,7 +67,7 @@ diathink.animHelpers = {
     animStep: function(frac) {
         var i, r = this.runtime, o = this.runtime.animOptions;
         // loop over all outlines
-        var outlines = diathink.OutlineManager.outlines;
+        var outlines = $D.OutlineManager.outlines;
         if (o.view) {
             for (i in outlines) {
                 if (!o.view[i]) {continue;}
@@ -115,8 +119,8 @@ diathink.animHelpers = {
     }
 };
 
-_.extend(diathink.animHelpers, diathink.animDock);
-_.extend(diathink.animHelpers, diathink.animPlaceholder);
-_.extend(diathink.animHelpers, diathink.animPanel);
+_.extend($D.animHelpers, $D.animDock);
+_.extend($D.animHelpers, $D.animPlaceholder);
+_.extend($D.animHelpers, $D.animPanel);
 
 

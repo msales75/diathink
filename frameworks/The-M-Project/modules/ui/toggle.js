@@ -20,7 +20,7 @@
  *
  * @extends M.View
  */
-M.ToggleView = M.View.extend(
+M.ToggleView = M.View.subclass(
 /** @scope M.ToggleView.prototype */ {
 
     /**

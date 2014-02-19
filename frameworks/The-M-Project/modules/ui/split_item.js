@@ -16,7 +16,7 @@
  *
  * @extends M.View
  */
-M.SplitItemView = M.View.extend(
+M.SplitItemView = M.View.subclass(
 /** @scope M.SplitItemView.prototype */ {
 
     /**

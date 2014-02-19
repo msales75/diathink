@@ -17,7 +17,7 @@
  *
  * @extends M.View
  */
-M.DialogView = M.View.extend(
+M.DialogView = M.View.subclass(
 /** @scope M.DialogView.prototype */ {
 
     /**

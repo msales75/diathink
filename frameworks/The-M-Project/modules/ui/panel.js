@@ -37,7 +37,7 @@ M.PUSH    = 'PUSH';
  *
  * @extends M.View
  */
-M.PanelView = M.View.extend(
+M.PanelView = M.View.subclass(
 /** @scope M.PanelView.prototype */ {
 
     /**
