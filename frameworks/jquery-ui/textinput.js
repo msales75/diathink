@@ -1,6 +1,7 @@
+/* // disabling textinput widget capabilities temporarily
 (function( $, undefined ) {
 
-    $.widget( "mobile.textinput2", $.mobile.widget, {
+    $.widget2( "mobile.textinput2", $.mobile.widget2, {
         options: {
             theme: null,
             mini: false,
@@ -187,5 +188,5 @@
     $.mobile.document.bind( "pagecreate create", function( e ) {
         $.mobile.textinput2.prototype.enhanceWithin( e.target, true );
     });
-
 })( jQuery );
+ */

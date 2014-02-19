@@ -4,10 +4,12 @@
 * Associate PanelManager with GridView
 
 Useful Refactorings:
-  * Need a linked-list-manager
-  * Need global list of visible panels & lines
+  * Eliminate jquery-mobile
+  * Eliminate M-project event-bindings
   * Need a DOM render-manager in view.js
   * Need to replace design/extend with Backbone object
+  * Need a linked-list-manager
+  * Need global list of visible panels & lines
 
  input:
        whether line or panel (or link) on each end

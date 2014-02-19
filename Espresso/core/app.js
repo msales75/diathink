@@ -420,7 +420,8 @@ App.prototype.buildIndexHTML = function (callback, _frameworkNamesForIndexHtml, 
   );
 
   _indexHtml.push(HTML('html', {
-    manifest: this.offlineManifest && 'cache.manifest'
+    manifest: this.offlineManifest && 'cache.manifest',
+    "class": "ui-mobile"
   }));
 
   _indexHtml.push(HTML('head'));
@@ -560,7 +561,8 @@ App.prototype.buildIndexHTML = function (callback, _frameworkNamesForIndexHtml, 
   _indexHtml.push(HTML('/head'));
   _indexHtml.push(HTML('body'));
 
-  var applicationStartScript = 'M.ErrorWhileLoadingApplication = false; try{ ' + this.name + '.app.main(); } catch(e){ M.ErrorWhileLoadingApplication = true; };'
+  // var applicationStartScript = 'M.ErrorWhileLoadingApplication = false; try{ ' + this.name + '.app.main(); } catch(e){ M.ErrorWhileLoadingApplication = true; };'
+  var applicationStartScript = this.name + '.app.main(); M.ErrorWhileLoadingApplication = false;';
 
   _indexHtml.push(HTML('script', {
     type: 'application/javascript'

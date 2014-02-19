@@ -116,8 +116,8 @@ M.Application = M.Object.extend(
         entryPage.id = 'm_entryPage';
 
         /* now lets render entry page to get it into the DOM first and set it as the current page */
+        M.ViewManager.setCurrentPage(entryPage); // MS try setting page before rendering?
         entryPage.render();
-        M.ViewManager.setCurrentPage(entryPage);
 
         /* now lets render all other pages */
         _.each(M.ViewManager.pageList, function(page) {

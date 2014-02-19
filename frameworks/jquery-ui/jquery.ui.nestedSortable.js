@@ -17,7 +17,7 @@
 		return ( x > reference ) && ( x < ( reference + size ) );
 	}
 
-	$.widget("mjs.nestedSortable", $.extend({}, $.ui.sortable.prototype, {
+	$.widget2("mjs.nestedSortable", $.extend({}, $.ui.sortable.prototype, {
 
 		options: {
 			doNotClear: false,

@@ -163,7 +163,13 @@ M.ButtonView = M.View.subclass(
     theme: function() {
         /* theme only if not already done */
         if(!$('#' + this.id).hasClass('ui-btn')) {
-            $('#' + this.id).buttonMarkup();
+            // MS: replace buttonMarkup with new theme?
+            $('#'+this.id).addClass('ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all ui-btn-icon-notext');
+            $('#'+this.id).children('div').addClass('ui-shadow hi-disabled');
+            $('#'+this.id).children('div').children('span').addClass('ui-btn-inner');
+            $('#'+this.id).children('div').children('span').children('span').addClass('ui-btn-text');
+            // $('#' + this.id).buttonMarkup();
+
         }
     },
 

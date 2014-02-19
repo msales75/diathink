@@ -8,18 +8,21 @@
 //            http://github.com/mwaylabs/The-M-Project/blob/master/MIT-LICENSE
 //            http://github.com/mwaylabs/The-M-Project/blob/master/GPL-LICENSE
 // ==========================================================================
-
+/*
 $(document).bind("mobileinit", function(){
-    /* redirect app, if there is already a location hash */
+    // redirect app, if there is already a location hash
     if(document.location.hash) {
         document.location = document.location.protocol + '//' + document.location.host + document.location.pathname;
     }
 
-    /* disable auto initialize */
+    // disable auto initialize
     $.mobile.autoInitializePage = false;
 });
+
+
 $(document).ready(function(){
-    /* bind the orientationchange event globally */
+    // bind the orientationchange event globally
+
     M.EventDispatcher.registerEvent(
         'orientationchange',
         $(window),
@@ -33,12 +36,12 @@ $(document).ready(function(){
         YES
     );
 
-    /* init pages */
+    // init pages
     $.mobile.initializePage();
 
     $(document).trigger('applicationdidload');
 
-    /* preload images */
+    // preload images
     if(M.Application.getConfig('preloadImages') && M.Application.getConfig('imagesToPreload').length) {
         M.ImagePreloader.init({
             images: M.Application.getConfig('imagesToPreload'),
@@ -63,6 +66,7 @@ $(document).ready(function(){
         }).preload();
     }
 
-    /* dont hide the toolbar, ever */
-    $("[data-role=header][data-position=fixed]").fixedtoolbar({ hideDuringFocus: "" });
+    // dont hide the toolbar, ever
+    // $("[data-role=header][data-position=fixed]").fixedtoolbar({ hideDuringFocus: "" });
 });
+*/

@@ -4,13 +4,13 @@ set IPADDR=127.0.0.1
 set PROJECTDIR=C:/Users/Mark/Desktop/diathink
 set TEMPDIR=C:/Users/Mark/temp
 set APACHECONF=C:/wamp/bin/apache/apache2.2.22/conf/httpd.conf
-set ESPRESSODIR=C:\Users\Mark\Google Drive\The-M-Project_v1.4.1\Espresso
+set ESPRESSODIR=Espresso
 set CHROME=C:/Users/Mark/AppData/Local/Google/Chrome/Application/chrome.exe
 :: set APACHECONF=C:\Users\Mark\Desktop\diathink\test.out
 
 cd %PROJECTDIR%
 
-node "%ESPRESSODIR%/bin/espresso.js" build
+node "Espresso/bin/espresso.js" build
 
 :: if we're running in ad-hoc network
 :: set IPADDR=169.254.159.249

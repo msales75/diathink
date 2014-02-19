@@ -91,12 +91,14 @@ M.Controller = M.Object.extend(
 
             /* Now do the page change by using a jquery mobile method and pass the properties */
             if(page.type === 'M.PageView') {
+                /*
                 $.mobile.changePage($('#' + page.id), {
                     transition: M.Application.getConfig('useTransitions') ? transition : M.TRANSITION.NONE,
                     reverse: M.Application.getConfig('useTransitions') ? isBack : NO,
                     changeHash: updateHistory,
                     showLoadMsg: NO
                 });
+                */
             }
 
             /* Save the current page in the view manager */

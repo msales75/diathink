@@ -113,6 +113,7 @@ M.PageView = M.View.subclass(
      * It extend M.View's registerEvents method with some special stuff for page views and its
      * internal events.
      */
+        /*
     registerEvents: function() {
         this.internalEvents = {
             pagebeforeshow: {
@@ -137,14 +138,20 @@ M.PageView = M.View.subclass(
             }
         }
         $D.bindToCaller(this, M.View.prototype.registerEvents)();
-    },
+    }, */
+
 
     /**
      * This method writes the view's html string into the DOM. M.Page is the only view that does
      * that. All other views just deliver their html representation to a page view.
      */
     writeToDOM: function() {
-        $('body').append(this.html);
+        var html = $('html');
+        html.addClass('ui-mobile landscape');
+        var body = $('body');
+        body.addClass('ui-mobile-viewport ui-overlay-c');
+
+        body.append(this.html);
     },
 
     /**
@@ -305,7 +312,7 @@ M.PageView = M.View.subclass(
      * @private
      */
     theme: function() {
-        $('#' + this.id).page();
+        // $('#' + this.id).page();
         this.themeChildViews();
     },
 

@@ -289,14 +289,15 @@ $D.app.createPage = function(pageName, root) {
     var pageShown = 0;
 
     $D.app.pages[pageName] = new M.PageView({
+        cssClass: 'ui-page ui-body-c ui-page-header-fixed ui-page-active ui-sortable',
         childViews:'hiddendiv header content drawlayer',
-        events: {
-            pageshow: {
-                action:function () {
+        registerEvents: function () {
                     // todo: here, set the outline-controller to correct collection
                     var id = M.ViewManager.getPage(pageName).id;
                     if (pageShown>0) {return;} // first-call
                     ++pageShown;
+
+                    $D.bindToCaller(this, M.View.prototype.registerEvents)();
 
                     var fontsize = Number($('body').css('font-size').replace(/px/,''));
                     var $textarea = $.stylesheet('li.ui-li .outline-header > div > textarea.outline-content.ui-input-text');
@@ -563,7 +564,7 @@ $D.app.createPage = function(pageName, root) {
                         e.stopPropagation();
                     });
 
-                    $.mobile.window.on('load',function() {
+                    $(window).on('load',function() {
                         $(window).resize();
                         // $('textarea').trigger('keyup');
                     });
@@ -603,8 +604,6 @@ $D.app.createPage = function(pageName, root) {
                         // handle: '> div > div > a > div > .handle',
                         toleranceElement:'> div.outline-header'
                     });
-                }
-            }
         },
         hiddendiv: new M.ContainerView({
             cssClass: 'hiddendiv'
@@ -629,6 +628,7 @@ $D.app.createPage = function(pageName, root) {
         */
         header:new M.ToolbarView({
             childViews: "title undobuttons",
+            cssClass: 'ui-header ui-bar-a ui-header-fixed slidedown',
             // value:'HEADER',
             anchorLocation:M.TOP,
             title: new M.LabelView({
