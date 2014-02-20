@@ -92,26 +92,9 @@ M.ButtonView = M.View.subclass(
      */
     render: function() {
         this.computeValue();
-        this.html = '<a data-role="button" id="' + this.id + '"' + this.style() + ' ';
-
-        if(this.hyperlinkTarget && this.hyperlinkType) {
-            switch (this.hyperlinkType) {
-                case M.HYPERLINK_EMAIL:
-                    this.html += 'rel="external" href="mailto:' + this.hyperlinkTarget + '"';
-                    break;
-                case M.HYPERLINK_WEBSITE:
-                    this.html += 'rel="external" target="_blank" href="' + this.hyperlinkTarget + '"';
-                    break;
-                case M.HYPERLINK_PHONE:
-                    this.html += 'rel="external" href="tel:' + this.hyperlinkTarget + '"';
-                    break;
-            }
-        } else {
-            this.html += 'href="#"';
-        }
-
-        this.html += '>' + this.value + '</a>';
-
+        this.html = '<a id="' + this.id + '" ' + this.style() + ' href="#">';
+        this.html += '<span class="ui-btn-inner"><span class="ui-btn-text">'+this.value+'</span></span>';
+        this.html += '</a>';
         return this.html;
     },
 
@@ -124,6 +107,7 @@ M.ButtonView = M.View.subclass(
      * internal events.
      */
     registerEvents: function() {
+        /*
         if(!this.internalEvents) {
             this.internalEvents = {
                 tap: {
@@ -133,6 +117,7 @@ M.ButtonView = M.View.subclass(
             }
         }
         $D.bindToCaller(this, M.View.prototype.registerEvents)();
+        */
     },
 
     /**
@@ -165,9 +150,8 @@ M.ButtonView = M.View.subclass(
         if(!$('#' + this.id).hasClass('ui-btn')) {
             // MS: replace buttonMarkup with new theme?
             $('#'+this.id).addClass('ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all ui-btn-icon-notext');
-            $('#'+this.id).children('div').addClass('ui-shadow hi-disabled');
-            $('#'+this.id).children('div').children('span').addClass('ui-btn-inner');
-            $('#'+this.id).children('div').children('span').children('span').addClass('ui-btn-text');
+            $('#'+this.id).children('span').addClass('ui-btn-inner');
+            $('#'+this.id).children('span').children('span').addClass('ui-btn-text');
             // $('#' + this.id).buttonMarkup();
 
         }

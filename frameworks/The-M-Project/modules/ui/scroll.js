@@ -63,14 +63,13 @@ M.ScrollView = M.View.subclass(
     // MS addition for scrollview from jquery-mobile splitscreen
     theme: function() {
         // todo: this needs to be implemented without jquery-mobile
-        /*
-      $('#' + this.id).scrollview({
+      this.scrollview = new $D.scrollview({
+            element: $('#'+this.id).get(0),
             direction: 'y',
             delayedClickEnabled: false
             // MS - prevents double-handling of tap when using bubbling/delegated
             // updateScroll: this.updateScroll
       });
-*/
       this.themeChildViews(); // MS fix to avoid list2view bug
     },
 

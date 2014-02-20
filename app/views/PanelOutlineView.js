@@ -1,4 +1,5 @@
 
+m_require("app/views/OutlineView.js");
 
 $D.PanelOutlineView = M.ContainerView.subclass({
     type: '$D.PanelOutlineView',

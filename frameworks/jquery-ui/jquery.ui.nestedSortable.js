@@ -462,12 +462,12 @@
                 // do we need to initialize the panel?
                 var panelid = this.scrollPanel.attr('id');
                 if (this.panelScrollStart[panelid] === undefined) {
-                    this.panelScrollStart[panelid] = this.scrollPanel.scrollview('getScrollPosition').y;
+                    this.panelScrollStart[panelid] = M.ViewManager.getViewById(this.scrollPanel.attr('id')).scrollview.getScrollPosition().y;
                 }
                 // todo: add constraint?: for later panels, could scroll-position be different than the
                 // scroll-position at mouse-start, which is where items are last updated?
 
-                this.scrollPanel.scrollview( 'scrollWhileDragging',
+                M.ViewManager.getViewById(this.scrollPanel.attr('id')).scrollview.scrollWhileDragging(
                         event.pageY - this.scrollPanel.offset().top);
             }
 
@@ -696,7 +696,7 @@
 
             // cache scroll-positions of each panel
             this.panels.each(function() {
-                M.ViewManager.getViewById(this.id).scrollY = $(this).scrollview('getScrollPosition').y;
+                M.ViewManager.getViewById(this.id).scrollY = M.ViewManager.getViewById(this.id).scrollview.getScrollPosition().y;
             });
 
             for (i=0; i<this.items.length; ++i) {

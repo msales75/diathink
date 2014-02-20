@@ -25,6 +25,7 @@ set WEBPATH=%PROJECTDIR%/build/%BNUM%
 echo Using web-root path: %WEBPATH%
 echo USING IP Address %IPADDR%
 echo USING apache config: %APACHECONF%
+echo "TEST_TEST_TEST"
 
 %CHROME% http://%IPADDR%/%BNUM%/
 

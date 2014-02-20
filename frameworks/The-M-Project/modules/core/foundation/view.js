@@ -57,7 +57,7 @@ M.View = $D.Object.subclass({
     rootID: null, // MS which view's controller is in charge of outline-contents
 
     constructor: function(obj) {
-        if ((obj===undefined) || (obj.id === undefined)) {
+            if ((obj===undefined) || (obj.id === undefined)) {
             this.id = M.ViewManager.getNextId();
         } else { // validate it's not being used
             $D.assert($D(obj.id) == null, "Duplicate id specified in view constructor");

@@ -372,8 +372,19 @@ $D.app.createPage = function(pageName, root) {
                     $('#'+id).on(vmousedown, 'textarea', function(e) {
                         $(this).removeClass('hide-selection');
                     });
+                    var tap = 'click';
+                    if ($.is_touch_device) {tap = 'tap';}
+            // TODO: make this more efficient.
+            $('#'+id).on(tap, '.undo-button span', function(e) {
+                $D.ActionManager.undo()
+            });
+            $('#'+id).on(tap, '.redo-button span', function(e) {
+                $D.ActionManager.redo()
+            });
 
-                    $('#'+id).on('tap', '.disclose', function (e) {
+
+
+            $('#'+id).on(tap, '.disclose', function (e) {
                             var now = (new Date()).getTime();
                             // $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
                             var view = M.ViewManager.getViewById(this.id);
@@ -416,20 +427,20 @@ $D.app.createPage = function(pageName, root) {
                                 });
                             }
                     });
-                    $('#'+id).on('tap', '.left-button', function(e) {
+                    $('#'+id).on(tap, '.left-button', function(e) {
                         var PM = $D.PanelManager;
                         PM.leftPanel = PM.prevpanel[PM.leftPanel];
                         $D.updatePanelButtons();
                         $D.redrawPanels('right');
                     });
-                    $('#'+id).on('tap', '.right-button', function(e) {
+                    $('#'+id).on(tap, '.right-button', function(e) {
                         var PM = $D.PanelManager;
                         PM.leftPanel = PM.nextpanel[PM.leftPanel];
                         $D.updatePanelButtons();
                         $D.redrawPanels('left');
                     });
 
-                    $('#'+id).on('tap', '.ui-breadcrumb-link', function(e) {
+                    $('#'+id).on(tap, '.ui-breadcrumb-link', function(e) {
                         // $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
                         var view = M.ViewManager.getViewById($(this).parent().attr('id'));
                         var now = (new Date()).getTime();
@@ -641,23 +652,11 @@ $D.app.createPage = function(pageName, root) {
                 childViews: "undobutton redobutton",
                 undobutton:new M.ButtonView({
                     isIconOnly: true,
-                    cssClass:'undo-button',
-                    events: {
-                        tap: {
-                            target:$D.ActionManager,
-                            action:'undo'
-                        }
-                    }
+                    cssClass:'undo-button'
                 }),
                 redobutton:new M.ButtonView({
                     isIconOnly: true,
-                    cssClass:'redo-button',
-                    events: {
-                        tap: {
-                            target:$D.ActionManager,
-                            action:'redo'
-                        }
-                    }
+                    cssClass:'redo-button'
                 })
             })
         }),
