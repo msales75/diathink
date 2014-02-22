@@ -168,8 +168,8 @@ $D.validateMVC = function () {
                 "The view in outline " + i + " for model " + m + " is not of type ListItemView");
             M.test(models[m].views[i] === views[models[m].views[i].id],
                 "The view in outline " + i + " for model " + m + " is not in the views list");
-            M.test(models[m].views[i].modelId === m,
-                "The view " + models[m].views[i].id + " in model " + m + " and outline " + i + " does not have modelId=" + m);
+            M.test(models[m].views[i].value.cid === m,
+                "The view " + models[m].views[i].id + " in model " + m + " and outline " + i + " does not have model Id=" + m);
         }
     }
 
@@ -188,8 +188,6 @@ $D.validateMVC = function () {
                 "PageView " + v + " has parentView not-null (pages can't have parents)");
             M.test(views[v].rootID === null,
                 "PageView " + v + " has rootID not-null (pages can't be in outlines)");
-            M.test(views[v].modelId === null,
-                "PageView "+v+" has a modelId that's not null");
             M.test(views[v].value === null,
                 "PageView "+v+" has a value that's not null");
             M.test(views[v].rootController === undefined,
@@ -402,8 +400,10 @@ $D.validateMVC = function () {
                     M.test(views[v].parentView.rootID === null,
                         "View "+v+" has null rootID but parent's rootID is not null");
                 }
-                M.test(views[v].modelId === null,
-                    "View "+v+" has null rootID but modelId is not null");
+                if ((views[v].type!=='M.SpanView')&&(views[v].type!=='M.BreadcrumbView')) {
+                    M.test(views[v].value === null,
+                        "View "+v+" has null rootID but value is not null");
+                }
                 M.test(views[v].type != 'M.ListView',
                     "View "+v+" has null rootID but it is a ListView");
                 M.test(views[v].type != 'M.ListItemView',
@@ -418,8 +418,6 @@ $D.validateMVC = function () {
                         "View "+v+" is not in root-list, but has rootID different than parent");
                 }
                 if (views[v].type === 'M.ListView') {
-                    M.test(views[v].modelId == null,
-                        "ListView "+v+" has a not-null modelId");
                     M.test(views[v].childViews === null,
                         "View "+v+" has type ListView but has childViews not null");
                     M.test(typeof views[v].value === 'object',
@@ -454,8 +452,6 @@ $D.validateMVC = function () {
                                 "Unable to find id of DOM-child "+i+" of view "+v);
                             M.test(views[vid] !== undefined,
                                 "DOM-child "+i+" of view "+v+" is not in the views list: "+vid);
-                            M.test(views[vid].modelId === views[v].value.models[i].cid,
-                                "Parent-view "+v+" with DOMm-child id="+vid+" does not have the same modelId");
                         }
                     } else {
                         M.test(vElemParent.hasClass('collapsed'),
@@ -466,19 +462,12 @@ $D.validateMVC = function () {
                     }
 
                 } else if (views[v].type === 'M.ListItemView') {
-                    M.test(views[v].modelId != null,
-                        "ListItemView "+v+" has a null modelId");
-                    M.test(models[views[v].modelId] !== undefined,
-                        "View "+v+" has type ListView but modelId is not in models list");
-
-                    M.test(models[views[v].modelId] === views[v].value,
-                        "ListItemView "+v+" has modelId different than value");
 
                     M.test(views[v].value != null,
-                        "ListItemView "+v+" has null value though modelId = "+views[v].modelId);
+                        "ListItemView "+v+" has null value");
 
-                    M.test(models[views[v].modelId].attributes.children === views[v].children.value,
-                       "ListItemView "+v+" has modelId-children different than view-children");
+                    M.test(models[views[v].value.cid].attributes.children === views[v].children.value,
+                       "ListItemView "+v+" has value-children different than children-value");
 
                     M.test(views[v].parentView.type === 'M.ListView',
                         "View "+v+" has type ListItemView but parentView is not a ListView");
@@ -486,15 +475,13 @@ $D.validateMVC = function () {
                     M.test(views[v].parentView.value instanceof $D.OutlineNodeCollection,
                         "ListItemView "+v+" parent view does not have value OutlineNodeCollection");
 
-                    M.test(views[v].parentView.value._byId[views[v].modelId] === models[views[v].modelId],
-                        "ListItemView "+v+" parent view's collection does not include item's model ID "+views[v].modelId);
+                    M.test(views[v].parentView.value._byId[views[v].value.cid] === models[views[v].value.cid],
+                        "ListItemView "+v+" parent view's collection does not include item's model ID "+views[v].value.cid);
 
                     M.test(views[v].value != null,
                         "ListItemView "+v+" has no value");
                     M.test(typeof views[v].value === 'object',
                         "ListItemView "+v+" has invalid value (not an object)");
-                    M.test(views[v].value === models[views[v].modelId],
-                        "ListItemView "+v+" has a value that doesn't match its modelId");
                     foundit=false;
                     for (var i in views[v].value.views) {
                         if (views[v].value.views[i] === views[v]) {
@@ -502,7 +489,7 @@ $D.validateMVC = function () {
                         }
                     }
                     M.test(foundit,
-                        "View "+v+" is not found in corresponding model "+views[v].modelId+" views-list");
+                        "View "+v+" is not found in corresponding model "+views[v].value.cid+" views-list");
 
                     // view rootID must be correct for the view it's in
                     M.test(views[v].value.views[views[v].rootID] === views[v],
@@ -515,8 +502,9 @@ $D.validateMVC = function () {
                                 "ListItemView "+v+" does not have a valid parent's parent though it is not the outline-root");
                             M.test(views[v].parentView.parentView.type === 'M.ListItemView',
                                 "ListItemView "+v+" does not have a parent's parent that is also a ListItemView, nor is it the outline-root");
-                            M.test(models[views[v].parentView.parentView.modelId] === views[v].value.attributes.parent,
-                                "ListItemView "+v+" has a parent ListItemView with modelId "+views[v].parentView.parentView.modelId+" which does not match model-parent");
+                            M.test(models[views[v].parentView.parentView.value.cid] === views[v].value.attributes.parent,
+                                "ListItemView "+v+" has a parent ListItemView with model id "+views[v].parentView.parentView.value.cid+
+                                    " which does not match model-parent");
                         }
                     } else {
                         M.test(outlines[views[v].parentView.id]!=null,
@@ -530,8 +518,6 @@ $D.validateMVC = function () {
                     M.test(views[v].value === views[v].parentView.parentView.value.attributes.text,
                         "TextFieldView "+v+" does not match value "+views[v].value+" with listitem-parent");
                 } else {
-                    M.test(views[v].modelId === null,
-                        "View "+v+" is of type "+views[v].type+" but has modelId not null");
                 }
             }
         }

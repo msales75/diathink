@@ -1,3 +1,5 @@
+m_require("app/foundation/object.js");
+
 $D.keyboardSetup = M.Object.extend({
 
     /* hiddeninput: 'hiddeninput', */

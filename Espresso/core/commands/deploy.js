@@ -26,7 +26,6 @@ exports.options = {
 exports.run = function (options, positional) {
   var app = new (require('../app').App)(options);
   app.loadTheApplication();
-  app.loadTheMProject();
 
   app.build(function () {
     app.saveLocal(function () {

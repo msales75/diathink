@@ -83,6 +83,8 @@ UI Development:
  User-feedback
 Backtracing in UI (identify characteristics of image)
 
+* Resolve leaf-nodes by tapping leaf-node
+* Cross-out deadlinks
 
 Next:
 ---------
@@ -289,6 +291,32 @@ How do you organize discussions:
 
 
 --------
+
+
+* What about changing the conversation-anchor
+* What about starting a new conversation in the middle of another's content
+
+For flexibility:
+*  Add templates:
+   Allow templates which defines self&slots with trigger-functions on: create/delete/move/update/add-link/remove-link/
+    (support validation)
+  Edit templates in master-settings
+  To assign a template, drag template onto a compatible line
+For larger groups; more complex conversations:
+* Branching:
+  Fork by double-clicking a docked link
+  Comment can have link to cloned-link to request push from fork
+  Review/accept change
+  Can start new conversation for clone
+  Conversation gives permissions to view/edit outline-block, defines "document."
+
+  Side-comments living inside document? (Maybe links to document's conversation, shown in side-comments? Replies to part of it?)
+  Resolve obsolete conversation-comments?
+  Links from conversation that are not crossed out -- issues?
+
+  Later: Change following (attempt to apply your changes to similar ones)
+  Later: Migrating pieces of conversations retroactively?
+  How to branch conversations
 
 Likes & Concerns in threads
  (User-expertise?)

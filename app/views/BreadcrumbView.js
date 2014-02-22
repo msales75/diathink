@@ -18,7 +18,7 @@
  *
  * @extends M.View
  */
-
+m_require("app/foundation/view.js");
 
 M.BreadcrumbView = M.View.subclass(
     /** @scope M.BreadcrumbView.prototype */ {
@@ -29,13 +29,6 @@ M.BreadcrumbView = M.View.subclass(
          * @type String
          */
         type: 'M.BreadcrumbView',
-
-        /**
-         * This property specifies the recommended events for this type of view.
-         *
-         * @type Array
-         */
-        recommendedEvents: ['click', 'tap', 'vclick'],
 
         defineFromModel: function(model) {
             var crumb;
@@ -100,9 +93,6 @@ M.BreadcrumbView = M.View.subclass(
             var html = '';
             if(this.cssClass) {
                 html += ' class="' + this.cssClass + '"';
-            }
-            if(this.cssStyle) {
-                html += 'style="' + this.cssStyle + '"';
             }
             return html;
         }

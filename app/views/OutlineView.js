@@ -1,13 +1,11 @@
 
+m_require("app/views/list.js");
+m_require("app/views/list_item.js");
 
 $D.RecurseListTemplate = M.ListView.subclass({
     /* isTemplate: true, */
     isInset:true,
     listItemTemplateView:null,
-    contentBinding:{
-        target:$D.dummyController,
-        property:'listObject'
-    },
     items: 'models', // for Backbone.Collection compatibility
     idName:'cid' // for Backbone.Collection compatibility
 });

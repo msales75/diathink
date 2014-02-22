@@ -55,28 +55,35 @@ var that = this,
 
     // If current framework is 3rd party library ?!
     if(framework.library){
-        if(_library.refs.length === 1 &&_library.refs[0] === '*'){  // if wildcard: '*' is given, take all entries.
-         framework.files.forEach(function(file){
-            framework.app.librariesNamesForIndexHtml.push(file.getBaseName()+file.getFileExtension());
-        });
-       }else{ // loop the the refs array to determine the files to use.
-          framework.files.forEach(function(file){
-            var _indexOfFile = _library.refs.indexOf(file.getBaseName()+file.getFileExtension());
-                _akku.push(file.getBaseName()+file.getFileExtension());
-            if(_indexOfFile === -1){
-               framework.app.excludedFromCaching.push(file.getBaseName()+file.getFileExtension());
-            };
+        // MS - replace this to support single-file libraries
+        if (_library.refs) {
+            if(_library.refs.length === 1 &&_library.refs[0] === '*'){  // if wildcard: '*' is given, take all entries.
+                framework.files.forEach(function(file){
+                    framework.app.librariesNamesForIndexHtml.push(file.getBaseName()+file.getFileExtension());
+                });
+            }else{ // loop the the refs array to determine the files to use.
+                framework.files.forEach(function(file){
+                    var _indexOfFile = _library.refs.indexOf(file.getBaseName()+file.getFileExtension());
+                    _akku.push(file.getBaseName()+file.getFileExtension());
+                    if(_indexOfFile === -1){
+                        framework.app.excludedFromCaching.push(file.getBaseName()+file.getFileExtension());
+                    };
 
-         });
-         _library.refs.forEach(function(ref){
-             var _indexOfFile = _akku.indexOf(ref);  // crosscheck, if all files specified in the config file are existing.
-             if(_indexOfFile === -1){
-                console.log('WARN:'+that.style.cyan(' Third party file: ')+that.style.magenta(ref)+ that.style.cyan(' was specified, but cant be found in: "')
+                });
+                _library.refs.forEach(function(ref){
+                    var _indexOfFile = _akku.indexOf(ref);  // crosscheck, if all files specified in the config file are existing.
+                    if(_indexOfFile === -1){
+                        console.log('WARN:'+that.style.cyan(' Third party file: ')+that.style.magenta(ref)+ that.style.cyan(' was specified, but cant be found in: "')
                             +that.style.magenta('frameworks/'+framework.name)+that.style.cyan('" could be a typo!'));
-             }
-             framework.app.librariesNamesForIndexHtml.push(ref);     
-         });
-      }
+                    }
+                    framework.app.librariesNamesForIndexHtml.push(ref);
+                });
+        }
+      } else { // MS addition to handle single-file libraries
+            framework.files.forEach(function(file){
+                framework.app.librariesNamesForIndexHtml.push(file.getBaseName()+file.getFileExtension());
+            });
+        }
             
     }
     callback(framework);
