@@ -79,9 +79,68 @@ $D.PanelAction=$D.Action.extend({
     prevPanel: null,
     newPanel: null,
     options: {activeID: null, prevPanel: null, oldroot: null, newRoot: 'new'},
-    runinit2: function() {
+    contextStep: function() { // save old context here
+        this.leftPanel = $D.PanelManager.leftPanel;
+        this.nextPanel = $D.PanelManager.nextpanel[this.prevPanel];
+    },
+    validateOldContext: function() {
+        if (!this.options.undo) {
+            if (this.leftPanel !== $D.PanelManager.leftPanel) {
+                console.log("ERROR: leftPanel is not what it should be before op");
+                debugger;
+            }
+            if ($D.PanelManager.nextpanel[this.prevPanel] !==this.nextPanel) {
+                console.log("ERROR: leftPanel is not before nextPanel before op");
+                debugger;
+            }
+            if ($D.PanelManager.nextpanel[this.newPanel] !== undefined) {
+                console.log("ERROR: new panel is not undefined before op");
+                debugger;
+            }
+        } else {
+            if (this.postLeftPanel !== $D.PanelManager.leftPanel) {
+                console.log("ERROR: leftPanel is not what it should be before undo");
+                debugger;
+            }
+        }
+    },
+    validateNewContext: function() {
+        if (!this.postLeftPanel) {this.postLeftPanel = $D.PanelManager.leftPanel;}
+        if (this.options.undo) {
+            if (this.leftPanel !== $D.PanelManager.leftPanel) {
+                console.log("ERROR: leftPanel is not what it should be after undo");
+                debugger;
+            }
+            if ($D.PanelManager.nextpanel[this.prevPanel] !==this.nextPanel) {
+                console.log("ERROR: leftPanel is not before nextPanel after undo");
+                debugger;
+            }
+            if ($D.PanelManager.nextpanel[this.newPanel] !== undefined) {
+                console.log("ERROR: new panel is not undefined after undo");
+                debugger;
+            }
+        } else {
+            if (this.postLeftPanel !== $D.PanelManager.leftPanel) {
+                console.log("ERROR: leftPanel is not what it should be after op");
+                debugger;
+            }
+        }
     },
     validateOptions: function() {
+        // todo: check leftPanel
+        var PM = $D.PanelManager;
+        var o = this.options;
+        if (!o.redo && !o.undo) {
+            this.leftPanel = PM.leftPanel;
+        }
+        if (o.undo) {}
+        if (o.redo) {
+            if (this.leftPanel !== PM.leftPanel) {
+                console.log("leftPanel doesn't match");
+                debugger;
+            }
+        }
+
         // activeID
         // oldRoot
         // prevPanel
@@ -192,6 +251,49 @@ $D.PanelAction=$D.Action.extend({
         });
     },
     execView: function(outline) { // mutually exclusive with restoreViewContext
+        var that = this;
+        this.addQueue(['view', outline.rootID], ['newModelAdd', 'anim'], function() {
+            var r= that.runtime;
+        });
+    }
+});
+
+$D.SlideAction = $D.Action.extend({
+    type:'PanelSlide',
+    oldLeftPanel:null,
+    options: {direction:null},
+    execModel: function() {
+        var that = this;
+        this.addQueue('newModelAdd', ['context'], function() {
+            var PM = $D.PanelManager;
+            var grid = M.ViewManager.getCurrentPage().content.grid;
+            var o = that.options;
+            var dir;
+            if (o.direction==='right') {
+                if (o.undo) {
+                    dir = 'left';
+                } else {
+                    dir = 'right';
+                }
+            } else if (o.direction==='left') {
+                if (o.undo) {
+                    dir = 'right';
+                } else {
+                    dir = 'left';
+                }
+            }
+            if (dir==='right') {
+                PM.leftPanel = PM.prevpanel[PM.leftPanel];
+                $D.redrawPanels('right');
+            } else if (dir==='left') {
+                PM.leftPanel = PM.nextpanel[PM.leftPanel];
+                $D.redrawPanels('left');
+            }
+            $D.updatePanelButtons();
+        });
+
+    },
+    execView: function(outline) {
         var that = this;
         this.addQueue(['view', outline.rootID], ['newModelAdd', 'anim'], function() {
             var r= that.runtime;

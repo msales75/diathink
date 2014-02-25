@@ -2,9 +2,8 @@
   <library name="Generated files" type="javaScript">
     <properties>
       <sourceFilesUrls>
-        <item url="file://$PROJECT_DIR$/build/1392947896966/jquery.mobile.scrollview.js" />
-        <item url="file://$PROJECT_DIR$/frameworks/jquery-ui/jquery.mobile.scrollview.js" />
-        <item url="file://$PROJECT_DIR$/build/1392876709811/jquery.mobile.scrollview.js" />
+        <item url="file://$PROJECT_DIR$/app/events.js" />
+        <item url="file://$PROJECT_DIR$/app/foundation/view2.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
@@ -32,8 +31,10 @@
       <root url="file://$PROJECT_DIR$/build/1392872692667/jquery.mobile.scrollview.js" />
       <root url="file://$PROJECT_DIR$/build/1392873468242/jquery.mobile.scrollview.js" />
       <root url="file://$PROJECT_DIR$/build/1392947896966/jquery.mobile.scrollview.js" />
-      <root url="file://$PROJECT_DIR$/app/scrolling/jquery.mobile.scrollview.js" />
       <root url="file://$PROJECT_DIR$/build/1392876709811/jquery.mobile.scrollview.js" />
+      <root url="file://$PROJECT_DIR$/app/scrolling/jquery.mobile.scrollview.js" />
+      <root url="file://$PROJECT_DIR$/app/events.js" />
+      <root url="file://$PROJECT_DIR$/app/foundation/view2.js" />
     </CLASSES>
     <SOURCES />
   </library>

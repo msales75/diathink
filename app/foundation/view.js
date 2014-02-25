@@ -8,7 +8,6 @@ M.View = $D.Object.subclass({
     isView: YES,
     value: null,
     childViews: null,
-    hasFocus: NO,
     id: null,
 
     computedValue: null,
@@ -197,58 +196,6 @@ M.View = $D.Object.subclass({
     	}
     },
 
-    getValues: function() {
-        var values = {};
-        if(this.childViews) {
-            var childViews = this.getChildViewsAsArray();
-            for(var i in childViews) {
-                if(Object.getPrototypeOf(this[childViews[i]]).hasOwnProperty('getValue')) {
-                    values[childViews[i]] = this[childViews[i]].getValue();
-                }
-                if(this[childViews[i]].childViews) {
-                    var newValues = this[childViews[i]].getValues();
-                    for(var value in newValues) {
-                        values[value] = newValues[value];
-                    }
-                }
-            }
-        }
-        return values;
-    },
-
-    getValue: function() {
-        
-    },
-
-    getIds: function() {
-        var ids = {};
-        if(this.childViews) {
-            var childViews = this.getChildViewsAsArray();
-            for(var i in childViews) {
-                if(this[childViews[i]].id) {
-                    ids[childViews[i]] = this[childViews[i]].id;
-                }
-                if(this[childViews[i]].childViews) {
-                    var newIds = this[childViews[i]].getIds();
-                    for(var id in newIds) {
-                        ids[id] = newIds[id];
-                    }
-                }
-            }
-        }
-        return ids;
-    },
-
-
-    clearHtml: function() {
-        this.html = '';
-        if(this.childViews) {
-            var childViews = this.getChildViewsAsArray();
-            for(var i in childViews) {
-                this[childViews[i]].clearHtml();
-            }
-        }
-    },
 
     computeValue: function() {
         if(this.computedValue) {
@@ -324,37 +271,8 @@ M.View = $D.Object.subclass({
     style: function() {
 
     },
-
-    gotFocus: function() {
-        this.hasFocus = YES;
-    },
-
-    lostFocus: function() {
-        this.hasFocus = NO;
-    },
-
     secure: function(str) {
         return str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    },
-
-    nl2br: function(str) {
-        if(str) {
-            if(typeof(str) !== 'string') {
-                str = String(str);
-            }
-            return str.replace(/\n/g, '<br />');
-        }
-        return str;
-    },
-
-    tab2space: function(str) {
-        if(str) {
-            if(typeof(str) !== 'string') {
-                str = String(str);
-            }
-            return str.replace(/\t/g, '&#160;&#160;&#160;&#160;');
-        }
-        return str;
     },
 
     addCssClass: function(cssClass) {

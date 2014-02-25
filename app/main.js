@@ -18,6 +18,27 @@ if (nav.userAgent.match(/iPhone/i) ||
 }
 $D.is_touch_device = 'ontouchstart' in document.documentElement;
 
+$D.setFocus = function(view) {
+    var elem = null;
+    if (view) {
+        if (view.type==='M.ListItemView') {
+            elem = $('#'+view.header.name.text.id).get(0);
+        } else if (view.type==='M.TextEditView') {
+            elem = $('#'+view.id).get(0);
+        }
+    }
+    if ($D.focused && (elem !== $D.focused)) {
+        if (M.ViewManager.getViewById($D.focused.id)) {
+            M.ViewManager.getViewById($D.focused.id).blur();
+        }
+    }
+    if (elem && (elem !== $D.focused)) {
+        M.ViewManager.getViewById(elem.id).focus();
+        $D.focused = elem;
+    } else if (!elem) {
+        $D.focused = null;
+    }
+};
 
 M.assert = function (test) {
     if (!test) {
@@ -192,7 +213,7 @@ $D.handleKeypress = function (elem, e) {
             var value = $(elem).val();
             $(elem).val(value.substr(0, start) + key + value.substr(end));
             $(elem).text($(elem).val());
-            $(elem).setSelection(start + 1, start + 1);
+            $(elem).setCursor(start + 1);
         }
     }
 };
@@ -290,7 +311,7 @@ $D.handleKeydown = function (elem, e) {
             if (end > 0) {
                 $(elem).val(value.substr(0, start - 1) + value.substr(end));
                 $(elem).text($(elem).val());
-                $(elem).setSelection(start - 1, start - 1);
+                $(elem).setCursor(start - 1);
             }
         }
         // console.log("simulate backspace");
@@ -348,6 +369,7 @@ $D.app.createPage = function (pageName, root) {
                 vmouseup = 'touchend';
             }
             var vmouse = vmousedown + ' ' + vmouseup;
+
 
             $('#' + id).on(vmousedown, 'textarea', function (e) {
                 // todo: does this have performance issues (on Firefox) - stop using this?
@@ -454,16 +476,38 @@ $D.app.createPage = function (pageName, root) {
                 }
             });
             $('#' + id).on(tap, '.left-button', function (e) {
-                var PM = $D.PanelManager;
-                PM.leftPanel = PM.prevpanel[PM.leftPanel];
-                $D.updatePanelButtons();
-                $D.redrawPanels('right');
+                $D.ActionManager.schedule(
+                    function () {
+                        if ($D.focused) {
+                            return $D.Action.checkTextChange($D.focused.id);
+                        } else {
+                            return null;
+                        }
+                    },
+                    function () {
+                        return {
+                            action: $D.SlideAction,
+                            direction: 'right',
+                            focus: false
+                        };
+                    });
             });
             $('#' + id).on(tap, '.right-button', function (e) {
-                var PM = $D.PanelManager;
-                PM.leftPanel = PM.nextpanel[PM.leftPanel];
-                $D.updatePanelButtons();
-                $D.redrawPanels('left');
+                $D.ActionManager.schedule(
+                    function () {
+                        if ($D.focused) {
+                            return $D.Action.checkTextChange($D.focused.id);
+                        } else {
+                            return null;
+                        }
+                    },
+                    function () {
+                        return {
+                            action: $D.SlideAction,
+                            direction: 'left',
+                            focus: false
+                        };
+                    });
             });
 
             $('#' + id).on(tap, '.ui-breadcrumb-link', function (e) {

@@ -3,18 +3,12 @@ m_require("app/foundation/view.js");
 M.ButtonView = M.View.subclass({
 
     type: 'M.ButtonView',
-
     isActive: NO,
-
     isIconOnly: NO,
-
     hyperlinkType: null,
-
     hyperlinkTarget: null,
-
     tag: null,
-
-    dataTheme: '',
+    isEnabled: true,
 
     render: function() {
         this.computeValue();
@@ -32,12 +26,9 @@ M.ButtonView = M.View.subclass({
     theme: function() {
         /* theme only if not already done */
         if(!$('#' + this.id).hasClass('ui-btn')) {
-            // MS: replace buttonMarkup with new theme?
             $('#'+this.id).addClass('ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all ui-btn-icon-notext');
             $('#'+this.id).children('span').addClass('ui-btn-inner');
             $('#'+this.id).children('span').children('span').addClass('ui-btn-text');
-            // $('#' + this.id).buttonMarkup();
-
         }
     },
 
@@ -51,9 +42,6 @@ M.ButtonView = M.View.subclass({
         }
         if(this.cssClass) {
             html += ' class="' + this.cssClass + '"';
-        }
-        if(this.dataTheme) {
-            html += ' data-theme="' + this.dataTheme + '"';
         }
         if(this.isIconOnly) {
             html += ' data-iconpos="notext"';

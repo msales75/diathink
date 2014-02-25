@@ -33,10 +33,6 @@ M.SpanView= M.View.subclass({
         setValueFromDOM: function(id, event, nextEvent) {
             this.value = this.secure($('#' + this.id).text());
             this.delegateValueUpdate();
-        },
-
-        getValue: function() {
-            return this.value;
         }
 
     });

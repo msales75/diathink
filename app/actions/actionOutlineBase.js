@@ -454,19 +454,6 @@ $D.OutlineAction = $D.Action.extend({
         }
         return context;
     },
-    focus: function() {
-        // by default, focus on activeID in newRoot
-        var newRoot;
-        if (this.options.undo) {
-            newRoot = this.options.oldRoot;
-        } else {
-            newRoot = this.options.newRoot;
-        }
-        var lineView = this.getLineView(this.options.activeID, newRoot);
-        if (!lineView) { return; }
-        var id = lineView.header.name.text.id;
-        $('#'+id).focus();
-    },
     newModel: function() {
         var activeModel = new $D.OutlineNodeModel({text: this.options.text, children: null});
         this.options.activeID = activeModel.cid;

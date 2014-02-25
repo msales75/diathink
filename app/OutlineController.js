@@ -57,10 +57,11 @@ $D.PanelManager = M.Object.extend({
           delete this.deleted[newid];
       }
 
-      // this.updateRoots();
-
       // Update leftPanel if necessary
-      // decide whether we push-right or push-left?
+      // decide whether we push-right or push-left
+      // MUST slide right if there is no rightPanel
+      // SHOULD slide left if it's put after last panel
+      // Default slide right
       if (this.count===1) { // first panel
           this.leftPanel = newid;
           return 'right';
@@ -74,14 +75,14 @@ $D.PanelManager = M.Object.extend({
       if (newOffset < leftOffset) {
           this.leftPanel = newid;
           return 'right'; // push panels to right
-      } else if (newOffset >= leftOffset + this.panelsPerScreen) {
+      } else if (newOffset >= leftOffset + this.panelsPerScreen) { // last panel on screen
           this.leftPanel = this.nextpanel[this.leftPanel];
           return 'left'; // push panels to left
       } else {
           return 'right'; // push right with no change to leftPanel
       }
   },
-  remove: function(id) {
+  remove: function(id, slide) {
       if ((this.nextpanel[id]===undefined) || (this.prevpanel[id]===undefined) || (id==='')) {
           console.log('Error removing panel');
           debugger;
@@ -89,25 +90,31 @@ $D.PanelManager = M.Object.extend({
       }
 
       // Update leftPanel after removal
-      // if there are enough panels
-      // to the right to fill the screen,
-      // move them left.  else fill from right, changing leftPanel.
-      var direction = 'left';
-      var offset = this.getRank(this.leftPanel);
+      var offset = this.getRank(this.leftPanel)-1;
+      var isPanelToLeft = !(this.prevpanel[this.leftPanel]==='');
+      var isPanelToRight = (this.count - offset > this.panelsPerScreen);
+      var direction = 'left'; // default
+      if (!isPanelToLeft) { // must slide left
+          direction = 'left';
+      } else if (isPanelToLeft && !isPanelToRight) { // must slide right
+          direction = 'right';
+      } else {
+          if (slide==='right') {
+              direction='right';
+          }
+      }
+
       if (this.leftPanel === id) { // if leftPanel is being removed
-          if ((this.prevpanel[this.leftPanel]==='') ||
-              (this.count-1 >= this.panelsPerScreen + (offset-1))) {
+          if (direction==='left') {
               this.leftPanel = this.nextpanel[this.leftPanel];
-              direction = 'left';
           } else {
               this.leftPanel = this.prevpanel[this.leftPanel];
-              direction = 'right';
           }
-      } else { // we are not deleting the leftPanel, but might change it
-          if ((this.prevpanel[this.leftPanel]!=='') &&
-              (this.count-1 < this.panelsPerScreen + (offset-1))) {
+      } else {
+          if (direction==='left') {
+              // leftPanel is unchanged.
+          } else if (direction==='right') {
               this.leftPanel = this.prevpanel[this.leftPanel];
-              direction = 'right';
           }
       }
 
@@ -121,7 +128,7 @@ $D.PanelManager = M.Object.extend({
       this.deleted[id] = id;
       return direction;
   },
-  moveAfter: function(id, previousid) {
+  moveAfter: function(id, previousid) { // currently unused
       if ((this.nextpanel[id]===undefined) || (this.prevpanel[id]===undefined) || (id==='')) {
           console.log('Error moving panel');
           debugger;

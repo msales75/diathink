@@ -442,7 +442,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                 var right = left + this.scrollPanel.width();
                 if (!(this.positionAbs.left >= left && this.positionAbs.left <= right)) {
                     this.scrollPanel = null;
-                    // console.log("Clearing scrollPanel");
+                    console.log("Clearing scrollPanel");
                 }
             }
             if (!this.scrollPanel) {
@@ -451,14 +451,13 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     var right = left + $(this).width();
                     if (self.positionAbs.left >= left && self.positionAbs.left <= right) {
                         self.scrollPanel = $(this);
-                        // console.log("Changing scrollPanel to ");
+                        console.log("Changing scrollPanel to "+this.id);
                         // console.log(self.scrollPanel);
                     }
                 });
             }
             // todo: initialize lists for each panel - outside nestedSortable?
 
-            // TODO: Don't require this.scrollPanel for vertical-lines?
             if (this.scrollPanel) {
                 // do we need to initialize the panel?
                 var panelid = this.scrollPanel.attr('id');
@@ -710,8 +709,8 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     y += M.ViewManager.getViewById(parentPanel.attr('id')).scrollY  -
                         this.panelScrollStart[parentPanel.attr('id')];
                     if (((x>= d.left)&&(x<= d.right)) && ((y>= d.top)&&(y<= d.bottom))) {
-                        if (parentPanel.get(0) !==
-                            this.scrollPanel.get(0)) {
+                        if (this.scrollPanel && (parentPanel.get(0) !==
+                            this.scrollPanel.get(0))) {
                             console.log("ERROR: Active panel does not match item");
                         }
                         return d;

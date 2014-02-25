@@ -260,14 +260,6 @@ M.TextEditView = M.View.subclass({
 
         setValueFromDOM: function(id, event, nextEvent) {
             this.value = this.secure($('#' + this.id).val());
-        },
-        getValue: function() {
-            return this.value;
-        },
-        setLabel: function(txt){
-            if(this.label){
-                $('label[for="' + this.id + '"]').html(txt);
-            }
         }
 
     });

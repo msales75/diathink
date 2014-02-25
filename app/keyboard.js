@@ -86,7 +86,7 @@ $D.keyboardSetup = M.Object.extend({
         return keyboardHeight;
     },
 
-    focus: function() {
+    focus: function() { // MS currently never called
         var self = this;
         if ($D.is_touch_device) {
             if (! this.is_mobile_ios) { // not-ios; check for keyboard-resize-event
@@ -114,7 +114,7 @@ $D.keyboardSetup = M.Object.extend({
         }
     },
 
-    blur: function() {
+    blur: function() { // MS currently never called
         // keep track of selected textarea, and define blur on it,
         // especially a blur without any keyboard event?
             // did user close keyboard?

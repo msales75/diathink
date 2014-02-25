@@ -319,6 +319,7 @@ $D.Action = Backbone.RelationalModel.extend({
         }
         var lineView = this.getLineView(this.options.activeID, newRoot);
         if (!lineView) { return; }
+        $D.setFocus(lineView);
         var id = lineView.header.name.text.id;
         $('#'+id).focus();
     },
