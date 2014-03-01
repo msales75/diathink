@@ -13,9 +13,9 @@ $D.PanelManager = M.Object.extend({
   deleted: {},
   updateRoots: function() {
       var p=this.leftPanel;
-      while ((p !== '')&&(M.ViewManager.getViewById(p))) {
-          this.rootViews[p] = M.ViewManager.getViewById(p).outline.alist.id;
-          this.rootModels[p] = M.ViewManager.getViewById(p).rootModel;
+      while ((p !== '')&&(View.get(p))) {
+          this.rootViews[p] = View.get(p).outline.alist.id;
+          this.rootModels[p] = View.get(p).value;
           p = this.nextpanel[p];
       }
   },
@@ -181,7 +181,7 @@ $D.OutlineManager = M.Object.extend({
 
 });
 
-
+// the delegation here is confusing: who is resposiblef or what?
 $D.OutlineController = M.Object.extend({
     type: '$D.OutlineController',
     rootID: null,
@@ -197,7 +197,7 @@ $D.OutlineController = M.Object.extend({
         $D.OutlineManager.remove(this.rootID);
         this.deleted = true;
         // destroy the outline-entries but not the root
-        view = M.ViewManager.getViewById(this.rootID);
+        view = View.get(this.rootID);
         if (view.value) {
             models = view.value.models;
             for (i=0; i<models.length; ++i) {
@@ -218,15 +218,7 @@ $D.OutlineController = M.Object.extend({
         if (!this.data) {return null;}
         else if (this.data[key] == null) {return null;}
         else {return this.data[key];}
-    },
-    listObject: [] // list-data for top-level of outline
-});
-
-$D.dummyController = M.Object.extend({
-    dummyListClicked:function (id, nameId) {
-        //console.log('You clicked on the list item with the DOM id: ', id, 'and has the name', nameId);
-    },
-    listObject:[]
+    }
 });
 
 // nest horizontal pages, expand/contract? drag/drop?

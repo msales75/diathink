@@ -239,7 +239,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
     //   to calculate panel and offsets
     _recurseItems: function(id, f) {
         var that = this;
-        var ulView = M.ViewManager.getViewById(id);
+        var ulView = View.get(id);
         var ulElem = $('#'+id);
         ulElem.children.each(function() {
             that._recurseOffset();
@@ -252,13 +252,13 @@ $.widget2("ui.sortable", $.ui.mouse, {
 		var items = this.items;
 		var queries = [[$.isFunction(this.options.items) ? this.options.items.call(this.element[0], event, { item: this.currentItem }) : $(this.options.items, this.element), this]];
         /*
-        var panelNames = M.ViewManager.getCurrentPage().content.getChildViewsAsArray();
+        var panelNames = View.getCurrentPage().content.getChildViewsAsArray();
         this.panels = [];
         for (i=0; i<panelNames.length; ++i) {
-            this.panels.push($('#'+M.ViewManager.getCurrentPage().content[panelNames[i]].id)[0]);
+            this.panels.push($('#'+View.getCurrentPage().content[panelNames[i]].id)[0]);
         }
         this.panels.each(function() {
-            that._recurseItems(M.ViewManager.getViewById(this.id).outline.alist.id,
+            that._recurseItems(View.get(this.id).outline.alist.id,
                 function() {
 
                 });
@@ -270,7 +270,7 @@ $.widget2("ui.sortable", $.ui.mouse, {
 			var _queries = queries[i][0];
 
 			for (var j=0, queriesLength = _queries.length; j < queriesLength; j++) {
-                // var scrollContainer = M.ViewManager.getViewById(_queries[j].id).content;
+                // var scrollContainer = View.get(_queries[j].id).content;
                 // scrollContainer.getChildViews
                 // items.push(item);
                 items.push({

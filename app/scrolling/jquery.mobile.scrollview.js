@@ -1,3 +1,4 @@
+///<reference path="../../frameworks/m.ts"/>
 function getCurrentTime() {
     return (new Date()).getTime();
 }
@@ -18,7 +19,7 @@ var scrollview = (function () {
             updateEventName: "scrollupdate",
             stopEventName: "scrollstop",
             /* updateScroll: null, */ // MS external function for each scroll-move
-            eventType: $.support.touch ? "touch" : "mouse",
+            eventType: 'ontouchstart' in document.documentElement ? "touch" : "mouse",
             showScrollBars: true,
             pagingEnabled: false,
             delayedClickSelector: "a,input,textarea,select,button,.ui-btn",
@@ -34,6 +35,7 @@ var scrollview = (function () {
     };
 
     scrollview.prototype._create = function () {
+        // this stuff affects DOM - can't be done until defined
         this._$clip = $(this.element).addClass("ui-scrollview-clip");
         var $child = this._$clip.children();
         if ($child.length > 1) {
@@ -236,11 +238,11 @@ var scrollview = (function () {
 
     scrollview.prototype._getScrollHierarchy = function () {
         var svh = [];
-        this._$clip.parents(".ui-scrollview-clip").each(function () {
-            var d = $(this).data("scrollview");
-            if (d)
-                svh.unshift(d);
-        });
+
+        // this._$clip.parents(".ui-scrollview-clip").each(function () {
+        //     var d = $(this).data("scrollview");
+        //     if (d) svh.unshift(d);
+        // });
         return svh;
     };
 
@@ -543,7 +545,7 @@ var scrollview = (function () {
             if ($.is_touch_device) {
                 tap = "tap";
             }
-            this._$clickEle.trigger(tap);
+            this._$clickEle.trigger("tap");
             // TODO: THIS should depend on whether or not we're using mobile.
         }
 

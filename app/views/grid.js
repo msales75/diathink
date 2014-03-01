@@ -1,81 +1,81 @@
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+///<reference path="../foundation/view.ts"/>
 m_require("app/foundation/view.js");
 
-M.TWO_COLUMNS = {
+var TWO_COLUMNS = {
     cssClass: 'ui-grid-a',
     columns: {
-        0: 'ui-block-a',
-        1: 'ui-block-b'
+        scroll1: 'ui-block-a',
+        scroll2: 'ui-block-b'
     }
 };
 
-M.THREE_COLUMNS = {
+var THREE_COLUMNS = {
     cssClass: 'ui-grid-b',
     columns: {
-        0: 'ui-block-a',
-        1: 'ui-block-b',
-        2: 'ui-block-c'
+        scroll1: 'ui-block-a',
+        scroll2: 'ui-block-b',
+        scroll3: 'ui-block-c'
     }
 };
 
-M.FOUR_COLUMNS = {
+var FOUR_COLUMNS = {
     cssClass: 'ui-grid-c',
     columns: {
-        0: 'ui-block-a',
-        1: 'ui-block-b',
-        2: 'ui-block-c',
-        3: 'ui-block-d'
+        scroll1: 'ui-block-a',
+        scroll2: 'ui-block-b',
+        scroll3: 'ui-block-c',
+        scroll4: 'ui-block-d'
     }
 };
 
-M.GridView = M.View.subclass({
-
-    type: 'M.GridView',
-
-    layout: null,
-    
-    cssClass: '',
-
-    render: function() {
+var GridView = (function (_super) {
+    __extends(GridView, _super);
+    function GridView() {
+        _super.apply(this, arguments);
+        this.type = 'GridView';
+    }
+    GridView.prototype.render = function () {
         this.html = '<div id="' + this.id + '" ' + this.style() + '>';
-
         this.renderChildViews();
-
         this.html += '</div>';
-
         return this.html;
-    },
+    };
 
-    renderChildViews: function() {
-        if(this.childViews) {
-            if(this.layout) {
-                var arr = this.childViews.split(' ');
-                for(var i in this.layout.columns) {
-                    if(this[arr[i]]) {
-                        this.html += '<div class="' + this.layout.columns[i] + '">';
-
-                        this[arr[i]]._name = arr[i];
-                        this.html += this[arr[i]].render();
-
-                        this.html += '</div>';
-                        // MS change GridView to fix parentView bug
-                        this[arr[i]].parentView = this;
-                    }
+    GridView.prototype.renderChildViews = function () {
+        if (this.layout) {
+            for (var i in this.layout.columns) {
+                var child = this[i];
+                if (child) {
+                    this.html += '<div class="' + this.layout.columns[i] + '">';
+                    child._name = i;
+                    this.html += child.render();
+                    this.html += '</div>';
+                    child.parentView = this;
                 }
-            } else {
-                M.Logger.log('No layout specified for GridView (' + this.id + ')!', M.WARN);
             }
+        } else {
+            M.Logger.log('No layout specified for GridView (' + this.id + ')!', M.WARN);
         }
-    },
+        return this.html;
+    };
 
-    theme: function() {
-        this.themeChildViews();
-    },
+    GridView.prototype.theme = function () {
+        this.themeChildViews(null);
+    };
 
-    style: function() {
-        if(this.layout) {
+    GridView.prototype.style = function () {
+        if (this.layout) {
             var html = 'class="' + this.layout.cssClass + ' ' + this.cssClass + '"';
             return html;
         }
-    }
-
-});
+        return '';
+    };
+    return GridView;
+})(View);
+//# sourceMappingURL=grid.js.map

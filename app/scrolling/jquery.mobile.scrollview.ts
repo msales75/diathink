@@ -1,4 +1,5 @@
-declare var $, _, $D;
+///<reference path="../../frameworks/m.ts"/>
+
 
 function getCurrentTime() {
     return (new Date()).getTime();
@@ -59,7 +60,7 @@ class scrollview {
         stopEventName: "scrollstop",
         /* updateScroll: null, */ // MS external function for each scroll-move
 
-        eventType: $.support.touch ? "touch" : "mouse",
+        eventType: 'ontouchstart' in document.documentElement ? "touch" : "mouse",
 
         showScrollBars: true,
 
@@ -74,6 +75,8 @@ class scrollview {
     }
 
     private _create() {
+
+        // this stuff affects DOM - can't be done until defined
         this._$clip = $(this.element).addClass("ui-scrollview-clip");
         var $child = this._$clip.children();
         if ($child.length > 1) {
@@ -285,10 +288,10 @@ class scrollview {
 
     _getScrollHierarchy() {
         var svh = [];
-        this._$clip.parents(".ui-scrollview-clip").each(function () {
-            var d = $(this).data("scrollview");
-            if (d) svh.unshift(d);
-        });
+       // this._$clip.parents(".ui-scrollview-clip").each(function () {
+       //     var d = $(this).data("scrollview");
+       //     if (d) svh.unshift(d);
+       // });
         return svh;
     }
 

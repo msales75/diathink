@@ -1,5 +1,5 @@
 
-jQuery.escapeHtml = function(text) {
+var escapeHtml = function(text) {
     return text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -169,7 +169,7 @@ $(window).resize(function() {
         return;
     }
     // get scroll-container
-    var page = M.ViewManager.getCurrentPage();
+    var page = View.getCurrentPage();
     if (!page) {return;}
     var scrollContainer = $('#'+page.content.grid.id);
     if (scrollContainer.length===0) {return;}
@@ -204,7 +204,7 @@ $(window).resize(function() {
     if (changeWidth || changeFont) {
         (function() {
             $('textarea').each(function() {
-                M.ViewManager.getViewById($(this).attr('id')).fixHeight();
+                View.get($(this).attr('id')).fixHeight();
             });
         })();
     }
@@ -220,7 +220,7 @@ $(window).resize(function() {
     // move textarea to current location
     //    (near screen top if focus is working)
     /*
-    var input = $('#'+M.ViewManager.getCurrentPage().hiddeninput.id);
+    var input = $('#'+View.getCurrentPage().hiddeninput.id);
     if (input && $D.focused) {
         input.css('left', Math.round($($D.focused).offset().left)+'px')
             .css('top', Math.round($($D.focused).offset().top)+'px')

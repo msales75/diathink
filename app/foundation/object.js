@@ -123,24 +123,5 @@ M.Object =
     /**
      * This method will remove an object from the DOM and then delete it. 
      */
-    destroy: function(elem) {
-        if(this.id) {
-            if (!elem) {elem = $('#'+this.id)[0];}
-            var childViews = this.getChildViewsAsArray();
-            for(var i in childViews) {
-                if(this[childViews[i]]) {
-                    if (elem) {
-                        this[childViews[i]].destroy($(elem).find('#'+this[childViews[i]].id)[0]);
-                    } else {
-                        this[childViews[i]].destroy();
-                    }
-                }
-            }
-            if (elem) {
-                $(elem).remove();
-            }
-            M.ViewManager.unregister(this);
-        }
-    }
 
 };

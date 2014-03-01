@@ -44,7 +44,6 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
 		},
 
 		_create: function() {
-			this.element.data('ui-sortable', this.element.data('mjs-nestedSortable'));
 
 			// mjs - prevent browser from freezing if the HTML is not correct
             /*
@@ -69,9 +68,6 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
         },
 
 		_destroy: function() {
-			this.element
-				.removeData("mjs-nestedSortable")
-				.removeData("ui-sortable");
 			return $.ui.sortable.prototype._destroy.apply(this, arguments);
 		},
 
@@ -122,7 +118,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     d.bottom = item.top + ($D.lineHeight/2);
                     d.left = item.left + $D.lineHeight; // stay clear of handle
                     d.right = item.left+item.width-$D.lineHeight/2;
-                    d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
+                    d.parentView = View.get(item.item[0].id).parentView.parentView;
                 } else if (type==='dropbottom') {
                     item[type] = $('<div></div>').appendTo(canvas)
                         .addClass('dropborder')
@@ -134,7 +130,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     d.bottom = item.top + item.height + 0.5*$D.lineHeight;
                     d.left = item.left + $D.lineHeight; // stay clear of handle
                     d.right = item.left+item.width-$D.lineHeight/2;
-                    d.parentView = M.ViewManager.getViewById(item.item[0].id).parentView.parentView;
+                    d.parentView = View.get(item.item[0].id).parentView.parentView;
                 } else if (type==='drophandle') {
                     item[type] = $('<div></div>').appendTo(canvas)
                         .addClass('droparrow')
@@ -144,7 +140,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     d.bottom = item.top + $D.lineHeight;
                     d.left = item.left;
                     d.right = item.left + $D.lineHeight;
-                    d.parentView = M.ViewManager.getViewById(item.item[0].id);
+                    d.parentView = View.get(item.item[0].id);
                 } else if (type==='dropleft') {
                     item[type] = $('<div></div>').appendTo(canvas)
                         .addClass('dropborder')
@@ -187,7 +183,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
         },
         _emptyDropLayers: function() {
             $(this.options.dropLayers).html('');
-            var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+            var drawlayer = $('#'+View.getCurrentPage().drawlayer.id);
             drawlayer.children('.dropborder').remove();
         },
         _validateDropItem: function(itemEl) {
@@ -199,8 +195,8 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
             }
 
             // cannot drop the current-item inside itself
-            var activeModel = M.ViewManager.getViewById(this.currentItem.attr('id')).value;
-            var itemModel = M.ViewManager.getViewById(itemEl.attr('id')).value;
+            var activeModel = View.get(this.currentItem.attr('id')).value;
+            var itemModel = View.get(itemEl.attr('id')).value;
 
             var model = itemModel;
             while ((model != null)&&(model !== activeModel)) {
@@ -250,10 +246,10 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                 that._showDropLines();
                 $D.lineHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
                 // foreach M.ScrollView, cache offset top/left
-                var panelParent = M.ViewManager.getCurrentPage().content.grid;
+                var panelParent = View.getCurrentPage().content.grid;
                 var canvas1 = panelParent.scroll1.outline.droplayer;
                 var canvas2 = panelParent.scroll2.outline.droplayer;
-                var canvas0 = M.ViewManager.getCurrentPage().drawlayer;
+                var canvas0 = View.getCurrentPage().drawlayer;
                 canvas1.cacheOffset = $('#'+canvas1.id).offset();
                 canvas2.cacheOffset = $('#'+canvas2.id).offset();
                 canvas0.cacheOffset = $('#'+canvas0.id).offset();
@@ -264,7 +260,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                 for (var n= 1, p=PM.leftPanel;
                      (p!=='') && (n<=PM.panelsPerScreen);
                      ++n, p = PM.nextpanel[p]) {
-                    panel = M.ViewManager.getViewById(p);
+                    panel = View.get(p);
                     panel.cachePosition();
                     panel.dropleft = null;
                     panel.dropright = null;
@@ -297,7 +293,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     var validate = that._validateDropItem(itemEl);
                     if (!validate) {continue;}
 
-                    var view = M.ViewManager.getViewById(item.parentPanel[0].id);
+                    var view = View.get(item.parentPanel[0].id);
                     var canvas = $('#'+view.droplayer.id);
 
                     if (validate.top) {
@@ -366,8 +362,8 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
             for (var n= 1, p=PM.leftPanel;
                  (p!=='') && (n<=PM.panelsPerScreen);
                  ++n, p = PM.nextpanel[p]) {
-                var panel = M.ViewManager.getViewById(p);
-                var canvas = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+                var panel = View.get(p);
+                var canvas = $('#'+View.getCurrentPage().drawlayer.id);
                 var ctop = canvas.offset().top;
                 var cleft = canvas.offset().left;
                 if (!panel.dropboxes) {
@@ -386,12 +382,12 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                 }
             }
             for (i=0; i<this.items.length; ++i) {
-                var view = M.ViewManager.getViewById(this.items[i].item.attr('id'));
-                while (view.type !== 'M.ScrollView') {
+                var view = View.get(this.items[i].item.attr('id'));
+                while (view.type !== 'ScrollView') {
                     view = view.parentView;
                     if (view==null) {debug.log(['error','drag'],'Invalid View'); return;}
                 }
-                var view = M.ViewManager.getViewById(this.items[i].parentPanel[0].id);
+                var view = View.get(this.items[i].parentPanel[0].id);
                 var canvas = $('#'+view.droplayer.id);
                 var ctop = canvas.offset().top;
                 var cleft = canvas.offset().left;
@@ -462,12 +458,12 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                 // do we need to initialize the panel?
                 var panelid = this.scrollPanel.attr('id');
                 if (this.panelScrollStart[panelid] === undefined) {
-                    this.panelScrollStart[panelid] = M.ViewManager.getViewById(this.scrollPanel.attr('id')).scrollview.getScrollPosition().y;
+                    this.panelScrollStart[panelid] = View.get(this.scrollPanel.attr('id')).scrollview.getScrollPosition().y;
                 }
                 // todo: add constraint?: for later panels, could scroll-position be different than the
                 // scroll-position at mouse-start, which is where items are last updated?
 
-                M.ViewManager.getViewById(this.scrollPanel.attr('id')).scrollview.scrollWhileDragging(
+                View.get(this.scrollPanel.attr('id')).scrollview.scrollWhileDragging(
                         event.pageY - this.scrollPanel.offset().top);
             }
 
@@ -478,7 +474,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     box.elem.addClass('active');
                     // add a virtual-hover over parent-element
                     if (box.parentView) {
-                        if (box.parentView.type==='M.ListItemView') {
+                        if (box.parentView.type==='ListItemView') {
                             var parentEl = $('#'+box.parentView.id).get(0);
                             if (parentEl !== $D.hoverItem) {
                                 $($D.hoverItem).removeClass('ui-btn-hover-c');
@@ -525,7 +521,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                                 this.hovering = window.setTimeout(function() {
                                     $D.log(['debug','drag'],"Trying to expand on hover");
                                     hoverItem.removeClass(o.collapsedClass).addClass(o.expandedClass);
-                                    M.ViewManager.getViewById(hoverItem[0].id).children.renderUpdate();
+                                    View.get(hoverItem[0].id).children.renderUpdate();
                                     self.refreshPositions();
                                     self._drawDropLines();
                                     // self._trigger("expand", event, self._uiHash());
@@ -552,19 +548,19 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
             // End of prototype._mouseStop
 
             $(document.body).addClass('transition-mode').removeClass('drop-mode');
-            var rootID = M.ViewManager.findViewById(this.currentItem[0].id).rootID;
+            var rootID = View.get(this.currentItem[0].id).rootID;
             // check for active drop-target and execute move
             if (this.activeBox != null) {
                 this.reverting = false;
                 // console.log("Dropping with type "+this.activeBox.type+" relative to item: "+this.activeBox.item.item.attr('id'));
-                var refview = M.ViewManager.findViewById(this.activeBox.item.id);
+                var refview = View.get(this.activeBox.item.id);
                 // todo: must set item.id for all line items, too
                 // todo: must set top/left/width/height in each panel-view
-                var targetview = M.ViewManager.findViewById(this.currentItem.attr('id'));
-                if (refview.type != 'M.ListItemView') {
+                var targetview = View.get(this.currentItem.attr('id'));
+                if (refview.type != 'ListItemView') {
                     console.log("refview is of the wrong type with id="+refview.id);
                 }
-                if (targetview.type != 'M.ListItemView') {
+                if (targetview.type != 'ListItemView') {
                     console.log("targetview is of the wrong type with id="+targetview.id);
                 }
 
@@ -670,7 +666,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
             var that = this;
             var args = arguments;
             this.panelScrollStart = {};
-            var textid = M.ViewManager.getViewById(that.currentItem[0].id).header.name.text.id;
+            var textid = View.get(that.currentItem[0].id).header.name.text.id;
             // Correct the active textbox in case it doesn't match value.
             $('#'+textid).text($('#'+textid).val());
             $D.ActionManager.schedule(
@@ -696,7 +692,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
 
             // cache scroll-positions of each panel
             this.panels.each(function() {
-                M.ViewManager.getViewById(this.id).scrollY = M.ViewManager.getViewById(this.id).scrollview.getScrollPosition().y;
+                View.get(this.id).scrollY = View.get(this.id).scrollview.getScrollPosition().y;
             });
 
             for (i=0; i<this.items.length; ++i) {
@@ -706,7 +702,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     var x = this.positionAbs.left + this.offset.click.left;
                     var y = this.positionAbs.top + this.offset.click.top;
                     var parentPanel = this.items[i].parentPanel;
-                    y += M.ViewManager.getViewById(parentPanel.attr('id')).scrollY  -
+                    y += View.get(parentPanel.attr('id')).scrollY  -
                         this.panelScrollStart[parentPanel.attr('id')];
                     if (((x>= d.left)&&(x<= d.right)) && ((y>= d.top)&&(y<= d.bottom))) {
                         if (this.scrollPanel && (parentPanel.get(0) !==
@@ -722,7 +718,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
             for (n= 1, p=PM.leftPanel;
                  (p!=='') && (n<=PM.panelsPerScreen);
                  ++n, p = PM.nextpanel[p]) {
-                var panel = M.ViewManager.getViewById(p);
+                var panel = View.get(p);
                 if (panel.dropboxes == null) {continue;} // when mousedrag is called before initialization
                 for (j=0; j<panel.dropboxes.length; ++j) {
                     d = panel.dropboxes[j];

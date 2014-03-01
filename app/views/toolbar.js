@@ -1,128 +1,40 @@
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+///<reference path="../foundation/view.ts"/>
 m_require("app/foundation/view.js");
 
-/**
- * A constant value for the anchor location: top.
- *
- * @type String
- */
 M.TOP = 'header';
-
-/**
- * A constant value for the anchor location: bottom.
- *
- * @type String
- */
 M.BOTTOM = 'footer';
-
-/**
- * A constant value for the anchor location: left.
- *
- * @type Number
- */
 M.LEFT = 'LEFT';
-
-/**
- * A constant value for the anchor location: center.
- *
- * @type Number
- */
 M.CENTER = 'CENTER';
-
-/**
- * A constant value for the anchor location: right.
- *
- * @type Number
- */
 M.RIGHT = 'RIGHT';
 
-/**
- * @class
- *
- * The root object for ToolbarViews.
- *
- * @extends M.View
- */
-M.ToolbarView = M.View.subclass(
-/** @scope M.ToolbarView.prototype */ {
-
-    /**
-     * The type of this object.
-     *
-     * @type String
-     */
-    type: 'M.ToolbarView',
-
-     /**
-     * Defines the position of the TabBar. Possible values are:
-     *
-     * - M.BOTTOM => is a footer bar
-     * - M.TOP => is a header bar
-     *
-     * @type String
-     */
-    anchorLocation: M.TOP,
-
-    /**
-     * Determines whether to display an auto-generated back-button on the left side
-     * of the toolbar view or not.
-     *
-     * @type Boolean
-     */
-    showBackButton: NO,
-
-    /**
-     * If the showBackButton property is set to yes, this property will be used to
-     * save a reference to the M.ButtonView.
-     */
-    backButton: null,
-
-    /**
-     * This property determines whether to fix the toolbar to the top / bottom of a
-     * page. By default this is set to YES.
-     *
-     * @type Boolean
-     */
-    isFixed: YES,
-
-
-    /**
-     * This property determines whether the toolbar is persistent or not.
-     * By default this is set to YES.
-     * If you like to customize the behavior you can simply define you own identifier. Every M.Toolbar with the same identifier is with each other persistent.
-     * If you simply set it to YES the header is persistent to each other header with the flag YES.
-     * If it is set to NO, then there is the old style page switch
-     *
-     * @type Boolean or String
-     */
-
-    isPersistent: YES,
-
-    /**
-     * This property determines whether to toggle the toolbar on tap on the content area
-     * or not. By default this is set to NO.
-     *
-     * @type Boolean
-     */
-    toggleOnTap: NO,
-
-    /**
-     * Renders a toolbar as a div tag with corresponding data-role attribute and inner
-     * h1 child tag (representing the title of the header)
-     *
-     * @private
-     * @returns {String} The toolbar view's html representation.
-     */
-    render: function() {
+var ToolbarView = (function (_super) {
+    __extends(ToolbarView, _super);
+    function ToolbarView() {
+        _super.apply(this, arguments);
+        this.type = 'ToolbarView';
+        this.anchorLocation = M.TOP;
+        this.showBackButton = NO;
+        this.isFixed = YES;
+        this.isPersistent = YES;
+        this.toggleOnTap = NO;
+    }
+    ToolbarView.prototype.render = function () {
         this.html = '<div id="' + this.id + '" data-role="' + this.anchorLocation + '" data-tap-toggle="' + this.toggleOnTap + '"' + this.style();
 
-        if(this.isFixed) {
+        if (this.isFixed) {
             this.html += ' data-position="fixed"';
         }
 
-        if(this.isPersistent) {
-            if(typeof(this.isPersistent) === "string"){
+        if (this.isPersistent) {
+            if (typeof (this.isPersistent) === "string") {
                 this.html += ' data-id="' + this.isPersistent + '"';
-            }else{
+            } else {
                 this.html += ' data-id="themprojectpersistenttoolbar"';
             }
         }
@@ -134,49 +46,20 @@ M.ToolbarView = M.View.subclass(
         this.html += '</div>';
 
         return this.html;
-    },
+    };
 
-    /**
-     * Triggers render() on all children or simply display the value as a label,
-     * if it is set.
-     */
-    renderChildViews: function() {
-        if(this.value && this.showBackButton) {
-            /* create the toolbar's back button */
-            this.backButton = new M.ButtonView({
-                value: 'Back',
-                icon: 'arrow-l',
-                internalEvents: {
-                    tap: {
-                        action: function() {
-                            history.back(-1);
-                        }
-                    }
-                }
-            });
-
-            /* render the back button and add it to the toolbar's html*/
-            this.html += '<div class="ui-btn-left">';
-            this.html += this.backButton.render();
-            this.html += '</div>';
-
-            /* render the centered value */
+    ToolbarView.prototype.renderChildViews = function () {
+        if (this.value) {
             this.html += '<h1>' + this.value + '</h1>';
-        } else if(this.value) {
-            this.html += '<h1>' + this.value + '</h1>';
-        } else if (this.childViews) {
-            var childViews = this.getChildViewsAsArray();
+        } else {
             var viewPositions = {};
-            for(var i in childViews) {
-                var view = this[childViews[i]];
-                view._name = childViews[i];
-                // MS correction 9/4/2013
+            for (var v in this.childViewTypes) {
+                var view = this[v];
+                view._name = v;
                 view.parentView = this;
-                if( viewPositions[view.anchorLocation] ) {
-                    M.Logger.log('ToolbarView has two items positioned at M.' +
-                        view.anchorLocation + 
-                        '.  Only one item permitted in each location', M.WARN);
-                    return;
+                if (viewPositions[view.anchorLocation]) {
+                    M.Logger.log('ToolbarView has two items positioned at M.' + view.anchorLocation + '.  Only one item permitted in each location', M.WARN);
+                    return null;
                 }
                 viewPositions[view.anchorLocation] = YES;
                 switch (view.anchorLocation) {
@@ -197,34 +80,20 @@ M.ToolbarView = M.View.subclass(
                         break;
                     default:
                         M.Logger.log('ToolbarView children must have an anchorLocation of M.LEFT, M.CENTER, or M.RIGHT', M.WARN);
-                        return;
+                        return null;
                 }
             }
         }
-    },
+        return this.html;
+    };
 
-    /**
-     * Updates the value of the toolbar with DOM access by jQuery.
-     *
-     * @private
-     */
-    renderUpdate: function() {
-        this.computeValue();
-        $('#' + this.id + ' h1').text(this.value);
-    },
-
-    /**
-     * Applies some style-attributes to the toolbar.
-     *
-     * @private
-     * @returns {String} The toolbar's styling as html representation.
-     */
-    style: function() {
+    ToolbarView.prototype.style = function () {
         var html = '';
-        if(this.cssClass) {
+        if (this.cssClass) {
             html += ' class="' + this.cssClass + '"';
         }
         return html;
-    }
-    
-});
+    };
+    return ToolbarView;
+})(View);
+//# sourceMappingURL=toolbar.js.map

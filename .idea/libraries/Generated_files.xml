@@ -2,8 +2,29 @@
   <library name="Generated files" type="javaScript">
     <properties>
       <sourceFilesUrls>
-        <item url="file://$PROJECT_DIR$/app/events.js" />
-        <item url="file://$PROJECT_DIR$/app/foundation/view2.js" />
+        <item url="file://$PROJECT_DIR$/app/views/textedit.js" />
+        <item url="file://$PROJECT_DIR$/app/foundation/view.js" />
+        <item url="file://$PROJECT_DIR$/app/views/toolbar.js" />
+        <item url="file://$PROJECT_DIR$/frameworks/m.js" />
+        <item url="file://$PROJECT_DIR$/windows/model2.js" />
+        <item url="file://$PROJECT_DIR$/app/views/loader.js" />
+        <item url="file://$PROJECT_DIR$/app/views/list_item.js" />
+        <item url="file://$PROJECT_DIR$/app/views/subviews.js" />
+        <item url="file://$PROJECT_DIR$/app/views/OutlineView.js" />
+        <item url="file://$PROJECT_DIR$/app/views/span.js" />
+        <item url="file://$PROJECT_DIR$/app/views/page.js" />
+        <item url="file://$PROJECT_DIR$/app/views/PanelOutlineView.js" />
+        <item url="file://$PROJECT_DIR$/app/views/BreadcrumbView.js" />
+        <item url="file://$PROJECT_DIR$/app/scrolling/jquery.mobile.scrollview.js" />
+        <item url="file://$PROJECT_DIR$/windows/view2.js" />
+        <item url="file://$PROJECT_DIR$/app/keyboard.js" />
+        <item url="file://$PROJECT_DIR$/app/views/list.js" />
+        <item url="file://$PROJECT_DIR$/windows/events.js" />
+        <item url="file://$PROJECT_DIR$/app/views/button.js" />
+        <item url="file://$PROJECT_DIR$/app/views/scroll.js" />
+        <item url="file://$PROJECT_DIR$/app/views/grid.js" />
+        <item url="file://$PROJECT_DIR$/app/views/image.js" />
+        <item url="file://$PROJECT_DIR$/app/views/container.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
@@ -32,9 +53,33 @@
       <root url="file://$PROJECT_DIR$/build/1392873468242/jquery.mobile.scrollview.js" />
       <root url="file://$PROJECT_DIR$/build/1392947896966/jquery.mobile.scrollview.js" />
       <root url="file://$PROJECT_DIR$/build/1392876709811/jquery.mobile.scrollview.js" />
+      <root url="file://$PROJECT_DIR$/app/foundation/view_manager.js" />
+      <root url="file://$PROJECT_DIR$/app/foundation/view_manager.js" />
+      <root url="file://$PROJECT_DIR$/frameworks/jquery.js" />
+      <root url="file://$PROJECT_DIR$/app/views/hiddeninput.js" />
+      <root url="file://$PROJECT_DIR$/app/views/textedit.js" />
+      <root url="file://$PROJECT_DIR$/app/foundation/view.js" />
+      <root url="file://$PROJECT_DIR$/app/views/toolbar.js" />
+      <root url="file://$PROJECT_DIR$/frameworks/m.js" />
+      <root url="file://$PROJECT_DIR$/windows/model2.js" />
+      <root url="file://$PROJECT_DIR$/app/views/loader.js" />
+      <root url="file://$PROJECT_DIR$/app/views/list_item.js" />
+      <root url="file://$PROJECT_DIR$/app/views/OutlineView.js" />
+      <root url="file://$PROJECT_DIR$/app/views/subviews.js" />
+      <root url="file://$PROJECT_DIR$/app/views/span.js" />
+      <root url="file://$PROJECT_DIR$/app/views/page.js" />
+      <root url="file://$PROJECT_DIR$/app/views/PanelOutlineView.js" />
+      <root url="file://$PROJECT_DIR$/app/views/BreadcrumbView.js" />
       <root url="file://$PROJECT_DIR$/app/scrolling/jquery.mobile.scrollview.js" />
-      <root url="file://$PROJECT_DIR$/app/events.js" />
-      <root url="file://$PROJECT_DIR$/app/foundation/view2.js" />
+      <root url="file://$PROJECT_DIR$/windows/view2.js" />
+      <root url="file://$PROJECT_DIR$/app/keyboard.js" />
+      <root url="file://$PROJECT_DIR$/app/views/list.js" />
+      <root url="file://$PROJECT_DIR$/windows/events.js" />
+      <root url="file://$PROJECT_DIR$/app/views/button.js" />
+      <root url="file://$PROJECT_DIR$/app/views/scroll.js" />
+      <root url="file://$PROJECT_DIR$/app/views/grid.js" />
+      <root url="file://$PROJECT_DIR$/app/views/container.js" />
+      <root url="file://$PROJECT_DIR$/app/views/image.js" />
     </CLASSES>
     <SOURCES />
   </library>

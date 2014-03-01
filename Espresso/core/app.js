@@ -193,6 +193,7 @@ App.prototype.loadTheApplication = function () {
       console.log(_frameworkOptions.excludedFolders);
 //      console.log(_frameworkOptions.excludedFiles);
     if (!that.eliminate) {
+        console.log("No file elimination");
       _frameworkOptions.taskChain = new TaskManager([
         "preSort",
         "dependency",
@@ -202,6 +203,7 @@ App.prototype.loadTheApplication = function () {
         "manifest"
       ]).getTaskChain();
     } else {
+        console.log("WITH file elimination");
       _frameworkOptions.taskChain = new TaskManager([
         "preSort",
         "dependency",

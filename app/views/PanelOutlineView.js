@@ -1,138 +1,174 @@
-
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+///<reference path="../foundation/view.ts"/>
+///<reference path="../views/list.ts"/>
+///<reference path="../views/list_item.ts"/>
+///<reference path="../views/container.ts"/>
+///<reference path="../views/BreadcrumbView.ts"/>
+///<reference path="../views/OutlineView.ts"/>
+///<reference path="../views/subviews.ts"/>
 m_require("app/views/OutlineView.js");
 
-M.OutlineRootView = M.ListView.subclass({
-    rootModel: null,
-    onDesign: function() { // once parent's rootModel is defined in design-stage
-        this.rootModel = this.parentView.parentView.rootModel;
-        this.value = null; // remove any pre-existing collection-reference
-        // MS: fix bug all outlines have same controller
-        this.contentBinding = {
-            target: this.parentView.parentView.rootController,
-            property:'listObject'
-        };
-        this.contentBinding.target.bindView(this);
-    },
-    postRender: function() {
-        var collection, that = this;
-        if (this.rootModel === null) {
-            collection = $D.data;
+var OutlineRootView = (function (_super) {
+    __extends(OutlineRootView, _super);
+    function OutlineRootView() {
+        _super.apply(this, arguments);
+        this.idName = 'cid';
+        this.items = 'models';
+        this.isInset = true;
+        this.listItemTemplateView = MyListItem;
+        this.deleted = false;
+    }
+    OutlineRootView.prototype.getChildTypes = function () {
+        this.Class = OutlineRootView;
+        return {};
+    };
+
+    OutlineRootView.prototype.onDesign = function () {
+        this.panelView = this.parentView.parentView;
+        if (this.panelView.value != null) {
+            this.value = this.panelView.value.get('children');
         } else {
-            collection = this.rootModel.get('children');
+            this.value = $D.data;
         }
-        // this.bindToCaller(this, M.View.prototype.registerEvents)();
-        // todo: stop using content-binding to initialize lists,
-        //  but still need to refresh nestedSortable ?
-        this.contentBinding.target.listObject = collection;
-        this.value= collection;
-        this.renderUpdate();
+        this.rootID = this.id;
+        this.setRootID(this.id); // Though children haven't been defined yet
+        this.deleted = false;
+        $D.OutlineManager.add(this.rootID, this);
+    };
+
+    OutlineRootView.prototype.postRender = function () {
+        var collection, that = this;
+        this.renderUpdate(null);
+
         // update the panel's dimensions
-        setTimeout(function() {
+        setTimeout(function () {
             that.parentView.parentView.cachePosition();
         }, 0);
-    },
-    isInset: true,
-    listItemTemplateView:$D.MyListItem,
-    idName:'cid', // For Backbone.Model compatibility
-    items: 'models' // For Backbone.Model compatibility
-});
+    };
 
-$D.PanelOutlineView = M.ContainerView.subclass({
-    type: '$D.PanelOutlineView',
-    isTemplate: true, // causes design to run recursively
-    rootModel: null,
-    rootController: null,
-    childViews: "breadcrumbs outline",
-    onDesign: function() {
-        if (this.rootController == null) { // if one isn't provided in design
-            this.rootController = $D.OutlineController.extend({
-                panelView: this
-           });
+    OutlineRootView.prototype.destroy = function (elem) {
+        var i, v, view, models;
+        if (!elem) {
+            elem = $('#' + this.id)[0];
         }
-    },
-    cachePosition: function() {
+        var context = this.saveContext(null);
+        $D.OutlineManager.remove(this.rootID); // move to graveyard
+        this.deleted = true;
+
+        // destroy the list-entries but not the root-view
+        if (this.value) {
+            models = this.value.models;
+            for (i = 0; i < models.length; ++i) {
+                if (models[i].views && models[i].views[this.rootID]) {
+                    models[i].views[this.rootID].destroy();
+                }
+            }
+        }
+        if (elem) {
+            if (elem.parentNode) {
+                elem.parentNode.removeChild(elem);
+            }
+        }
+
+        // question: do we unregister it with the view-manager?
+        return context;
+        // don't destroy outline-ul-shell-view?
+    };
+    OutlineRootView.prototype.resurrect = function (options) {
+        this.parentView = options.parentView;
+        this.onDesign();
+        return this;
+    };
+
+    OutlineRootView.prototype.setData = function (key, val) {
+        if (!this.data) {
+            this.data = {};
+        }
+        if (val != null) {
+            this.data[key] = val;
+        } else {
+            delete this.data[key];
+        }
+    };
+
+    OutlineRootView.prototype.getData = function (key) {
+        if (!this.data) {
+            return null;
+        } else if (this.data[key] == null) {
+            return null;
+        } else {
+            return this.data[key];
+        }
+    };
+    return OutlineRootView;
+})(ListView);
+
+var PanelOutlineView = (function (_super) {
+    __extends(PanelOutlineView, _super);
+    function PanelOutlineView() {
+        _super.apply(this, arguments);
+        this.value = null;
+    }
+    PanelOutlineView.prototype.getChildTypes = function () {
+        this.Class = PanelOutlineView;
+        return {
+            breadcrumbs: BreadcrumbView,
+            outline: OutlineScrollView
+        };
+    };
+
+    PanelOutlineView.prototype.cachePosition = function () {
         // todo: cache top/left/height/width
-        this.elem = $('#'+this.id);
+        this.elem = $('#' + this.id);
         var offset = this.elem.offset();
         this.top = offset.top;
-        this.left= offset.left;
+        this.left = offset.left;
         this.height = this.elem.height();
         this.width = this.elem.width();
-    },
-    destroyRootOutline: function() {
-        $D.OutlineManager.outlines[this.outline.alist.rootID].destroy();
-        // $D.OutlineManager.remove(this.outline.alist.rootID);
-        // will get added back in with alist.onDesign:bindView
-        // save context
-        var c = this.outline.alist.saveContext();
-        this.outline.alist.destroy();
+    };
+
+    PanelOutlineView.prototype.destroy = function (elem) {
+        var c = this.saveContext(elem);
+        this.outline.alist.destroy(null);
+        this.outline.alist = null;
+        View.prototype.destroy.apply(this, arguments);
         return c;
-    },
-    destroy: function() {
-        var c = this.saveContext();
-        this.destroyRootOutline();
-        M.Object.destroy.apply(this, arguments);
-        return c;
-    },
-    changeRoot: function(model, rootID) { // id is name of model-id or null
+    };
+
+    PanelOutlineView.prototype.changeRoot = function (model, rootID) {
         var newlist;
-
-        var c = this.destroyRootOutline();
+        var c = this.outline.alist.destroy(null);
+        if (!model) {
+            model = null;
+        }
+        this.value = model;
 
         if (rootID) {
-            this.rootController = $D.OutlineManager.deleted[rootID];
-            if (!this.rootController || (this.rootController.panelView.id !== this.id)) {
-                console.log('rootController not found in graveyard');
-                debugger;
-            }
+            newlist = $D.OutlineManager.deleted[rootID].resurrect({ parentView: this.outline });
+            assert(newlist && (newlist.panelView.id === this.id), "Root ListView not found in graveyard");
         } else {
-            this.rootController = $D.OutlineController.extend({
-                panelView: this
-            });
+            newlist = new OutlineRootView({ parentView: this.outline }); // new rootID
         }
-
-        this.rootModel = model;
-        // need to give view an old rootID
-        if (rootID) {
-            newlist = new M.OutlineRootView({id: rootID, parentView: this.outline}); // new rootID
-        } else {
-            newlist = new M.OutlineRootView({parentView: this.outline}); // new rootID
-        }
-
-        // newlist.parentView = this.outline;
 
         this.outline.alist = newlist;
+
         // problem: ui-scrollview-view doesn't always exist until theming
         this.outline.alist.renderAt(c);
         this.breadcrumbs.onDesign();
         this.breadcrumbs.renderUpdate();
-        this.theme();
+        this.theme(null);
         this.outline.alist.postRender();
-        $('#'+M.ViewManager.getCurrentPage().id).nestedSortable('update');
+        $('#' + View.getCurrentPage().id).nestedSortable('update');
         $(window).resize(); // fix height of new panel, spacer
         $D.PanelManager.rootViews[this.id] = newlist.id;
         $D.PanelManager.rootModels[this.id] = model;
-
         return newlist.id;
-    },
-    panelInit: function() {
-
-    },
-    breadcrumbs:M.BreadcrumbView.subclass({
-        value: [],
-        onDesign: function() { // once rootModel is defined in design-stage, define breadcrumbs
-            this.defineFromModel(this.parentView.rootModel);
-        }
-    }),
-    outline: M.ScrollView.subclass({
-        childViews:'alist droplayer scrollSpacer',
-        /* updateScroll: $D.updateScroll, */ // called whenever scrollview changes
-        alist: M.OutlineRootView,
-        scrollSpacer:M.ContainerView.subclass({
-            cssClass: 'scroll-spacer'
-        }),
-        droplayer: M.ContainerView.subclass({
-            cssClass: 'droplayer'
-        })
-    })
-});
+    };
+    return PanelOutlineView;
+})(ContainerView);
+//# sourceMappingURL=PanelOutlineView.js.map

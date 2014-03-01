@@ -472,7 +472,7 @@ $D.OutlineAction = $D.Action.extend({
                 }
             } else { // parent is outside view, is it one level or more?
                 if (this.getModel(context.parent).get('children') ===
-                    M.ViewManager.getViewById(outline.rootID).value) {
+                    View.get(outline.rootID).value) {
                     return 'parentIsRoot';
                 } else { // context is out of scope
                     return 'parentInvisible';
@@ -480,7 +480,7 @@ $D.OutlineAction = $D.Action.extend({
                 }
             }
         } else { // outline-root $D.data
-            if (M.ViewManager.getViewById(outline.rootID).value === $D.data) {
+            if (View.get(outline.rootID).value === $D.data) {
                 return 'parentIsRoot';
             } else {
                 return 'parentInvisible';
@@ -506,15 +506,15 @@ $D.OutlineAction = $D.Action.extend({
                 }
             } else { // parent is outside view, is it one level or more?
                 if (this.getModel(context.parent).get('children') ===
-                    M.ViewManager.getViewById(outline.rootID).value) {
-                    return M.ViewManager.getViewById(outline.rootID);
+                    View.get(outline.rootID).value) {
+                    return View.get(outline.rootID);
                 } else { // context is out of scope
                     return null;
                 }
             }
         } else { // outline-root $D.data
-            if (M.ViewManager.getViewById(outline.rootID).value === $D.data) {
-                return M.ViewManager.getViewById(outline.rootID);
+            if (View.get(outline.rootID).value === $D.data) {
+                return View.get(outline.rootID);
             } else {
                 return null;
             }
@@ -642,7 +642,7 @@ $D.OutlineAction = $D.Action.extend({
                 if (activeLineView == null) { // create
                     activeLineView = that.newListItemView(newParentView);
                     // todo: add text in?
-                    activeLineView.value.setView(activeLineView.rootID, activeLineView);
+                    activeLineView.value.addView(activeLineView);
                     elem = $(activeLineView.render());
                     // enable recursive creation when moving out of collapsed view
                     if (! activeLineView.value.get('collapsed')) {
@@ -754,7 +754,7 @@ $D.OutlineAction = $D.Action.extend({
 
             // check if this view breadcrumbs were modified, if activeID is ancestor of outline.
             if (!activeLineView) {
-                var model = outline.rootModel;
+                var model = outline.panelView.value;
                 while (model && (model.cid !== that.options.activeID)) {
                     model = model.get('parent');
                 }
@@ -770,7 +770,7 @@ $D.OutlineAction = $D.Action.extend({
     newListItemView:function (parentView) { // (id only if known)
         // todo: should more of this be in cloneObject?
         var templateView = parentView.listItemTemplateView;
-        M.assert(templateView != null);
+        assert(templateView != null, "templateView is not null");
         templateView.events = templateView.events ? templateView.events : parentView.events;
 
         var li = new templateView({cssClass: 'leaf'}); // todo -- merge with nestedsortable
@@ -781,7 +781,7 @@ $D.OutlineAction = $D.Action.extend({
             // {text: this.options.lineText}; // from list
         }
         // todo: listview() classes should be on li before it is cloned
-        li = parentView.cloneObject(li, item);
+        li.setValuePatterns(item);
         li.value = item; // enables getting the value/contentBinding of a list item in a template view.
         li.parentView = parentView;
         li.setRootID(parentView.rootID);
@@ -800,12 +800,12 @@ $D.OutlineAction = $D.Action.extend({
             type = 'prev';
         }
         if (oldspot.length>0) {
-            return {type: type, obj: M.ViewManager.getViewById(oldspot.attr('id'))};
+            return {type: type, obj: View.get(oldspot.attr('id'))};
         } else {
-            if (view.parentView.parentView && view.parentView.parentView.type==='M.ListItemView') {
+            if (view.parentView.parentView && view.parentView.parentView.type==='ListItemView') {
                 return {type: 'parent', obj: view.parentView.parentView};
             } else {
-                return {type: 'root', obj: M.ViewManager.getViewById(view.rootID)}
+                return {type: 'root', obj: View.get(view.rootID)}
             }
         }
     },

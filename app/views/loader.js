@@ -1,56 +1,36 @@
+///<reference path="../foundation/view.ts"/>
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 m_require("app/foundation/view.js");
 
-M.LoaderView = M.View.subclass({
-
-    type: 'M.LoaderView',
-
-    /**
-     * This property states whether the loader has already been initialized or not.
-     *
-     * @type Boolean
-     */
-    isInitialized: NO,
-
-    /**
-     * This property counts the loader calls to show
-     *
-     * @type Number
-     */
-    refCount: 0,
-
-    /**
-     * This property can be used to specify the default title of a loader.
-     *
-     * @type String
-     */
-    defaultTitle: 'loading',
-            
-    /**
-     * This method initializes the loader by loading it once.
-     *
-     * @private 
-     */
-    initialize: function() {
-        if(!this.isInitialized) {
+var LoaderView = (function (_super) {
+    __extends(LoaderView, _super);
+    function LoaderView() {
+        _super.apply(this, arguments);
+        this.type = 'LoaderView';
+        this.isInitialized = NO;
+        this.refCount = 0;
+        this.defaultTitle = 'loading';
+    }
+    LoaderView.prototype.initialize = function () {
+        if (!this.isInitialized) {
             this.refCount = 0;
-            $.mobile.showPageLoadingMsg();
-            $.mobile.hidePageLoadingMsg();
+
+            //$.mobile.showPageLoadingMsg();
+            //$.mobile.hidePageLoadingMsg();
             this.isInitialized = YES;
         }
-    },
+    };
 
-    /**
-     * This method shows the default loader. You can specify the displayed label with the
-     * title parameter.
-     *
-     * @param {String} title The title for this loader.
-     * @param {Boolean} hideSpinner A boolean to specify whether to display a spinning wheel or not.
-     */
-    show: function(title, hideSpinner) {
+    LoaderView.prototype.show = function (title, hideSpinner) {
         this.refCount++;
-        var title = title && typeof(title) === 'string' ? title : this.defaultTitle;
-        if(this.refCount == 1){
-            $.mobile.showPageLoadingMsg('a', title, hideSpinner);
+        var title = title && typeof (title) === 'string' ? title : this.defaultTitle;
+        if (this.refCount == 1) {
+            //$.mobile.showPageLoadingMsg('a', title, hideSpinner);
             var loader = $('.ui-loader');
             loader.removeClass('ui-loader-default');
             loader.addClass('ui-loader-verbose');
@@ -60,36 +40,26 @@ M.LoaderView = M.View.subclass({
             var scrollYOffset = window.pageYOffset;
             var loaderHeight = loader.outerHeight();
 
-            var yPos = scrollYOffset + (screenSize[1]/2);
+            var yPos = scrollYOffset + (screenSize[1] / 2);
             loader.css('top', yPos + 'px');
-            loader.css('margin-top', '-' + (loaderHeight/2) + 'px');
+            loader.css('margin-top', '-' + (loaderHeight / 2) + 'px');
         }
-    },
+    };
 
-    /**
-     * This method changes the current title.
-     *
-     * @param {String} title The title for this loader.
-     */
-
-    changeTitle: function(title){
+    LoaderView.prototype.changeTitle = function (title) {
         $('.ui-loader h1').html(title);
-    },
+    };
 
-    /**
-     * This method hides the loader.
-     *
-     * @param {Boolean} force Determines whether to force the hide of the loader.
-     */
-    hide: function(force) {
-        if(force || this.refCount <= 0) {
+    LoaderView.prototype.hide = function (force) {
+        if (force || this.refCount <= 0) {
             this.refCount = 0;
         } else {
             this.refCount--;
         }
-        if(this.refCount == 0){
-            $.mobile.hidePageLoadingMsg();
+        if (this.refCount == 0) {
+            //$.mobile.hidePageLoadingMsg();
         }
-    }
-    
-});
+    };
+    return LoaderView;
+})(View);
+//# sourceMappingURL=loader.js.map

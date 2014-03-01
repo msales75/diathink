@@ -211,7 +211,7 @@ $D.ActionManager = M.Object.extend({
         if (this.actions === null) {
             this.actions = new $D.ActionCollection();
         }
-        var b = M.ViewManager.getCurrentPage().header.undobuttons;
+        var b = View.getCurrentPage().header.undobuttons;
         if (this.nextUndo()!==false) {
             b.undobutton.enable();
         } else {

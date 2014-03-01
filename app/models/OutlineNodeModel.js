@@ -63,11 +63,11 @@ $D.OutlineNodeModel = Backbone.RelationalModel.extend({
         return null;
     },
 
-    setView: function(key, value) {
+    addView: function(view) {
         if ((this.views == null) || (typeof this.views !== 'object')) {
             this.views = {};
         }
-        this.views[key] = value;
+        this.views[view.rootID] = view;
     },
 
     clearView: function(key) {

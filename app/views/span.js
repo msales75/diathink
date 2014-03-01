@@ -1,38 +1,32 @@
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+///<reference path="../foundation/view.ts"/>
 m_require("app/foundation/view.js");
 
-M.SpanView= M.View.subclass({
+var SpanView = (function (_super) {
+    __extends(SpanView, _super);
+    function SpanView() {
+        _super.apply(this, arguments);
+        this.type = 'SpanView';
+    }
+    SpanView.prototype.render = function () {
+        this.computeValue();
+        this.html = '';
+        this.html += '<span id="' + this.id + '"' + this.style() + '>' + (this.value ? this.value : '') + '</span>';
+        return this.html;
+    };
 
-        type: 'M.SpanView',
-
-        name: null,
-
-        render: function() {
-            this.computeValue();
-            this.html = '';
-            this.html += '<span id="' + this.id + '"' + this.style() +'>'+(this.value? this.value : '')+'</span>';
-            return this.html;
-        },
-
-
-        renderUpdate: function(preventValueComputing) {
-            if(!preventValueComputing) {
-                this.computeValue();
-            }
-            $('#' + this.id).text(this.value);
-            // this.styleUpdate();
-        },
-
-        style: function() {
-            var html = '';
-            if(this.cssClass) {
-                html += ' class="' + this.cssClass + '"';
-            }
-            return html;
-        },
-
-        setValueFromDOM: function(id, event, nextEvent) {
-            this.value = this.secure($('#' + this.id).text());
-            this.delegateValueUpdate();
+    SpanView.prototype.style = function () {
+        var html = '';
+        if (this.cssClass) {
+            html += ' class="' + this.cssClass + '"';
         }
-
-    });
+        return html;
+    };
+    return SpanView;
+})(View);
+//# sourceMappingURL=span.js.map

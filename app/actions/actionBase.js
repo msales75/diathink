@@ -289,6 +289,7 @@ $D.Action = Backbone.RelationalModel.extend({
             var done = that.options.done;
             delete that.options['done'];
             done();
+            $D.validateMVC()
         });
         // $D.validateMVC();
         this.nextQueue();
@@ -344,10 +345,10 @@ $D.Action = Backbone.RelationalModel.extend({
         // console.log("Checking text change for id="+id);
         var value = $('#'+id).val();
         console.log('checkTextChange: id = '+id);
-        if (!M.ViewManager.getViewById(id)) {
+        if (!View.get(id)) {
             return false; // view was deleted since being edited
         }
-        var view = M.ViewManager.getViewById(id).parentView.parentView.parentView;
+        var view = View.get(id).parentView.parentView.parentView;
         var model = view.value;
         if (model.get('text') !== value) {
             //console.log("TextAction for id="+id+"; model="+

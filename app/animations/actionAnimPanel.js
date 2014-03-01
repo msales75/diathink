@@ -20,10 +20,10 @@ $D.animPanel = {
         var panelContext = r.rNewPanelContext;
 
         var activeView = this.getLineView(this.options.activeID, this.options.oldRoot);
-        var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+        var drawlayer = $('#'+View.getCurrentPage().drawlayer.id);
 
         // dock item to newPanel
-        var hiddenbread = new M.BreadcrumbView;
+        var hiddenbread = new BreadcrumbView;
         // .breadcrumbs-dock hides last breadcrumb-item
         hiddenbread.defineFromModel(this.getModel(this.options.activeID));
         var item = $(hiddenbread.render()).addClass('breadcrumbs-dock').appendTo(drawlayer);

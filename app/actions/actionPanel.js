@@ -45,7 +45,7 @@ $D.RootAction= $D.Action.extend({
             if (that.options.undo) {
                 if (outline.rootID === that.options.newRoot) {
                     model = that.oldRootModel;
-                    var view = M.ViewManager.getViewById(that.options.newRoot).parentView
+                    var view = View.get(that.options.newRoot).parentView
                         .parentView.changeRoot(model, that.options.oldRoot);
                     if (view !== that.options.oldRoot) {
                         console.log('Invalid return from changeRoot');
@@ -56,15 +56,15 @@ $D.RootAction= $D.Action.extend({
                 if (outline.rootID === that.options.oldRoot) {
                     model = that.getModel(that.options.activeID);
                     if (that.options.redo) {
-                        var view = M.ViewManager.getViewById(that.options.oldRoot).parentView
+                        var view = View.get(that.options.oldRoot).parentView
                             .parentView.changeRoot(model, that.options.newRoot);
                         if (view !== that.options.newRoot) {
                             console.log('Invalid return from changeRoot');
                             debugger;
                         }
                     } else {
-                        that.oldRootModel = M.ViewManager.getViewById(that.options.oldRoot).rootModel;
-                        that.options.newRoot = M.ViewManager.getViewById(that.options.oldRoot).parentView
+                        that.oldRootModel = View.get(that.options.oldRoot).rootModel;
+                        that.options.newRoot = View.get(that.options.oldRoot).parentView
                             .parentView.changeRoot(model);
                     }
                 }
@@ -145,13 +145,13 @@ $D.PanelAction=$D.Action.extend({
         // oldRoot
         // prevPanel
         // store: newPanel, newRoot
-        // root = M.ViewManager.getViewById(panelid).outline.alist.id
+        // root = View.get(panelid).outline.alist.id
     },
     redrawPanel: function(n, p, firsttime) {
         // should changeRoot it instead?
         var c;
         var PM = $D.PanelManager;
-        var grid = M.ViewManager.getCurrentPage().content.grid;
+        var grid = View.getCurrentPage().content.grid;
         if (grid['scroll'+String(n)]) {
             c = grid['scroll'+String(n)].destroy(); // save context for this
             // panel destroy() respects outline graveyard.
@@ -167,7 +167,7 @@ $D.PanelAction=$D.Action.extend({
         // TODO: What if c doesn't exist if the panel was already destroyed
 
         // create a new panel with right id, but wrong alist & breadcrumbs.
-        grid['scroll'+String(n)] = new $D.PanelOutlineView({
+        grid['scroll'+String(n)] = new PanelOutlineView({
             id: p,
             parentView: grid,
             rootModel: null
@@ -188,7 +188,7 @@ $D.PanelAction=$D.Action.extend({
         }
     },
     removePanel: function(n) {
-        var grid = M.ViewManager.getCurrentPage().content.grid;
+        var grid = View.getCurrentPage().content.grid;
         grid['scroll'+String(n)].destroy();
         grid['scroll'+String(n)] = null;
     },
@@ -196,14 +196,14 @@ $D.PanelAction=$D.Action.extend({
         var that = this;
         this.addQueue('newModelAdd', ['context'], function() {
             var PM = $D.PanelManager;
-            var grid = M.ViewManager.getCurrentPage().content.grid;
+            var grid = View.getCurrentPage().content.grid;
             var o = that.options;
             var dir;
             if (o.undo) {
                 dir = PM.remove(that.newPanel);
             } else {
                 if (!that.newPanel) { // if id isn't chosen yet
-                    var newPanel = new $D.PanelOutlineView({
+                    var newPanel = new PanelOutlineView({
                         rootModel: that.getModel(that.options.activeID)
                     });
                     that.newPanel = newPanel.id;
@@ -266,7 +266,7 @@ $D.SlideAction = $D.Action.extend({
         var that = this;
         this.addQueue('newModelAdd', ['context'], function() {
             var PM = $D.PanelManager;
-            var grid = M.ViewManager.getCurrentPage().content.grid;
+            var grid = View.getCurrentPage().content.grid;
             var o = that.options;
             var dir;
             if (o.direction==='right') {

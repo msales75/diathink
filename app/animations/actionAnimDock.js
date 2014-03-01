@@ -77,7 +77,7 @@ $D.animDock = {
             // how do we know if 'source' is a panel?
             this.options.dockElem = $('#'+activeLineView.id)[0].cloneNode(true);
             this.options.dockElem.id = '';
-            var drawlayer = $('#'+M.ViewManager.getCurrentPage().drawlayer.id);
+            var drawlayer = $('#'+View.getCurrentPage().drawlayer.id);
             drawlayer[0].appendChild(this.options.dockElem);
             var offset = $('#'+activeLineView.id).offset();
             $(this.options.dockElem).css({

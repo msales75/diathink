@@ -95,5 +95,9 @@ Task_PreSort.prototype.duty = function(framework,callback){
 
      _sorted = _sorted.concat(_models, _stores, _controllers, _validators, _templates, _views, _misc, _main);
     framework.files = _sorted;
+    console.log("Presorted file list:")
+    _files.forEach(function(file) {
+        console.log(file.path);
+    });
     callback(framework);
 };
