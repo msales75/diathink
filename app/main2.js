@@ -1,7 +1,7 @@
 
 m_require("app/foundation/application.js");
 m_require("app/OutlineController.js");
-m_require("app/views/PanelOutlineView.js");
+m_require("app/views/PanelView.js");
 m_require("app/actions/actionManager.js");
 
 var nav = navigator;
@@ -21,9 +21,9 @@ $D.is_touch_device = 'ontouchstart' in document.documentElement;
 $D.setFocus = function(view) {
     var elem = null;
     if (view) {
-        if (view.type==='ListItemView') {
+        if (view instanceof NodeView) {
             elem = $('#'+view.header.name.text.id).get(0);
-        } else if (view.type==='TextEditView') {
+        } else if (view instanceof TextAreaView) {
             elem = $('#'+view.id).get(0);
         }
     }
@@ -145,7 +145,7 @@ $D.redrawPanel = function (n, p, firsttime) {
     }
 
     // create a new panel with right id, but wrong alist & breadcrumbs.
-    grid['scroll' + String(n)] = new PanelOutlineView({
+    grid['scroll' + String(n)] = new PanelView({
         id: p,
         parentView: grid,
         rootModel: null
@@ -187,8 +187,8 @@ $D.handleKeypress = function (elem, e) {
                         anim: 'indent',
                         activeID: liView.value.cid,
                         referenceID: collection.models[rank - 1].cid,
-                        oldRoot: liView.rootID,
-                        newRoot: liView.rootID,
+                        oldRoot: liView.nodeRootView.id,
+                        newRoot: liView.nodeRootView.id,
                         focus: true
                     };
                 });
@@ -229,8 +229,8 @@ $D.handleKeydown = function (elem, e) {
                     anim: 'indent',
                     activeID: liView.value.cid,
                     referenceID: collection.models[rank - 1].cid,
-                    oldRoot: liView.rootID,
-                    newRoot: liView.rootID,
+                    oldRoot: liView.nodeRootView.id,
+                    newRoot: liView.nodeRootView.id,
                     focus: true
                 };
             });
@@ -245,7 +245,7 @@ $D.handleKeydown = function (elem, e) {
             rank = _.indexOf(collection.models, liView.value);
             // if it is the last item in its collection
             if ((liView.parentView.parentView != null) &&
-                (liView.parentView.parentView.type === 'ListItemView') &&
+                (liView.parentView.parentView instanceof NodeView) &&
                 (rank === collection.models.length - 1)) {
                 // make it the next child of its parent
                 scheduleKey(e.simulated, id, function () {
@@ -254,8 +254,8 @@ $D.handleKeydown = function (elem, e) {
                         anim: 'indent',
                         activeID: liView.value.cid,
                         referenceID: liView.value.attributes.parent.cid,
-                        oldRoot: liView.rootID,
-                        newRoot: liView.rootID,
+                        oldRoot: liView.nodeRootView.id,
+                        newRoot: liView.nodeRootView.id,
                         focus: true
                     };
                 });
@@ -269,8 +269,8 @@ $D.handleKeydown = function (elem, e) {
                                 action: $D.DeleteAction,
                                 anim: 'delete',
                                 activeID: liView.value.cid,
-                                oldRoot: liView.rootID,
-                                newRoot: liView.rootID,
+                                oldRoot: liView.nodeRootView.id,
+                                newRoot: liView.nodeRootView.id,
                                 focus: true
                             };
                         });
@@ -287,8 +287,8 @@ $D.handleKeydown = function (elem, e) {
                 action: $D.InsertAfterAction,
                 anim: 'create',
                 referenceID: liView.value.cid,
-                oldRoot: liView.rootID,
-                newRoot: liView.rootID,
+                oldRoot: liView.nodeRootView.id,
+                newRoot: liView.nodeRootView.id,
                 focus: true
             };
         });
@@ -431,7 +431,7 @@ $D.postRender = function () {
                     return {
                         action: $D.RootAction,
                         activeID: li.value.cid,
-                        oldRoot: li.rootID,
+                        oldRoot: li.nodeRootView.id,
                         newRoot: 'new'
                     };
                 });
@@ -450,8 +450,8 @@ $D.postRender = function () {
                         action: $D.CollapseAction,
                         activeID: view.parentView.parentView.value.cid,
                         collapsed: !liElem.hasClass('collapsed'),
-                        oldRoot: view.parentView.parentView.rootID,
-                        newRoot: view.parentView.parentView.rootID,
+                        oldRoot: view.parentView.parentView.nodeRootView.id,
+                        newRoot: view.parentView.parentView.nodeRootView.id,
                         focus: false
                     };
                 });
@@ -509,7 +509,7 @@ $D.postRender = function () {
                     return {
                         action: $D.RootAction,
                         activeID: modelid,
-                        oldRoot: panelview.outline.alist.rootID,
+                        oldRoot: panelview.outline.alist.nodeRootView.id,
                         newRoot: 'new'
                     };
                 });
@@ -565,7 +565,7 @@ $D.postRender = function () {
     $('#' + id).on('keyup change input paste', 'textarea', function (e) {
         var view = View.get($(this).attr('id'));
         view.setValueFromDOM();
-        view.themeUpdate();
+        view.fixHeight();
     });
     // need to update text and selection-position manually
     $(window).on('keypress', function (e) {
@@ -681,7 +681,7 @@ $D.postRender = function () {
 
 $D.app.createPage = function (pageName, root) {
     // todo: preserve expand/contract status?
-    $D.app.pages[pageName] = new MyPageView({pageName: pageName});
+    $D.app.pages[pageName] = new DiathinkView({pageName: pageName});
 };
 
 $D.app.createPage('page1', null);
@@ -690,6 +690,8 @@ $D.PanelManager.initFromDOM($D.app.pages['page1'].content.grid);
 
 $(function () {
     $D.app.main();
-    $D.validateMVC();
+    setTimeout(function() {
+        $D.validateMVC();
+    }, 0);
 });
 

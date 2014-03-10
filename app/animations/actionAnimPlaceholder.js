@@ -5,15 +5,15 @@ $D.animPlaceholder = {
     placeholderSpeed: 160,
     oldLinePlace: function(outline) {
         var r = this.runtime;
-        if (r.rOldLinePlaceholder[outline.rootID]) {
-            var activeLineView = this.getLineView(this.options.activeID, outline.rootID);
+        if (r.rOldLinePlaceholder[outline.nodeRootView.id]) {
+            var activeLineView = this.getLineView(this.options.activeID, outline.nodeRootView.id);
 
             // if view doesn't exist, insert no placeholder because it's invisible
             if (activeLineView == null) {
                 // console.log("activeLineView is null in oldLinePlace for action type="+
                 // this.type+"; undo="+this.options.undo+"; redo="+
                 // this.options.redo+"; activeID="+this.options.activeID+
-                // "; rootID="+outline.rootID);
+                // "; rootID="+outline.nodeRootView.id);
                 return;
             }
             // vanish if not already hidden & shrink over 80ms
@@ -34,13 +34,13 @@ $D.animPlaceholder = {
             // if placeholder is present, old activeLineView-element must be removed.
             activeObj[0].parentNode.replaceChild(rOldLinePlaceholder[0],activeObj[0]);
             // activeObj is here removed from DOM, though still has a view.
-            r.activeLineHeight[outline.rootID] = activeLineHeight;
-            r.rOldLinePlaceholder[outline.rootID] = rOldLinePlaceholder[0];
-            r.activeLineElem[outline.rootID] = activeObj[0];
-            console.log('Added oldline placeholder to outline '+outline.rootID);
-            console.log(r.rOldLinePlaceholder[outline.rootID]);
+            r.activeLineHeight[outline.nodeRootView.id] = activeLineHeight;
+            r.rOldLinePlaceholder[outline.nodeRootView.id] = rOldLinePlaceholder[0];
+            r.activeLineElem[outline.nodeRootView.id] = activeObj[0];
+            console.log('Added oldline placeholder to outline '+outline.nodeRootView.id);
+            console.log(r.rOldLinePlaceholder[outline.nodeRootView.id]);
             console.log('ActiveLineElem changed to: ');
-            console.log(r.activeLineElem[outline.rootID]);
+            console.log(r.activeLineElem[outline.nodeRootView.id]);
         }
     },
     newLinePlace: function(outline) {
@@ -48,14 +48,14 @@ $D.animPlaceholder = {
         var r = this.runtime;
         var newModelContext = r.rNewModelContext;
         if (!outline) {return;}
-        if (r.rNewLinePlaceholder[outline.rootID]) {
+        if (r.rNewLinePlaceholder[outline.nodeRootView.id]) {
             var parentView = this.contextParentVisible(newModelContext, outline);
             if (!parentView || parentView.collapsed) {
                 console.log('ERROR');
                 debugger;
             }
             var place = $('<li></li>').addClass('li-placeholder').css('height', 0);
-            r.rNewLinePlaceholder[outline.rootID] = place.get(0);
+            r.rNewLinePlaceholder[outline.nodeRootView.id] = place.get(0);
             if (! newModelContext.prev) {
                 place.addClass('ui-first-child');
             }
@@ -63,28 +63,28 @@ $D.animPlaceholder = {
                 place.addClass('ui-last-child');
             }
             if (newModelContext.next) {
-                place.insertBefore('#'+this.getLineView(newModelContext.next, outline.rootID).id);
+                place.insertBefore('#'+this.getLineView(newModelContext.next, outline.nodeRootView.id).id);
             } else if (newModelContext.prev) {
-                place.insertAfter('#'+this.getLineView(newModelContext.prev, outline.rootID).id);
+                place.insertAfter('#'+this.getLineView(newModelContext.prev, outline.nodeRootView.id).id);
             } else if (newModelContext.parent) {
                 place.appendTo('#'+parentView.id);
             }
-            console.log('Added newline placeholder to outline '+outline.rootID);
-            console.log(r.rNewLinePlaceholder[outline.rootID]);
+            console.log('Added newline placeholder to outline '+outline.nodeRootView.id);
+            console.log(r.rNewLinePlaceholder[outline.nodeRootView.id]);
         }
     },
     linePlaceAnim: function(outline) {
         var r = this.runtime;
-        if (r.useLinePlaceholderAnim[outline.rootID]) {
+        if (r.useLinePlaceholderAnim[outline.nodeRootView.id]) {
             var speed, startOldHeight, endNewHeight, sameHeight=false;
             if (this.options.anim==='delete') {speed = this.deleteSpeed;}
             else if (this.options.anim==='create') {speed = this.createSpeed;}
             else {speed = this.placeholderSpeed;}
-            if (r.rOldLinePlaceholder[outline.rootID]) {
-                startOldHeight = r.rOldLinePlaceholder[outline.rootID].clientHeight;
+            if (r.rOldLinePlaceholder[outline.nodeRootView.id]) {
+                startOldHeight = r.rOldLinePlaceholder[outline.nodeRootView.id].clientHeight;
             }
-            if (r.rNewLinePlaceholder[outline.rootID]) {
-                endNewHeight = r.activeLineHeight[outline.rootID];
+            if (r.rNewLinePlaceholder[outline.nodeRootView.id]) {
+                endNewHeight = r.activeLineHeight[outline.nodeRootView.id];
                 if (!endNewHeight) {
                     endNewHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
                 }
@@ -97,13 +97,13 @@ $D.animPlaceholder = {
             if (r.animOptions.view===undefined) {
                 r.animOptions.view = {};
             }
-            r.animOptions.view[outline.rootID] = {
-                rootID: outline.rootID,
+            r.animOptions.view[outline.nodeRootView.id] = {
+                rootID: outline.nodeRootView.id,
                 startOldHeight: startOldHeight,
                 endNewHeight: endNewHeight,
                 sameHeight: sameHeight
             };
-            // console.log("Updating status after finishing async sourceAnim:"+outline.rootID);
+            // console.log("Updating status after finishing async sourceAnim:"+outline.nodeRootView.id);
         }
     },
     // animation-step if the oldLinePlaceholder is animated

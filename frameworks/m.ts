@@ -17,6 +17,7 @@ function assert (test, message) {
             // $D.log([], "INVALID: Unspecified validation error");
             console.log("INVALID: Unspecified validation error");
         }
+        debugger;
     }
 };
 

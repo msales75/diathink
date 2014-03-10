@@ -40,10 +40,10 @@ $D.RootAction= $D.Action.extend({
     },
     execView:function (outline) {
         var that = this;
-        this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
+        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd'], function() {
             var model=null;
             if (that.options.undo) {
-                if (outline.rootID === that.options.newRoot) {
+                if (outline.nodeRootView.id === that.options.newRoot) {
                     model = that.oldRootModel;
                     var view = View.get(that.options.newRoot).parentView
                         .parentView.changeRoot(model, that.options.oldRoot);
@@ -53,7 +53,7 @@ $D.RootAction= $D.Action.extend({
                     }
                 }
             } else {
-                if (outline.rootID === that.options.oldRoot) {
+                if (outline.nodeRootView.id === that.options.oldRoot) {
                     model = that.getModel(that.options.activeID);
                     if (that.options.redo) {
                         var view = View.get(that.options.oldRoot).parentView
@@ -69,7 +69,7 @@ $D.RootAction= $D.Action.extend({
                     }
                 }
             }
-            // that.runtime.status.linePlaceAnim[outline.rootID] = 2;
+            // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });
     }
 });
@@ -167,7 +167,7 @@ $D.PanelAction=$D.Action.extend({
         // TODO: What if c doesn't exist if the panel was already destroyed
 
         // create a new panel with right id, but wrong alist & breadcrumbs.
-        grid['scroll'+String(n)] = new PanelOutlineView({
+        grid['scroll'+String(n)] = new PanelView({
             id: p,
             parentView: grid,
             rootModel: null
@@ -203,11 +203,7 @@ $D.PanelAction=$D.Action.extend({
                 dir = PM.remove(that.newPanel);
             } else {
                 if (!that.newPanel) { // if id isn't chosen yet
-                    var newPanel = new PanelOutlineView({
-                        rootModel: that.getModel(that.options.activeID)
-                    });
-                    that.newPanel = newPanel.id;
-                    newPanel.destroy(); // remove from viewmanager - this is counter-intuitive,
+                    that.newPanel = View.getNextId();
                 }
                 dir = PM.insertAfter(that.newPanel, that.options.prevPanel);
                 // we only wanted newPanel for the PanelManager id, not the ViewManager.
@@ -252,7 +248,7 @@ $D.PanelAction=$D.Action.extend({
     },
     execView: function(outline) { // mutually exclusive with restoreViewContext
         var that = this;
-        this.addQueue(['view', outline.rootID], ['newModelAdd', 'anim'], function() {
+        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd', 'anim'], function() {
             var r= that.runtime;
         });
     }
@@ -295,7 +291,7 @@ $D.SlideAction = $D.Action.extend({
     },
     execView: function(outline) {
         var that = this;
-        this.addQueue(['view', outline.rootID], ['newModelAdd', 'anim'], function() {
+        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd', 'anim'], function() {
             var r= that.runtime;
         });
     }

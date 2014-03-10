@@ -11,8 +11,6 @@ var View = (function () {
         this.Class = View;
         this.id = null;
         this.elem = null;
-        this.isView = true;
-        this.isTemplate = false;
         this.value = null;
         this.isDragHandle = false;
         this.isScrollable = false;
@@ -199,10 +197,10 @@ var View = (function () {
         }
     };
     View.prototype.addClass = function (name) {
-        $('#' + this.id).addClass(cssClass);
+        $('#' + this.id).addClass(name);
     };
     View.prototype.removeClass = function (name) {
-        $('#' + this.id).removeClass(cssClass);
+        $('#' + this.id).removeClass(name);
     };
     View.type = 'View';
 

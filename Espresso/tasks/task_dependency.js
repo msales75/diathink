@@ -61,13 +61,13 @@ Task_Dependency.prototype = new Task();
  */
 Task_Dependency.prototype.duty = function(framework,cb) {
   var that = this;
-
+  // console.log("Calling Task_Dependency sequencer for framework = "+framework.name);
   this.sequencer(
     /*Resolve all dependencies for all JavaScript files, contained in a framework*/
     function resolveDependencies() {
-        console.log("Framework "+framework.name+" files BEFORE being sorted: ");
+        // console.log("Framework "+framework.name+" files BEFORE being sorted: ");
         framework.files.forEach(function(file) {
-            console.log(file.name);
+            // console.log(file.name);
         });
       framework.files.forEach(function(file) {
           if(file.isJavaScript()){
@@ -99,7 +99,7 @@ Task_Dependency.prototype.duty = function(framework,cb) {
   },
   /*Tree based sort*/
             function buildDependencyTrees(err,fr) {
-
+                // console.log("Building dependency trees begin");
               var that = this,_roots = [];   // _roots = object to hold the root nodes.
               /**
                * Helper object to generate nodes.
@@ -123,11 +123,13 @@ Task_Dependency.prototype.duty = function(framework,cb) {
             }
 
             /* find and add the root nodes first!*/
+                // console.log("Pushing files");
             fr.files.forEach(function (file){
                 if(file.isJavaScript() && file.dependencies.length === 0){
                   _roots.push(new _TreeNode(file.getName(),file));
                 }
               });
+                // console.log("Done pushing files");
 
             /**
              * Helper object to compute a tree of all files,
@@ -142,11 +144,13 @@ Task_Dependency.prototype.duty = function(framework,cb) {
                * @param node the current node to check, starts with root node.
                */
             that.buildTree = function(node){
+                // console.log("Inside Building a tree with files: ");
               that.files.forEach(function(file){
                   file.dependencies.forEach(function (dep){
                       if(file.getName() !== node.name){ /* don�t use itself as a dependency*/
                         if (normalize(dep) === node.name) {
                           /* adding child nodes, looking for children of that child node as well. */
+                            // console.log("Calling recursive buildTree with file = "+file.getName());
             node.addChildeNode(that.buildTree(new _TreeNode(file.getName(),file)));
           }
         }
@@ -162,7 +166,6 @@ return node
             _roots.forEach(function (rootNode){
                 fr.dependencyTrees.push(new _TreeBuilder(fr.files).buildTree(rootNode));
               });
-
             return fr; // shifting the framework to the next step in the sequencer
 
           },
@@ -271,7 +274,6 @@ return node
       };
 
       var _merger = new _Merger([]);
-
       /* Merge files for every  formed dependency tree.*/
             fr.dependencyTrees.forEach(function (tree){
                 _queue = []; //  reset _queue for each tree

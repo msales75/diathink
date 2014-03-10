@@ -1,4 +1,4 @@
-///<reference path="../app/foundation/view.ts"/>
+///<reference path="../app/views/View.ts"/>
 ///<reference path="./model2.ts"/>
 
 function assert(test, mesg) {

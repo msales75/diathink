@@ -258,7 +258,7 @@ $D.Action = Backbone.RelationalModel.extend({
         var focusDeps = [];
         for (i in outlines) {
            this.execView(outlines[i]);
-           focusDeps.push(['view', outlines[i].rootID]);
+           focusDeps.push(['view', outlines[i].nodeRootView.id]);
         }
         this.addQueue('focus', focusDeps, function() {
             if (that.options.focus) {
@@ -289,9 +289,13 @@ $D.Action = Backbone.RelationalModel.extend({
             var done = that.options.done;
             delete that.options['done'];
             done();
-            $D.validateMVC()
+            if (_.size($D.ActionManager.queue) === 0) {
+                console.log("Validating after action");
+                $D.validateMVC();
+            } else {
+                console.log("Not validating after subaction");
+            }
         });
-        // $D.validateMVC();
         this.nextQueue();
     },
     getModel: function(id) {
@@ -357,8 +361,8 @@ $D.Action = Backbone.RelationalModel.extend({
                     action: $D.TextAction,
                     activeID: model.cid,
                     text: value,
-                    oldRoot: view.rootID,
-                    newRoot: view.rootID,
+                    oldRoot: view.nodeRootView.id,
+                    newRoot: view.nodeRootView.id,
                     focus: false
                 }
         }

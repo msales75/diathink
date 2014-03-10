@@ -383,7 +383,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
             }
             for (i=0; i<this.items.length; ++i) {
                 var view = View.get(this.items[i].item.attr('id'));
-                while (view.type !== 'ScrollView') {
+                while (view instanceof ScrollView) {
                     view = view.parentView;
                     if (view==null) {debug.log(['error','drag'],'Invalid View'); return;}
                 }
@@ -474,7 +474,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     box.elem.addClass('active');
                     // add a virtual-hover over parent-element
                     if (box.parentView) {
-                        if (box.parentView.type==='ListItemView') {
+                        if (box.parentView instanceof NodeView) {
                             var parentEl = $('#'+box.parentView.id).get(0);
                             if (parentEl !== $D.hoverItem) {
                                 $($D.hoverItem).removeClass('ui-btn-hover-c');
@@ -548,7 +548,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
             // End of prototype._mouseStop
 
             $(document.body).addClass('transition-mode').removeClass('drop-mode');
-            var rootID = View.get(this.currentItem[0].id).rootID;
+            var rootID = View.get(this.currentItem[0].id).nodeRootView.id;
             // check for active drop-target and execute move
             if (this.activeBox != null) {
                 this.reverting = false;
@@ -557,10 +557,10 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                 // todo: must set item.id for all line items, too
                 // todo: must set top/left/width/height in each panel-view
                 var targetview = View.get(this.currentItem.attr('id'));
-                if (refview.type != 'ListItemView') {
+                if (! (refview instanceof NodeView)) {
                     console.log("refview is of the wrong type with id="+refview.id);
                 }
-                if (targetview.type != 'ListItemView') {
+                if (!(targetview instanceof NodeView)) {
                     console.log("targetview is of the wrong type with id="+targetview.id);
                 }
 
@@ -573,8 +573,8 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                         action: $D.MoveBeforeAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
-                        oldRoot: targetview.rootID,
-                        newRoot: refview.rootID,
+                        oldRoot: targetview.nodeRootView.id,
+                        newRoot: refview.nodeRootView.id,
                         anim: 'dock',
                         dockElem: that.helper[0],
                         focus: false
@@ -588,8 +588,8 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                         action: $D.MoveAfterAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
-                        oldRoot: targetview.rootID,
-                        newRoot: refview.rootID,
+                        oldRoot: targetview.nodeRootView.id,
+                        newRoot: refview.nodeRootView.id,
                         anim: 'dock',
                         dockElem: that.helper[0],
                         focus: false
@@ -603,8 +603,8 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                         action: $D.MoveIntoAction,
                         referenceID: refview.value.cid,
                         activeID: targetview.value.cid,
-                        oldRoot: targetview.rootID,
-                        newRoot: refview.rootID,
+                        oldRoot: targetview.nodeRootView.id,
+                        newRoot: refview.nodeRootView.id,
                         anim: 'dock',
                         dockElem: that.helper[0],
                         focus: false
@@ -618,7 +618,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                             action: $D.PanelAction,
                             activeID: targetview.value.cid,
                             prevPanel: $D.PanelManager.prevpanel[refview.id],
-                            oldRoot: targetview.rootID,
+                            oldRoot: targetview.nodeRootView.id,
                             newRoot: 'new',
                             dockElem: that.helper[0],
                             focus: false
@@ -632,7 +632,7 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                             action: $D.PanelAction,
                             activeID: targetview.value.cid,
                             prevPanel: refview.id,
-                            oldRoot: targetview.rootID,
+                            oldRoot: targetview.nodeRootView.id,
                             newRoot: 'new',
                             dockElem: that.helper[0],
                             focus: false

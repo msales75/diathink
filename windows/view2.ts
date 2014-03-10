@@ -47,8 +47,6 @@ class View {
     public Class = View;
     public id:string = null;
     public elem:HTMLElement = null;
-    public isView:boolean = true;
-    public isTemplate:boolean = false;
     public value:Model = null;
     public isDragHandle:boolean = false;
     public isScrollable:boolean = false;
@@ -216,10 +214,10 @@ class View {
         }
     }
     addClass(name:string) {
-        $('#' + this.id).addClass(cssClass);
+        $('#' + this.id).addClass(name);
     }
     removeClass(name:string) {
-        $('#' + this.id).removeClass(cssClass);
+        $('#' + this.id).removeClass(name);
     }
 }
 

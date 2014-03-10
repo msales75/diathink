@@ -1,6 +1,6 @@
 
 m_require('app/foundation/object.js');
-m_require('app/foundation/view.js');
+m_require('app/views/View.js');
 
 M.Application = M.Object.extend({
     type: 'M.Application',
@@ -12,7 +12,7 @@ M.Application = M.Object.extend({
     design: function(obj) {
         var pages = {};
         for(var pageName in obj) {
-            if(obj[pageName] && obj[pageName].type === 'PageView') {
+            if(obj[pageName] && obj[pageName] instanceof PageView) {
                 pages[pageName] = obj[pageName];
             }
         }      

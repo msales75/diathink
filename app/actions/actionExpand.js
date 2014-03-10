@@ -29,7 +29,7 @@ $D.CollapseAction= $D.Action.extend({
     },
     execView:function (outline) {
         var that = this;
-        this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
+        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd'], function() {
             // Each node starts with collapsed=null.
             // On expand/collapse, all visible nodes go to collapsed=true/false.
             // On undo, all nodes revert to prior-state of null/true/false.
@@ -46,25 +46,25 @@ $D.CollapseAction= $D.Action.extend({
             //  between open/closed/null
 
             var activeModel = that.getModel(that.options.activeID);
-            var activeLineView = that.getLineView(that.options.activeID, outline.rootID);
+            var activeLineView = that.getLineView(that.options.activeID, outline.nodeRootView.id);
             if (!activeLineView) {
                 console.log("Action collapse="+collapsed+" has no activeLineView, with activeID="+
-                    that.options.activeID+"; oldRoot="+outline.rootID+
+                    that.options.activeID+"; oldRoot="+outline.nodeRootView.id+
                     "; undo="+that.options.undo);
                 // Action collapse=false has no activeLineView, with activeID=c14; oldRoot=m_16; undo=false
-                // that.runtime.status.linePlaceAnim[outline.rootID] = 2;
+                // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
                 return;
             }
             var collapsed;
             if (that.options.undo) {
                 // oldCollapsed depends on view, can be true, false, or null.
-                collapsed = that.oldViewCollapsed[outline.rootID];
-                // console.log("Undo retrieved collapsed = "+collapsed+" for view="+outline.rootID);
+                collapsed = that.oldViewCollapsed[outline.nodeRootView.id];
+                // console.log("Undo retrieved collapsed = "+collapsed+" for view="+outline.nodeRootView.id);
             } else {
                 if (!that.options.redo) {
-                    that.oldViewCollapsed[outline.rootID] = outline.getData(that.options.activeID);
+                    that.oldViewCollapsed[outline.nodeRootView.id] = outline.getData(that.options.activeID);
                 }
-                if ((that.options.oldRoot === outline.rootID)||
+                if ((that.options.oldRoot === outline.nodeRootView.id)||
                     (that.options.oldRoot==='all')) {
                     collapsed = that.options.collapsed;
                 } else {
@@ -79,19 +79,20 @@ $D.CollapseAction= $D.Action.extend({
                 }
                 collapsed = activeModel.get('collapsed');
             }
+            activeLineView.isCollapsed = collapsed; // is this needed?
             if (collapsed) {
                 if (! $('#'+activeLineView.id).hasClass('collapsed')) {
                     $('#'+activeLineView.id).removeClass('expanded').addClass('collapsed');
-                    activeLineView.children.removeAllItems();
+                    activeLineView.children.collapseList();
                 }
             } else {
                 if ($('#'+activeLineView.id).hasClass('collapsed')) {
                     $('#'+activeLineView.id).addClass('expanded').removeClass('collapsed');
-                    activeLineView.children.renderUpdate();
+                    activeLineView.children.expandList();
                 }
             }
             // satisfy additional dependencies that are never used in this actiontype
-            // that.runtime.status.linePlaceAnim[outline.rootID] = 2;
+            // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });
     }
 });

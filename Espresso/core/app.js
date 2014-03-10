@@ -16,6 +16,11 @@ var Utils = require('../lib/espresso_utils');
 var HTML = Utils.HTML;
 var normalize = require('path').normalize;
 
+// MS dangerous addition trying to get console.log to work.
+process.on('uncaughtException', function(err) {
+    console.log(err);
+});
+
 /**
  * @class
  *
@@ -699,10 +704,16 @@ App.prototype.addUsedFrameworks = function (usedFrameworks) {
     return new Framework(_frameworkOptions);
   });
   for (var i in _usedFrameworks) {
-      console.log("Added Used Framework: "+_usedFrameworks[i].path);
+      if (_usedFrameworks[i] && _usedFrameworks[i].path) {
+          console.log("Added Used Framework: "+_usedFrameworks[i].path);
+      } else {
+          console.log("Adding Used Framework with no valid path (?)");
+      }
   }
+  console.log("Done listing added frameworks");
   this.addFrameworks(_usedFrameworks);
 };
+
 
 /**
  * @description
@@ -713,6 +724,7 @@ App.prototype.build = function (callback) {
   var self = this,
       _frameworks = [];
 
+    console.log("In App.build: ");
   // reset the global state
   self.globalState = {};
 
@@ -734,6 +746,7 @@ App.prototype.build = function (callback) {
         }
     });
 
+      console.log("NEW: About to add used frameworks");
     self.addUsedFrameworks(_frameworks);
   };
 
@@ -746,7 +759,7 @@ App.prototype.build = function (callback) {
     /* callback checker, called if all frameworks are built. */
     that.callbackIfDone = function () {
       if (callback && that._frameworkCounter <= 0) {
-        // console.log('build callback called !');
+        console.log('build callback called !');
         callback(null,self.frameworks);
       };
     };
@@ -754,6 +767,7 @@ App.prototype.build = function (callback) {
     that.build = function () {
       console.log(self.style.green("Building components:"));
       app.frameworks.forEach(function (framework) {
+          console.log("About to call build for framework "+framework.name);
         framework.build(function (fr) {
           // count = -1 if a framework had been built
           that._frameworkCounter -= 1;

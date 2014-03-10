@@ -27,22 +27,22 @@ $D.TextAction= $D.Action.extend({
     },
     execView:function (outline) {
         var that = this;
-        this.addQueue(['view', outline.rootID], ['newModelAdd'], function() {
+        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd'], function() {
             var text;
             if (that.options.undo) {
                 text = that.oldText;
             } else {
                 text = that.options.text;
             }
-            var activeLineView = that.getLineView(that.options.activeID, outline.rootID);
+            var activeLineView = that.getLineView(that.options.activeID, outline.nodeRootView.id);
             if (activeLineView != null) {
                 activeLineView.header.name.text.value = text;
                 // console.log("Updating view "+activeLineView.header.name.text.id+" to value "+this.options.text);
                 $('#'+activeLineView.header.name.text.id).val(text).text(text);
-                activeLineView.header.name.text.themeUpdate();
+                activeLineView.header.name.text.fixHeight();
             }
             // satisfy additional dependencies that are never used in this actiontype
-            // that.runtime.status.linePlaceAnim[outline.rootID] = 2;
+            // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });
     }
 });

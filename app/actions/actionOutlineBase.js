@@ -463,7 +463,7 @@ $D.OutlineAction = $D.Action.extend({
         if (!context) {return 'none';}
 
         if (context.parent != null) {
-            var parent = this.getLineView(context.parent, outline.rootID);
+            var parent = this.getLineView(context.parent, outline.nodeRootView.id);
             if (parent != null) {
                 if ($('#'+parent.id).hasClass('collapsed')) {
                     return 'parentIsCollapsedLine';
@@ -472,7 +472,7 @@ $D.OutlineAction = $D.Action.extend({
                 }
             } else { // parent is outside view, is it one level or more?
                 if (this.getModel(context.parent).get('children') ===
-                    View.get(outline.rootID).value) {
+                    View.get(outline.nodeRootView.id).value) {
                     return 'parentIsRoot';
                 } else { // context is out of scope
                     return 'parentInvisible';
@@ -480,7 +480,7 @@ $D.OutlineAction = $D.Action.extend({
                 }
             }
         } else { // outline-root $D.data
-            if (View.get(outline.rootID).value === $D.data) {
+            if (View.get(outline.nodeRootView.id).value === $D.data) {
                 return 'parentIsRoot';
             } else {
                 return 'parentInvisible';
@@ -495,7 +495,7 @@ $D.OutlineAction = $D.Action.extend({
         if (!context) {return null;}
 
         if (context.parent != null) {
-            var parent = this.getLineView(context.parent, outline.rootID);
+            var parent = this.getLineView(context.parent, outline.nodeRootView.id);
             if (parent != null) {
                 if ($('#'+parent.id).hasClass('collapsed')) {
                     parent.children.collapsed = true;
@@ -506,15 +506,15 @@ $D.OutlineAction = $D.Action.extend({
                 }
             } else { // parent is outside view, is it one level or more?
                 if (this.getModel(context.parent).get('children') ===
-                    View.get(outline.rootID).value) {
-                    return View.get(outline.rootID);
+                    View.get(outline.nodeRootView.id).value) {
+                    return View.get(outline.nodeRootView.id);
                 } else { // context is out of scope
                     return null;
                 }
             }
         } else { // outline-root $D.data
-            if (View.get(outline.rootID).value === $D.data) {
-                return View.get(outline.rootID);
+            if (View.get(outline.nodeRootView.id).value === $D.data) {
+                return View.get(outline.nodeRootView.id);
             } else {
                 return null;
             }
@@ -588,25 +588,26 @@ $D.OutlineAction = $D.Action.extend({
 
     restoreViewContext: function(outline) {
         var that = this;
-        this.addQueue(['view', outline.rootID], ['newModelAdd', 'anim'], function() {
+        assert(outline.id === outline.nodeRootView.id, "Invalid outline in restoreViewContext");
+        this.addQueue(['view', outline.id], ['newModelAdd', 'anim'], function() {
             var r= that.runtime;
             var collection, rank, oldParent, oldParentView=null;
             var newModelContext, li, elem, oldspot, neighbor, neighborType, newParentView, createActiveLineView=false;
 
             newModelContext = r.rNewModelContext;
             // todo: this is a mess, with placeholders and undo.  Need to simplify.
-            var activeLineView = that.getLineView(that.options.activeID, outline.rootID);
+            var activeLineView = that.getLineView(that.options.activeID, outline.id);
             // activeLineView should not be affected by rOldLinePlaceholder, except for DOM presence
             if (activeLineView!=null) { // original element was visible in this view
-                if (!r.oldLineContext[outline.rootID]) {
+                if (!r.oldLineContext[outline.id]) {
                     console.log("ERROR: Oldspot does not exist for action "+that.type+
                         "; undo="+that.options.undo+"; redo="+that.options.redo+
-                        "; activeID="+that.options.activeID+"; view="+outline.rootID);
+                        "; activeID="+that.options.activeID+"; view="+outline.id);
                     debugger;
                 }
                 // should get this earlier, per view, like rNewLineContext
-                neighbor = r.oldLineContext[outline.rootID].obj;
-                neighborType = r.oldLineContext[outline.rootID].type;
+                neighbor = r.oldLineContext[outline.id].obj;
+                neighborType = r.oldLineContext[outline.id].type;
             } else { // if old-view isn't visible, check if parent needs collapse-update
                 // todo: can oldParent be replaced with a newModelContext-newParentView instead?
                 if (that.options.undo) {
@@ -616,8 +617,8 @@ $D.OutlineAction = $D.Action.extend({
                 } else if (that.oldModelContext) {
                     oldParent = that.getModel(that.oldModelContext.parent);
                 }
-                if (oldParent && oldParent.views && oldParent.views[outline.rootID]) {
-                    oldParentView = oldParent.views[outline.rootID];
+                if (oldParent && oldParent.views && oldParent.views[outline.id]) {
+                    oldParentView = oldParent.views[outline.id];
                 }
             }
             // oldParentView != null means it needs to be checked if it changed to a leaf
@@ -626,7 +627,7 @@ $D.OutlineAction = $D.Action.extend({
             newParentView = that.contextParentVisible(newModelContext, outline);
             if (newParentView && newParentView.collapsed) {
                 // adding child to collapsed parent
-                $('#'+newParentView.parentView.id).addClass('branch').removeClass('leaf');
+                newParentView.addClass('branch').removeClass('leaf');
                 console.log('Nulling newModelContext because parent isnt visible');
                 newParentView = null;
             }
@@ -635,25 +636,22 @@ $D.OutlineAction = $D.Action.extend({
 
 
             if (newModelContext === null) {
-                console.log('Have newModelContext = null for outline='+outline.rootID);
-                if (activeLineView != null) {activeLineView.destroy(r.activeLineElem[outline.rootID]);}
+                console.log('Have newModelContext = null for outline='+outline.id);
+                if (activeLineView != null) {activeLineView.destroy();}
                 // destroy() also detaches view-reference from model
             } else {
                 if (activeLineView == null) { // create
-                    activeLineView = that.newListItemView(newParentView);
-                    // todo: add text in?
-                    activeLineView.value.addView(activeLineView);
+                    activeLineView= new newParentView.listItemTemplateView({
+                        parentView: newParentView,
+                        value: $D.OutlineNodeModel.getById(that.options.activeID),
+                        cssClass: 'leaf'
+                    });
                     elem = $(activeLineView.render());
-                    // enable recursive creation when moving out of collapsed view
-                    if (! activeLineView.value.get('collapsed')) {
-                        // console.log('Calling renderUpdate from execView');
-                        activeLineView.children.renderUpdate(elem.find('#'+activeLineView.children.id)[0]);
-                    }
                     createActiveLineView = true;
                 } else { // move
-                    if (r.activeLineElem[outline.rootID] && r.activeLineElem[outline.rootID].id === activeLineView.id) {
-                        elem = $(r.activeLineElem[outline.rootID]);
-                        r.activeLineElem[outline.rootID] = undefined;
+                    if (r.activeLineElem[outline.id] && r.activeLineElem[outline.id].id === activeLineView.id) {
+                        elem = $(r.activeLineElem[outline.id]);
+                        r.activeLineElem[outline.id] = undefined;
                     } else {
                         elem = $('#'+activeLineView.id).detach();
                     }
@@ -665,16 +663,16 @@ $D.OutlineAction = $D.Action.extend({
                 // put elem into newModelContext
                 // this cleans up destination-placeaholder; what about source-placeholder?
                 //   it could vanish automatically?
-                if (r.rNewLinePlaceholder[outline.rootID]) {
-                    console.log('Replacing newlinePlaceholder for '+outline.rootID);
-                    r.rNewLinePlaceholder[outline.rootID].parentNode.
-                        replaceChild(elem[0], r.rNewLinePlaceholder[outline.rootID]);
+                if (r.rNewLinePlaceholder[outline.id]) {
+                    console.log('Replacing newlinePlaceholder for '+outline.id);
+                    r.rNewLinePlaceholder[outline.id].parentNode.
+                        replaceChild(elem[0], r.rNewLinePlaceholder[outline.id]);
                 } else {
                     if (newModelContext.prev == null) {
                         var parentElem = $('#'+newParentView.id);
                         parentElem.prepend(elem);
                     } else {
-                        var prevElem = $('#'+that.getLineView(newModelContext.prev, outline.rootID).id);
+                        var prevElem = $('#'+that.getLineView(newModelContext.prev, outline.id).id);
                         prevElem.after(elem);
                     }
                 }
@@ -686,14 +684,14 @@ $D.OutlineAction = $D.Action.extend({
                 }
 
                 if (createActiveLineView) { // todo: add classes in detached-mode instead of here?
-                    activeLineView.theme(); // add classes and if there is content, fixHeight
+                    activeLineView.header.name.text.fixHeight(); // add classes and if there is content, fixHeight
                     if (activeLineView.value.get('collapsed')) {
-                        $('#'+activeLineView.id).addClass('collapsed').addClass('branch').removeClass('leaf');
+                        activeLineView.addClass('collapsed').addClass('branch').removeClass('leaf');
                     } else {
                         if (activeLineView.value.get('children').length>0) {
-                            $('#'+activeLineView.id).addClass('expanded').addClass('branch').removeClass('leaf');
+                            activeLineView.addClass('expanded').addClass('branch').removeClass('leaf');
                         } else {
-                            $('#'+activeLineView.id).addClass('expanded').addClass('leaf').removeClass('branch');
+                            activeLineView.addClass('expanded').addClass('leaf').removeClass('branch');
                         }
                     }
                 }
@@ -717,12 +715,12 @@ $D.OutlineAction = $D.Action.extend({
                 }
             }
             // remove source-placeholder
-            if (r.rOldLinePlaceholder[outline.rootID]) {
-                console.log('Removing oldlinePlaceholder for '+outline.rootID);
-                r.rOldLinePlaceholder[outline.rootID].parentNode.removeChild(that.runtime.rOldLinePlaceholder[outline.rootID]);
-                r.rOldLinePlaceholder[outline.rootID] = undefined;
-                r.activeLineElem[outline.rootID] = undefined;
-                r.activeLineHeight[outline.rootID] = undefined;
+            if (r.rOldLinePlaceholder[outline.id]) {
+                console.log('Removing oldlinePlaceholder for '+outline.id);
+                r.rOldLinePlaceholder[outline.id].parentNode.removeChild(that.runtime.rOldLinePlaceholder[outline.id]);
+                r.rOldLinePlaceholder[outline.id] = undefined;
+                r.activeLineElem[outline.id] = undefined;
+                r.activeLineHeight[outline.id] = undefined;
             }
 
             if (neighbor) { // fixup old location (expanded)
@@ -759,35 +757,15 @@ $D.OutlineAction = $D.Action.extend({
                     model = model.get('parent');
                 }
                 if (model) {
-                    outline.panelView.breadcrumbs.onDesign();
+                    outline.panelView.breadcrumbs.updateValue();
                     outline.panelView.breadcrumbs.renderUpdate();
-                    outline.panelView.breadcrumbs.theme();
                 }
             }
         });
     },
     // utility functions
     newListItemView:function (parentView) { // (id only if known)
-        // todo: should more of this be in cloneObject?
-        var templateView = parentView.listItemTemplateView;
-        assert(templateView != null, "templateView is not null");
-        templateView.events = templateView.events ? templateView.events : parentView.events;
-
-        var li = new templateView({cssClass: 'leaf'}); // todo -- merge with nestedsortable
-        if (this.options.activeID) {
-            var item = $D.OutlineNodeModel.getById(this.options.activeID);
-        } else {
-            // if view is rendered without a model
-            // {text: this.options.lineText}; // from list
-        }
-        // todo: listview() classes should be on li before it is cloned
-        li.setValuePatterns(item);
-        li.value = item; // enables getting the value/contentBinding of a list item in a template view.
-        li.parentView = parentView;
-        li.setRootID(parentView.rootID);
-        li.children.value = li.value.attributes.children;
-
-        return li;
+        // todo: update parentView.listItems
     },
 
     // must be called before placeholders inserted
@@ -802,10 +780,10 @@ $D.OutlineAction = $D.Action.extend({
         if (oldspot.length>0) {
             return {type: type, obj: View.get(oldspot.attr('id'))};
         } else {
-            if (view.parentView.parentView && view.parentView.parentView.type==='ListItemView') {
+            if (view.parentView.parentView && view.parentView.parentView instanceof NodeView) {
                 return {type: 'parent', obj: view.parentView.parentView};
             } else {
-                return {type: 'root', obj: View.get(view.rootID)}
+                return {type: 'root', obj: View.get(view.nodeRootView.id)}
             }
         }
     },

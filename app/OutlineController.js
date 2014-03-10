@@ -2,7 +2,6 @@
 m_require("app/foundation/object.js");
 
 $D.PanelManager = M.Object.extend({
-  type: 'PanelManager',
   nextpanel: {'': ''},
   prevpanel: {'': ''},
   rootViews: {},
@@ -159,66 +158,20 @@ $D.PanelManager = M.Object.extend({
 // TODO later support partial-list loading?
 
 $D.OutlineManager = M.Object.extend({
-    type: 'OutlineManager',
     outlines: {},
     deleted: {},
     add: function(id, controller) {
         if (this.deleted[id]) {
-            if (controller !== this.deleted[id]) {
-                console.log('ERROR: incompatible deleted outline');
-                debugger;
-            }
-            this.outlines[id] = this.deleted[id];
             delete this.deleted[id];
-        } else {
-            this.outlines[id] = controller;
         }
+        this.outlines[id] = controller;
     },
-    remove: function(id) {
-        this.deleted[id] = this.outlines[id];
+    remove: function(outline) {
+        var id = outline.id;
+        this.deleted[id] = id;
         delete this.outlines[id];
     }
 
-});
-
-// the delegation here is confusing: who is resposiblef or what?
-$D.OutlineController = M.Object.extend({
-    type: '$D.OutlineController',
-    rootID: null,
-    bindView: function(view) { // bind this constructor-instance to this view
-        this.rootID = view.id;
-        view.setRootID();
-        this.rootModel = view.rootModel;
-        this.deleted = false;
-        $D.OutlineManager.add(this.rootID, this);
-    },
-    destroy: function() {
-        var i, v, view, models;
-        $D.OutlineManager.remove(this.rootID);
-        this.deleted = true;
-        // destroy the outline-entries but not the root
-        view = View.get(this.rootID);
-        if (view.value) {
-            models = view.value.models;
-            for (i=0; i<models.length; ++i) {
-                models[i].views[this.rootID].destroy();
-            }
-        }
-        // don't destroy outline-ul-shell-view?
-    },
-    setData: function(key, val) {
-        if (!this.data) {this.data = {};}
-        if (val!=null) {
-            this.data[key] = val;
-        } else {
-            delete this.data[key];
-        }
-    },
-    getData: function(key) {
-        if (!this.data) {return null;}
-        else if (this.data[key] == null) {return null;}
-        else {return this.data[key];}
-    }
 });
 
 // nest horizontal pages, expand/contract? drag/drop?
