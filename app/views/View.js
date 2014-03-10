@@ -123,12 +123,6 @@ var View = (function () {
         delete this.viewList[view.id];
     };
 
-    View.getPage = function (pageName) {
-        var page = M.Application.pages[pageName];
-        assert(page != null, 'Page \'' + pageName + '\' not found.');
-        return page;
-    };
-
     View.getCurrentPage = function () {
         return this.currentPage;
     };

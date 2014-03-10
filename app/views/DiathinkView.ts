@@ -17,6 +17,9 @@ class DiathinkView extends PageView {
             content: PageContentView,
             drawlayer: DrawLayerView
         };
+        assert(View.currentPage == null,
+            "Page assigned more than once");
+        View.currentPage = this;
     }
 }
 

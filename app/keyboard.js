@@ -23,14 +23,14 @@ var keyboardSetup = (function () {
         if ($D.is_touch_device) {
             // for touch devices, don't let mousedown propogate to window,
             //   to prevent unintended focus/blurs that change keyboard
-            document.ontouchmove = function (e) {
+            document['ontouchmove'] = function (e) {
                 if ($('#debuglog').css('display') === 'none') {
                     e.preventDefault(); // helps prevent scrolling
                 }
             };
 
             $(window).bind('click keydown', function (e) {
-                if (e.target && e.target.nodeName && e.target.nodeName.toUpperCase() === 'TEXTAREA') {
+                if ((e.target) && e.target.nodeName && e.target.nodeName.toUpperCase() === 'TEXTAREA') {
                     setTimeout(function () {
                         window.scrollTo(0, 0);
                         document.body.scrollTop = 0;

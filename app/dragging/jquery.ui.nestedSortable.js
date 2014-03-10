@@ -475,22 +475,21 @@ m_require("app/dragging/jquery.ui.touch-punch.js");
                     // add a virtual-hover over parent-element
                     if (box.parentView) {
                         if (box.parentView instanceof NodeView) {
-                            var parentEl = $('#'+box.parentView.id).get(0);
-                            if (parentEl !== $D.hoverItem) {
-                                $($D.hoverItem).removeClass('ui-btn-hover-c');
+                            if (box.parentView !== $D.hoverItem) {
+                                $D.hoverItem.removeClass('ui-btn-hover-c');
                             }
-                            $(parentEl).addClass('ui-btn-hover-c');
-                            $D.hoverItem = parentEl;
+                            box.parentView.addClass('ui-btn-hover-c');
+                            $D.hoverItem = box.parentView;
                         } else {
                             if ($D.hoverItem) {
-                                $($D.hoverItem).removeClass('ui-btn-hover-c');
+                                $D.hoverItem.removeClass('ui-btn-hover-c');
                             }
                         }
                     }
                     $D.log(['debug','drag'],"Defined drop box of type"+box.type);
                 } else { // virtual blur
                     if ($D.hoverItem) {
-                        $($D.hoverItem).removeClass('ui-btn-hover-c');
+                        $D.hoverItem.removeClass('ui-btn-hover-c');
                     }
                 }
                 if (this.activeBox && (this.activeBox!=box)) {

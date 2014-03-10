@@ -22,6 +22,8 @@ var DiathinkView = (function (_super) {
             content: PageContentView,
             drawlayer: DrawLayerView
         };
+        assert(View.currentPage == null, "Page assigned more than once");
+        View.currentPage = this;
     };
     return DiathinkView;
 })(PageView);

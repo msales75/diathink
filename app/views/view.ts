@@ -98,12 +98,6 @@ class View {
         delete this.viewList[view.id];
     }
 
-    static getPage(pageName) {
-        var page = M.Application.pages[pageName];
-        assert(page!=null, 'Page \'' + pageName + '\' not found.');
-        return page;
-    }
-
     static getCurrentPage() {
         return this.currentPage;
     }
