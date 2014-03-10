@@ -13,13 +13,13 @@ $(function() {
             // does this occur on manual keyboard-close?
             // console.log('blurring keyboard from focusout');
             // $D.keyboard.blur();
-            if ($D.focused) {
+            if ($D.focused && $D.focused.elem) {
                 $D.focused.header.name.text.blur();
             }
             $D.focused = null;
             return;
         }
-        if ($D.focused) {
+        if ($D.focused && $D.focused.elem) {
             $D.focused.header.name.text.blur();
         }
         if (<HTMLElement>e.target && (<HTMLElement>e.target).nodeName && (<HTMLElement>e.target).nodeName.toLowerCase() === 'textarea') {
@@ -32,7 +32,7 @@ $(function() {
             // check if keyboard closed
             // console.log('blurring keyboard from focusin');
             // $D.keyboard.blur();
-            if ($D.focused) {
+            if ($D.focused && $D.focused.elem) {
                 $D.focused.header.name.text.blur();
             }
             $D.focused = null;
