@@ -9,7 +9,7 @@ class OutlineRootView extends ListView {
 
     constructor(opts) {
         super(opts);
-        $D.OutlineManager.add(this.id, this);
+        OutlineManager.add(this.id, this);
     }
 
     updateValue() { // once parent's rootModel is defined in design-stage
@@ -22,14 +22,6 @@ class OutlineRootView extends ListView {
         }
     }
 
-    postRender() {
-        var that = this;
-        // update the panel's dimensions
-        setTimeout(function() {
-            (<PanelView>that.parentView.parentView).cachePosition();
-        }, 0);
-    }
-
     destroy() { // move to graveyard, never(?) completely destroy this view
         var context, elem = this.elem;
         if (elem) {
@@ -37,7 +29,7 @@ class OutlineRootView extends ListView {
         } else {
             context = null;
         }
-        $D.OutlineManager.remove(this); // move to graveyard
+        OutlineManager.remove(this); // move to graveyard
         // is the rest of this standard destroy-operation?
         View.prototype.destroy.call(this);
         return context;

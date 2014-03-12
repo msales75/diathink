@@ -15,7 +15,7 @@ $D.RootAction= $D.Action.extend({
         var that = this;
         that.addQueue('newModelAdd', ['context'], function() {
             if ((!that.options.undo) && (!that.options.redo)) {
-                var c = $D.ActionManager;
+                var c = ActionManager;
                 if (c.actions.at(c.lastAction) !== that) {
                     console.log('ERROR: lastAction is not this');
                     debugger;
@@ -26,8 +26,8 @@ $D.RootAction= $D.Action.extend({
 
                     var activeModel= that.getModel(that.options.activeID);
                     activeModel.set('collapsed', prevAction.oldCollapsed);
-                    for (var o in $D.OutlineManager.outlines) {
-                        $D.OutlineManager.outlines[o].setData(
+                    for (var o in OutlineManager.outlines) {
+                        OutlineManager.outlines[o].setData(
                             that.options.activeID,
                             prevAction.oldViewCollapsed[o]);
                     }
@@ -80,47 +80,47 @@ $D.PanelAction=$D.Action.extend({
     newPanel: null,
     options: {activeID: null, prevPanel: null, oldroot: null, newRoot: 'new'},
     contextStep: function() { // save old context here
-        this.leftPanel = $D.PanelManager.leftPanel;
-        this.nextPanel = $D.PanelManager.nextpanel[this.prevPanel];
+        this.leftPanel = PanelManager.leftPanel;
+        this.nextPanel = PanelManager.nextpanel[this.prevPanel];
     },
     validateOldContext: function() {
         if (!this.options.undo) {
-            if (this.leftPanel !== $D.PanelManager.leftPanel) {
+            if (this.leftPanel !== PanelManager.leftPanel) {
                 console.log("ERROR: leftPanel is not what it should be before op");
                 debugger;
             }
-            if ($D.PanelManager.nextpanel[this.prevPanel] !==this.nextPanel) {
+            if (PanelManager.nextpanel[this.prevPanel] !==this.nextPanel) {
                 console.log("ERROR: leftPanel is not before nextPanel before op");
                 debugger;
             }
-            if ($D.PanelManager.nextpanel[this.newPanel] !== undefined) {
+            if (PanelManager.nextpanel[this.newPanel] !== undefined) {
                 console.log("ERROR: new panel is not undefined before op");
                 debugger;
             }
         } else {
-            if (this.postLeftPanel !== $D.PanelManager.leftPanel) {
+            if (this.postLeftPanel !== PanelManager.leftPanel) {
                 console.log("ERROR: leftPanel is not what it should be before undo");
                 debugger;
             }
         }
     },
     validateNewContext: function() {
-        if (!this.postLeftPanel) {this.postLeftPanel = $D.PanelManager.leftPanel;}
+        if (!this.postLeftPanel) {this.postLeftPanel = PanelManager.leftPanel;}
         if (this.options.undo) {
-            if (this.leftPanel !== $D.PanelManager.leftPanel) {
+            if (this.leftPanel !== PanelManager.leftPanel) {
                 console.log("ERROR: leftPanel is not what it should be after undo");
                 debugger;
             }
-            if ($D.PanelManager.nextpanel[this.prevPanel] !==this.nextPanel) {
+            if (PanelManager.nextpanel[this.prevPanel] !==this.nextPanel) {
                 console.log("ERROR: leftPanel is not before nextPanel after undo");
                 debugger;
             }
-            if ($D.PanelManager.nextpanel[this.newPanel] !== undefined) {
+            if (PanelManager.nextpanel[this.newPanel] !== undefined) {
                 console.log("ERROR: new panel is not undefined after undo");
                 debugger;
             }
         } else {
-            if (this.postLeftPanel !== $D.PanelManager.leftPanel) {
+            if (this.postLeftPanel !== PanelManager.leftPanel) {
                 console.log("ERROR: leftPanel is not what it should be after op");
                 debugger;
             }
@@ -128,7 +128,7 @@ $D.PanelAction=$D.Action.extend({
     },
     validateOptions: function() {
         // todo: check leftPanel
-        var PM = $D.PanelManager;
+        var PM = PanelManager;
         var o = this.options;
         if (!o.redo && !o.undo) {
             this.leftPanel = PM.leftPanel;
@@ -150,7 +150,7 @@ $D.PanelAction=$D.Action.extend({
     redrawPanel: function(n, p, firsttime) {
         // should changeRoot it instead?
         var c;
-        var PM = $D.PanelManager;
+        var PM = PanelManager;
         var grid = View.getCurrentPage().content.grid;
         if (grid['scroll'+String(n)]) {
             c = grid['scroll'+String(n)].destroy(); // save context for this
@@ -195,7 +195,7 @@ $D.PanelAction=$D.Action.extend({
     execModel: function() {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function() {
-            var PM = $D.PanelManager;
+            var PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
             var o = that.options;
             var dir;
@@ -261,7 +261,7 @@ $D.SlideAction = $D.Action.extend({
     execModel: function() {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function() {
-            var PM = $D.PanelManager;
+            var PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
             var o = that.options;
             var dir;

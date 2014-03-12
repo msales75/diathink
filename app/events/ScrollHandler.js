@@ -1,5 +1,6 @@
 ///<reference path="../../frameworks/m.ts"/>
 ///<reference path="ScrollEasing.ts"/>
+///<reference path="DragHandler.ts"/>
 function getCurrentTime() {
     return (new Date()).getTime();
 }
@@ -9,7 +10,7 @@ var ScrollHandler = (function () {
         this.options = {
             element: null,
             fps: 60,
-            direction: null,
+            direction: 'y',
             scrollDuration: 2000,
             overshootDuration: 250,
             snapbackDuration: 500,
@@ -24,7 +25,7 @@ var ScrollHandler = (function () {
             showScrollBars: true,
             pagingEnabled: false,
             delayedClickSelector: "a,input,textarea,select,button,.ui-btn",
-            delayedClickEnabled: true
+            delayedClickEnabled: false
         };
         this.options = _.extend(this.options, opts);
         this.element = this.options.element;
@@ -257,7 +258,9 @@ var ScrollHandler = (function () {
         return null;
     };
 
-    ScrollHandler.prototype._handleDragStart = function (e, ex, ey) {
+    ScrollHandler.prototype.scrollStart = function (params) {
+        var ex = params.pos.left, ey = params.pos.top;
+
         $D.log(['scroll', 'debug'], 'Starting drag-scroll at ' + ex + 'x' + ey);
 
         // Stop any scrolling of elements in our parent hierarcy.
@@ -266,27 +269,10 @@ var ScrollHandler = (function () {
         });
         this._stopMScroll();
 
-        // MS - check if this is an excluded zone, where other functionality takes precedence
-        // todo: we might not need this if we had better event-delegation
-        if ($(e.target).hasClass('ui-focus') || $(e.target).hasClass('ui-disable-scroll')) {
-            $D.log(['scroll', 'debug'], "ui-focus or ui-disable aborting scroll");
-            return;
-        }
-        var disabled = false;
-        $(e.target).parents().each(function () {
-            if ($(this).hasClass('ui-focus') || $(this).hasClass('ui-disable-scroll')) {
-                disabled = true;
-            }
-        });
-        if (disabled) {
-            $D.log(['scroll', 'debug'], "ui-focus or ui-disable aborting scroll");
-            return;
-        }
-
         var c = this._$clip;
         var v = this._$view;
         if (this.options.delayedClickEnabled) {
-            this._$clickEle = $(e.target).closest(this.options.delayedClickSelector);
+            // this._$clickEle = $(e.target).closest(this.options.delayedClickSelector);
         }
         this._lastX = ex;
         this._lastY = ey;
@@ -329,7 +315,6 @@ var ScrollHandler = (function () {
             this._pagePos -= this._pagePos % this._pageSize;
         }
         this._lastMove = 0;
-        this._enableTracking();
         // If we're using mouse events, we need to prevent the default
         // behavior to suppress accidental selection of text, etc. We
         // can't do this on touch devices because it will disable the
@@ -343,10 +328,11 @@ var ScrollHandler = (function () {
         // e.stopPropagation(); // MS edit to enable propogation of mousedown events
     };
 
-    ScrollHandler.prototype._propagateDragMove = function (sv, e, ex, ey, dir) {
+    ScrollHandler.prototype._propagateDragMove = function (sv, params, dir) {
         this._hideScrollBars();
-        this._disableTracking();
-        sv._handleDragStart(e, ex, ey);
+
+        // this._disableTracking();
+        sv._handleDragStart(params);
         sv._directionLock = dir;
         sv._didDrag = this._didDrag;
     };
@@ -402,7 +388,8 @@ var ScrollHandler = (function () {
         return false;
     };
 
-    ScrollHandler.prototype._handleDragMove = function (e, ex, ey) {
+    ScrollHandler.prototype.scrollMove = function (params) {
+        var ex = params.pos.left, ey = params.pos.top;
         this._lastMove = getCurrentTime();
 
         var dx = ex - this._lastX;
@@ -431,7 +418,7 @@ var ScrollHandler = (function () {
                 // that can handle the request.
                 var sv = this._getAncestorByDirection(dir);
                 if (sv) {
-                    this._propagateDragMove(sv, e, ex, ey, dir);
+                    this._propagateDragMove(sv, params, dir);
                     return false;
                 }
             }
@@ -454,7 +441,7 @@ var ScrollHandler = (function () {
                     var sv = this._getAncestorByDirection("x");
                     if (sv) {
                         this._setScrollPosition(newX > 0 ? 0 : this._maxX, newY);
-                        this._propagateDragMove(sv, e, ex, ey, dir);
+                        this._propagateDragMove(sv, params, dir);
                         return false;
                     }
                 }
@@ -475,7 +462,7 @@ var ScrollHandler = (function () {
                     var sv = this._getAncestorByDirection("y");
                     if (sv) {
                         this._setScrollPosition(newX, newY > 0 ? 0 : this._maxY);
-                        this._propagateDragMove(sv, e, ex, ey, dir);
+                        this._propagateDragMove(sv, params, dir);
                         return false;
                     }
                 }
@@ -511,7 +498,7 @@ var ScrollHandler = (function () {
         return false;
     };
 
-    ScrollHandler.prototype._handleDragStop = function () {
+    ScrollHandler.prototype.scrollStop = function () {
         var l = this._lastMove;
         var t = getCurrentTime();
         var doScroll = l && (t - l) <= this.options.moveIntervalThreshold;
@@ -535,8 +522,7 @@ var ScrollHandler = (function () {
         else
             this._hideScrollBars();
 
-        this._disableTracking();
-
+        // this._disableTracking();
         if (!this._didDrag && this.options.delayedClickEnabled && this._$clickEle.length) {
             $D.log(['debug', 'scroll'], "Triggering tap from empty dragstop");
             var tap = "click";
@@ -551,16 +537,6 @@ var ScrollHandler = (function () {
         // the event so that links etc, underneath our
         // cursor/finger don't fire.
         return this._didDrag ? false : undefined;
-    };
-
-    ScrollHandler.prototype._enableTracking = function () {
-        $(document).bind(this._dragMoveEvt, this._dragMoveCB);
-        $(document).bind(this._dragStopEvt, this._dragStopCB);
-    };
-
-    ScrollHandler.prototype._disableTracking = function () {
-        $(document).unbind(this._dragMoveEvt, this._dragMoveCB);
-        $(document).unbind(this._dragStopEvt, this._dragStopCB);
     };
 
     ScrollHandler.prototype._showScrollBars = function () {
@@ -581,41 +557,6 @@ var ScrollHandler = (function () {
 
     ScrollHandler.prototype._addBehaviors = function () {
         var self = this;
-        if (this.options.eventType === "mouse") {
-            this._dragStartEvt = "mousedown";
-            this._dragStartCB = function (e) {
-                return self._handleDragStart(e, e.clientX, e.clientY);
-            };
-
-            this._dragMoveEvt = "mousemove";
-            this._dragMoveCB = function (e) {
-                return self._handleDragMove(e, e.clientX, e.clientY);
-            };
-
-            this._dragStopEvt = "mouseup";
-            this._dragStopCB = function () {
-                return self._handleDragStop();
-            };
-        } else {
-            this._dragStartEvt = "touchstart";
-            this._dragStartCB = function (e) {
-                var t = e.originalEvent.targetTouches[0];
-                return self._handleDragStart(e, t.pageX, t.pageY);
-            };
-
-            this._dragMoveEvt = "touchmove";
-            this._dragMoveCB = function (e) {
-                var t = e.originalEvent.targetTouches[0];
-                return self._handleDragMove(e, t.pageX, t.pageY);
-            };
-
-            this._dragStopEvt = "touchend";
-            this._dragStopCB = function () {
-                return self._handleDragStop();
-            };
-        }
-        this._$view.bind(this._dragStartEvt, this._dragStartCB);
-
         if (this.options.showScrollBars) {
             var $c = this._$clip;
             var prefix = "<div class=\"ui-scrollbar ui-scrollbar-";

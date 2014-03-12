@@ -17,7 +17,7 @@ var UndoButtonView = (function (_super) {
         this.isClickable = true;
     };
     UndoButtonView.prototype.onClick = function () {
-        $D.ActionManager.undo();
+        ActionManager.undo();
     };
     return UndoButtonView;
 })(ButtonView);

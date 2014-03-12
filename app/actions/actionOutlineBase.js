@@ -110,7 +110,7 @@ $D.OutlineAction = $D.Action.extend({
         }
 
 
-        var outlines = $D.OutlineManager.outlines;
+        var outlines = OutlineManager.outlines;
         for (var i in outlines) {
             // figure out what kind of object activeID is in each outline.
             r.rOldContextType[i] = this.getContextType(r.rOldModelContext, outlines[i]);
@@ -195,13 +195,13 @@ $D.OutlineAction = $D.Action.extend({
             debugger;
         }
         if (o.oldRoot !== 'all') {
-            if (!$D.OutlineManager.outlines[o.oldRoot] && !$D.OutlineManager.deleted[o.oldRoot]) {
+            if (!OutlineManager.outlines[o.oldRoot] && !OutlineManager.deleted[o.oldRoot]) {
                 console.log('ERROR: Action '+this.type+' has invalid oldRoot');
                 debugger;
             }
         }
         if ((o.newRoot !== 'all')&&(o.newRoot!=='new'))  {
-            if (!$D.OutlineManager.outlines[o.newRoot] && !$D.OutlineManager.deleted[o.newRoot]) {
+            if (!OutlineManager.outlines[o.newRoot] && !OutlineManager.deleted[o.newRoot]) {
                 console.log('ERROR: Action '+this.type+' has invalid newRoot');
                 debugger;
             }

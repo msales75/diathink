@@ -51,10 +51,12 @@ class Router {
     }
 
     static getEventParams(e):DragStartI {
+        var target:HTMLElement = Router.getTarget(e);
         return {
-            view: View.getFromElement(Router.getTarget(e)),
+            view: View.getFromElement(target),
             pos: Router.getPosition(e),
-            time: (new Date()).getTime()
+            time: (new Date()).getTime(),
+            elem: target
         };
     }
 
@@ -62,17 +64,15 @@ class Router {
         var p1 = params.pos, p0 = this.dragStart.pos;
         if (Math.abs(p1.left-p0.left)+Math.abs(p1.top-p0.top) >= 5) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
     testScrollStart(params:DragStartI):boolean {
         var p1 = params.pos, p0 = this.dragStart.pos;
         if (Math.abs(p1.left-p0.left)+Math.abs(p1.top-p0.top) >= 5) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
     testClick(params:DragStartI):boolean {
         var p1 = params.pos, p0 = this.dragStart.pos;
@@ -80,46 +80,38 @@ class Router {
             (params.view !== this.dragStart.view) ||
             (Math.abs(p1.left-p0.left)+Math.abs(p1.top-p0.top) >= 5)) {
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
-    constructor(private rootElement:HTMLElement, private controllers) {
+    constructor(private rootElement:HTMLElement) {
         var is_touch_device:boolean = 'ontouchstart' in document.documentElement;
         var press:string = is_touch_device ? 'touchstart' : 'mousedown';
         var self:Router = this;
         this.dragger = new DragHandler();
         Router.bind(rootElement, press, function(e) {
             var preventDefault = true;
-            var view = View.getFromElement(Router.getTarget(e));
-            self.dragStart = {
-                view: view,
-                pos: Router.getPosition(e),
-                time: (new Date()).getTime()
-            };
+            self.dragStart = Router.getEventParams(e);
+            var view = self.dragStart.view;
             self.scrollMode = 0;
             self.dragMode = 0;
             if (view.handleView != null) {
                 self.dragMode = 1;
             } else if (view.scrollView != null) {
-                self.scrollMode = 1;
-                // view.scrollView.scrollStart();
+                if (!View.focusedView || (view.nodeView!==View.focusedView)) {
+                    // only enable scrolling if drag doesn't start from an already-focused-node
+                    //   (this is important for text-selection)
+                    self.scrollMode = 1;
+                }
                 if (view.nodeView != null) { // we touched inside a line-node
-                    if (View.focusedView) {
-                        if (View.focusedView !== view.nodeView) {
-                            View.focusedView.header.name.text.blur(); // call view.blur()
-                        }
-                    }
-                    View.focusedView = view.nodeView;
-                    View.focusedView.header.name.text.focus();
+                    View.setFocus(view);
                     if (view instanceof TextAreaView) {
                         // need native event to capture cursor position, even if we're not focusing
                         preventDefault = false;
-                        self.hidingFocus = view; // todo: make sure we don't need earlier delayed-focus list?
+                        // self.hidingFocus = view; // todo: make sure we don't need earlier delayed-focus list?
                         view.removeClass('hide-selection');
                     } else {
-                        $(view.nodeView.header.name.text.elem).addClass('hide-selection').selectText().focus().selectText();
+                        $(View.focusedView.elem).addClass('hide-selection').selectText().focus().selectText();
                     }
                 }
             }
@@ -135,7 +127,7 @@ class Router {
                 self.dragger.dragMove(params);
                 return;
             } else if (self.scrollMode===2) { // continue scrolling
-                //self.dragStart.view.scrollView.scrollMove(params);
+                self.dragStart.view.scrollView.scrollHandler.scrollMove(params);
                 return;
             }
             if (self.dragMode===1) { // possibly dragging
@@ -146,7 +138,7 @@ class Router {
             } else if (self.scrollMode===1) { // possibly scrolling
                 if (self.testScrollStart(params)) {
                     self.scrollMode=2;
-                    // self.dragStart.view.scrollView.scrollStart(params);
+                    self.dragStart.view.scrollView.scrollHandler.scrollStart(params);
                 }
             }
         });
@@ -171,7 +163,7 @@ class Router {
                 }
             }
             if (self.scrollMode===2) {
-                // self.dragStart.view.scrollView.scrollStop(params);
+                self.dragStart.view.scrollView.scrollHandler.scrollStop();
             }
             if (self.dragMode===2) {
                 self.dragger.dragStop(params);
@@ -179,7 +171,7 @@ class Router {
             self.dragMode = 0;
             self.scrollMode = 0;
             self.dragStart = null;
-            // todo: preventDefault? if we clicked on text?
+            // todo: preventDefault if we didn't click on text?
         });
 
         // todo: swiping and scroll-wheel

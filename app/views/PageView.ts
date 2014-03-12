@@ -1,8 +1,6 @@
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
 class PageView extends View {
-    postRender():void {}
-
     render() {
         this._create({
             type: 'div',
@@ -16,7 +14,6 @@ class PageView extends View {
         for (var name in this.childViewTypes) {
             this.elem.appendChild((<View>(this[name])).elem);
         }
-        this.postRender();
         return this.elem;
     }
 }

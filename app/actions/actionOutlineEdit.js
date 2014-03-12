@@ -85,7 +85,7 @@ $D.DeleteAction = $D.OutlineAction.extend({
         var newRoot, li, model, collection, rank, cursorstart=false, cursor;
         if (this.options.undo) {
             li = this.getLineView(this.options.activeID, this.options.oldRoot);
-            $D.setFocus(li);
+            View.setFocus(li);
             var elem = $('#'+li.header.name.text.id);
             elem.setCursor(0);
             elem.focus();
@@ -113,7 +113,7 @@ $D.DeleteAction = $D.OutlineAction.extend({
                 debugger;
             }
         }
-        $D.setFocus(li);
+        View.setFocus(li);
         var elem = $('#'+li.header.name.text.id);
         if (cursorstart) {
             elem.setCursor(0);

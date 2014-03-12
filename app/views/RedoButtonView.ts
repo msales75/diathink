@@ -7,7 +7,7 @@ class RedoButtonView extends ButtonView {
         this.isClickable = true;
     }
     onClick(){
-        $D.ActionManager.redo()
+        ActionManager.redo()
     }
 }
 

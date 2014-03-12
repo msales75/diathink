@@ -1,6 +1,6 @@
 $D.validateMVC = function () {
     assert(Backbone.Relational.store._collections.length === 1);
-    var outlines = $D.OutlineManager.outlines;
+    var outlines = OutlineManager.outlines;
     var models = Backbone.Relational.store._collections[0]._byId;
     var views = View.viewList;
 
@@ -262,7 +262,7 @@ $D.validateMVC = function () {
     assert(numpages===1, "numpages = "+numpages+" instead of 1");
     for (v in views) {
         // deal with deleted outlines
-        if ($D.OutlineManager.deleted[v] !== undefined) {
+        if (OutlineManager.deleted[v] !== undefined) {
             continue;
         }
         // validate childViews exist and have matching parentView
@@ -549,9 +549,9 @@ $D.validateMVC = function () {
                 "View " + v + " does not have parent-view " + pid);
         }
 
-        assert($D.OutlineManager.deleted[v] === undefined,
+        assert(OutlineManager.deleted[v] === undefined,
             "View "+v+" is in outline deleted list but still exists");
-        assert($D.PanelManager.deleted[v] === undefined,
+        assert(PanelManager.deleted[v] === undefined,
             "View "+v+" is in panel deleted list but still exists");
 
         assert(views[v].elem !=null,
@@ -565,7 +565,7 @@ $D.validateMVC = function () {
         // todo: check elem existence and caching top/left/width/height
     }
 
-    var PM = $D.PanelManager;
+    var PM = PanelManager;
     var grid = View.getCurrentPage().content.grid;
     // todo: check on properties of all deleted outlines/panels
 
@@ -780,8 +780,8 @@ $D.validateMVC = function () {
     });
 
 
-    var actions = $D.ActionManager.actions;
-    var lastaction = $D.ActionManager.lastAction;
+    var actions = ActionManager.actions;
+    var lastaction = ActionManager.lastAction;
     if (actions.length > 0) {
         assert(lastaction !== null,
             "Actions.length>0 but lastaction is null");
@@ -824,8 +824,8 @@ $D.validateMVC = function () {
         assert(lastaction === null,
             "There are no actions, but lastaction is not null")
     }
-    assert(_.size($D.ActionManager.queue) === 0,
-        "$D.ActionManager.queue is not empty");
+    assert(_.size(ActionManager.queue) === 0,
+        "ActionManager.queue is not empty");
 
     // undo-buttons should be up to date
     var b = View.getCurrentPage().header.undobuttons;
@@ -838,15 +838,15 @@ $D.validateMVC = function () {
     assert($('#' + b.redobutton.id).length === 1,
         "Cannot find redo button element");
     assert(
-        (($D.ActionManager.nextUndo() === false) &&
+        ((ActionManager.nextUndo() === false) &&
             ($('#' + b.undobutton.id).children('div.ui-disabled').length === 1)) ||
-            (($D.ActionManager.nextUndo() !== false) &&
+            ((ActionManager.nextUndo() !== false) &&
                 ($('#' + b.undobutton.id).children('div.ui-disabled').length === 0)),
         "Undo button does not match nextUndo()");
     assert(
-        (($D.ActionManager.nextRedo() === false) &&
+        ((ActionManager.nextRedo() === false) &&
             ($('#' + b.redobutton.id).children('div.ui-disabled').length === 1)) ||
-            (($D.ActionManager.nextRedo() !== false) &&
+            ((ActionManager.nextRedo() !== false) &&
                 ($('#' + b.redobutton.id).children('div.ui-disabled').length === 0)),
         "Redo button does not match nextRedo()");
 
@@ -921,7 +921,7 @@ $D.validateMVC = function () {
     // todo: textarea not exceed height/width of parent boxes
     // todo: textarea height/width change must always match with content
     // todo: check height/width footprint of li and ul
-    // todo: $D.focused should be focused and match hiddendiv
+    // todo: View.focusedView should be focused and match hiddendiv
     // todo: hiddendiv should have properties matching focused-div
     // todo: recalculated widths/heights should match up after resize
     // todo: ui-focus should always/only be on focused textarea and parent li.

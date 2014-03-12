@@ -89,7 +89,7 @@ var keyboardSetup = (function () {
                 // hiddenlog("listening for resize open with width/height="+this.oldWidth+"x"+this.oldHeight);
                 setTimeout(function () {
                     if (self.listenForResize === 1) {
-                        self.listenForRezize = 0;
+                        self.listenForResize = 0;
                     }
                 }, 2500);
             }
@@ -129,7 +129,7 @@ var keyboardSetup = (function () {
             // hiddenlog("listening for resize close with width/height="+self.oldWidth+"x"+self.oldHeight);
             self.startTime = (new Date()).getTime();
             setTimeout(function () {
-                self.listenForRezize = 0;
+                self.listenForResize = 0;
             }, 2500);
         }
     };

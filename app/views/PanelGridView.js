@@ -12,7 +12,7 @@ var PanelGridView = (function (_super) {
     function PanelGridView() {
         _super.apply(this, arguments);
         this.cssClass = "scroll-container";
-        this.panelManager = $D.PanelManager;
+        this.panelManager = PanelManager;
         this.layout = TWO_COLUMNS;
     }
     PanelGridView.prototype.init = function () {

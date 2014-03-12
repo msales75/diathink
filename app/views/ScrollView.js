@@ -1,10 +1,11 @@
+///<reference path="View.ts"/>
+///<reference path="../events/ScrollHandler.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-///<reference path="View.ts"/>
 m_require("app/views/View.js");
 var ScrollView = (function (_super) {
     __extends(ScrollView, _super);
@@ -23,9 +24,7 @@ var ScrollView = (function (_super) {
             this.elem.appendChild((this[name]).elem);
         }
         this.scrollHandler = new ScrollHandler({
-            element: this.elem,
-            direction: 'y',
-            delayedClickEnabled: false
+            element: this.elem
         });
         return this.elem;
     };

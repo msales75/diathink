@@ -130,6 +130,24 @@ var View = (function () {
         this.currentPage = page;
     };
 
+    View.setFocus = function (view) {
+        var nView = null;
+        if (view) {
+            nView = view.nodeView;
+        }
+        if (View.focusedView && (nView !== View.focusedView)) {
+            if (View.focusedView && View.focusedView.elem && View.focusedView.elem.parentNode) {
+                View.focusedView.header.name.text.blur();
+            }
+        }
+        if (nView && (nView !== View.focusedView)) {
+            View.focusedView = nView;
+            nView.header.name.text.focus();
+        } else if (!nView) {
+            View.focusedView = null;
+        }
+    };
+
     View.prototype.createListItems = function () {
         // check they shouldn't already exist
         assert((!this.elem) || (this.elem.children.length === 0), "createListItems has children when creating more");
@@ -164,6 +182,7 @@ var View = (function () {
     };
     View.prototype.updateValue = function () {
     };
+
     View.prototype.removeListItems = function () {
     };
     View.prototype.themeFirst = function () {
@@ -172,6 +191,7 @@ var View = (function () {
     };
     View.prototype.onClick = function () {
     };
+
     View.prototype.onDoubleClick = function () {
     };
 
@@ -212,6 +232,7 @@ var View = (function () {
             }
         }
     };
+
     View.prototype.renderListItems = function () {
         for (var i = 0; i < this.listItems.length; ++i) {
             var li = this.listItems[i];

@@ -11,7 +11,7 @@ class HandleImageView extends ImageView {
     onClick() {
         var li:NodeView = this.nodeView;
         var liElem = $(li.elem);
-        $D.ActionManager.schedule(
+        ActionManager.schedule(
             function() {
                 return $D.Action.checkTextChange(li.header.name.text.id);
             },
@@ -31,7 +31,7 @@ class HandleImageView extends ImageView {
     }
     onDoubleClick() {
         var li:NodeView = this.nodeView;
-        $D.ActionManager.schedule(
+        ActionManager.schedule(
             function() {
                 return $D.Action.checkTextChange(li.header.name.text.id);
             },

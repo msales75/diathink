@@ -1,5 +1,6 @@
 ///<reference path="../../frameworks/m.ts"/>
 ///<reference path="ScrollEasing.ts"/>
+///<reference path="DragHandler.ts"/>
 
 
 function getCurrentTime() {
@@ -45,7 +46,7 @@ class ScrollHandler {
     private options = {
         element: null,
         fps: 60,    // Frames per second in msecs.
-        direction: null,  // "x", "y", or null for both.
+        direction: 'y',  // "x", "y", or null for both.
 
         scrollDuration: 2000,  // Duration of the scrolling animation in msecs.
         overshootDuration: 250,   // Duration of the overshoot animation in msecs.
@@ -67,7 +68,9 @@ class ScrollHandler {
 
         pagingEnabled: false,
         delayedClickSelector: "a,input,textarea,select,button,.ui-btn",
-        delayedClickEnabled: true
+        delayedClickEnabled: false
+        // MS - prevents double-handling of tap when using bubbling/delegated
+
     };
 
     private _makePositioned($ele) {
@@ -102,7 +105,7 @@ class ScrollHandler {
         this._sx = 0;
         this._sy = 0;
 
-        var direction = this.options.direction;
+        var direction:string = this.options.direction;
         this._hTracker = (direction !== "y") ? new MomentumTracker(this.options) : null;
         this._vTracker = (direction !== "x") ? new MomentumTracker(this.options) : null;
 
@@ -132,7 +135,7 @@ class ScrollHandler {
 
         this._$clip.trigger(this.options.startEventName);
 
-        var ht = this._hTracker;
+        var ht:MomentumTracker = this._hTracker;
         if (ht) {
             var c = this._$clip.width();
             var v = this._$view.width();
@@ -140,7 +143,7 @@ class ScrollHandler {
             keepGoing = !ht.done();
         }
 
-        var vt = this._vTracker;
+        var vt:MomentumTracker = this._vTracker;
         if (vt) {
             var c = this._$clip.height();
             var v = this._$view.height();
@@ -175,14 +178,14 @@ class ScrollHandler {
 
         var x = 0, y = 0;
 
-        var vt = this._vTracker;
+        var vt:MomentumTracker = this._vTracker;
         if (vt) {
             vt.update();
             y = vt.getPosition();
             keepGoing = !vt.done();
         }
 
-        var ht = this._hTracker;
+        var ht:MomentumTracker = this._hTracker;
         if (ht) {
             ht.update();
             x = ht.getPosition();
@@ -305,7 +308,9 @@ class ScrollHandler {
         return null;
     }
 
-    _handleDragStart(e, ex, ey) {
+    public scrollStart(params:DragStartI) {
+        var ex = params.pos.left, ey = params.pos.top;
+
         $D.log(['scroll', 'debug'], 'Starting drag-scroll at ' + ex + 'x' + ey);
         // Stop any scrolling of elements in our parent hierarcy.
         $.each(this._getScrollHierarchy(), function (i, sv) {
@@ -313,27 +318,10 @@ class ScrollHandler {
         });
         this._stopMScroll();
 
-        // MS - check if this is an excluded zone, where other functionality takes precedence
-        // todo: we might not need this if we had better event-delegation
-        if ($(e.target).hasClass('ui-focus') || $(e.target).hasClass('ui-disable-scroll')) {
-            $D.log(['scroll', 'debug'], "ui-focus or ui-disable aborting scroll");
-            return;
-        }
-        var disabled = false;
-        $(e.target).parents().each(function () {
-            if ($(this).hasClass('ui-focus') || $(this).hasClass('ui-disable-scroll')) {
-                disabled = true;
-            }
-        });
-        if (disabled) {
-            $D.log(['scroll', 'debug'], "ui-focus or ui-disable aborting scroll");
-            return;
-        }
-
         var c = this._$clip;
         var v = this._$view;
         if (this.options.delayedClickEnabled) {
-            this._$clickEle = $(e.target).closest(this.options.delayedClickSelector);
+            // this._$clickEle = $(e.target).closest(this.options.delayedClickSelector);
         }
         this._lastX = ex;
         this._lastY = ey;
@@ -362,7 +350,7 @@ class ScrollHandler {
                 this._$vScrollBar.find(".ui-scrollbar-thumb").css("height", (ch >= vh ? "100%" : Math.floor(ch / vh * 100) + "%"));
         }
 
-        var svdir = this.options.direction;
+        var svdir:string = this.options.direction;
 
         this._pageDelta = 0;
         this._pageSize = 0;
@@ -374,7 +362,6 @@ class ScrollHandler {
             this._pagePos -= this._pagePos % this._pageSize;
         }
         this._lastMove = 0;
-        this._enableTracking();
 
         // If we're using mouse events, we need to prevent the default
         // behavior to suppress accidental selection of text, etc. We
@@ -391,10 +378,10 @@ class ScrollHandler {
         // e.stopPropagation(); // MS edit to enable propogation of mousedown events
     }
 
-    _propagateDragMove(sv, e, ex, ey, dir) {
+    _propagateDragMove(sv, params, dir) {
         this._hideScrollBars();
-        this._disableTracking();
-        sv._handleDragStart(e, ex, ey);
+        // this._disableTracking();
+        sv._handleDragStart(params);
         sv._directionLock = dir;
         sv._didDrag = this._didDrag;
     }
@@ -449,12 +436,13 @@ class ScrollHandler {
         return false;
     }
 
-    _handleDragMove(e, ex, ey) {
+    public scrollMove(params) {
+        var ex = params.pos.left, ey = params.pos.top;
         this._lastMove = getCurrentTime();
 
         var dx = ex - this._lastX;
         var dy = ey - this._lastY;
-        var svdir = this.options.direction;
+        var svdir:string = this.options.direction;
 
         if (!this._directionLock) {
             var x = Math.abs(dx);
@@ -480,7 +468,7 @@ class ScrollHandler {
 
                 var sv = this._getAncestorByDirection(dir);
                 if (sv) {
-                    this._propagateDragMove(sv, e, ex, ey, dir);
+                    this._propagateDragMove(sv, params, dir);
                     return false;
                 }
             }
@@ -504,7 +492,7 @@ class ScrollHandler {
                     var sv = this._getAncestorByDirection("x");
                     if (sv) {
                         this._setScrollPosition(newX > 0 ? 0 : this._maxX, newY);
-                        this._propagateDragMove(sv, e, ex, ey, dir);
+                        this._propagateDragMove(sv, params, dir);
                         return false;
                     }
                 }
@@ -526,7 +514,7 @@ class ScrollHandler {
                     var sv = this._getAncestorByDirection("y");
                     if (sv) {
                         this._setScrollPosition(newX, newY > 0 ? 0 : this._maxY);
-                        this._propagateDragMove(sv, e, ex, ey, dir);
+                        this._propagateDragMove(sv, params, dir);
                         return false;
                     }
                 }
@@ -565,7 +553,7 @@ class ScrollHandler {
         return false;
     }
 
-    _handleDragStop() {
+    public scrollStop() {
         var l = this._lastMove;
         var t = getCurrentTime();
         var doScroll = l && (t - l) <= this.options.moveIntervalThreshold;
@@ -574,7 +562,7 @@ class ScrollHandler {
         var sx = (this._hTracker && this._speedX && doScroll) ? this._speedX : (this._doSnapBackX ? 1 : 0);
         var sy = (this._vTracker && this._speedY && doScroll) ? this._speedY : (this._doSnapBackY ? 1 : 0);
 
-        var svdir = this.options.direction;
+        var svdir:string = this.options.direction;
         if (this.options.pagingEnabled && (svdir === "x" || svdir === "y") && !this._doSnapBackX && !this._doSnapBackY) {
             var x = this._sx;
             var y = this._sy;
@@ -590,7 +578,7 @@ class ScrollHandler {
         else
             this._hideScrollBars();
 
-        this._disableTracking();
+        // this._disableTracking();
 
         if (!this._didDrag && this.options.delayedClickEnabled && this._$clickEle.length) {
             $D.log(['debug', 'scroll'], "Triggering tap from empty dragstop");
@@ -611,16 +599,6 @@ class ScrollHandler {
         return this._didDrag ? false : undefined;
     }
 
-    _enableTracking() {
-        $(document).bind(this._dragMoveEvt, this._dragMoveCB);
-        $(document).bind(this._dragStopEvt, this._dragStopCB);
-    }
-
-    _disableTracking() {
-        $(document).unbind(this._dragMoveEvt, this._dragMoveCB);
-        $(document).unbind(this._dragStopEvt, this._dragStopCB);
-    }
-
     _showScrollBars() {
         var vclass = "ui-scrollbar-visible";
         if (this._$vScrollBar) this._$vScrollBar.addClass(vclass);
@@ -635,43 +613,6 @@ class ScrollHandler {
 
     _addBehaviors() {
         var self = this;
-        if (this.options.eventType === "mouse") {
-            this._dragStartEvt = "mousedown";
-            this._dragStartCB = function (e) {
-                return self._handleDragStart(e, e.clientX, e.clientY);
-            };
-
-            this._dragMoveEvt = "mousemove";
-            this._dragMoveCB = function (e) {
-                return self._handleDragMove(e, e.clientX, e.clientY);
-            };
-
-            this._dragStopEvt = "mouseup";
-            this._dragStopCB = function () {
-                return self._handleDragStop();
-            };
-        }
-        else // "touch"
-        {
-            this._dragStartEvt = "touchstart";
-            this._dragStartCB = function (e) {
-                var t = e.originalEvent.targetTouches[0];
-                return self._handleDragStart(e, t.pageX, t.pageY);
-            };
-
-            this._dragMoveEvt = "touchmove";
-            this._dragMoveCB = function (e) {
-                var t = e.originalEvent.targetTouches[0];
-                return self._handleDragMove(e, t.pageX, t.pageY);
-            };
-
-            this._dragStopEvt = "touchend";
-            this._dragStopCB = function () {
-                return self._handleDragStop();
-            };
-        }
-        this._$view.bind(this._dragStartEvt, this._dragStartCB);
-
         if (this.options.showScrollBars) {
             var $c = this._$clip;
             var prefix = "<div class=\"ui-scrollbar ui-scrollbar-";

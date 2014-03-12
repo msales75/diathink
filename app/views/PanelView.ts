@@ -1,5 +1,6 @@
 ///<reference path="View.ts"/>
 ///<reference path="../events/Router.ts"/>
+///<reference path="../PanelManager.ts"/>
 m_require("app/views/ContainerView.js");
 class PanelView extends ContainerView {
     breadcrumbs:BreadcrumbView;
@@ -54,14 +55,14 @@ class PanelView extends ContainerView {
         this.outline.alist.renderAt(c);
         this.breadcrumbs.updateValue();
         this.breadcrumbs.renderUpdate();
-        this.outline.alist.postRender();
+        this.cachePosition();
         (<Router>$D.router).dragger.refresh();
         // $('#' + View.getCurrentPage().id).nestedSortable('update');
         // todo: this breaks dragging after changeroot
 
         $(window).resize(); // fix height of new panel, spacer
-        $D.PanelManager.rootViews[this.id] = newlist.id;
-        $D.PanelManager.rootModels[this.id] = model;
+        PanelManager.rootViews[this.id] = newlist.id;
+        PanelManager.rootModels[this.id] = model;
         return newlist.id;
     }
 }

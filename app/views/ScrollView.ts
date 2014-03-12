@@ -1,7 +1,9 @@
 ///<reference path="View.ts"/>
+///<reference path="../events/ScrollHandler.ts"/>
+
 m_require("app/views/View.js");
 class ScrollView extends View {
-    scrollHandler = null; // scroll handler
+    scrollHandler:ScrollHandler = null; // scroll handler
     render() {
         this._create({
             type: 'div',
@@ -13,11 +15,7 @@ class ScrollView extends View {
             this.elem.appendChild((<View>(this[name])).elem);
         }
         this.scrollHandler = new ScrollHandler({
-            element: this.elem,
-            direction: 'y',
-            delayedClickEnabled: false
-            // MS - prevents double-handling of tap when using bubbling/delegated
-            // updateScroll: this.updateScroll
+            element: this.elem
         });
         return this.elem;
     }

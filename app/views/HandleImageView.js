@@ -21,7 +21,7 @@ var HandleImageView = (function (_super) {
     HandleImageView.prototype.onClick = function () {
         var li = this.nodeView;
         var liElem = $(li.elem);
-        $D.ActionManager.schedule(function () {
+        ActionManager.schedule(function () {
             return $D.Action.checkTextChange(li.header.name.text.id);
         }, function () {
             if (!liElem.hasClass('branch')) {
@@ -39,7 +39,7 @@ var HandleImageView = (function (_super) {
     };
     HandleImageView.prototype.onDoubleClick = function () {
         var li = this.nodeView;
-        $D.ActionManager.schedule(function () {
+        ActionManager.schedule(function () {
             return $D.Action.checkTextChange(li.header.name.text.id);
         }, function () {
             return {

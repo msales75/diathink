@@ -11,9 +11,6 @@ var PageView = (function (_super) {
     function PageView() {
         _super.apply(this, arguments);
     }
-    PageView.prototype.postRender = function () {
-    };
-
     PageView.prototype.render = function () {
         this._create({
             type: 'div',
@@ -27,7 +24,6 @@ var PageView = (function (_super) {
         for (var name in this.childViewTypes) {
             this.elem.appendChild((this[name]).elem);
         }
-        this.postRender();
         return this.elem;
     };
     return PageView;

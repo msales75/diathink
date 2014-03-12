@@ -20,9 +20,9 @@ var LeftSwipeButtonView = (function (_super) {
     };
 
     LeftSwipeButtonView.prototype.onClick = function () {
-        $D.ActionManager.schedule(function () {
-            if ($D.focused) {
-                return $D.Action.checkTextChange($D.focused.header.name.text.id);
+        ActionManager.schedule(function () {
+            if (View.focusedView) {
+                return $D.Action.checkTextChange(View.focusedView.header.name.text.id);
             } else {
                 return null;
             }

@@ -3,7 +3,7 @@ m_require("app/views/GridView.js");
 
 class PanelGridView extends GridView {
     cssClass = "scroll-container";
-    panelManager:any = $D.PanelManager;
+    panelManager:any = PanelManager;
     layout = TWO_COLUMNS;
     scroll1:PanelView;
     scroll2:PanelView;

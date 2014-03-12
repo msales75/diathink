@@ -10,7 +10,7 @@ var OutlineRootView = (function (_super) {
     __extends(OutlineRootView, _super);
     function OutlineRootView(opts) {
         _super.call(this, opts);
-        $D.OutlineManager.add(this.id, this);
+        OutlineManager.add(this.id, this);
     }
     OutlineRootView.prototype.init = function () {
         this.listItemTemplateView = NodeView;
@@ -27,15 +27,6 @@ var OutlineRootView = (function (_super) {
         }
     };
 
-    OutlineRootView.prototype.postRender = function () {
-        var that = this;
-
-        // update the panel's dimensions
-        setTimeout(function () {
-            that.parentView.parentView.cachePosition();
-        }, 0);
-    };
-
     OutlineRootView.prototype.destroy = function () {
         var context, elem = this.elem;
         if (elem) {
@@ -43,7 +34,7 @@ var OutlineRootView = (function (_super) {
         } else {
             context = null;
         }
-        $D.OutlineManager.remove(this); // move to graveyard
+        OutlineManager.remove(this); // move to graveyard
 
         // is the rest of this standard destroy-operation?
         View.prototype.destroy.call(this);

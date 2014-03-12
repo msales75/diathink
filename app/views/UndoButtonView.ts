@@ -6,7 +6,7 @@ class UndoButtonView extends ButtonView {
         this.isClickable = true;
     }
     onClick() {
-        $D.ActionManager.undo()
+        ActionManager.undo()
     }
 
     cssClass = 'undo-button';

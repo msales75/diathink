@@ -9,6 +9,8 @@ var escapeHtml = function(text) {
         .replace(/'/g, "&#039;");
 };
 
+$D.log = function(a, b) {};
+
 jQuery.fn.selectText = function() {
     var doc = document
         , element = this[0]
@@ -99,28 +101,6 @@ jQuery.fn.mouseIsOver = function () {
     return $(this).parent().find($(this).selector + ":hover").length > 0;
 };
 
-function animStep(f, duration, start, end) {
-    var frac = ((new Date()).getTime()-start)/duration;
-    if (frac >= 1) {frac=1;}
-    f(frac);
-    if (frac===1) {
-        end();
-    } else {
-        setTimeout(function() {
-          animStep(f, duration, start, end);
-        }, 20);
-    }
-}
-
-jQuery.anim = function(f, duration, end) {
-    // f receives a fractional argument between 0 and 1,
-    //  indicating how close it is to the end.
-    var start = (new Date()).getTime();
-    setTimeout(function() {
-        animStep(f, duration, start, end);
-    }, 0);
-
-},
 // MS utility addition for finding a child/parent at a fixed-depth.
 jQuery.fn.childDepth = function(n) {
         var i, that = this;
@@ -221,11 +201,11 @@ $(window).resize(function() {
     //    (near screen top if focus is working)
     /*
     var input = $('#'+View.getCurrentPage().hiddeninput.id);
-    if (input && $D.focused) {
-        input.css('left', Math.round($($D.focused).offset().left)+'px')
-            .css('top', Math.round($($D.focused).offset().top)+'px')
-            .width($($D.focused).width())
-            .height($($D.focused).height());
+    if (input && View.focusedView) {
+        input.css('left', Math.round($(View.focusedView).offset().left)+'px')
+            .css('top', Math.round($(View.focusedView).offset().top)+'px')
+            .width($(View.focusedView).width())
+            .height($(View.focusedView).height());
     }
     */
 });

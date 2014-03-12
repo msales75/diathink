@@ -18,7 +18,7 @@ $(function() {
             modelid = null;
         }
         // todo-here - see if text changes appropriately.
-        $D.ActionManager.schedule(
+        ActionManager.schedule(
             function() {
                 return {
                     action: $D.RootAction,

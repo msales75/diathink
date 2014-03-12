@@ -1,4 +1,6 @@
 ///<reference path="../views/View.ts"/>
+///<reference path="../actions/ActionManager.ts"/>
+///<reference path="../PanelManager.ts"/>
 
 var DragHandler = (function () {
     function DragHandler(options) {
@@ -41,7 +43,7 @@ var DragHandler = (function () {
 
         // Correct the active textbox in case it doesn't match value.
         $('#' + textid).text($('#' + textid).val());
-        $D.ActionManager.schedule(function () {
+        ActionManager.schedule(function () {
             return $D.Action.checkTextChange(textid);
         });
 
@@ -249,7 +251,7 @@ var DragHandler = (function () {
                 console.log("targetview is of the wrong type with id=" + targetview.id);
             }
             if (this.activeBox.type === 'droptop') {
-                $D.ActionManager.schedule(function () {
+                ActionManager.schedule(function () {
                     return $D.Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
@@ -264,7 +266,7 @@ var DragHandler = (function () {
                     };
                 });
             } else if (this.activeBox.type === 'dropbottom') {
-                $D.ActionManager.schedule(function () {
+                ActionManager.schedule(function () {
                     return $D.Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
@@ -279,7 +281,7 @@ var DragHandler = (function () {
                     };
                 });
             } else if (this.activeBox.type === 'drophandle') {
-                $D.ActionManager.schedule(function () {
+                ActionManager.schedule(function () {
                     return $D.Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
@@ -294,13 +296,13 @@ var DragHandler = (function () {
                     };
                 });
             } else if (this.activeBox.type === 'dropleft') {
-                $D.ActionManager.schedule(function () {
+                ActionManager.schedule(function () {
                     return $D.Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
                         action: $D.PanelAction,
                         activeID: targetview.value.cid,
-                        prevPanel: $D.PanelManager.prevpanel[refview.id],
+                        prevPanel: PanelManager.prevpanel[refview.id],
                         oldRoot: targetview.nodeRootView.id,
                         newRoot: 'new',
                         dockElem: that.helper[0],
@@ -308,7 +310,7 @@ var DragHandler = (function () {
                     };
                 });
             } else if (this.activeBox.type === 'dropright') {
-                $D.ActionManager.schedule(function () {
+                ActionManager.schedule(function () {
                     return $D.Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
@@ -649,7 +651,7 @@ var DragHandler = (function () {
 
             // todo: loop over panels, draw vertical lines
             var p, n, panel;
-            var PM = $D.PanelManager;
+            var PM = PanelManager;
             for (var n = 1, p = PM.leftPanel; (p !== '') && (n <= PM.panelsPerScreen); ++n, p = PM.nextpanel[p]) {
                 panel = View.get(p);
                 panel.cachePosition();
@@ -740,7 +742,7 @@ var DragHandler = (function () {
 
     DragHandler.prototype._previewDropBoxes = function () {
         var i, j, d;
-        var PM = $D.PanelManager;
+        var PM = PanelManager;
         for (var n = 1, p = PM.leftPanel; (p !== '') && (n <= PM.panelsPerScreen); ++n, p = PM.nextpanel[p]) {
             var panel = View.get(p);
             var canvas = $('#' + View.getCurrentPage().drawlayer.id);
@@ -807,7 +809,7 @@ var DragHandler = (function () {
                 }
             }
         }
-        var PM = $D.PanelManager;
+        var PM = PanelManager;
 
         for (n = 1, p = PM.leftPanel; (p !== '') && (n <= PM.panelsPerScreen); ++n, p = PM.nextpanel[p]) {
             var panel = View.get(p);

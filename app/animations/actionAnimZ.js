@@ -4,6 +4,20 @@ m_require("app/animations/actionAnimPlaceholder.js");
 
 $D.animHelpers = {
 
+animStepWrapper: function(f, duration, start, end) {
+    var self = this;
+    var frac = ((new Date()).getTime()-start)/duration;
+    if (frac >= 1) {frac=1;}
+    f(frac);
+    if (frac===1) {
+        end();
+    } else {
+        setTimeout(function() {
+            self.animStepWrapper(f, duration, start, end);
+        }, 20);
+    }
+},
+
     animSetup: function() {
         var that = this;
         var r = this.runtime;
@@ -27,7 +41,7 @@ $D.animHelpers = {
         this.addQueue('panelPrep', ['context'], function() {
             that.panelPrep();
         });
-        var outlines = $D.OutlineManager.outlines;
+        var outlines = OutlineManager.outlines;
         for (i in outlines) {
             (function(i) {
                 that.addQueue(['oldLinePlace', i], ['createDockElem'], function() {
@@ -51,12 +65,15 @@ $D.animHelpers = {
         this.addAsync('anim', animDeps, function() {
             if (r.performDock || _.contains(r.useLinePlaceholderAnim, true)) {
                 var time = 200; // todo: this should vary.
-                $.anim(function(f) {
-                    that.animStep(f);
-                }, time, function() {
-                    that.runtime.status.anim = 2;
-                    that.nextQueue();
-                });
+                var start = (new Date()).getTime();
+                setTimeout(function() {
+                    that.animStepWrapper(function(f) {
+                        that.animStep(f);
+                    }, time, start, function() {
+                        that.runtime.status.anim = 2;
+                        that.nextQueue();
+                    });
+                }, 0);
             } else {
                 that.runtime.status.anim = 2;
                 that.nextQueue();
@@ -67,7 +84,7 @@ $D.animHelpers = {
     animStep: function(frac) {
         var i, r = this.runtime, o = this.runtime.animOptions;
         // loop over all outlines
-        var outlines = $D.OutlineManager.outlines;
+        var outlines = OutlineManager.outlines;
         if (o.view) {
             for (i in outlines) {
                 if (!o.view[i]) {continue;}

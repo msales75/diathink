@@ -17,7 +17,7 @@ var RedoButtonView = (function (_super) {
         this.isClickable = true;
     };
     RedoButtonView.prototype.onClick = function () {
-        $D.ActionManager.redo();
+        ActionManager.redo();
     };
     return RedoButtonView;
 })(ButtonView);

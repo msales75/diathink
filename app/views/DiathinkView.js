@@ -14,7 +14,6 @@ var DiathinkView = (function (_super) {
         this.cssClass = 'ui-page ui-body-c ui-page-header-fixed ui-page-active ui-sortable';
     }
     DiathinkView.prototype.init = function () {
-        DiathinkView.prototype.postRender = $D.postRender;
         this.Class = DiathinkView;
         this.childViewTypes = {
             hiddendiv: HiddenDivView,

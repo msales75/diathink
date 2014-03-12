@@ -1,10 +1,8 @@
 ///<reference path="../views/View.ts"/>
 m_require("app/views/View.js");
 $(function () {
-    var vmouseup = 'mouseup';
     var tap = 'click';
     if ($D.is_touch_device) {
-        vmouseup = 'touchend';
         tap = 'tap';
     }
     $(document.body).on(tap, '.ui-breadcrumb-link', function (e) {
@@ -21,7 +19,7 @@ $(function () {
         }
 
         // todo-here - see if text changes appropriately.
-        $D.ActionManager.schedule(function () {
+        ActionManager.schedule(function () {
             return {
                 action: $D.RootAction,
                 activeID: modelid,

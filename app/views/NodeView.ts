@@ -24,7 +24,7 @@ class NodeView extends View {
         }
         // check outline and value for collapse-status
         this.isCollapsed = this.value.get('collapsed');
-        var outline = $D.OutlineManager.outlines[this.nodeRootView.id];
+        var outline = OutlineManager.outlines[this.nodeRootView.id];
         var collapseTest = this.nodeRootView.getData(this.value.cid);
         if (collapseTest != null) {
             this.isCollapsed = collapseTest;

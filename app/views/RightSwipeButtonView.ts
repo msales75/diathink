@@ -8,10 +8,10 @@ class RightSwipeButtonView extends SpanView {
     cssClass = 'right-button';
     value = '>';
     onClick() {
-        $D.ActionManager.schedule(
+        ActionManager.schedule(
             function() {
-                if ($D.focused) {
-                    return $D.Action.checkTextChange($D.focused.header.name.text.id);
+                if (View.focusedView) {
+                    return $D.Action.checkTextChange(View.focusedView.header.name.text.id);
                 } else {
                     return null;
                 }

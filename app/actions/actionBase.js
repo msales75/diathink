@@ -193,12 +193,12 @@ $D.Action = Backbone.RelationalModel.extend({
         if (options.redo && (this.subactions.length>0)) {
             nsub = this.subactions.length;
             for (i=0; i<nsub; ++i) {
-                rank = $D.ActionManager.nextRedo();
-                if ($D.ActionManager.actions.at(rank) !== this.subactions[i].action) {
+                rank = ActionManager.nextRedo();
+                if (ActionManager.actions.at(rank) !== this.subactions[i].action) {
                     console.log("ERROR: Redoing wrong subaction");
                     debugger;
                 }
-                $D.ActionManager.subRedo();
+                ActionManager.subRedo();
             }
         } else if (options.undo && (this.parentAction != null)) {
             nsub = this.parentAction.subactions.length;
@@ -207,19 +207,19 @@ $D.Action = Backbone.RelationalModel.extend({
                 debugger;
             }
             for (i=0; i<nsub; ++i) {
-                rank = $D.ActionManager.nextUndo();
+                rank = ActionManager.nextUndo();
                 if (i===0) {
-                    if ($D.ActionManager.actions.at(rank) !== this.parentAction) {
+                    if (ActionManager.actions.at(rank) !== this.parentAction) {
                         console.log("ERROR: Undoing something else when should be parentAction");
                         debugger;
                     }
                 } else {
-                    if ($D.ActionManager.actions.at(rank) !== this.subactions[nsub-1-i].action) {
+                    if (ActionManager.actions.at(rank) !== this.subactions[nsub-1-i].action) {
                         console.log("ERROR: Undoing wrong subaction");
                         debugger;
                     }
                 }
-                $D.ActionManager.subUndo();
+                ActionManager.subUndo();
             }
         }
 
@@ -254,7 +254,7 @@ $D.Action = Backbone.RelationalModel.extend({
         // todo: assumptions and issue-handling
         this.execModel();
 
-        var outlines = $D.OutlineManager.outlines;
+        var outlines = OutlineManager.outlines;
         var focusDeps = [];
         for (i in outlines) {
            this.execView(outlines[i]);
@@ -268,7 +268,7 @@ $D.Action = Backbone.RelationalModel.extend({
 
         // todo: increase undo-dependencies
         this.addQueue('undobuttons', ['newModelAdd'],
-            function() {$D.ActionManager.refreshButtons();});
+            function() {ActionManager.refreshButtons();});
 
         this.addQueue('end',['focus', 'undobuttons', 'anim'], function() {
             var i, sub;
@@ -280,7 +280,7 @@ $D.Action = Backbone.RelationalModel.extend({
                     sub.redo = false;
                     sub.parentAction = that;
                     (function(o) {
-                        $D.ActionManager.subschedule(function() {
+                        ActionManager.subschedule(function() {
                             return o;
                         });
                     })(sub);
@@ -289,7 +289,7 @@ $D.Action = Backbone.RelationalModel.extend({
             var done = that.options.done;
             delete that.options['done'];
             done();
-            if (_.size($D.ActionManager.queue) === 0) {
+            if (_.size(ActionManager.queue) === 0) {
                 console.log("Validating after action");
                 $D.validateMVC();
             } else {
@@ -324,7 +324,7 @@ $D.Action = Backbone.RelationalModel.extend({
         }
         var lineView = this.getLineView(this.options.activeID, newRoot);
         if (!lineView) { return; }
-        $D.setFocus(lineView);
+        View.setFocus(lineView);
         var id = lineView.header.name.text.id;
         $('#'+id).focus();
     },

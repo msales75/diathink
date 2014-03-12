@@ -9,7 +9,6 @@ class DiathinkView extends PageView {
     public drawlayer:DrawLayerView;
 
     init() {
-        DiathinkView.prototype.postRender = $D.postRender;
         this.Class = DiathinkView;
         this.childViewTypes = {
             hiddendiv: HiddenDivView,

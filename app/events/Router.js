@@ -1,9 +1,8 @@
 ///<reference path="../views/View.ts"/>
 ///<reference path="DragHandler.ts"/>
 var Router = (function () {
-    function Router(rootElement, controllers) {
+    function Router(rootElement) {
         this.rootElement = rootElement;
-        this.controllers = controllers;
         this.dragMode = 0;
         this.scrollMode = 0;
         this.dragStart = null;
@@ -16,35 +15,28 @@ var Router = (function () {
         this.dragger = new DragHandler();
         Router.bind(rootElement, press, function (e) {
             var preventDefault = true;
-            var view = View.getFromElement(Router.getTarget(e));
-            self.dragStart = {
-                view: view,
-                pos: Router.getPosition(e),
-                time: (new Date()).getTime()
-            };
+            self.dragStart = Router.getEventParams(e);
+            var view = self.dragStart.view;
             self.scrollMode = 0;
             self.dragMode = 0;
             if (view.handleView != null) {
                 self.dragMode = 1;
             } else if (view.scrollView != null) {
-                self.scrollMode = 1;
-
-                // view.scrollView.scrollStart();
+                if (!View.focusedView || (view.nodeView !== View.focusedView)) {
+                    // only enable scrolling if drag doesn't start from an already-focused-node
+                    //   (this is important for text-selection)
+                    self.scrollMode = 1;
+                }
                 if (view.nodeView != null) {
-                    if (View.focusedView) {
-                        if (View.focusedView !== view.nodeView) {
-                            View.focusedView.header.name.text.blur(); // call view.blur()
-                        }
-                    }
-                    View.focusedView = view.nodeView;
-                    View.focusedView.header.name.text.focus();
+                    View.setFocus(view);
                     if (view instanceof TextAreaView) {
                         // need native event to capture cursor position, even if we're not focusing
                         preventDefault = false;
-                        self.hidingFocus = view; // todo: make sure we don't need earlier delayed-focus list?
+
+                        // self.hidingFocus = view; // todo: make sure we don't need earlier delayed-focus list?
                         view.removeClass('hide-selection');
                     } else {
-                        $(view.nodeView.header.name.text.elem).addClass('hide-selection').selectText().focus().selectText();
+                        $(View.focusedView.elem).addClass('hide-selection').selectText().focus().selectText();
                     }
                 }
             }
@@ -62,7 +54,7 @@ var Router = (function () {
                 self.dragger.dragMove(params);
                 return;
             } else if (self.scrollMode === 2) {
-                //self.dragStart.view.scrollView.scrollMove(params);
+                self.dragStart.view.scrollView.scrollHandler.scrollMove(params);
                 return;
             }
             if (self.dragMode === 1) {
@@ -73,7 +65,7 @@ var Router = (function () {
             } else if (self.scrollMode === 1) {
                 if (self.testScrollStart(params)) {
                     self.scrollMode = 2;
-                    // self.dragStart.view.scrollView.scrollStart(params);
+                    self.dragStart.view.scrollView.scrollHandler.scrollStart(params);
                 }
             }
         });
@@ -99,7 +91,7 @@ var Router = (function () {
                 }
             }
             if (self.scrollMode === 2) {
-                // self.dragStart.view.scrollView.scrollStop(params);
+                self.dragStart.view.scrollView.scrollHandler.scrollStop();
             }
             if (self.dragMode === 2) {
                 self.dragger.dragStop(params);
@@ -107,7 +99,7 @@ var Router = (function () {
             self.dragMode = 0;
             self.scrollMode = 0;
             self.dragStart = null;
-            // todo: preventDefault? if we clicked on text?
+            // todo: preventDefault if we didn't click on text?
         });
         // todo: swiping and scroll-wheel
         // handle mouse-only hover-effects for nodes
@@ -186,10 +178,12 @@ var Router = (function () {
     };
 
     Router.getEventParams = function (e) {
+        var target = Router.getTarget(e);
         return {
-            view: View.getFromElement(Router.getTarget(e)),
+            view: View.getFromElement(target),
             pos: Router.getPosition(e),
-            time: (new Date()).getTime()
+            time: (new Date()).getTime(),
+            elem: target
         };
     };
 
@@ -197,25 +191,22 @@ var Router = (function () {
         var p1 = params.pos, p0 = this.dragStart.pos;
         if (Math.abs(p1.left - p0.left) + Math.abs(p1.top - p0.top) >= 5) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     };
     Router.prototype.testScrollStart = function (params) {
         var p1 = params.pos, p0 = this.dragStart.pos;
         if (Math.abs(p1.left - p0.left) + Math.abs(p1.top - p0.top) >= 5) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     };
     Router.prototype.testClick = function (params) {
         var p1 = params.pos, p0 = this.dragStart.pos;
         if ((params.time - this.dragStart.time > 500) || (params.view !== this.dragStart.view) || (Math.abs(p1.left - p0.left) + Math.abs(p1.top - p0.top) >= 5)) {
             return false;
-        } else {
-            return true;
         }
+        return true;
     };
     return Router;
 })();

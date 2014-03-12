@@ -49,20 +49,20 @@ $D.handleKeypress = function (view:TextAreaView, e) {
 $(function() {
     $(window).on('keypress', function (e) {
         console.log('Acknowledging keypress, char="' + String.fromCharCode(e.charCode) + '"');
-        if ($D.ActionManager.queue.length === 0) {
+        if (ActionManager.queue.length === 0) {
             // retain browser-default behavior
-            if ($D.focused) {
-                $D.handleKeypress($D.focused.header.name.text, e);
+            if (View.focusedView) {
+                $D.handleKeypress(View.focusedView.header.name.text, e);
                 console.log('Handled keypress, char=' + String.fromCharCode(e.charCode));
             } else {
                 console.log('Lost keypress with nothing focused')
             }
         } else {
             console.log("Delaying keypress, char=" + String.fromCharCode(e.charCode));
-            $D.ActionManager.schedule(function () {
-                if ($D.focused) {
+            ActionManager.schedule(function () {
+                if (View.focusedView) {
                     e.simulated = true;
-                    $D.handleKeypress($D.focused.header.name.text, e);
+                    $D.handleKeypress(View.focusedView.header.name.text, e);
                     console.log('Handled delayed keypress, char=' + String.fromCharCode(e.charCode));
                 } else {
                     console.log('Lost keypress with nothing focused')

@@ -46,7 +46,6 @@ interface DragHandleView {
     dragStop();
     dragMove();
 }
-
 interface HasList {
     removeListItems();
 }
@@ -58,13 +57,11 @@ interface Dimensions {
     width:number;
     height:number;
 }
-
 declare class NodeModel extends Backbone.Model {
-  views: View[];
-  children: Backbone.Collection;
+    views:View[];
+    children:Backbone.Collection;
 }
 interface ElemContext {prev:HTMLElement; next:HTMLElement; parent:HTMLElement}
-
 interface GridLayout {cssClass:string; columns: {[i:number]:string} }
 class View {
     static nextId:number = 0;
@@ -122,8 +119,26 @@ class View {
     static setCurrentPage(page) {
         this.currentPage = page;
     }
-    // -- END of static declarations
 
+    public static setFocus(view:View) {
+        var nView:NodeView = null;
+        if (view) {
+            nView = view.nodeView;
+        }
+        if (View.focusedView && (nView !== View.focusedView)) {
+            if (View.focusedView && View.focusedView.elem && View.focusedView.elem.parentNode) {
+                View.focusedView.header.name.text.blur();
+            }
+        }
+        if (nView && (nView !== View.focusedView)) {
+            View.focusedView = nView;
+            nView.header.name.text.focus();
+        } else if (!nView) {
+            View.focusedView = null;
+        }
+    }
+
+    // -- END of static declarations
     public id:string;
     public _name:string;
     public value:any = null;
@@ -176,16 +191,17 @@ class View {
         }
         this.createListItems();
     }
+
     createListItems() {
         // check they shouldn't already exist
-        assert ((!this.elem) || (this.elem.children.length===0),
-          "createListItems has children when creating more");
+        assert((!this.elem) || (this.elem.children.length === 0),
+            "createListItems has children when creating more");
         if (this.value instanceof Backbone.Collection) {
             this.listItems = [];
             if (!this.hideList) {
                 // ensure you don't render ones that are collapsed
                 var models = (<Backbone.Collection>(this.value)).models;
-                for (var i=0; i<models.length; ++i) {
+                for (var i = 0; i < models.length; ++i) {
                     this.listItems.push(new this.listItemTemplateView({
                         parentView: this,
                         value: models[i]
@@ -209,10 +225,12 @@ class View {
 
     init() {} // override with appropriate types
     updateValue() {}
+
     removeListItems() {} // if can be a list
     themeFirst() {} // only if can be in a list
     themeLast() {} // only if can be in a list
     onClick() {}
+
     onDoubleClick() {}
 
     render():HTMLElement {return this.elem;}
@@ -254,8 +272,9 @@ class View {
             }
         }
     }
+
     renderListItems() {
-        for (var i=0; i<this.listItems.length; ++i) {
+        for (var i = 0; i < this.listItems.length; ++i) {
             var li:View = this.listItems[i];
             assert(li.elem === null,
                 "Rendering item with elem not null");

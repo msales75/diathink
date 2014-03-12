@@ -141,7 +141,7 @@ class TextAreaView extends View {
         this.removeClass('ui-focus');
         this.parentView.parentView.parentView.removeClass('ui-focus');
         this.setValueFromDOM();
-        $D.ActionManager.schedule(function() {
+        ActionManager.schedule(function() {
             return $D.Action.checkTextChange(that.id);
         });
     }

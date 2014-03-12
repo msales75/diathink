@@ -1,4 +1,14 @@
 ///<reference path="../views/View.ts"/>
+///<reference path="../actions/ActionManager.ts"/>
+///<reference path="../PanelManager.ts"/>
+
+interface DragStartI {
+    view: View;
+    pos: PositionI;
+    time: number;
+    elem: HTMLElement;
+}
+
 
 interface TempItem {
     id:string;
@@ -14,11 +24,6 @@ interface DropBox {
     bottom:Number;
     left:Number;
     right:Number;
-}
-interface DragStartI {
-    view: View;
-    pos: PositionI;
-    time: number;
 }
 
 interface OffsetNested {
@@ -102,7 +107,7 @@ class DragHandler {
         var textid = currentView.header.name.text.id;
         // Correct the active textbox in case it doesn't match value.
         $('#' + textid).text($('#' + textid).val());
-        $D.ActionManager.schedule(
+        ActionManager.schedule(
             function() {
                 return $D.Action.checkTextChange(textid);
             });
@@ -290,7 +295,7 @@ class DragHandler {
                 console.log("targetview is of the wrong type with id=" + targetview.id);
             }
             if (this.activeBox.type === 'droptop') {
-                $D.ActionManager.schedule(
+                ActionManager.schedule(
                     function() {
                         return $D.Action.checkTextChange(targetview.header.name.text.id);
                     },
@@ -307,7 +312,7 @@ class DragHandler {
                         };
                     });
             } else if (this.activeBox.type === 'dropbottom') {
-                $D.ActionManager.schedule(
+                ActionManager.schedule(
                     function() {
                         return $D.Action.checkTextChange(targetview.header.name.text.id);
                     },
@@ -324,7 +329,7 @@ class DragHandler {
                         };
                     });
             } else if (this.activeBox.type === 'drophandle') {
-                $D.ActionManager.schedule(
+                ActionManager.schedule(
                     function() {
                         return $D.Action.checkTextChange(targetview.header.name.text.id);
                     },
@@ -341,7 +346,7 @@ class DragHandler {
                         };
                     });
             } else if (this.activeBox.type === 'dropleft') {
-                $D.ActionManager.schedule(
+                ActionManager.schedule(
                     function() {
                         return $D.Action.checkTextChange(targetview.header.name.text.id);
                     },
@@ -349,7 +354,7 @@ class DragHandler {
                         return {
                             action: $D.PanelAction,
                             activeID: targetview.value.cid,
-                            prevPanel: $D.PanelManager.prevpanel[refview.id],
+                            prevPanel: PanelManager.prevpanel[refview.id],
                             oldRoot: targetview.nodeRootView.id,
                             newRoot: 'new',
                             dockElem: that.helper[0],
@@ -357,7 +362,7 @@ class DragHandler {
                         };
                     });
             } else if (this.activeBox.type === 'dropright') {
-                $D.ActionManager.schedule(
+                ActionManager.schedule(
                     function() {
                         return $D.Action.checkTextChange(targetview.header.name.text.id);
                     },
@@ -734,7 +739,7 @@ class DragHandler {
             canvas0.cacheOffset = $(canvas0.elem).offset();
             // todo: loop over panels, draw vertical lines
             var p:string, n:number, panel:PanelView;
-            var PM = $D.PanelManager;
+            var PM = PanelManager;
             for (var n = 1, p = <string>PM.leftPanel;
                 (p !== '') && (n <= PM.panelsPerScreen);
                 ++n, p = <string>PM.nextpanel[p]) {
@@ -828,8 +833,8 @@ class DragHandler {
 
     _previewDropBoxes() {
         var i, j, d;
-        var PM = $D.PanelManager;
-        for (var n = 1, p = PM.leftPanel;
+        var PM:typeof PanelManager = PanelManager;
+        for (var n = 1, p:string = PM.leftPanel;
             (p !== '') && (n <= PM.panelsPerScreen);
             ++n, p = PM.nextpanel[p]) {
             var panel = View.get(p);
@@ -908,7 +913,7 @@ class DragHandler {
                 }
             }
         }
-        var PM = $D.PanelManager;
+        var PM:typeof PanelManager = PanelManager;
         // loop over panels to return correct dropbox
         for (n = 1, p = PM.leftPanel;
             (p !== '') && (n <= PM.panelsPerScreen);
