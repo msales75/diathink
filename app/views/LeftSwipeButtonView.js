@@ -16,6 +16,23 @@ var LeftSwipeButtonView = (function (_super) {
     }
     LeftSwipeButtonView.prototype.init = function () {
         this.Class = LeftSwipeButtonView;
+        this.isClickable = true;
+    };
+
+    LeftSwipeButtonView.prototype.onClick = function () {
+        $D.ActionManager.schedule(function () {
+            if ($D.focused) {
+                return $D.Action.checkTextChange($D.focused.header.name.text.id);
+            } else {
+                return null;
+            }
+        }, function () {
+            return {
+                action: $D.SlideAction,
+                direction: 'right',
+                focus: false
+            };
+        });
     };
     return LeftSwipeButtonView;
 })(SpanView);

@@ -14,6 +14,10 @@ var RedoButtonView = (function (_super) {
     }
     RedoButtonView.prototype.init = function () {
         this.Class = RedoButtonView;
+        this.isClickable = true;
+    };
+    RedoButtonView.prototype.onClick = function () {
+        $D.ActionManager.redo();
     };
     return RedoButtonView;
 })(ButtonView);

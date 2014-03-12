@@ -97,7 +97,7 @@
       <root url="file://$PROJECT_DIR$/app/views/DiathinkView.js" />
       <root url="file://$PROJECT_DIR$/app/views/ListItemView.js" />
       <root url="file://$PROJECT_DIR$/app/views/ContainerView.js" />
-      <root url="file://$PROJECT_DIR$/windows/events.js" />
+      <root url="file://$PROJECT_DIR$/app/events/Router.js" />
       <root url="file://$PROJECT_DIR$/app/views/RightSwipeButtonView.js" />
       <root url="file://$PROJECT_DIR$/app/views/OutlineRootView.js" />
       <root url="file://$PROJECT_DIR$/app/views/BreadcrumbView.js" />

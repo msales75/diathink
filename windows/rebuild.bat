@@ -12,11 +12,11 @@ set CHROME=C:/Users/Mark/AppData/Local/Google/Chrome/Application/chrome.exe
 dir %PROJECTDIR%/app
 
 cd %PROJECTDIR%/app
-dir /s /b *.ts | gawk "BEGIN{x=\"\"}{x = x substr($0, 36) \" \"}END{print x}" > temp.txt
-set /p FILELIST= < temp.txt
-:: echo %FILELIST%
 del temp.txt
-CMD /C C:/Users/Mark/AppData/Roaming/npm/tsc --sourcemap %FILELIST%
+dir /s /b *.ts | gawk "BEGIN{x=\"\"}{x = x substr($0, 36) \" \"}END{print x}" > temp.txt
+:: set /p FILELIST= < temp.txt
+:: echo %FILELIST%
+CMD /C C:/Users/Mark/AppData/Roaming/npm/tsc --sourcemap @temp.txt
 
 
 cd %PROJECTDIR%

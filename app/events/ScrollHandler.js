@@ -1,10 +1,11 @@
 ///<reference path="../../frameworks/m.ts"/>
+///<reference path="ScrollEasing.ts"/>
 function getCurrentTime() {
     return (new Date()).getTime();
 }
 
-var scrollview = (function () {
-    function scrollview(opts) {
+var ScrollHandler = (function () {
+    function ScrollHandler(opts) {
         this.options = {
             element: null,
             fps: 60,
@@ -29,26 +30,26 @@ var scrollview = (function () {
         this.element = this.options.element;
         this._create();
     }
-    scrollview.prototype._makePositioned = function ($ele) {
+    ScrollHandler.prototype._makePositioned = function ($ele) {
         if ($ele.css("position") == "static")
             $ele.css("position", "relative");
     };
 
-    scrollview.prototype._create = function () {
-        // this stuff affects DOM - can't be done until defined
+    ScrollHandler.prototype._create = function () {
+        // todo: move this DOM manipulation into static rendering with constraints
         this._$clip = $(this.element).addClass("ui-scrollview-clip");
         var $child = this._$clip.children();
         if ($child.length > 1) {
             $child = this._$clip.wrapInner("<div></div>").children();
         }
         this._$view = $child.addClass("ui-scrollview-view");
+        this._makePositioned(this._$clip);
+        this._$view.css("overflow", "hidden");
+        this._makePositioned(this._$view);
+        this._$view.css({ left: 0, top: 0 });
 
         // MS hack to make overflow-x visible
-        this._$clip.css("overflow-y", this.options.scrollMethod === "scroll" ? "scroll" : "hidden");
-        this._makePositioned(this._$clip);
-
-        this._$view.css("overflow-y", "hidden");
-
+        // this._$clip.css("overflow-y", this.options.scrollMethod === "scroll" ? "scroll" : "hidden");
         // Turn off our faux scrollbars if we are using native scrolling
         // to position the view.
         this.options.showScrollBars = this.options.scrollMethod === "scroll" ? false : this.options.showScrollBars;
@@ -56,9 +57,6 @@ var scrollview = (function () {
         // We really don't need this if we are using a translate transformation
         // for scrolling. We set it just in case the user wants to switch methods
         // on the fly.
-        this._makePositioned(this._$view);
-        this._$view.css({ left: 0, top: 0 });
-
         this._sx = 0;
         this._sy = 0;
 
@@ -77,7 +75,7 @@ var scrollview = (function () {
         this._addBehaviors();
     };
 
-    scrollview.prototype._startMScroll = function (speedX, speedY) {
+    ScrollHandler.prototype._startMScroll = function (speedX, speedY) {
         this._stopMScroll();
         this._showScrollBars();
 
@@ -108,7 +106,7 @@ var scrollview = (function () {
             this._stopMScroll();
     };
 
-    scrollview.prototype._stopMScroll = function () {
+    ScrollHandler.prototype._stopMScroll = function () {
         if (this._timerID) {
             this._$clip.trigger(this.options.stopEventName);
             clearTimeout(this._timerID);
@@ -124,7 +122,7 @@ var scrollview = (function () {
         this._hideScrollBars();
     };
 
-    scrollview.prototype._handleMomentumScroll = function () {
+    ScrollHandler.prototype._handleMomentumScroll = function () {
         var keepGoing = false;
 
         var x = 0, y = 0;
@@ -152,7 +150,7 @@ var scrollview = (function () {
             this._stopMScroll();
     };
 
-    scrollview.prototype._setScrollPosition = function (x, y) {
+    ScrollHandler.prototype._setScrollPosition = function (x, y) {
         this._sx = x;
         this._sy = y;
 
@@ -200,7 +198,7 @@ var scrollview = (function () {
         */
     };
 
-    scrollview.prototype.scrollTo = function (x, y, duration) {
+    ScrollHandler.prototype.scrollTo = function (x, y, duration) {
         this._stopMScroll();
         if (!duration) {
             this._setScrollPosition(x, y);
@@ -212,7 +210,7 @@ var scrollview = (function () {
 
         var self = this;
         var start = getCurrentTime();
-        var efunc = $.easing["easeOutQuad"];
+        var efunc = ScrollEasing.easeOutQuad;
         var sx = this._sx;
         var sy = this._sy;
         var dx = x - sx;
@@ -232,11 +230,11 @@ var scrollview = (function () {
         this._timerID = setTimeout(tfunc, this._timerInterval);
     };
 
-    scrollview.prototype.getScrollPosition = function () {
+    ScrollHandler.prototype.getScrollPosition = function () {
         return { x: -this._sx, y: -this._sy };
     };
 
-    scrollview.prototype._getScrollHierarchy = function () {
+    ScrollHandler.prototype._getScrollHierarchy = function () {
         var svh = [];
 
         // this._$clip.parents(".ui-scrollview-clip").each(function () {
@@ -246,7 +244,7 @@ var scrollview = (function () {
         return svh;
     };
 
-    scrollview.prototype._getAncestorByDirection = function (dir) {
+    ScrollHandler.prototype._getAncestorByDirection = function (dir) {
         var svh = this._getScrollHierarchy();
         var n = svh.length;
         while (0 < n--) {
@@ -259,7 +257,7 @@ var scrollview = (function () {
         return null;
     };
 
-    scrollview.prototype._handleDragStart = function (e, ex, ey) {
+    ScrollHandler.prototype._handleDragStart = function (e, ex, ey) {
         $D.log(['scroll', 'debug'], 'Starting drag-scroll at ' + ex + 'x' + ey);
 
         // Stop any scrolling of elements in our parent hierarcy.
@@ -345,7 +343,7 @@ var scrollview = (function () {
         // e.stopPropagation(); // MS edit to enable propogation of mousedown events
     };
 
-    scrollview.prototype._propagateDragMove = function (sv, e, ex, ey, dir) {
+    ScrollHandler.prototype._propagateDragMove = function (sv, e, ex, ey, dir) {
         this._hideScrollBars();
         this._disableTracking();
         sv._handleDragStart(e, ex, ey);
@@ -355,7 +353,7 @@ var scrollview = (function () {
 
     // MS addition for drag-scrolling
     //  todo: stop quickly when mouse-drag-direction changes
-    scrollview.prototype.scrollWhileDragging = function (ey) {
+    ScrollHandler.prototype.scrollWhileDragging = function (ey) {
         var cheight = this._$clip.height();
         var vheight = this._$view.height();
         if (this._lastY == null) {
@@ -404,7 +402,7 @@ var scrollview = (function () {
         return false;
     };
 
-    scrollview.prototype._handleDragMove = function (e, ex, ey) {
+    ScrollHandler.prototype._handleDragMove = function (e, ex, ey) {
         this._lastMove = getCurrentTime();
 
         var dx = ex - this._lastX;
@@ -513,7 +511,7 @@ var scrollview = (function () {
         return false;
     };
 
-    scrollview.prototype._handleDragStop = function () {
+    ScrollHandler.prototype._handleDragStop = function () {
         var l = this._lastMove;
         var t = getCurrentTime();
         var doScroll = l && (t - l) <= this.options.moveIntervalThreshold;
@@ -555,17 +553,17 @@ var scrollview = (function () {
         return this._didDrag ? false : undefined;
     };
 
-    scrollview.prototype._enableTracking = function () {
+    ScrollHandler.prototype._enableTracking = function () {
         $(document).bind(this._dragMoveEvt, this._dragMoveCB);
         $(document).bind(this._dragStopEvt, this._dragStopCB);
     };
 
-    scrollview.prototype._disableTracking = function () {
+    ScrollHandler.prototype._disableTracking = function () {
         $(document).unbind(this._dragMoveEvt, this._dragMoveCB);
         $(document).unbind(this._dragStopEvt, this._dragStopCB);
     };
 
-    scrollview.prototype._showScrollBars = function () {
+    ScrollHandler.prototype._showScrollBars = function () {
         var vclass = "ui-scrollbar-visible";
         if (this._$vScrollBar)
             this._$vScrollBar.addClass(vclass);
@@ -573,7 +571,7 @@ var scrollview = (function () {
             this._$hScrollBar.addClass(vclass);
     };
 
-    scrollview.prototype._hideScrollBars = function () {
+    ScrollHandler.prototype._hideScrollBars = function () {
         var vclass = "ui-scrollbar-visible";
         if (this._$vScrollBar)
             this._$vScrollBar.removeClass(vclass);
@@ -581,7 +579,7 @@ var scrollview = (function () {
             this._$hScrollBar.removeClass(vclass);
     };
 
-    scrollview.prototype._addBehaviors = function () {
+    ScrollHandler.prototype._addBehaviors = function () {
         var self = this;
         if (this.options.eventType === "mouse") {
             this._dragStartEvt = "mousedown";
@@ -616,7 +614,6 @@ var scrollview = (function () {
                 return self._handleDragStop();
             };
         }
-
         this._$view.bind(this._dragStartEvt, this._dragStartCB);
 
         if (this.options.showScrollBars) {
@@ -634,7 +631,7 @@ var scrollview = (function () {
         }
     };
 
-    scrollview.prototype.setElementTransform = function ($ele, x, y) {
+    ScrollHandler.prototype.setElementTransform = function ($ele, x, y) {
         var v = "translate3d(" + x + "," + y + ", 0px)";
         $ele.css({
             "-moz-transform": v,
@@ -642,7 +639,7 @@ var scrollview = (function () {
             "transform": v
         });
     };
-    return scrollview;
+    return ScrollHandler;
 })();
 
 var tstates = {
@@ -691,7 +688,7 @@ var MomentumTracker = (function () {
         elapsed = elapsed > duration ? duration : elapsed;
 
         if (state == tstates.scrolling || state == tstates.overshot) {
-            var dx = this.speed * (1 - $.easing[this.easing](elapsed / duration, elapsed, 0, 1, duration));
+            var dx = this.speed * (1 - ScrollEasing[this.easing](elapsed / duration, elapsed, 0, 1, duration));
 
             var x = this.pos + dx;
 
@@ -723,7 +720,7 @@ var MomentumTracker = (function () {
                 this.pos = this.toPos;
                 this.state = tstates.done;
             } else
-                this.pos = this.fromPos + ((this.toPos - this.fromPos) * $.easing[this.easing](elapsed / duration, elapsed, 0, 1, duration));
+                this.pos = this.fromPos + ((this.toPos - this.fromPos) * ScrollEasing[this.easing](elapsed / duration, elapsed, 0, 1, duration));
         }
 
         return this.pos;
@@ -738,6 +735,4 @@ var MomentumTracker = (function () {
     };
     return MomentumTracker;
 })();
-
-$D.scrollview = scrollview;
-//# sourceMappingURL=jquery.mobile.scrollview.js.map
+//# sourceMappingURL=ScrollHandler.js.map

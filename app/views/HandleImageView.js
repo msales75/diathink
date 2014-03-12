@@ -15,6 +15,40 @@ var HandleImageView = (function (_super) {
     }
     HandleImageView.prototype.init = function () {
         this.Class = HandleImageView;
+        this.isClickable = true;
+    };
+
+    HandleImageView.prototype.onClick = function () {
+        var li = this.nodeView;
+        var liElem = $(li.elem);
+        $D.ActionManager.schedule(function () {
+            return $D.Action.checkTextChange(li.header.name.text.id);
+        }, function () {
+            if (!liElem.hasClass('branch')) {
+                return false;
+            }
+            return {
+                action: $D.CollapseAction,
+                activeID: li.value.cid,
+                collapsed: !liElem.hasClass('collapsed'),
+                oldRoot: li.nodeRootView.id,
+                newRoot: li.nodeRootView.id,
+                focus: false
+            };
+        });
+    };
+    HandleImageView.prototype.onDoubleClick = function () {
+        var li = this.nodeView;
+        $D.ActionManager.schedule(function () {
+            return $D.Action.checkTextChange(li.header.name.text.id);
+        }, function () {
+            return {
+                action: $D.RootAction,
+                activeID: li.value.cid,
+                oldRoot: li.nodeRootView.id,
+                newRoot: 'new'
+            };
+        });
     };
     return HandleImageView;
 })(ImageView);

@@ -41,9 +41,24 @@ interface ViewTypeList {
 interface ViewList {
     [id:string] : View;
 }
+interface DragHandleView {
+    dragStart():any;
+    dragStop();
+    dragMove();
+}
+
 interface HasList {
     removeListItems();
 }
+interface PositionI extends JQueryCoordinates {
+    top:number;
+    left:number;
+}
+interface Dimensions {
+    width:number;
+    height:number;
+}
+
 declare class NodeModel extends Backbone.Model {
   views: View[];
   children: Backbone.Collection;
@@ -55,6 +70,8 @@ class View {
     static nextId:number = 0;
     static viewList:ViewList = {};
     static currentPage:PageView = null;
+    static focusedView:NodeView = null;
+    static hoveringView:NodeView = null;
 
     static getNextId():string {
         this.nextId = this.nextId + 1;
@@ -116,8 +133,7 @@ class View {
     public parentView:View = null;
     public cssClass:string = null;
     public elem:HTMLElement = null;
-    public onClick:{():any} = null; // click handler interface
-    public onDoubleClick:{():any} = null;
+    public isClickable = false;
     public isFocusable = false; // todo: node vs. textarea
     public isDragHandle:boolean = false;
     public isScrollable:boolean = false;
@@ -187,7 +203,7 @@ class View {
         this.panelView = this instanceof PanelView ? <PanelView>this : parent.panelView;
         this.handleView = this instanceof HandleImageView ? <HandleImageView>this : parent.handleView;
         this.nodeRootView = this instanceof OutlineRootView ? <OutlineRootView>this : parent.nodeRootView;
-        this.clickView = C.isClickable ? this : this.parentView.clickView;
+        this.clickView = this.isClickable ? this : this.parentView.clickView;
         //this.swipeView = null;
     }
 
@@ -196,6 +212,8 @@ class View {
     removeListItems() {} // if can be a list
     themeFirst() {} // only if can be in a list
     themeLast() {} // only if can be in a list
+    onClick() {}
+    onDoubleClick() {}
 
     render():HTMLElement {return this.elem;}
 

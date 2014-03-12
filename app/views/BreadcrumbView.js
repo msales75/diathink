@@ -13,6 +13,7 @@ var BreadcrumbView = (function (_super) {
     }
     BreadcrumbView.prototype.init = function () {
         this.Class = BreadcrumbView;
+        this.isClickable = true;
     };
 
     BreadcrumbView.prototype.updateValue = function () {
@@ -49,6 +50,9 @@ var BreadcrumbView = (function (_super) {
 
     BreadcrumbView.prototype.renderUpdate = function () {
         this.elem.innerHTML = this.getInnerHTML();
+    };
+
+    BreadcrumbView.prototype.onClick = function () {
     };
     return BreadcrumbView;
 })(View);

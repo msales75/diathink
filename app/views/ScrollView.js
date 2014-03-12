@@ -10,7 +10,7 @@ var ScrollView = (function (_super) {
     __extends(ScrollView, _super);
     function ScrollView() {
         _super.apply(this, arguments);
-        this.scrollview = null;
+        this.scrollHandler = null;
     }
     ScrollView.prototype.render = function () {
         this._create({
@@ -22,7 +22,7 @@ var ScrollView = (function (_super) {
         for (var name in this.childViewTypes) {
             this.elem.appendChild((this[name]).elem);
         }
-        this.scrollview = new $D.scrollview({
+        this.scrollHandler = new ScrollHandler({
             element: this.elem,
             direction: 'y',
             delayedClickEnabled: false

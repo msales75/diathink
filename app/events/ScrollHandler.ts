@@ -1,11 +1,12 @@
 ///<reference path="../../frameworks/m.ts"/>
+///<reference path="ScrollEasing.ts"/>
 
 
 function getCurrentTime() {
     return (new Date()).getTime();
 }
 
-class scrollview {
+class ScrollHandler {
 
     private element;
     private _$clip;
@@ -76,32 +77,28 @@ class scrollview {
 
     private _create() {
 
-        // this stuff affects DOM - can't be done until defined
+        // todo: move this DOM manipulation into static rendering with constraints
         this._$clip = $(this.element).addClass("ui-scrollview-clip");
         var $child = this._$clip.children();
         if ($child.length > 1) {
             $child = this._$clip.wrapInner("<div></div>").children();
         }
         this._$view = $child.addClass("ui-scrollview-view");
-
-        // MS hack to make overflow-x visible
-        this._$clip.css("overflow-y", this.options.scrollMethod === "scroll" ? "scroll" : "hidden");
         this._makePositioned(this._$clip);
+        this._$view.css("overflow", "hidden");
+        this._makePositioned(this._$view);
+        this._$view.css({ left: 0, top: 0 });
+        // MS hack to make overflow-x visible
+        // this._$clip.css("overflow-y", this.options.scrollMethod === "scroll" ? "scroll" : "hidden");
 
-        this._$view.css("overflow-y", "hidden");
 
         // Turn off our faux scrollbars if we are using native scrolling
         // to position the view.
-
         this.options.showScrollBars = this.options.scrollMethod === "scroll" ? false : this.options.showScrollBars;
 
         // We really don't need this if we are using a translate transformation
         // for scrolling. We set it just in case the user wants to switch methods
         // on the fly.
-
-        this._makePositioned(this._$view);
-        this._$view.css({ left: 0, top: 0 });
-
         this._sx = 0;
         this._sy = 0;
 
@@ -261,7 +258,7 @@ class scrollview {
 
         var self = this;
         var start = getCurrentTime();
-        var efunc = $.easing["easeOutQuad"];
+        var efunc = ScrollEasing.easeOutQuad;
         var sx = this._sx;
         var sy = this._sy;
         var dx = x - sx;
@@ -673,7 +670,6 @@ class scrollview {
                 return self._handleDragStop();
             };
         }
-
         this._$view.bind(this._dragStartEvt, this._dragStartCB);
 
         if (this.options.showScrollBars) {
@@ -761,7 +757,7 @@ class MomentumTracker {
         elapsed = elapsed > duration ? duration : elapsed;
 
         if (state == tstates.scrolling || state == tstates.overshot) {
-            var dx = this.speed * (1 - $.easing[this.easing](elapsed / duration, elapsed, 0, 1, duration));
+            var dx = this.speed * (1 - ScrollEasing[this.easing](elapsed / duration, elapsed, 0, 1, duration));
 
             var x = this.pos + dx;
 
@@ -797,7 +793,7 @@ class MomentumTracker {
                 this.state = tstates.done;
             }
             else
-                this.pos = this.fromPos + ((this.toPos - this.fromPos) * $.easing[this.easing](elapsed / duration, elapsed, 0, 1, duration));
+                this.pos = this.fromPos + ((this.toPos - this.fromPos) * ScrollEasing[this.easing](elapsed / duration, elapsed, 0, 1, duration));
         }
 
         return this.pos;
@@ -811,5 +807,3 @@ class MomentumTracker {
         return this.pos;
     }
 }
-
-$D.scrollview = scrollview;

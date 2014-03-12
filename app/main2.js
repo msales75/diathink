@@ -2,6 +2,7 @@
 m_require("app/OutlineController.js");
 m_require("app/views/DiathinkView.js");
 m_require("app/views/PanelView.js");
+m_require("app/events/Router.js");
 m_require("app/actions/actionManager.js");
 
 var nav = navigator;
@@ -168,43 +169,13 @@ $D.postRender = function () {
     $D.keyboard = new keyboardSetup({});
     $D.keyboard.init();
 
-    $('#' + id).nestedSortable({
-        listType: 'ul',
-        items: 'li',
-        doNotClear: true,
-        isTree: true,
-        branchClass: 'branch',
-        leafClass: 'leaf',
-        collapsedClass: 'collapsed',
-        expandedClass: 'expanded',
-        hoveringClass: 'sort-hover',
-        errorClass: 'sort-error',
-        handle: '> div > .drag-handle',
-        buryDepth: 0,
-        scroll: true,
-        keyboard: $D.keyboard,
-        dropLayers: '.droplayer',
-        helper: function (e, item) {
-            var newNode = item[0].cloneNode(true);
-            newNode.id = '';
-            var drawlayer = $('#' + View.getCurrentPage().drawlayer.id);
-            drawlayer[0].appendChild(newNode);
-            return $(newNode).css({
-                position: 'absolute',
-                left: $(item).offset().left + 'px',
-                top: $(item).offset().top + 'px'
-            });
-        },
-        // handle: '> div > div > a > div > .handle',
-        toleranceElement: '> div.outline-header'
-    });
 };
 
-new DiathinkView({});
-// Update Panel-Manager with grid-panels
-$D.PanelManager.initFromDOM(View.currentPage.content.grid);
-
 $(function () {
+    $D.router = new Router(document.body);
+    new DiathinkView({});
+// Update Panel-Manager with grid-panels
+    $D.PanelManager.initFromDOM(View.currentPage.content.grid);
     View.currentPage.render();
     setTimeout(function() {
         $D.validateMVC();

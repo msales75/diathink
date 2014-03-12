@@ -43,8 +43,7 @@ var View = (function () {
         this.parentView = null;
         this.cssClass = null;
         this.elem = null;
-        this.onClick = null;
-        this.onDoubleClick = null;
+        this.isClickable = false;
         this.isFocusable = false;
         this.isDragHandle = false;
         this.isScrollable = false;
@@ -157,7 +156,7 @@ var View = (function () {
         this.panelView = this instanceof PanelView ? this : parent.panelView;
         this.handleView = this instanceof HandleImageView ? this : parent.handleView;
         this.nodeRootView = this instanceof OutlineRootView ? this : parent.nodeRootView;
-        this.clickView = C.isClickable ? this : this.parentView.clickView;
+        this.clickView = this.isClickable ? this : this.parentView.clickView;
         //this.swipeView = null;
     };
 
@@ -170,6 +169,10 @@ var View = (function () {
     View.prototype.themeFirst = function () {
     };
     View.prototype.themeLast = function () {
+    };
+    View.prototype.onClick = function () {
+    };
+    View.prototype.onDoubleClick = function () {
     };
 
     View.prototype.render = function () {
@@ -349,6 +352,8 @@ var View = (function () {
     View.nextId = 0;
     View.viewList = {};
     View.currentPage = null;
+    View.focusedView = null;
+    View.hoveringView = null;
     return View;
 })();
 //# sourceMappingURL=View.js.map

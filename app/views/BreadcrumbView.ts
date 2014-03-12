@@ -5,6 +5,7 @@ class BreadcrumbView extends View {
 
     init() {
         this.Class = BreadcrumbView;
+        this.isClickable = true;
     }
 
     updateValue() {
@@ -42,4 +43,8 @@ class BreadcrumbView extends View {
     renderUpdate() {
         this.elem.innerHTML = this.getInnerHTML();
     }
+
+    onClick() {
+    }
+
 }

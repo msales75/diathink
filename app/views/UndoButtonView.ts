@@ -3,7 +3,12 @@ m_require("app/views/ButtonView.js");
 class UndoButtonView extends ButtonView {
     init() {
         this.Class = UndoButtonView;
+        this.isClickable = true;
     }
+    onClick() {
+        $D.ActionManager.undo()
+    }
+
     cssClass = 'undo-button';
 }
 

@@ -15,6 +15,23 @@ var RightSwipeButtonView = (function (_super) {
     }
     RightSwipeButtonView.prototype.init = function () {
         this.Class = RightSwipeButtonView;
+        this.isClickable = true;
+    };
+
+    RightSwipeButtonView.prototype.onClick = function () {
+        $D.ActionManager.schedule(function () {
+            if ($D.focused) {
+                return $D.Action.checkTextChange($D.focused.header.name.text.id);
+            } else {
+                return null;
+            }
+        }, function () {
+            return {
+                action: $D.SlideAction,
+                direction: 'left',
+                focus: false
+            };
+        });
     };
     return RightSwipeButtonView;
 })(SpanView);

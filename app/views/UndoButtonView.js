@@ -14,6 +14,10 @@ var UndoButtonView = (function (_super) {
     }
     UndoButtonView.prototype.init = function () {
         this.Class = UndoButtonView;
+        this.isClickable = true;
+    };
+    UndoButtonView.prototype.onClick = function () {
+        $D.ActionManager.undo();
     };
     return UndoButtonView;
 })(ButtonView);

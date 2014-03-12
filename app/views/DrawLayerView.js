@@ -11,6 +11,7 @@ var DrawLayerView = (function (_super) {
     __extends(DrawLayerView, _super);
     function DrawLayerView() {
         _super.apply(this, arguments);
+        this.cacheOffset = null;
         this.cssClass = 'drawlayer';
     }
     DrawLayerView.prototype.init = function () {

@@ -1,7 +1,7 @@
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
 class ScrollView extends View {
-    scrollview = null; // scroll handler
+    scrollHandler = null; // scroll handler
     render() {
         this._create({
             type: 'div',
@@ -12,7 +12,7 @@ class ScrollView extends View {
         for (var name in this.childViewTypes) {
             this.elem.appendChild((<View>(this[name])).elem);
         }
-        this.scrollview = new $D.scrollview({
+        this.scrollHandler = new ScrollHandler({
             element: this.elem,
             direction: 'y',
             delayedClickEnabled: false

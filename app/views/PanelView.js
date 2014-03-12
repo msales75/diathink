@@ -5,6 +5,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 ///<reference path="View.ts"/>
+///<reference path="../events/Router.ts"/>
 m_require("app/views/ContainerView.js");
 var PanelView = (function (_super) {
     __extends(PanelView, _super);
@@ -60,7 +61,10 @@ var PanelView = (function (_super) {
         this.breadcrumbs.updateValue();
         this.breadcrumbs.renderUpdate();
         this.outline.alist.postRender();
-        $('#' + View.getCurrentPage().id).nestedSortable('update');
+        $D.router.dragger.refresh();
+
+        // $('#' + View.getCurrentPage().id).nestedSortable('update');
+        // todo: this breaks dragging after changeroot
         $(window).resize(); // fix height of new panel, spacer
         $D.PanelManager.rootViews[this.id] = newlist.id;
         $D.PanelManager.rootModels[this.id] = model;

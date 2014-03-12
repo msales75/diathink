@@ -10,6 +10,7 @@ var DropLayerView = (function (_super) {
     __extends(DropLayerView, _super);
     function DropLayerView() {
         _super.apply(this, arguments);
+        this.cacheOffset = null;
         this.cssClass = 'droplayer';
     }
     DropLayerView.prototype.init = function () {
