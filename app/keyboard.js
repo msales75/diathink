@@ -1,5 +1,4 @@
 ///<reference path="../frameworks/m.ts"/>
-m_require("app/foundation/object.js");
 
 var keyboardSetup = (function () {
     function keyboardSetup() {

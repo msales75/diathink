@@ -1,3 +1,4 @@
+///<reference path="views/OutlineRootView.ts"/>
 var OutlineManager = (function () {
     function OutlineManager() {
     }

@@ -66,9 +66,19 @@ interface GridLayout {cssClass:string; columns: {[i:number]:string} }
 class View {
     static nextId:number = 0;
     static viewList:ViewList = {};
-    static currentPage:PageView = null;
+    static currentPage:DiathinkView = null;
     static focusedView:NodeView = null;
     static hoveringView:NodeView = null;
+
+    static escapeHtml(text) {
+       return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
     static getNextId():string {
         this.nextId = this.nextId + 1;

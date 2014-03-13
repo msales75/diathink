@@ -1,13 +1,25 @@
 ///<reference path="../views/View.ts"/>
 ;
-
 var ActionManager = (function () {
     function ActionManager() {
     }
     // need to hold args for the action here.
-    ActionManager.codeRequest = function () {
-        return $.randomString(16);
+    ActionManager.randomString = function (size) {
+        if (!size) {
+            size = 12;
+        }
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var charlist = [];
+        for (var i = 0; i < size; i++) {
+            charlist.push(possible.charAt(Math.floor(Math.random() * possible.length)));
+        }
+        return charlist.join('');
     };
+
+    ActionManager.codeRequest = function () {
+        return this.randomString(16);
+    };
+
     ActionManager.schedule = function (f, f2) {
         var newlength = 1;
         this.queue.push(f);
@@ -19,6 +31,7 @@ var ActionManager = (function () {
             this.next();
         }
     };
+
     ActionManager.subschedule = function (f, f2) {
         if (this.queue.length < 1) {
             console.log('ERROR: preschedule called with empty queue');
@@ -29,6 +42,7 @@ var ActionManager = (function () {
         }
         this.queue.splice(1, 0, f);
     };
+
     ActionManager.next = function () {
         var that = this;
         if (this.queue.length > 0) {
@@ -53,6 +67,7 @@ var ActionManager = (function () {
             ActionManager.log(options.action);
         }
     };
+
     ActionManager.queueComplete = function (f, action) {
         if (!f) {
             console.log("ERROR: queueComplete called without code");
@@ -86,6 +101,7 @@ var ActionManager = (function () {
         }
         */
     };
+
     ActionManager.log = function (action) {
         if (action.options.undo) {
             console.log("Done undoing action " + action.historyRank + ': ' + action.type);
@@ -115,37 +131,40 @@ var ActionManager = (function () {
         action.historyRank = this.actions.length;
         this.actions.push(action);
     };
+
     ActionManager.nextUndo = function () {
         if (this.actions.length === 0) {
-            return false;
+            return -1;
         }
         var rank = this.lastAction;
         while (this.actions.at(rank).undone === true) {
             --rank;
             if (rank < 0) {
-                return false;
+                return -1;
             }
         }
         return rank;
     };
+
     ActionManager.nextRedo = function () {
         if (this.actions.length === 0) {
-            return false;
+            return -1;
         }
         var rank = this.lastAction;
         while ((this.actions.at(rank).undone === false) || (this.actions.at(rank).lost === true)) {
             ++rank;
             if (rank >= this.actions.length) {
-                return false;
+                return -1;
             }
         }
         return rank;
     };
+
     ActionManager.undo = function () {
         this.schedule(function () {
             var rank = ActionManager.nextUndo();
-            if (rank === false) {
-                return false;
+            if (rank === -1) {
+                return null;
             }
             ActionManager.lastAction = rank;
             return {
@@ -154,11 +173,12 @@ var ActionManager = (function () {
             };
         });
     };
+
     ActionManager.redo = function () {
         this.schedule(function () {
             var rank = ActionManager.nextRedo();
-            if (rank === false) {
-                return false;
+            if (rank === -1) {
+                return null;
             }
             ActionManager.lastAction = rank;
             return {
@@ -167,11 +187,12 @@ var ActionManager = (function () {
             };
         });
     };
+
     ActionManager.subUndo = function () {
         this.subschedule(function () {
             var rank = ActionManager.nextUndo();
-            if (rank === false) {
-                return false;
+            if (rank === -1) {
+                return null;
             }
             ActionManager.lastAction = rank;
             return {
@@ -180,11 +201,12 @@ var ActionManager = (function () {
             };
         });
     };
+
     ActionManager.subRedo = function () {
         this.subschedule(function () {
             var rank = ActionManager.nextRedo();
-            if (rank === false) {
-                return false;
+            if (rank === -1) {
+                return null;
             }
             ActionManager.lastAction = rank;
             return {
@@ -200,12 +222,12 @@ var ActionManager = (function () {
             this.actions = new $D.ActionCollection();
         }
         var b = View.getCurrentPage().header.undobuttons;
-        if (this.nextUndo() !== false) {
+        if (this.nextUndo() !== -1) {
             b.undobutton.enable();
         } else {
             b.undobutton.disable();
         }
-        if (this.nextRedo() !== false) {
+        if (this.nextRedo() !== -1) {
             b.redobutton.enable();
         } else {
             b.redobutton.disable();

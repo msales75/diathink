@@ -57,7 +57,7 @@ $D.redrawPanel = function (n, p, firsttime) {
     // should changeRoot it instead?
     var c;
     var PM = PanelManager;
-    var grid = View.getCurrentPage().content.grid;
+    var grid = View.currentPage.content.grid;
     if (grid['scroll' + String(n)]) {
         c = grid['scroll' + String(n)].destroy(); // save context for this
 

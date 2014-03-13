@@ -38,7 +38,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
             return;
         }
     } else if (e.which === 8) { // backspace
-        sel = $(view.elem).selection();
+        sel = view.getSelection();
         if (sel && (sel[0] === 0) && (sel[1] === 0)) {
             // get parent-collection and rank
             collection = liView.parentView.value;

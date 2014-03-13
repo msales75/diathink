@@ -111,7 +111,7 @@ class Router {
                         // self.hidingFocus = view; // todo: make sure we don't need earlier delayed-focus list?
                         view.removeClass('hide-selection');
                     } else {
-                        $(View.focusedView.elem).addClass('hide-selection').selectText().focus().selectText();
+                        (<TextAreaView>View.focusedView.header.name.text.addClass('hide-selection')).selectAllText().focus();
                     }
                 }
             }

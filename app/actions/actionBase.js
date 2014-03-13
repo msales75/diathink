@@ -291,7 +291,7 @@ $D.Action = Backbone.RelationalModel.extend({
             done();
             if (_.size(ActionManager.queue) === 0) {
                 console.log("Validating after action");
-                $D.validateMVC();
+                validate();
             } else {
                 console.log("Not validating after subaction");
             }

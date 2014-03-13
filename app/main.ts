@@ -4,6 +4,7 @@
 ///<reference path="events/Router.ts"/>
 ///<reference path="util/fixFontSize.ts"/>
 ///<reference path="actions/actionManager.ts"/>
+///<reference path="validate.ts"/>
 
 m_require("app/PanelManager.js");
 m_require("app/views/DiathinkView.js");
@@ -55,7 +56,7 @@ $(function () {
     $D.keyboard = new keyboardSetup();
     $D.keyboard.init({});
     setTimeout(function() {
-        $D.validateMVC();
+        validate();
     }, 0);
 });
 

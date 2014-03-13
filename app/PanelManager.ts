@@ -2,7 +2,7 @@
 
 
 $D.updatePanelButtons = function () {
-    var content = View.getCurrentPage().content;
+    var content = (<DiathinkView>View.getCurrentPage()).content;
     var l = $('#' + content.leftbutton.id);
     var r = $('#' + content.rightbutton.id);
     var n, p;
@@ -63,7 +63,7 @@ $D.redrawPanel = function (n, p, firsttime) {
     // should changeRoot it instead?
     var c;
     var PM = PanelManager;
-    var grid = View.getCurrentPage().content.grid;
+    var grid = (<DiathinkView>View.currentPage).content.grid;
     if (grid['scroll' + String(n)]) {
         c = grid['scroll' + String(n)].destroy(); // save context for this
         // panel destroy() respects outline graveyard.
@@ -93,7 +93,7 @@ $D.redrawPanel = function (n, p, firsttime) {
 };
 
 $D.removePanel = function (n) {
-    var grid = View.getCurrentPage().content.grid;
+    var grid = (<DiathinkView>View.getCurrentPage()).content.grid;
     grid['scroll' + String(n)].destroy();
     grid['scroll' + String(n)] = null;
 };

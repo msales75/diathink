@@ -72,7 +72,6 @@ class DragHandler {
         this.element = $(document.body);
         this.options = {
             items: 'li',
-            buryDepth: 0,
             scroll: true,
             dropLayers: '.droplayer',
             toleranceElement: '> div.outline-header',
@@ -682,8 +681,8 @@ class DragHandler {
             return null;
         }
         // cannot drop the current-item inside itself
-        var activeModel = View.get(this.currentItem.attr('id')).value;
-        var itemModel = View.get(itemEl.attr('id')).value;
+        var activeModel = View.get(this.currentItem[0].id).value;
+        var itemModel = View.get(itemEl[0].id).value;
         var model = itemModel;
         while ((model != null) && (model !== activeModel)) {
             model = model.get('parent');
@@ -704,16 +703,17 @@ class DragHandler {
         if (activeModel.get('parent') === itemModel) {
             noHandle = true;
         }
-        if (itemEl.prev().childDepth(this.options.buryDepth).children('ul').children('li:visible').length !== 0) {
+        var prevElement:HTMLElement = <HTMLElement>(<HTMLElement>itemEl[0]).previousSibling;
+        if (prevElement && View.getFromElement(prevElement).nodeView.children.elem.children.length !== 0) {
             // predecessor has visible children, cannot drop above it
             noTop = true;
         }
-        if (itemEl.childDepth(this.options.buryDepth).children('ul').children('li:visible').length !== 0) {
-            // last in a list, cannot drop below it
+        if (itemEl[0] && View.getFromElement(itemEl[0]).nodeView.children.elem.children.length !== 0) {
+            // has visible children, cannot drop below it
             noBottom = true;
         }
-        if (itemEl.next().length !== 0) {
-            // has visible children, cannot drop below it
+        if ((<HTMLElement>itemEl[0]).nextSibling != null) {
+            // not last in a list, cannot drop below it
             noBottom = true;
         }
         return {bottom: !noBottom, top: !noTop, handle: !noHandle};
@@ -739,7 +739,8 @@ class DragHandler {
             canvas0.cacheOffset = $(canvas0.elem).offset();
             // todo: loop over panels, draw vertical lines
             var p:string, n:number, panel:PanelView;
-            var PM = PanelManager;
+            var PM:typeof PanelManager;
+            PM = PanelManager;
             for (var n = 1, p = <string>PM.leftPanel;
                 (p !== '') && (n <= PM.panelsPerScreen);
                 ++n, p = <string>PM.nextpanel[p]) {
@@ -833,7 +834,8 @@ class DragHandler {
 
     _previewDropBoxes() {
         var i, j, d;
-        var PM:typeof PanelManager = PanelManager;
+        var PM:typeof PanelManager;
+        PM = PanelManager;
         for (var n = 1, p:string = PM.leftPanel;
             (p !== '') && (n <= PM.panelsPerScreen);
             ++n, p = PM.nextpanel[p]) {
@@ -913,7 +915,8 @@ class DragHandler {
                 }
             }
         }
-        var PM:typeof PanelManager = PanelManager;
+        var PM:typeof PanelManager;
+        PM = PanelManager;
         // loop over panels to return correct dropbox
         for (n = 1, p = PM.leftPanel;
             (p !== '') && (n <= PM.panelsPerScreen);

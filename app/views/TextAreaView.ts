@@ -73,9 +73,20 @@ class TextAreaView extends View {
          */
         return this.elem;
     }
+    getValue() {
+        this.value = this.elem.value;
+        return this.value;
+    }
 
+    setValue(val) {
+        this.value = val;
+        var htmlval = View.escapeHtml(val);
+        this.elem.value = val;
+        this.elem.innerHTML = htmlval;
+        return this;
+    }
     setValueFromDOM() {
-        this.value = this.secure(this.elem.innerHTML);
+        this.value = this.elem.value;
     }
 
     // trigger-events:
@@ -134,6 +145,7 @@ class TextAreaView extends View {
     focus() {
         this.addClass('ui-focus');
         this.parentView.parentView.parentView.addClass('ui-focus');
+        return this;
     }
 
     blur() {
@@ -144,5 +156,44 @@ class TextAreaView extends View {
         ActionManager.schedule(function() {
             return $D.Action.checkTextChange(that.id);
         });
+        return this;
+    }
+
+    selectAllText() {
+        var range, selection, element = this.elem;
+        if (window.getSelection) {
+            selection = window.getSelection();
+            range = document.createRange();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        return this;
+    }
+
+    setSelection(selectionStart, selectionEnd) {
+        var elem = this.elem;
+        if (elem.setSelectionRange) {
+            elem.focus();
+            elem.setSelectionRange(selectionStart, selectionEnd);
+        }
+        else if (elem.createTextRange) {
+            var range = elem.createTextRange();
+            range.collapse(true);
+            range.moveEnd('character', selectionEnd);
+            range.moveStart('character', selectionStart);
+            range.select();
+        }
+        return this;
+    }
+
+    setCursor(pos) {
+        this.setSelection(pos, pos);
+        return this;
+    }
+
+    getSelection() {
+        var elem = this.elem;
+        return [elem.selectionStart, elem.selectionEnd];
     }
 }

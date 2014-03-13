@@ -15,9 +15,9 @@ class HandleImageView extends ImageView {
             function() {
                 return $D.Action.checkTextChange(li.header.name.text.id);
             },
-            function() {
+            function():{action;activeID;collapsed;oldRoot;newRoot;focus} {
                 if (!liElem.hasClass('branch')) {
-                    return false;
+                    return null;
                 }
                 return {
                     action: $D.CollapseAction,

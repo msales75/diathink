@@ -1,6 +1,8 @@
 ///<reference path="View.ts"/>
+///<reference path="../OutlineManager.ts"/>
 m_require("app/views/ListView.js");
 class OutlineRootView extends ListView {
+    parentView:OutlineScrollView;
     data; // preserves collapse/expanded status within panel-outline
     init() {
         this.listItemTemplateView = NodeView;

@@ -1,6 +1,12 @@
-$D.validateMVC = function () {
-    assert(Backbone.Relational.store._collections.length === 1);
-    var outlines = OutlineManager.outlines;
+///<reference path="views/View.ts"/>
+///<reference path="OutlineManager.ts"/>
+///<reference path="PanelManager.ts"/>
+///<reference path="actions/ActionManager.ts"/>
+
+
+function validate() {
+    assert(Backbone.Relational.store._collections.length === 1, "");
+    var outlines:{[i:string]:OutlineRootView} = OutlineManager.outlines;
     var models = Backbone.Relational.store._collections[0]._byId;
     var views = View.viewList;
 
@@ -19,15 +25,15 @@ $D.validateMVC = function () {
             "Outline " + o + " does not have a valid nodeRootView");
         assert(views[o] === outlines[o],
             "Outline " + o + " does not point to the corresponding view");
-        assert(views[o].id === o,
+        assert(outlines[o].id === o,
             "Outline " + o + " points to a view with an invalid id");
 
         //assert(views[o].childViews === null,
         // "Outline "+o+" points to a view with childViews");
         // temporary constraint until references: parent should be a panel
-        assert(views[o].parentView.parentView instanceof PanelView,
+        assert(outlines[o].parentView.parentView instanceof PanelView,
             "Outline view " + o + " does not have parent-parent-view a panel");
-        assert(views[o].parentView.parentView.outline.alist === views[o],
+        assert(outlines[o].parentView.parentView.outline.alist === outlines[o],
             "Outline view " + o + " does not match parent.parent.outline.alist in a panel");
     }
 
@@ -90,8 +96,8 @@ $D.validateMVC = function () {
             var p = models[m].attributes.parent;
             assert(models[p.cid] === p,
                 "The parent of model " + m + ", " + p.cid + ", does not point to a listed model");
-            var parents = [m];
-            var pt = p.cid;
+            var parents:string[] = [m];
+            var pt:string = p.cid;
             while (pt && (modelBase[pt] === undefined) && (!_.contains(parents, pt))) {
                 parents.push(pt);
                 pt = models[pt].attributes.parent.cid;
@@ -134,28 +140,30 @@ $D.validateMVC = function () {
             "The model " + m + " does not have a views array defined.");
         assert(typeof models[m].views === 'object',
             "The model " + m + " does not have a views-object");
-        for (var i in models[m].views) {
-            assert(outlines[i] != null,
-                "The key " + i + " in the views of model " + m + " is not in the outline list");
-            assert(models[m].views[i] instanceof NodeView,
-                "The view in outline " + i + " for model " + m + " is not of type NodeView");
-            assert(models[m].views[i] === views[models[m].views[i].id],
-                "The view in outline " + i + " for model " + m + " is not in the views list");
-            assert(models[m].views[i].value.cid === m,
-                "The view " + models[m].views[i].id + " in model " + m + " and outline " + i + " does not have model Id=" + m);
+        var k:string;
+        for (k in models[m].views) {
+            assert(outlines[k] != null,
+                "The key " + k + " in the views of model " + m + " is not in the outline list");
+            assert(models[m].views[k] instanceof NodeView,
+                "The view in outline " + k + " for model " + m + " is not of type NodeView");
+            assert(models[m].views[k] === views[models[m].views[k].id],
+                "The view in outline " + k + " for model " + m + " is not in the views list");
+            assert(models[m].views[k].value.cid === m,
+                "The view " + models[m].views[k].id + " in model " + m + " and outline " + k + " does not have model Id=" + m);
         }
     }
 
     // identify view-root and validate view-tree
-    var pages = {}, panels = {};
-    var numpages = 0;
+    var pages:{[k:string]:DiathinkView} = {}, panels:{[k:string]:PanelView} = {};
+    var numpages:number = 0;
+    var v:string;
     for (v in views) {
         assert(views[v].id === v,
             "View " + v + " does not have a valid id");
         assert(views[v] instanceof View,
             "View " + v + " is not an instance of View");
         if (views[v] instanceof PageView) {
-            pages[v] = views[v];
+            pages[v] = <DiathinkView>views[v];
             ++numpages;
             assert(views[v].Class === DiathinkView,
                 "PageView " + v + " does not have class=diathinkview");
@@ -187,7 +195,7 @@ $D.validateMVC = function () {
                 "Page " + v + " is not immediately inside body");
         }
         if (views[v] instanceof PanelView) {
-            panels[v] = views[v];
+            panels[v] = <PanelView>views[v];
             assert(views[v].isFocusable === false,
                 "PanelView " + v + " does not have isFocuable===false");
             assert(views[v].isDragHandle === false,
@@ -228,7 +236,7 @@ $D.validateMVC = function () {
             assert(panels[v].outline.value === null,
                 "Panel " + v + " outline-value is not null");
 
-            var crumb, bvalue = [];
+            var crumb, bvalue:Backbone.Model[] = [];
             if (panels[v].value !== null) {
                 crumb = panels[v].value;
                 while (crumb != null) {
@@ -238,14 +246,14 @@ $D.validateMVC = function () {
             }
             assert(panels[v].breadcrumbs.value.length === bvalue.length,
                 "Panel " + v + " does not have breadcrumbs value match length=" + bvalue.length);
-            for (var i = 0; i < bvalue.length; ++i) {
+            for (var i:number = 0; i < bvalue.length; ++i) {
                 assert(panels[v].breadcrumbs.value[i] === bvalue[i],
                     "Panel " + v + " does not have breadcrumbs value " + i + " match " + bvalue[i].cid);
             }
-            var count = 0;
+            var count:number = 0;
             $('#' + panels[v].breadcrumbs.id).children('a').each(function () {
                 if (count > 0) {
-                    assert($(this).attr('data-href') === bvalue[count - 1].cid,
+                    assert($(<HTMLElement>this).attr('data-href') === bvalue[count - 1].cid,
                         "Panel " + v + " does not have breadcrumb value " + count + " match view");
                 }
                 ++count;
@@ -266,24 +274,25 @@ $D.validateMVC = function () {
             continue;
         }
         // validate childViews exist and have matching parentView
-        var cViews = {}, cViewsI = null;
-        for (var i in views[v].childViewTypes) {
-            cViews[i] = views[v][i];
+        var cViews:{[k:string]:View} = {}, cViewsI = null;
+        var k:string;
+        for (k in views[v].childViewTypes) {
+            cViews[k] = views[v][k];
         }
         if (cViews != null) {
-            for (var i in cViews) {
-                assert(cViews[i] instanceof View,
-                    "childview "+i+" of view "+v+" is not a View");
-                assert(cViews[i] instanceof views[v].childViewTypes[i],
-                    "childview "+i+" of view "+v+" has wrong type");
-                if (cViews[i] != null) { // allow empty child-views
-                    assert(cViews[i].id != null,
-                        "childView " + i + " of view " + v + " does not have a valid id");
-                    assert(views[cViews[i].id] === cViews[i],
-                        "childView " + i + " with id=" + cViews[i].id + " under parent " + v +
+            for (k in cViews) {
+                assert(cViews[k] instanceof View,
+                    "childview "+k+" of view "+v+" is not a View");
+                assert(cViews[k] instanceof views[v].childViewTypes[k],
+                    "childview "+k+" of view "+v+" has wrong type");
+                if (cViews[k] != null) { // allow empty child-views
+                    assert(cViews[k].id != null,
+                        "childView " + k + " of view " + v + " does not have a valid id");
+                    assert(views[cViews[k].id] === cViews[k],
+                        "childView " + i + " with id=" + cViews[k].id + " under parent " + v +
                             " is not in the views list");
-                    assert(cViews[i].parentView === views[v],
-                        "childView " + i + " with id=" + cViews[i].id + " under parent " + v +
+                    assert(cViews[k].parentView === views[v],
+                        "childView " + k + " with id=" + cViews[k].id + " under parent " + v +
                             " does not have matching parentView");
                 }
             }
@@ -300,9 +309,9 @@ $D.validateMVC = function () {
             assert(views[views[v].parentView.id] === views[v].parentView,
                 "View " + v + " has a parentView that is not in the view-list");
 
-            var p = views[v].parentView;
-            var parents = [v];
-            var pt = p.id;
+            var pV:View = views[v].parentView;
+            var parents:string[] = [v];
+            var pt:string = pV.id;
             while (pt && (pages[pt] === undefined) && (!_.contains(parents, pt))) {
                 parents.push(pt);
                 pt = views[pt].parentView.id;
@@ -312,31 +321,31 @@ $D.validateMVC = function () {
             // (proves each page's parent-tree is connected & acyclic)
 
             // prove the child-list includes all views claiming this as a parent
-            var foundit = false;
-            if (p instanceof ListView) {
-                assert(p.nodeRootView instanceof OutlineRootView,
-                    "Parent ListView " + p + " has invalid nodeRootView");
-                assert(typeof p.value === 'object',
-                    "Parent ListView " + p + " has invalid value (not an object)");
-                assert(p.value instanceof $D.OutlineNodeCollection,
-                    "Parent ListView " + p + " has a value that's not an OutlineNodeCollection");
-                assert(typeof p.value._byId === 'object',
-                    "Parent ListView " + p + " has a value without _byId");
-                for (var i in p.value._byId) {
-                    assert(typeof p.value._byId[i] === 'object',
-                        "Parent ListView " + p + " has a child-model " + i + " that is not an object");
-                    assert(typeof p.value._byId[i].views === 'object',
-                        "Parent ListView " + p + " has a child-model " + i + " without views");
-                    assert(typeof p.value._byId[i].views[p.nodeRootView.id] === 'object',
-                        "Parent ListView " + p + " has a child-model " + i + " without rootNodeView.id " + p.nodeRootView.id + " listed in views");
-                    if (p.value._byId[i].views[p.nodeRootView.id] === views[v]) {
+            var foundit:boolean = false;
+            if (pV instanceof ListView) {
+                assert(pV.nodeRootView instanceof OutlineRootView,
+                    "Parent ListView " + pV + " has invalid nodeRootView");
+                assert(typeof pV.value === 'object',
+                    "Parent ListView " + pV + " has invalid value (not an object)");
+                assert(pV.value instanceof $D.OutlineNodeCollection,
+                    "Parent ListView " + pV + " has a value that's not an OutlineNodeCollection");
+                assert(typeof pV.value._byId === 'object',
+                    "Parent ListView " + pV + " has a value without _byId");
+                for (k in pV.value._byId) {
+                    assert(typeof pV.value._byId[k] === 'object',
+                        "Parent ListView " + pV + " has a child-model " + k + " that is not an object");
+                    assert(typeof pV.value._byId[k].views === 'object',
+                        "Parent ListView " + pV + " has a child-model " + k + " without views");
+                    assert(typeof pV.value._byId[k].views[pV.nodeRootView.id] === 'object',
+                        "Parent ListView " + pV + " has a child-model " + k + " without rootNodeView.id " + pV.nodeRootView.id + " listed in views");
+                    if (pV.value._byId[k].views[pV.nodeRootView.id] === views[v]) {
                         foundit = true;
                     }
                 }
             } else { // all views must be in childViews list
-                var cViews = {};
-                for (var name in p.childViewTypes) {
-                    cViews[name] = p[name];
+                cViews = {};
+                for (var name in pV.childViewTypes) {
+                    cViews[name] = pV[name];
                     if (cViews[name] != null) { // allow empty childViews
                         assert(typeof cViews[name] === 'object',
                             "childView " + i + " of view " + v + " is not an object");
@@ -354,7 +363,7 @@ $D.validateMVC = function () {
                 }
             }
             assert(foundit,
-                "View " + v + " has parent " + p + " but none of parent's children reference " + v);
+                "View " + v + " has parent " + pV + " but none of parent's children reference " + v);
 
             if (views[v] instanceof NodeView) {
                 assert(views[v].nodeView === views[v],
@@ -404,15 +413,17 @@ $D.validateMVC = function () {
             }
 
             if (views[v] instanceof BreadcrumbView) {
-                assert(views[v].parentView instanceof PanelView,
+                var bView:BreadcrumbView = <BreadcrumbView>views[v];
+                assert(bView.parentView instanceof PanelView,
                     "Breadcrumb view " + v + " does not have paneloutlineview parent");
-                assert(views[v].parentView.breadcrumbs === views[v],
+                assert(bView.parentView.breadcrumbs === views[v],
                     "Breadcrumb view " + v + " does not match parentview.breadcrumbs");
             }
             if (views[v] instanceof ScrollView) {
-                assert(views[v].parentView instanceof PanelView,
+                var sView = <OutlineScrollView>views[v];
+                assert(sView.parentView instanceof PanelView,
                     "ScrollView " + v + " does not have paneloutlineview parent");
-                assert(views[v].parentView.outline === views[v],
+                assert(sView.parentView.outline === sView,
                     "ScrollView " + v + " does not have match parentview.outline");
             }
             if (views[v].nodeRootView == null) { // outside the outlines in the page
@@ -452,11 +463,11 @@ $D.validateMVC = function () {
                             "ListView " + v + " value is not in the model-collections list");
                     }
                     // make sure all children are represented in model
-                    for (var i in views[v].value._byId) {
-                        assert(views[v].value._byId[i] instanceof $D.OutlineNodeModel,
-                            "ListView " + v + " has child-model rank " + i + " is not an OutlineNodeModel");
-                        assert(models[views[v].value._byId[i].cid] === views[v].value._byId[i],
-                            "ListView " + v + " child-model " + views[v].value._byId[i].cid + " is not in the models list");
+                    for ( k in views[v].value._byId) {
+                        assert(views[v].value._byId[k] instanceof $D.OutlineNodeModel,
+                            "ListView " + v + " has child-model rank " + k + " is not an OutlineNodeModel");
+                        assert(models[views[v].value._byId[k].cid] === views[v].value._byId[k],
+                            "ListView " + v + " child-model " + views[v].value._byId[k].cid + " is not in the models list");
                     }
                     var vElemParent = $('#' + v).parent('li');
                     if ((vElemParent.length === 0) || (vElemParent.hasClass('expanded'))) {
@@ -464,7 +475,7 @@ $D.validateMVC = function () {
                             assert(!vElemParent.hasClass('collapsed'),
                                 "List-item " + vElemParent[0].id + " has collapsed and expanded classes");
                         }
-                        for (var i in views[v].value.models) {
+                        for (i in views[v].value.models) {
                             // rank is i
                             var vid = $($('#' + v).children().get(i)).attr('id');
                             assert(typeof vid === 'string',
@@ -481,29 +492,30 @@ $D.validateMVC = function () {
                     }
 
                 } else if (views[v] instanceof NodeView) {
+                    var nView = <NodeView>views[v];
 
-                    assert(views[v].value != null,
+                    assert(nView.value != null,
                         "NodeView " + v + " has null value");
 
-                    assert(models[views[v].value.cid].attributes.children === views[v].children.value,
+                    assert(models[nView.value.cid].attributes.children === nView.children.value,
                         "NodeView " + v + " has value-children different than children-value");
 
-                    assert(views[v].parentView instanceof ListView,
+                    assert(nView.parentView instanceof ListView,
                         "View " + v + " has type NodeView but parentView is not a ListView");
 
-                    assert(views[v].parentView.value instanceof $D.OutlineNodeCollection,
+                    assert(nView.parentView.value instanceof $D.OutlineNodeCollection,
                         "NodeView " + v + " parent view does not have value OutlineNodeCollection");
 
-                    assert(views[v].parentView.value._byId[views[v].value.cid] === models[views[v].value.cid],
+                    assert(nView.parentView.value._byId[nView.value.cid] === models[nView.value.cid],
                         "NodeView " + v + " parent view's collection does not include item's model ID " + views[v].value.cid);
 
-                    assert(views[v].value != null,
+                    assert(nView.value != null,
                         "NodeView " + v + " has no value");
-                    assert(typeof views[v].value === 'object',
+                    assert(typeof nView.value === 'object',
                         "NodeView " + v + " has invalid value (not an object)");
                     foundit = false;
-                    for (var i in views[v].value.views) {
-                        if (views[v].value.views[i] === views[v]) {
+                    for (k in nView.value.views) {
+                        if (nView.value.views[k] === nView) {
                             foundit = true;
                         }
                     }
@@ -565,7 +577,8 @@ $D.validateMVC = function () {
         // todo: check elem existence and caching top/left/width/height
     }
 
-    var PM = PanelManager;
+    var PM:typeof PanelManager;
+    PM = PanelManager;
     var grid = View.getCurrentPage().content.grid;
     // todo: check on properties of all deleted outlines/panels
 
@@ -584,27 +597,27 @@ $D.validateMVC = function () {
     assert(PM.prevpanel[''] !== undefined,
         "empty not found in prevpanel");
     var leftRank;
-    for (var n = 0, p = PM.nextpanel['']; p !== ''; p = PM.nextpanel[p], ++n) {
-        assert(PM.nextpanel[PM.prevpanel[p]] === p,
-            "nextpanel and prevpanel don't match at " + p);
-        assert(PM.prevpanel[PM.nextpanel[p]] === p,
-            "nextpanel and prevpanel don't match at " + p);
-        assert(PM.deleted[p] === undefined,
-            "Non-deleted view in PM.deleted " + p);
-        if (p === PM.leftPanel) {
+    for (var n = 0, pname = PM.nextpanel['']; pname !== ''; pname = PM.nextpanel[pname], ++n) {
+        assert(PM.nextpanel[PM.prevpanel[pname]] === pname,
+            "nextpanel and prevpanel don't match at " + pname);
+        assert(PM.prevpanel[PM.nextpanel[pname]] === pname,
+            "nextpanel and prevpanel don't match at " + pname);
+        assert(PM.deleted[pname] === undefined,
+            "Non-deleted view in PM.deleted " + pname);
+        if (pname === PM.leftPanel) {
             leftRank = n;
-            assert($('#' + grid.id).children(':first').children().get(0).id === p,
+            assert($('#' + grid.id).children(':first').children().get(0).id === pname,
                 "leftPanel does not match first panel in grid");
         }
         if ((n >= leftRank) && (n < leftRank + PM.panelsPerScreen)) {
             var pview = grid['scroll' + String(n - leftRank + 1)];
-            assert(pview.id === p,
-                "View doesn't match panelmanager for n=" + n + " with p=" + p +
+            assert(pview.id === pname,
+                "View doesn't match panelmanager for n=" + n + " with p=" + pname +
                     " and pview.id=" + pview.id);
-            assert(pview.outline.alist.id === PM.rootViews[p],
-                "RootView doesn't match panelmanager for panel " + p);
-            assert(pview.value === PM.rootModels[p],
-                "RootModel doesn't match panelmanager for panel " + p);
+            assert(pview.outline.alist.id === PM.rootViews[pname],
+                "RootView doesn't match panelmanager for panel " + pname);
+            assert(pview.value === PM.rootModels[pname],
+                "RootModel doesn't match panelmanager for panel " + pname);
         }
     }
     assert(n === PM.count,
@@ -632,19 +645,19 @@ $D.validateMVC = function () {
     });
 
     $('ul').each(function () {
-        if ($(this).closest('#debuglog').length > 0) {
+        if ($(<HTMLElement>this).closest('#debuglog').length > 0) {
             return;
         }
-        assert(typeof $(this).attr('id') === 'string',
+        assert(typeof $(<HTMLElement>this).attr('id') === 'string',
             "List does not have a string for an id");
-        assert($(this).attr('id').length >= 3,
+        assert($(<HTMLElement>this).attr('id').length >= 3,
             "List does not have a long enough id");
-        assert($(this).hasClass('ui-listview'),
-            "List " + $(this).attr('id') + " does not have class ui-listview");
-        assert($(this).hasClass('ui-corner-all'),
-            "List " + $(this).attr('id') + " does not have class ui-corner-all");
-        assert($(this).hasClass('ui-shadow'),
-            "List " + $(this).attr('id') + " does not have class ui-shadow");
+        assert($(<HTMLElement>this).hasClass('ui-listview'),
+            "List " + $(<HTMLElement>this).attr('id') + " does not have class ui-listview");
+        assert($(<HTMLElement>this).hasClass('ui-corner-all'),
+            "List " + $(<HTMLElement>this).attr('id') + " does not have class ui-corner-all");
+        assert($(<HTMLElement>this).hasClass('ui-shadow'),
+            "List " + $(<HTMLElement>this).attr('id') + " does not have class ui-shadow");
 
 
         // todo: check for ui-sortable class for page
@@ -670,80 +683,81 @@ $D.validateMVC = function () {
     $('.ui-li').each(function () {
         // either li or immediately under li
         if (this.nodeName.toLowerCase() !== 'li') {
-            assert($(this).parent().get(0).nodeName.toLowerCase() === 'li',
+            assert($(<HTMLElement>this).parent().get(0).nodeName.toLowerCase() === 'li',
                 "Non-list element with ui-li class");
         }
     });
 
     $('li').each(function () {
-        if ($(this).closest('#debuglog').length > 0) {
+        var self:HTMLElement = <HTMLElement>this;
+        if ($(self).closest('#debuglog').length > 0) {
             return;
         }
-        assert(typeof $(this).attr('id') === 'string',
+        assert(typeof $(self).attr('id') === 'string',
             "List-item does not have a string for an id");
-        assert($(this).attr('id').length >= 3,
+        assert($(self).attr('id').length >= 3,
             "List-item does not have a long enough id");
-        assert($(this).hasClass('ui-li'),
-            "List-item " + $(this).attr('id') + " does not ahve class ui-li");
+        assert($(self).hasClass('ui-li'),
+            "List-item " + $(self).attr('id') + " does not ahve class ui-li");
 
-        if ($(this).next().length > 0) {
-            assert(!$(this).hasClass('ui-last-child'),
-                "LI " + $(this).attr('id') + " is not at end but has class ui-last-child");
+        if ($(self).next().length > 0) {
+            assert(!$(self).hasClass('ui-last-child'),
+                "LI " + $(self).attr('id') + " is not at end but has class ui-last-child");
         } else {
-            assert($(this).hasClass('ui-last-child'),
-                "LI " + $(this).attr('id') + " is at end but does not have class ui-last-child");
+            assert($(<HTMLElement>this).hasClass('ui-last-child'),
+                "LI " + $(self).attr('id') + " is at end but does not have class ui-last-child");
         }
-        if ($(this).prev().length > 0) {
-            assert(!$(this).hasClass('ui-first-child'),
-                "LI " + $(this).attr('id') + " is not at beginning but has class ui-first-child");
+        if ($(self).prev().length > 0) {
+            assert(!$(self).hasClass('ui-first-child'),
+                "LI " + $(self).attr('id') + " is not at beginning but has class ui-first-child");
         } else {
-            assert($(this).hasClass('ui-first-child'),
-                "LI " + $(this).attr('id') + " is at beginning but does not have class ui-first-child");
+            assert($(self).hasClass('ui-first-child'),
+                "LI " + $(self).attr('id') + " is at beginning but does not have class ui-first-child");
         }
 
-        var childlist = $(this).children('ul');
+        var childlist = $(self).children('ul');
         assert(childlist.length === 1,
-            "Child list ul not found inside li " + $(this).attr('id'));
+            "Child list ul not found inside li " + $(self).attr('id'));
 
         if (childlist.children().length > 0) {
-            assert($(this).hasClass('branch'),
-                "LI " + $(this).attr('id') + " has children but does not have branch class");
-            assert(!$(this).hasClass('leaf'),
-                "LI " + $(this).attr('id') + " has children but has leaf class");
+            assert($(self).hasClass('branch'),
+                "LI " + $(self).attr('id') + " has children but does not have branch class");
+            assert(!$(self).hasClass('leaf'),
+                "LI " + $(self).attr('id') + " has children but has leaf class");
         } else {
-            if ($(this).hasClass('expanded')) {
-                assert(!$(this).hasClass('branch'),
-                    "LI " + $(this).attr('id') + " has no children but has branch class");
-                assert($(this).hasClass('leaf'),
-                    "LI " + $(this).attr('id') + " has no children but does not have leaf class");
+            if ($(self).hasClass('expanded')) {
+                assert(!$(self).hasClass('branch'),
+                    "LI " + $(self).attr('id') + " has no children but has branch class");
+                assert($(self).hasClass('leaf'),
+                    "LI " + $(self).attr('id') + " has no children but does not have leaf class");
             } else {
-                assert($(this).hasClass('branch'),
-                    "LI " + $(this).attr('id') + " has no children but has branch class");
-                assert(!$(this).hasClass('leaf'),
-                    "LI " + $(this).attr('id') + " has no children but does not have leaf class");
+                assert($(self).hasClass('branch'),
+                    "LI " + $(self).attr('id') + " has no children but has branch class");
+                assert(!$(self).hasClass('leaf'),
+                    "LI " + $(self).attr('id') + " has no children but does not have leaf class");
             }
         }
 
-        assert($(this).hasClass('expanded') || $(this).hasClass('collapsed'),
-            "li " + $(this).attr('id') + " doesn't have expanded or collapsed class.");
-        assert(!($(this).hasClass('expanded') && $(this).hasClass('collapsed')),
-            "li " + $(this).attr('id') + " has both expanded and collapsed class.");
+        assert($(self).hasClass('expanded') || $(self).hasClass('collapsed'),
+            "li " + $(self).attr('id') + " doesn't have expanded or collapsed class.");
+        assert(!($(self).hasClass('expanded') && $(self).hasClass('collapsed')),
+            "li " + $(self).attr('id') + " has both expanded and collapsed class.");
 
-        if ($(this).is(':visible')) {
-            if ($(this).hasClass('expanded')) {
+        if ($(self).is(':visible')) {
+            if ($(self).hasClass('expanded')) {
                 assert(childlist.is(':visible'),
-                    "Expanded list under " + $(this).attr('id') + " is not visible");
+                    "Expanded list under " + $(self).attr('id') + " is not visible");
             } else {
                 assert(!childlist.is(':visible'),
-                    "Collapsed list under " + $(this).attr('id') + " is visible");
+                    "Collapsed list under " + $(self).attr('id') + " is visible");
             }
         } else {
-            assert(!$(this).parent().is(':visible'),
-                "LI " + $(this).attr('id') + " is not visible though parent ul is");
+            assert(!$(self).parent().is(':visible'),
+                "LI " + $(self).attr('id') + " is not visible though parent ul is");
         }
         // validate that all lists are unique inside their li
-        assert($(this).children('ul').length === 1,
-            "List-item " + $(this).attr('id') + " does not have exactly one ul inside it");
+        assert($(self).children('ul').length === 1,
+            "List-item " + $(self).attr('id') + " does not have exactly one ul inside it");
 
         /*
          // validate overflow and z-index, which can be programmatically changed
@@ -765,23 +779,25 @@ $D.validateMVC = function () {
 
     // validate that ui-focus-parent is used iff ui-focus is inside it
     $('.ui-focus-parent').each(function () {
-        assert($(this).find('.ui-focus').length > 0,
-            "Unable to find ui-focus inside ui-focus-parent with id=" + $(this).attr('id'));
+        var self:HTMLElement = <HTMLElement>this;
+        assert($(self).find('.ui-focus').length > 0,
+            "Unable to find ui-focus inside ui-focus-parent with id=" + $(self).attr('id'));
     });
 
     $('.ui-focus').each(function () {
+        var self:HTMLElement = <HTMLElement>this;
         // test that all parents have ui-focus-parent if they are li or ul
-        $(this).parents().each(function () {
+        $(self).parents().each(function () {
             if ((this.nodeName.toLowerCase === 'li') || (this.nodeName.toLowerCase === 'ul')) {
-                assert($(this).hasClass('ui-focus-parent'),
-                    "Missing ui-focus-parent on focus-parent node " + $(this).attr('id'));
+                assert($(self).hasClass('ui-focus-parent'),
+                    "Missing ui-focus-parent on focus-parent node " + $(self).attr('id'));
             }
         });
     });
 
 
     var actions = ActionManager.actions;
-    var lastaction = ActionManager.lastAction;
+    var lastaction:number = ActionManager.lastAction;
     if (actions.length > 0) {
         assert(lastaction !== null,
             "Actions.length>0 but lastaction is null");
@@ -838,20 +854,20 @@ $D.validateMVC = function () {
     assert($('#' + b.redobutton.id).length === 1,
         "Cannot find redo button element");
     assert(
-        ((ActionManager.nextUndo() === false) &&
+        ((ActionManager.nextUndo() === -1) &&
             ($('#' + b.undobutton.id).children('div.ui-disabled').length === 1)) ||
-            ((ActionManager.nextUndo() !== false) &&
+            ((ActionManager.nextUndo() !== -1) &&
                 ($('#' + b.undobutton.id).children('div.ui-disabled').length === 0)),
         "Undo button does not match nextUndo()");
     assert(
-        ((ActionManager.nextRedo() === false) &&
+        ((ActionManager.nextRedo() === -1) &&
             ($('#' + b.redobutton.id).children('div.ui-disabled').length === 1)) ||
-            ((ActionManager.nextRedo() !== false) &&
+            ((ActionManager.nextRedo() !== -1) &&
                 ($('#' + b.redobutton.id).children('div.ui-disabled').length === 0)),
         "Redo button does not match nextRedo()");
 
     function footprint(elem) {
-        var obj = {};
+        var obj:{top?:number;left?:number;bottom?:number;right?:number} = {};
         var offset = $(elem).offset();
         var paddingtop = Number($(elem).css('padding-top').replace(/px/, ''));
         var margintop = Number($(elem).css('margin-top').replace(/px/, ''));
@@ -874,9 +890,9 @@ $D.validateMVC = function () {
 
 
     $('*').each(function() {
-        var withID = this;
+        var withID:HTMLElement = <HTMLElement>this;
         while ((!withID.id)&&(withID.parentNode)) {
-            withID = withID.parentNode;
+            withID = <HTMLElement>withID.parentNode;
         }
         if (withID.id) {
             assert(views[withID.id] != null,

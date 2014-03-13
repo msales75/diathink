@@ -8,6 +8,7 @@ var M = M || {};
 var YES = true;
 var NO = false;
 var m_require = m_require || function require() {};
+$D.log = function(a, b) {};
 function assert (test, message) {
     if (!test) {
         if (message) {

@@ -81,6 +81,10 @@ var View = (function () {
         }
         this.createListItems();
     }
+    View.escapeHtml = function (text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    };
+
     View.getNextId = function () {
         this.nextId = this.nextId + 1;
         return 'm_' + String(this.nextId);

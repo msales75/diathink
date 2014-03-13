@@ -25,7 +25,7 @@ var HandleImageView = (function (_super) {
             return $D.Action.checkTextChange(li.header.name.text.id);
         }, function () {
             if (!liElem.hasClass('branch')) {
-                return false;
+                return null;
             }
             return {
                 action: $D.CollapseAction,

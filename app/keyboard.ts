@@ -1,7 +1,5 @@
 ///<reference path="../frameworks/m.ts"/>
 
-m_require("app/foundation/object.js");
-
 declare var $D;
 
 class keyboardSetup {

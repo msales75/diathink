@@ -41,7 +41,7 @@ $D.handleKeydown = function (view, e) {
             return;
         }
     } else if (e.which === 8) {
-        sel = $(view.elem).selection();
+        sel = view.getSelection();
         if (sel && (sel[0] === 0) && (sel[1] === 0)) {
             // get parent-collection and rank
             collection = liView.parentView.value;

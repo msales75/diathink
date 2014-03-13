@@ -1,16 +1,17 @@
+///<reference path="views/OutlineRootView.ts"/>
 
 
 class OutlineManager {
-    static outlines= {};
-    static deleted= {};
+    static outlines:{[i:string]:OutlineRootView}= {};
+    static deleted:{[i:string]:OutlineRootView}= {};
 
-    static add(id, controller) {
+    static add(id:string, controller:OutlineRootView) {
         if (OutlineManager.deleted[id]) {
             delete OutlineManager.deleted[id];
         }
         OutlineManager.outlines[id] = controller;
     }
-    static remove(outline) {
+    static remove(outline:OutlineRootView) {
         var id = outline.id;
         OutlineManager.deleted[id] = id;
         delete OutlineManager.outlines[id];

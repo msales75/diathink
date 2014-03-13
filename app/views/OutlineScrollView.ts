@@ -2,6 +2,7 @@
 m_require("app/views/ScrollView.js");
 
 class OutlineScrollView extends ScrollView {
+    parentView:PanelView;
     alist:OutlineRootView;
     scrollSpacer:ScrollSpacerView;
     droplayer:DropLayerView;

@@ -82,9 +82,20 @@ var TextAreaView = (function (_super) {
         */
         return this.elem;
     };
+    TextAreaView.prototype.getValue = function () {
+        this.value = this.elem.value;
+        return this.value;
+    };
 
+    TextAreaView.prototype.setValue = function (val) {
+        this.value = val;
+        var htmlval = View.escapeHtml(val);
+        this.elem.value = val;
+        this.elem.innerHTML = htmlval;
+        return this;
+    };
     TextAreaView.prototype.setValueFromDOM = function () {
-        this.value = this.secure(this.elem.innerHTML);
+        this.value = this.elem.value;
     };
 
     // trigger-events:
@@ -144,6 +155,7 @@ var TextAreaView = (function (_super) {
     TextAreaView.prototype.focus = function () {
         this.addClass('ui-focus');
         this.parentView.parentView.parentView.addClass('ui-focus');
+        return this;
     };
 
     TextAreaView.prototype.blur = function () {
@@ -154,6 +166,44 @@ var TextAreaView = (function (_super) {
         ActionManager.schedule(function () {
             return $D.Action.checkTextChange(that.id);
         });
+        return this;
+    };
+
+    TextAreaView.prototype.selectAllText = function () {
+        var range, selection, element = this.elem;
+        if (window.getSelection) {
+            selection = window.getSelection();
+            range = document.createRange();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        return this;
+    };
+
+    TextAreaView.prototype.setSelection = function (selectionStart, selectionEnd) {
+        var elem = this.elem;
+        if (elem.setSelectionRange) {
+            elem.focus();
+            elem.setSelectionRange(selectionStart, selectionEnd);
+        } else if (elem.createTextRange) {
+            var range = elem.createTextRange();
+            range.collapse(true);
+            range.moveEnd('character', selectionEnd);
+            range.moveStart('character', selectionStart);
+            range.select();
+        }
+        return this;
+    };
+
+    TextAreaView.prototype.setCursor = function (pos) {
+        this.setSelection(pos, pos);
+        return this;
+    };
+
+    TextAreaView.prototype.getSelection = function () {
+        var elem = this.elem;
+        return [elem.selectionStart, elem.selectionEnd];
     };
     return TextAreaView;
 })(View);
