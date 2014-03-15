@@ -1,9 +1,14 @@
+///<reference path="Action.ts"/>
 
-$D.animDock = {
-    indentSpeed: 80,
-    dockSpeed: 160,
+m_require("app/animations/AnimatedAction.js");
 
-    getObjectParams: function(obj, textobj) {
+class DockAnimAction extends AnimatedAction {
+    indentSpeed= 80;
+    dockSpeed= 160;
+    oldModelContext; // these are tested for existence
+    newModelContext;
+/*
+    getObjectParams(obj, textobj) {
 // * Currently unused, precisely orients text in object-boundaries
         // if old-type = new-type, don't need to deal with this
         var oldParams = {};
@@ -19,14 +24,20 @@ $D.animDock = {
         oldParams.textHeight = $(textobj).height();
         oldParams.color = $(textobj).css('color');
         return oldParams;
-    },
-    dockAnimStep: function(frac, o) {
+    } */
+    dockAnimStep(frac, o) {
         var endX= o.endX, endY= o.endY,
             startX = o.startX, startY = o.startY;
 
         var left = String(Math.round(frac*endX+(1-frac)*startX));
         var top = String(Math.round(frac*endY+(1-frac)*startY));
-        var css = {
+        var css:{
+            left?:string;
+            top?:string;
+            width?:string;
+            color?:string;
+        };
+        css = {
             left: left+'px',
             top: top+'px'
         };
@@ -43,8 +54,8 @@ $D.animDock = {
             css['font-size'] = [Math.round((1-frac)*o.startSize+frac*o.endSize),'px'].join('');
         }
         $(this.options.dockElem).css(css);
-    },
-    animFadeEnv: function() {
+    }
+    animFadeEnv() {
         var r = this.runtime;
         if (this.oldType!==this.newType) {
             if (this.oldType==='line') { // get rid of borders & handle
@@ -53,9 +64,9 @@ $D.animDock = {
 
             }
         }
-    },
+    }
 
-    createDockElem: function() {
+    createDockElem() {
         var r = this.runtime;
         if (r.createDockElem) {
             // create virtual $D.helper for animation
@@ -73,9 +84,9 @@ $D.animDock = {
                 debugger;
             }
 
-            // if RootAction, change the helper to be just the text instead of activeLineView
+            // if PanelRootAction, change the helper to be just the text instead of activeLineView
             // how do we know if 'source' is a panel?
-            this.options.dockElem = $('#'+activeLineView.id)[0].cloneNode(true);
+            this.options.dockElem = <HTMLElement> $('#'+activeLineView.id)[0].cloneNode(true);
             this.options.dockElem.id = '';
             var drawlayer = $('#'+View.getCurrentPage().drawlayer.id);
             drawlayer[0].appendChild(this.options.dockElem);
@@ -89,12 +100,12 @@ $D.animDock = {
             });
             $(document.body).addClass('transition-mode');
         }
-    },
+    }
 
-    // this seems the same for RootAction panel-docking
+    // this seems the same for PanelRootAction panel-docking
     // todo: for non-docking, start fade-in after restoreContext before focus
     // dock the dragged-helper
-    dockAnim: function(newRoot) {
+    dockAnim(newRoot) {
         var r = this.runtime;
         console.log('In dockAnim now');
         if (r.performDock) {
@@ -140,5 +151,5 @@ $D.animDock = {
             });
         }
     }
-};
+}
 

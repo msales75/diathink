@@ -20,12 +20,10 @@ var ScrollHandler = (function () {
             startEventName: "scrollstart",
             updateEventName: "scrollupdate",
             stopEventName: "scrollstop",
-            /* updateScroll: null, */ // MS external function for each scroll-move
             eventType: 'ontouchstart' in document.documentElement ? "touch" : "mouse",
             showScrollBars: true,
             pagingEnabled: false,
-            delayedClickSelector: "a,input,textarea,select,button,.ui-btn",
-            delayedClickEnabled: false
+            delayedClickSelector: "a,input,textarea,select,button,.ui-btn"
         };
         this.options = _.extend(this.options, opts);
         this.element = this.options.element;
@@ -271,9 +269,6 @@ var ScrollHandler = (function () {
 
         var c = this._$clip;
         var v = this._$view;
-        if (this.options.delayedClickEnabled) {
-            // this._$clickEle = $(e.target).closest(this.options.delayedClickSelector);
-        }
         this._lastX = ex;
         this._lastY = ey;
         this._doSnapBackX = false;
@@ -523,16 +518,6 @@ var ScrollHandler = (function () {
             this._hideScrollBars();
 
         // this._disableTracking();
-        if (!this._didDrag && this.options.delayedClickEnabled && this._$clickEle.length) {
-            $D.log(['debug', 'scroll'], "Triggering tap from empty dragstop");
-            var tap = "click";
-            if ($.is_touch_device) {
-                tap = "tap";
-            }
-            this._$clickEle.trigger("tap");
-            // TODO: THIS should depend on whether or not we're using mobile.
-        }
-
         // If a view scrolled, then we need to absorb
         // the event so that links etc, underneath our
         // cursor/finger don't fire.

@@ -164,7 +164,7 @@ var TextAreaView = (function (_super) {
         this.parentView.parentView.parentView.removeClass('ui-focus');
         this.setValueFromDOM();
         ActionManager.schedule(function () {
-            return $D.Action.checkTextChange(that.id);
+            return Action.checkTextChange(that.id);
         });
         return this;
     };

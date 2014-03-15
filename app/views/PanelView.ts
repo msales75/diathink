@@ -1,6 +1,5 @@
 ///<reference path="View.ts"/>
 ///<reference path="../events/Router.ts"/>
-///<reference path="../PanelManager.ts"/>
 m_require("app/views/ContainerView.js");
 class PanelView extends ContainerView {
     breadcrumbs:BreadcrumbView;

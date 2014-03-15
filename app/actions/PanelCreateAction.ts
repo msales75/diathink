@@ -1,89 +1,22 @@
+///<reference path="Action.ts"/>
 
-m_require("app/actions/actionBase.js");
+m_require("app/actions/Action.js");
 
-$D.RootAction= $D.Action.extend({
-    type:"RootAction",
-    newType: 'panel',
-    options: {activeID: null, collapsed: false},
-    _validateOptions: {
-        requireActive: false,
-        requireReference: false,
-        requireOld: false,
-        requireNew: false
-    },
-    execModel: function () {
-        var that = this;
-        that.addQueue('newModelAdd', ['context'], function() {
-            if ((!that.options.undo) && (!that.options.redo)) {
-                var c = ActionManager;
-                if (c.actions.at(c.lastAction) !== that) {
-                    console.log('ERROR: lastAction is not this');
-                    debugger;
-                }
-                var prevAction = c.actions.at(c.lastAction-1);
-                if ((prevAction.type==='CollapseAction')&&
-                    (prevAction.options.activeID === that.options.activeID)) {
 
-                    var activeModel= that.getModel(that.options.activeID);
-                    activeModel.set('collapsed', prevAction.oldCollapsed);
-                    for (var o in OutlineManager.outlines) {
-                        OutlineManager.outlines[o].setData(
-                            that.options.activeID,
-                            prevAction.oldViewCollapsed[o]);
-                    }
-                    prevAction.undone = true;
-                    prevAction.lost = true;
-                }
-            }
-            // todo: save current perspective into model?
-        });
-    },
-    execView:function (outline) {
-        var that = this;
-        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd'], function() {
-            var model=null;
-            if (that.options.undo) {
-                if (outline.nodeRootView.id === that.options.newRoot) {
-                    model = that.oldRootModel;
-                    var view = View.get(that.options.newRoot).parentView
-                        .parentView.changeRoot(model, that.options.oldRoot);
-                    if (view !== that.options.oldRoot) {
-                        console.log('Invalid return from changeRoot');
-                        debugger;
-                    }
-                }
-            } else {
-                if (outline.nodeRootView.id === that.options.oldRoot) {
-                    model = that.getModel(that.options.activeID);
-                    if (that.options.redo) {
-                        var view = View.get(that.options.oldRoot).parentView
-                            .parentView.changeRoot(model, that.options.newRoot);
-                        if (view !== that.options.newRoot) {
-                            console.log('Invalid return from changeRoot');
-                            debugger;
-                        }
-                    } else {
-                        that.oldRootModel = View.get(that.options.oldRoot).rootModel;
-                        that.options.newRoot = View.get(that.options.oldRoot).parentView
-                            .parentView.changeRoot(model);
-                    }
-                }
-            }
-            // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
-        });
-    }
-});
-
-$D.PanelAction=$D.Action.extend({
-    type: "PanelCreate",
-    prevPanel: null,
-    newPanel: null,
-    options: {activeID: null, prevPanel: null, oldroot: null, newRoot: 'new'},
-    contextStep: function() { // save old context here
+class PanelCreateAction extends Action {
+    type= "PanelCreate";
+    prevPanel= null;
+    newPanel= null;
+    leftPanel:string;
+    nextPanel:string;
+    postLeftPanel:string;
+    postRightPanel:string;
+    options= {activeID: null, prevPanel: null, oldRoot: null, newRoot: 'new'};
+    contextStep() { // save old context here
         this.leftPanel = PanelManager.leftPanel;
         this.nextPanel = PanelManager.nextpanel[this.prevPanel];
-    },
-    validateOldContext: function() {
+    }
+    validateOldContext() {
         if (!this.options.undo) {
             if (this.leftPanel !== PanelManager.leftPanel) {
                 console.log("ERROR: leftPanel is not what it should be before op");
@@ -103,8 +36,8 @@ $D.PanelAction=$D.Action.extend({
                 debugger;
             }
         }
-    },
-    validateNewContext: function() {
+    }
+    validateNewContext() {
         if (!this.postLeftPanel) {this.postLeftPanel = PanelManager.leftPanel;}
         if (this.options.undo) {
             if (this.leftPanel !== PanelManager.leftPanel) {
@@ -125,11 +58,12 @@ $D.PanelAction=$D.Action.extend({
                 debugger;
             }
         }
-    },
-    validateOptions: function() {
+    }
+    validateOptions() {
         // todo: check leftPanel
-        var PM = PanelManager;
-        var o = this.options;
+        var PM:typeof PanelManager;
+        PM = PanelManager;
+        var o:ActionOptions = this.options;
         if (!o.redo && !o.undo) {
             this.leftPanel = PM.leftPanel;
         }
@@ -146,11 +80,12 @@ $D.PanelAction=$D.Action.extend({
         // prevPanel
         // store: newPanel, newRoot
         // root = View.get(panelid).outline.alist.id
-    },
-    redrawPanel: function(n, p, firsttime) {
+    }
+    redrawPanel(n, p, firsttime) {
         // should changeRoot it instead?
         var c;
-        var PM = PanelManager;
+        var PM : typeof PanelManager;
+        PM = PanelManager;
         var grid = View.getCurrentPage().content.grid;
         if (grid['scroll'+String(n)]) {
             c = grid['scroll'+String(n)].destroy(); // save context for this
@@ -178,7 +113,8 @@ $D.PanelAction=$D.Action.extend({
         // grid['scroll'+String(n)].registerEvents();
         if (firsttime && (grid['scroll'+String(n)].id === this.newPanel)) {
             grid['scroll'+String(n)].changeRoot(
-                this.getModel(this.options.activeID)
+                this.getModel(this.options.activeID),
+                null
             );
         } else {
             grid['scroll'+String(n)].changeRoot(
@@ -186,16 +122,17 @@ $D.PanelAction=$D.Action.extend({
                 PM.rootViews[p]
             );
         }
-    },
-    removePanel: function(n) {
+    }
+    removePanel(n) {
         var grid = View.getCurrentPage().content.grid;
         grid['scroll'+String(n)].destroy();
         grid['scroll'+String(n)] = null;
-    },
-    execModel: function() {
+    }
+    execModel() {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function() {
-            var PM = PanelManager;
+            var PM : typeof PanelManager;
+            PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
             var o = that.options;
             var dir;
@@ -217,8 +154,8 @@ $D.PanelAction=$D.Action.extend({
             //  before we delete the original.
 
             for (var p = PM.leftPanel, n=1;
-                 (p!=='') && (n<=PM.panelsPerScreen);
-                 ++n, p=PM.nextpanel[p]) {
+                (p!=='') && (n<=PM.panelsPerScreen);
+                ++n, p=PM.nextpanel[p]) {
                 if (dir==='right') {
                     that.redrawPanel(n, p, !o.undo && !o.redo);
                 }
@@ -230,8 +167,8 @@ $D.PanelAction=$D.Action.extend({
             if (dir==='left') {
                 --n; p=PM.prevpanel[p];
                 for ( ;
-                     (p!=='') && (n>=1);
-                     --n, p=PM.prevpanel[p]) {
+                    (p!=='') && (n>=1);
+                    --n, p=PM.prevpanel[p]) {
                     that.redrawPanel(n, p, !o.undo && !o.redo);
                 }
             }
@@ -245,54 +182,11 @@ $D.PanelAction=$D.Action.extend({
                 that.options.dockElem = undefined;
             }
         });
-    },
-    execView: function(outline) { // mutually exclusive with restoreViewContext
+    }
+    execView(outline) { // mutually exclusive with restoreViewContext
         var that = this;
         this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd', 'anim'], function() {
             var r= that.runtime;
         });
     }
-});
-
-$D.SlideAction = $D.Action.extend({
-    type:'PanelSlide',
-    oldLeftPanel:null,
-    options: {direction:null},
-    execModel: function() {
-        var that = this;
-        this.addQueue('newModelAdd', ['context'], function() {
-            var PM = PanelManager;
-            var grid = View.getCurrentPage().content.grid;
-            var o = that.options;
-            var dir;
-            if (o.direction==='right') {
-                if (o.undo) {
-                    dir = 'left';
-                } else {
-                    dir = 'right';
-                }
-            } else if (o.direction==='left') {
-                if (o.undo) {
-                    dir = 'right';
-                } else {
-                    dir = 'left';
-                }
-            }
-            if (dir==='right') {
-                PM.leftPanel = PM.prevpanel[PM.leftPanel];
-                $D.redrawPanels('right');
-            } else if (dir==='left') {
-                PM.leftPanel = PM.nextpanel[PM.leftPanel];
-                $D.redrawPanels('left');
-            }
-            $D.updatePanelButtons();
-        });
-
-    },
-    execView: function(outline) {
-        var that = this;
-        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd', 'anim'], function() {
-            var r= that.runtime;
-        });
-    }
-});
+}

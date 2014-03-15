@@ -1,6 +1,5 @@
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
-m_require("app/views/OutlineListView.js");
 
 class NodeView extends View {
     modelType;
@@ -11,7 +10,7 @@ class NodeView extends View {
     isCollapsed:boolean;
     init() {
         this.Class = NodeView;
-        this.modelType = $D.OutlineNodeModel;
+        this.modelType = OutlineNodeModel;
         this.childViewTypes = {
             header: NodeHeaderView,
             children: OutlineListView

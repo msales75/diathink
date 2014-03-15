@@ -21,7 +21,7 @@ $(function() {
         ActionManager.schedule(
             function() {
                 return {
-                    action: $D.RootAction,
+                    action: PanelRootAction,
                     activeID: modelid,
                     oldRoot: panelview.outline.alist.nodeRootView.id,
                     newRoot: 'new'

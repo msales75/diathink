@@ -35,6 +35,8 @@
 ///<reference path="ToolbarView.ts"/>
 ///<reference path="UndoButtonContainerView.ts"/>
 ///<reference path="UndoButtonView.ts"/>
+///<reference path="../OutlineManager.ts"/>
+///<reference path="../PanelManager.ts"/>
 
 var View = (function () {
     function View(opts) {

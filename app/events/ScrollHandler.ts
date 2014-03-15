@@ -36,39 +36,26 @@ class ScrollHandler {
     private _pageSize;
     private _pagePos;
     private _lastMove;
-    private _dragMoveEvt;
-    private _dragMoveCB;
-    private _dragStopEvt;
-    private _dragStopCB;
-    private _dragStartEvt;
-    private _dragStartCB;
 
     private options = {
         element: null,
         fps: 60,    // Frames per second in msecs.
         direction: 'y',  // "x", "y", or null for both.
-
         scrollDuration: 2000,  // Duration of the scrolling animation in msecs.
         overshootDuration: 250,   // Duration of the overshoot animation in msecs.
         snapbackDuration: 500,   // Duration of the snapback animation in msecs.
-
         moveThreshold: 10,   // User must move this many pixels in any direction to trigger a scroll.
         moveIntervalThreshold: 150,   // Time between mousemoves must not exceed this threshold.
-
         scrollMethod: "translate",  // "translate", "position", "scroll"
-
         startEventName: "scrollstart",
         updateEventName: "scrollupdate",
         stopEventName: "scrollstop",
-        /* updateScroll: null, */ // MS external function for each scroll-move
-
         eventType: 'ontouchstart' in document.documentElement ? "touch" : "mouse",
 
         showScrollBars: true,
 
         pagingEnabled: false,
-        delayedClickSelector: "a,input,textarea,select,button,.ui-btn",
-        delayedClickEnabled: false
+        delayedClickSelector: "a,input,textarea,select,button,.ui-btn"
         // MS - prevents double-handling of tap when using bubbling/delegated
 
     };
@@ -320,9 +307,6 @@ class ScrollHandler {
 
         var c = this._$clip;
         var v = this._$view;
-        if (this.options.delayedClickEnabled) {
-            // this._$clickEle = $(e.target).closest(this.options.delayedClickSelector);
-        }
         this._lastX = ex;
         this._lastY = ey;
         this._doSnapBackX = false;
@@ -579,18 +563,6 @@ class ScrollHandler {
             this._hideScrollBars();
 
         // this._disableTracking();
-
-        if (!this._didDrag && this.options.delayedClickEnabled && this._$clickEle.length) {
-            $D.log(['debug', 'scroll'], "Triggering tap from empty dragstop");
-            var tap = "click";
-            if ($.is_touch_device) {tap = "tap";}
-            this._$clickEle
-//				.trigger("mousedown")
-                //.trigger("focus")
-//				.trigger("mouseup")
-                .trigger("tap");
-            // TODO: THIS should depend on whether or not we're using mobile.
-        }
 
         // If a view scrolled, then we need to absorb
         // the event so that links etc, underneath our

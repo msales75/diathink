@@ -3,14 +3,14 @@
 ///<reference path="keyboard.ts"/>
 ///<reference path="events/Router.ts"/>
 ///<reference path="util/fixFontSize.ts"/>
-///<reference path="actions/actionManager.ts"/>
+///<reference path="actions/ActionManager.ts"/>
 ///<reference path="validate.ts"/>
 
 m_require("app/PanelManager.js");
 m_require("app/views/DiathinkView.js");
 m_require("app/views/PanelView.js");
 m_require("app/events/Router.js");
-m_require("app/actions/actionManager.js");
+m_require("app/actions/ActionManager.js");
 
 var nav = navigator;
 if (nav.userAgent.match(/iPhone/i) ||

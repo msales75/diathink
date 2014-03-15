@@ -20,7 +20,7 @@ $D.handleKeypress = function (view, e) {
                 // make it the last child of its previous sibling
                 scheduleKey(e.simulated, id, function () {
                     return {
-                        action: $D.MoveIntoAction,
+                        action: MoveIntoAction,
                         anim: 'indent',
                         activeID: liView.value.cid,
                         referenceID: collection.models[rank - 1].cid,

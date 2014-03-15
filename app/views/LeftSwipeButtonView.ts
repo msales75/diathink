@@ -12,14 +12,14 @@ class LeftSwipeButtonView extends SpanView {
         ActionManager.schedule(
             function() {
                 if (View.focusedView) {
-                    return $D.Action.checkTextChange(View.focusedView.header.name.text.id);
+                    return Action.checkTextChange(View.focusedView.header.name.text.id);
                 } else {
                     return null;
                 }
             },
             function() {
                 return {
-                    action: $D.SlideAction,
+                    action: SlidePanelsAction,
                     direction: 'right',
                     focus: false
                 };

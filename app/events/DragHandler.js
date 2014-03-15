@@ -43,7 +43,7 @@ var DragHandler = (function () {
         // Correct the active textbox in case it doesn't match value.
         $('#' + textid).text($('#' + textid).val());
         ActionManager.schedule(function () {
-            return $D.Action.checkTextChange(textid);
+            return Action.checkTextChange(textid);
         });
 
         //We only need to call refreshPositions, because the refreshItems call has been moved to mouseCapture
@@ -251,10 +251,10 @@ var DragHandler = (function () {
             }
             if (this.activeBox.type === 'droptop') {
                 ActionManager.schedule(function () {
-                    return $D.Action.checkTextChange(targetview.header.name.text.id);
+                    return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: $D.MoveBeforeAction,
+                        action: MoveBeforeAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
                         oldRoot: targetview.nodeRootView.id,
@@ -266,10 +266,10 @@ var DragHandler = (function () {
                 });
             } else if (this.activeBox.type === 'dropbottom') {
                 ActionManager.schedule(function () {
-                    return $D.Action.checkTextChange(targetview.header.name.text.id);
+                    return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: $D.MoveAfterAction,
+                        action: MoveAfterAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
                         oldRoot: targetview.nodeRootView.id,
@@ -281,10 +281,10 @@ var DragHandler = (function () {
                 });
             } else if (this.activeBox.type === 'drophandle') {
                 ActionManager.schedule(function () {
-                    return $D.Action.checkTextChange(targetview.header.name.text.id);
+                    return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: $D.MoveIntoAction,
+                        action: MoveIntoAction,
                         referenceID: refview.value.cid,
                         activeID: targetview.value.cid,
                         oldRoot: targetview.nodeRootView.id,
@@ -296,10 +296,10 @@ var DragHandler = (function () {
                 });
             } else if (this.activeBox.type === 'dropleft') {
                 ActionManager.schedule(function () {
-                    return $D.Action.checkTextChange(targetview.header.name.text.id);
+                    return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: $D.PanelAction,
+                        action: PanelCreateAction,
                         activeID: targetview.value.cid,
                         prevPanel: PanelManager.prevpanel[refview.id],
                         oldRoot: targetview.nodeRootView.id,
@@ -310,10 +310,10 @@ var DragHandler = (function () {
                 });
             } else if (this.activeBox.type === 'dropright') {
                 ActionManager.schedule(function () {
-                    return $D.Action.checkTextChange(targetview.header.name.text.id);
+                    return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: $D.PanelAction,
+                        action: PanelCreateAction,
                         activeID: targetview.value.cid,
                         prevPanel: refview.id,
                         oldRoot: targetview.nodeRootView.id,

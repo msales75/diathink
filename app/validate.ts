@@ -1,7 +1,5 @@
-///<reference path="views/View.ts"/>
-///<reference path="OutlineManager.ts"/>
-///<reference path="PanelManager.ts"/>
-///<reference path="actions/ActionManager.ts"/>
+///<reference path="actions/Action.ts"/>
+///<reference path="models/OutlineNodeModel.ts"/>
 
 
 function validate() {
@@ -51,7 +49,7 @@ function validate() {
         // parent is only undefined for this one node
         assert(typeof models[m] === 'object',
             "Model " + m + " is not an object");
-        assert(models[m] instanceof $D.OutlineNodeModel,
+        assert(models[m] instanceof OutlineNodeModel,
             "Model " + m + " is not an OutlineNodeModel");
         assert(models[m].cid === m,
             "Model " + m + " does not have a valid cid");
@@ -106,7 +104,7 @@ function validate() {
                 "The model " + m + " does not have ancestry to a root model ");
             // (proves parent-refs are connected & acyclic)
 
-            assert(p.attributes.children instanceof $D.OutlineNodeCollection,
+            assert(p.attributes.children instanceof OutlineNodeCollection,
                 "Parent-model " + p + " does not have children of type OutlineNodeCollection");
             var foundit = false;
             for (var cp in p.attributes.children._byId) {
@@ -124,7 +122,7 @@ function validate() {
             "The model " + m + " has a text-attribute that is not a string");
         // parent matches children
         var c = models[m].attributes.children;
-        assert(c instanceof $D.OutlineNodeCollection,
+        assert(c instanceof OutlineNodeCollection,
             "The children of model " + m + " are not an OutlineNodeCollection");
         for (var cm in c._byId) {
             var obj = c._byId[cm];
@@ -327,7 +325,7 @@ function validate() {
                     "Parent ListView " + pV + " has invalid nodeRootView");
                 assert(typeof pV.value === 'object',
                     "Parent ListView " + pV + " has invalid value (not an object)");
-                assert(pV.value instanceof $D.OutlineNodeCollection,
+                assert(pV.value instanceof OutlineNodeCollection,
                     "Parent ListView " + pV + " has a value that's not an OutlineNodeCollection");
                 assert(typeof pV.value._byId === 'object',
                     "Parent ListView " + pV + " has a value without _byId");
@@ -452,7 +450,7 @@ function validate() {
                         "View " + v + " has type ListView but has more than zero childViewsTypes");
                     assert(typeof views[v].value === 'object',
                         "ListView " + v + " does not have a value");
-                    assert(views[v].value instanceof $D.OutlineNodeCollection,
+                    assert(views[v].value instanceof OutlineNodeCollection,
                         "ListView " + v + " value is not a OutlineNodeCollection");
                     assert(typeof views[v].value._byId === 'object',
                         "ListView " + v + " value does not have _byId attribute");
@@ -464,7 +462,7 @@ function validate() {
                     }
                     // make sure all children are represented in model
                     for ( k in views[v].value._byId) {
-                        assert(views[v].value._byId[k] instanceof $D.OutlineNodeModel,
+                        assert(views[v].value._byId[k] instanceof OutlineNodeModel,
                             "ListView " + v + " has child-model rank " + k + " is not an OutlineNodeModel");
                         assert(models[views[v].value._byId[k].cid] === views[v].value._byId[k],
                             "ListView " + v + " child-model " + views[v].value._byId[k].cid + " is not in the models list");
@@ -503,7 +501,7 @@ function validate() {
                     assert(nView.parentView instanceof ListView,
                         "View " + v + " has type NodeView but parentView is not a ListView");
 
-                    assert(nView.parentView.value instanceof $D.OutlineNodeCollection,
+                    assert(nView.parentView.value instanceof OutlineNodeCollection,
                         "NodeView " + v + " parent view does not have value OutlineNodeCollection");
 
                     assert(nView.parentView.value._byId[nView.value.cid] === models[nView.value.cid],

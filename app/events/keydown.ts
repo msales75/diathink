@@ -5,11 +5,11 @@ function scheduleKey(simulated, id, opts) {
     var schedule;
     if (simulated) {
         ActionManager.subschedule(function () {
-            return $D.Action.checkTextChange(id)
+            return Action.checkTextChange(id)
         }, opts);
     } else {
         ActionManager.schedule(function () {
-            return $D.Action.checkTextChange(id)
+            return Action.checkTextChange(id)
         }, opts);
     }
 };
@@ -25,7 +25,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
             // make it the last child of its previous sibling
             scheduleKey(e.simulated, id, function() {
                 return {
-                    action: $D.MoveIntoAction,
+                    action: MoveIntoAction,
                     anim: 'indent',
                     activeID: liView.value.cid,
                     referenceID: collection.models[rank - 1].cid,
@@ -50,7 +50,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
                 // make it the next child of its parent
                 scheduleKey(e.simulated, id, function() {
                     return {
-                        action: $D.OutdentAction,
+                        action: OutdentAction,
                         anim: 'indent',
                         activeID: liView.value.cid,
                         referenceID: liView.value.attributes.parent.cid,
@@ -66,7 +66,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
                     if (liView.value.get('children').length === 0) {
                         scheduleKey(e.simulated, id, function() {
                             return {
-                                action: $D.DeleteAction,
+                                action: DeleteAction,
                                 anim: 'delete',
                                 activeID: liView.value.cid,
                                 oldRoot: liView.nodeRootView.id,
@@ -84,7 +84,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
         // todo: split line if in middle of text
         scheduleKey(e.simulated, id, function() {
             return {
-                action: $D.InsertAfterAction,
+                action: InsertAfterAction,
                 anim: 'create',
                 referenceID: liView.value.cid,
                 oldRoot: liView.nodeRootView.id,
@@ -101,11 +101,10 @@ $D.handleKeydown = function(view:TextAreaView, e) {
         if (sel) {
             var start = sel[0];
             var end = sel[1];
-            var value = $(view.elem).val();
+            var value = view.getValue();
             if (end > 0) {
-                $(view.elem).val(value.substr(0, start - 1) + value.substr(end));
-                $(view.elem).text($(view.elem).val());
-                $(view.elem).setCursor(start - 1);
+                view.setValue(value.substr(0, start - 1) + value.substr(end));
+                view.setCursor(start - 1);
             }
         }
         // console.log("simulate backspace");

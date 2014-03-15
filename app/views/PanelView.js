@@ -6,7 +6,6 @@ var __extends = this.__extends || function (d, b) {
 };
 ///<reference path="View.ts"/>
 ///<reference path="../events/Router.ts"/>
-///<reference path="../PanelManager.ts"/>
 m_require("app/views/ContainerView.js");
 var PanelView = (function (_super) {
     __extends(PanelView, _super);

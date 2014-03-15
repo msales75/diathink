@@ -1,16 +1,19 @@
-m_require("app/actions/actionBase.js");
+///<reference path="Action.ts"/>
+m_require("app/actions/Action.js");
 
-$D.CollapseAction= $D.Action.extend({
-    type:"CollapseAction",
-    options: {activeID: null, collapsed: false},
-    _validateOptions: {
+class CollapseAction extends Action {
+    type="CollapseAction";
+    oldCollapsed:boolean;
+    oldViewCollapsed:{[i:string]:boolean};
+    options= {activeID: null, collapsed: false};
+    _validateOptions= {
         requireActive: true,
         requireReference: false,
         requireOld: true,
         requireNew: true
-    },
-    execModel: function () {
-        var that = this;
+    };
+    execModel() {
+        var that:CollapseAction = this;
         that.addQueue('newModelAdd', ['context'], function() {
             var collapsed;
             if (that.options.undo) {
@@ -26,8 +29,8 @@ $D.CollapseAction= $D.Action.extend({
             // console.log("Setting model "+that.options.activeID+" collapsed = "+collapsed);
             activeModel.set('collapsed', collapsed);
         });
-    },
-    execView:function (outline) {
+    }
+    execView(outline) {
         var that = this;
         this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd'], function() {
             // Each node starts with collapsed=null.
@@ -95,4 +98,4 @@ $D.CollapseAction= $D.Action.extend({
             // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });
     }
-});
+}

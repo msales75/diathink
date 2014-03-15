@@ -1,5 +1,4 @@
 ///<reference path="View.ts"/>
-///<reference path="../OutlineManager.ts"/>
 m_require("app/views/ListView.js");
 class OutlineRootView extends ListView {
     parentView:OutlineScrollView;

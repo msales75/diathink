@@ -1,3 +1,25 @@
+///<reference path="../views/View.ts"/>
+///<reference path="../validate.ts"/>
+///<reference path="ActionManager.ts"/>
+///<reference path="AnimatedAction.ts"/>
+///<reference path="CollapseAction.ts"/>
+///<reference path="DeleteAction.ts"/>
+///<reference path="DockAnimAction.ts"/>
+///<reference path="InsertAfterAction.ts"/>
+///<reference path="MoveAfterAction.ts"/>
+///<reference path="MoveBeforeAction.ts"/>
+///<reference path="MoveIntoAction.ts"/>
+///<reference path="OutdentAction.ts"/>
+///<reference path="OutlineAction.ts"/>
+///<reference path="PanelAnimAction.ts"/>
+///<reference path="PanelCreateAction.ts"/>
+///<reference path="PanelRootAction.ts"/>
+///<reference path="PlaceholderAnimAction.ts"/>
+///<reference path="SlidePanelsAction.ts"/>
+///<reference path="TextAction.ts"/>
+
+
+
 
 // todo: get the information we need early on from action,
 //  to know what the oldType, newType and contexts are.
@@ -14,27 +36,114 @@
 // todo: action stores oldFocus and newFocus ? (maybe not)
 // todo: handle focusID in context, and validate it.
 // todo: undo-scroll (maybe focus)
+interface SubAction {
+    action:Action;
+}
+interface AnonFunction{():any;}
 
+interface ActionOptions {
+    undo?:boolean;
+    redo?:boolean;
+    oldRoot?:string;
+    newRoot?:string;
+    focus?;
+    done?:AnonFunction;
+    activeID?:string;
+    referenceID?:string;
+    anim?:string;
+    dockElem?:HTMLElement;
+    text?:string;
+    direction?: string;
+    transition?:boolean;
+}
+interface ViewNumbers {
+    [i:string]:number;
+}
+interface AnimOptions {
+    view?:{[i:string]:View};
+    dock?:boolean;
+}
+interface ModelContext {
+    next?:string;
+    prev?:string;
+    parent?:string;
+}
+interface RuntimeOptions {
+    nextQueueScheduled?;
+    queue?;
+    animOptions?:AnimOptions;
+    firsttime?:boolean;
+    rNewType?;
+    rOldType?;
+    status?: {
+        context?:number;
+        log?:number;
+        undobuttons?:number;
+        oldModelCollection?:number;
+        oldModelRemove?:number;
+        modelCreate?:number;
+        newModelRank?:number;
+        newModelAdd?:number;
+        focus?:number;
+        end?:number;
+        view?:ViewNumbers;
+        createDockElem?:number;
+        dockAnim?:number;
+        panelPrep?:number;
+        anim?:number;
+        oldLinePlace?:ViewNumbers;
+        newLinePlace?:ViewNumbers;
+        linePlaceAnim?:ViewNumbers;
+    };
+    rNewRoot?;
+    rOldRoot?;
+    performDock?:boolean;
+    createDockElem?:boolean;
+    activeLineElem?:{[i:string]:HTMLElement};
+    activeLineHeight?:{[i:string]:HTMLElement};
+    rOldContextType?:{[i:string]:HTMLElement};
+    rNewContextType?:{[i:string]:HTMLElement};
+    rNewLinePlaceholder?:{[i:string]:HTMLElement};
+    rOldLinePlaceholder?:{[i:string]:HTMLElement};
+    rOldLineVisible?:{[i:string]:HTMLElement};
+    rNewLineVisible?:{[i:string]:HTMLElement};
+    oldLineContext?:{[i:string]:HTMLElement};
+    createLineElem?:{[i:string]:HTMLElement};
+    destroyLineElem?:{[i:string]:HTMLElement};
+    useLinePlaceholderAnim?:{[i:string]:boolean};
+    rOldModelContext?:ModelContext;
+    rNewModelContext?:ModelContext;
+    createModel?:boolean;
+    destroyModel?:boolean;
+}
 
-$D.Action = Backbone.RelationalModel.extend({
-    type:"Action",
-    indentSpeed: 80,
-    createSpeed: 80,
-    deleteSpeed: 80,
-    placeholderSpeed: 160,
+class Action {
+    type:string ="Action";
+    options:ActionOptions;
+    indentSpeed= 80;
+    createSpeed= 80;
+    deleteSpeed= 80;
+    undone:boolean;
+    parentAction:Action;
+    subactions:SubAction[];
+    placeholderSpeed= 160;
+    timestamp:number;
+    lost:boolean;
 
-    dockSpeed: 160,
-    oldType: 'line', // only used for docking?
-    newType: 'line',
+    runtime:RuntimeOptions;
 
-    useOldLinePlaceholder: true,
-    useNewLinePlaceholder: true,
-    constructor: function(options) {
+    dockSpeed= 160;
+    oldType:string= 'line'; // only used for docking?
+    newType:string= 'line';
+
+    useOldLinePlaceholder= true;
+    useNewLinePlaceholder= true;
+    constructor(options) {
         this.init();
         this.options = _.extend({}, this.options, options);
         return this;
-    },
-    init: function() {
+    }
+    init() {
         _.extend(this, {
             instance: 0,
             user: 0,
@@ -51,8 +160,8 @@ $D.Action = Backbone.RelationalModel.extend({
             runtime: null // variables that initialize each time _exec is called
         });
         this.runinit();
-    },
-    runinit: function() {
+    }
+    runinit() {
         this.runtime = {
             nextQueueScheduled: null,
             queue: {},
@@ -77,11 +186,11 @@ $D.Action = Backbone.RelationalModel.extend({
             r.rOldType = this.oldType;
             r.rNewType = this.newType;
         }
-    },
-    addAsync: function(self, deps, f) {
+    }
+    addAsync(self, deps, f) {
         this.addQueue(self, deps, f, true);
-    },
-    addQueue: function(self, deps, f, async) {
+    }
+    addQueue(self, deps, f, async?) {
         if (!async) {async=false;}
         if (typeof self === 'object') {
             if (this.runtime.queue[self[0]+':'+self[1]]!==undefined) {alert("Queued twice: "+self[0]+':'+self[1]); return;}
@@ -90,8 +199,8 @@ $D.Action = Backbone.RelationalModel.extend({
             if (this.runtime.queue[self]!==undefined) {alert("Queued twice: "+self); return;}
             this.runtime.queue[self] = [self, deps, f, async];
         }
-    },
-    nextQueue: function() {
+    }
+    nextQueue() {
         // console.log("Running nextQueue");
         if (this.runtime.nextQueueScheduled) {
             clearTimeout(this.runtime.nextQueueScheduled);
@@ -149,9 +258,9 @@ $D.Action = Backbone.RelationalModel.extend({
                 that.nextQueue();
             }, 0);
         }
-    },
-    execQueue: function(i) {
-        var q, that = this;
+    }
+    execQueue(i) {
+        var q, that:Action = this;
         q = this.runtime.queue[i];
         // console.log("Scheduling "+i);
         if (typeof q[0] === 'object') {
@@ -177,9 +286,9 @@ $D.Action = Backbone.RelationalModel.extend({
                 that.nextQueue();
             }
         }, 0);
-    },
+    }
 
-    exec: function(options) {
+    exec(options) {
         var i, rank, nsub;
         if (!options) {options = {};}
         console.log("Starting action "+this.type+" with undo="+options.undo+"; redo="+options.redo);
@@ -228,9 +337,9 @@ $D.Action = Backbone.RelationalModel.extend({
         // todo: test if lastAction is where it should be
         // todo: test if undo/redo/undone parameters match up
 
-    },
+    }
 
-    _exec:function (options) {
+    _exec(options) {
         var o, i, that = this, r;
         _.extend(that.options, options);
         that.runinit();
@@ -297,24 +406,24 @@ $D.Action = Backbone.RelationalModel.extend({
             }
         });
         this.nextQueue();
-    },
-    getModel: function(id) {
-        return Backbone.Relational.store.find($D.OutlineNodeModel, id);
-    },
-    getLineView: function(id, rootid) {
+    }
+    getModel(id) {
+        return OutlineNodeModel.getById(id);
+    }
+    getLineView(id, rootid) {
         var model = this.getModel(id);
         if (model.views == null) {return null;}
         return model.views[rootid];
-    },
-    undo:function (options) {
+    }
+    undo(options) {
         if (!options) {options = {};}
         options.undo = true;
         options.redo = false;
         this.undone = true;
         return this.exec(options);
         // $D.validateMVC();
-    },
-    focus: function() {
+    }
+    focus() {
         // by default, focus on activeID in newRoot
         var newRoot;
         if (this.options.undo) {
@@ -327,25 +436,24 @@ $D.Action = Backbone.RelationalModel.extend({
         View.setFocus(lineView);
         var id = lineView.header.name.text.id;
         $('#'+id).focus();
-    },
+    }
 
     // To override **
-    runinit2: function() {},
-    validateOptions: function() {},
-    validateOldContext: function() {},
-    validateNewContext: function() {},
-    contextStep: function() {},
-    animSetup: function() { this.runtime.status.anim = 2; },
-    execModel: function () {},
-    execView:function (outline) {}
+    runinit2() {}
+    validateOptions() {}
+    validateOldContext() {}
+    validateNewContext() {}
+    contextStep() {}
+    animSetup() { this.runtime.status.anim = 2; }
+    execModel() {}
+    execView(outline) {}
 
-},{ // static functions
-    createAndExec:function (options) { // create a new action object
-        var action = new this(options);
+    static createAndExec(options) { // create a new action object
+        var action:Action = new this(options);
         action.exec(options);
         return action;
-    },
-    checkTextChange:function(id) {
+    }
+    static checkTextChange(id) {
         // console.log("Checking text change for id="+id);
         var value = $('#'+id).val();
         console.log('checkTextChange: id = '+id);
@@ -358,7 +466,7 @@ $D.Action = Backbone.RelationalModel.extend({
             //console.log("TextAction for id="+id+"; model="+
               //  model.cid+" with value="+$('#'+id).val());
                 return {
-                    action: $D.TextAction,
+                    action: TextAction,
                     activeID: model.cid,
                     text: value,
                     oldRoot: view.nodeRootView.id,
@@ -368,14 +476,17 @@ $D.Action = Backbone.RelationalModel.extend({
         }
         return false;
     }
-});
+}
 
 // outline-move op, animation-type,
 // commuting operations don't have to be undone/redone - optimization
 
-$D.ActionCollection = Backbone.Collection.extend({
-    model: $D.Action
-});
+class ActionCollection  {
+    model: typeof Action;
+    length:number;
+    at(k:number):Action;
+    push(a:Action):void;
+}
 
 
 

@@ -13,14 +13,14 @@ class HandleImageView extends ImageView {
         var liElem = $(li.elem);
         ActionManager.schedule(
             function() {
-                return $D.Action.checkTextChange(li.header.name.text.id);
+                return Action.checkTextChange(li.header.name.text.id);
             },
             function():{action;activeID;collapsed;oldRoot;newRoot;focus} {
                 if (!liElem.hasClass('branch')) {
                     return null;
                 }
                 return {
-                    action: $D.CollapseAction,
+                    action: CollapseAction,
                     activeID: li.value.cid,
                     collapsed: !liElem.hasClass('collapsed'),
                     oldRoot: li.nodeRootView.id,
@@ -33,11 +33,11 @@ class HandleImageView extends ImageView {
         var li:NodeView = this.nodeView;
         ActionManager.schedule(
             function() {
-                return $D.Action.checkTextChange(li.header.name.text.id);
+                return Action.checkTextChange(li.header.name.text.id);
             },
             function() {
                 return {
-                    action: $D.RootAction,
+                    action: PanelRootAction,
                     activeID: li.value.cid,
                     oldRoot: li.nodeRootView.id,
                     newRoot: 'new'

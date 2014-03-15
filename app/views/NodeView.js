@@ -6,7 +6,6 @@ var __extends = this.__extends || function (d, b) {
 };
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
-m_require("app/views/OutlineListView.js");
 
 var NodeView = (function (_super) {
     __extends(NodeView, _super);
@@ -15,7 +14,7 @@ var NodeView = (function (_super) {
     }
     NodeView.prototype.init = function () {
         this.Class = NodeView;
-        this.modelType = $D.OutlineNodeModel;
+        this.modelType = OutlineNodeModel;
         this.childViewTypes = {
             header: NodeHeaderView,
             children: OutlineListView

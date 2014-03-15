@@ -22,13 +22,13 @@ var HandleImageView = (function (_super) {
         var li = this.nodeView;
         var liElem = $(li.elem);
         ActionManager.schedule(function () {
-            return $D.Action.checkTextChange(li.header.name.text.id);
+            return Action.checkTextChange(li.header.name.text.id);
         }, function () {
             if (!liElem.hasClass('branch')) {
                 return null;
             }
             return {
-                action: $D.CollapseAction,
+                action: CollapseAction,
                 activeID: li.value.cid,
                 collapsed: !liElem.hasClass('collapsed'),
                 oldRoot: li.nodeRootView.id,
@@ -40,10 +40,10 @@ var HandleImageView = (function (_super) {
     HandleImageView.prototype.onDoubleClick = function () {
         var li = this.nodeView;
         ActionManager.schedule(function () {
-            return $D.Action.checkTextChange(li.header.name.text.id);
+            return Action.checkTextChange(li.header.name.text.id);
         }, function () {
             return {
-                action: $D.RootAction,
+                action: PanelRootAction,
                 activeID: li.value.cid,
                 oldRoot: li.nodeRootView.id,
                 newRoot: 'new'
