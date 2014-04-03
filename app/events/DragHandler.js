@@ -4,24 +4,7 @@
 
 var DragHandler = (function () {
     function DragHandler(options) {
-        this.element = $(document.body);
-        this.options = {
-            items: 'li',
-            scroll: true,
-            dropLayers: '.droplayer',
-            toleranceElement: '> div.outline-header',
-            helper: function (item) {
-                var newNode = item[0].cloneNode(true);
-                newNode.id = '';
-                var drawlayer = $('#' + View.getCurrentPage().drawlayer.id);
-                drawlayer[0].appendChild(newNode);
-                return $(newNode).css({
-                    position: 'absolute',
-                    left: $(item).offset().left + 'px',
-                    top: $(item).offset().top + 'px'
-                });
-            }
-        };
+        this.options = {};
         if ($D.keyboard) {
             // override open/close keyboard methods
             $D.keyboard.softKeyboardOpen = this.softKeyboardOpen;
@@ -30,7 +13,7 @@ var DragHandler = (function () {
 
         // todo: connect to panel-manager
         this.refresh();
-        this.offset = this.element.offset();
+        this.offset = {};
     }
     DragHandler.prototype.dragStart = function (options) {
         var position = options.pos;
@@ -72,9 +55,7 @@ var DragHandler = (function () {
             click: {
                 left: position.left - this.offset.left,
                 top: position.top - this.offset.top
-            },
-            parent: this._getParentOffset(),
-            relative: this._getRelativeOffset()
+            }
         });
 
         // Only after we got the offset, we can change the helper's position to absolute
@@ -103,7 +84,6 @@ var DragHandler = (function () {
         var position = options.pos;
 
         //Compute the helpers position
-        // relative to 'offsetParent' which is the nearest relative/absolute positioned element
         // todo: these come from sortable.js
         this.position = this._generatePosition(position);
         this.positionAbs = this._convertPositionTo("absolute");
@@ -347,16 +327,23 @@ var DragHandler = (function () {
         }
     };
 
+    DragHandler.prototype.refresh = function () {
+        this.panels = $(document).find('.ui-scrollview-clip');
+        this._refreshItems();
+        this.refreshPositions(false);
+        return this;
+    };
+
     DragHandler.prototype._createHelper = function () {
-        var o = this.options;
-        var helper = $.isFunction(o.helper) ? $(o.helper.apply(this.element[0], [this.currentItem])) : (o.helper == 'clone' ? this.currentItem.clone() : this.currentItem);
-        if (!helper.parents('body').length) {
-            $(o.appendTo != 'parent' ? o.appendTo : this.currentItem[0].parentNode)[0].appendChild(helper[0]);
-        }
-        if (helper[0].style.width == '' || o.forceHelperSize)
-            helper.width(this.currentItem.width());
-        if (helper[0].style.height == '' || o.forceHelperSize)
-            helper.height(this.currentItem.height());
+        var newNode = this.currentItem[0].cloneNode(true);
+        newNode.id = '';
+        var drawlayer = $('#' + View.getCurrentPage().drawlayer.id);
+        drawlayer[0].appendChild(newNode);
+        var helper = $(newNode).css({
+            position: 'absolute',
+            left: $(this.currentItem).offset().left + 'px',
+            top: $(this.currentItem).offset().top + 'px'
+        });
         helper.addClass('ui-first-child').addClass('ui-last-child');
         return helper;
     };
@@ -373,26 +360,6 @@ var DragHandler = (function () {
             left: (parseInt(this.currentItem.css("marginLeft"), 10) || 0),
             top: (parseInt(this.currentItem.css("marginTop"), 10) || 0)
         };
-    };
-
-    DragHandler.prototype._getParentOffset = function () {
-        //Get the offsetParent and cache its position
-        this.offsetParent = this.helper.offsetParent();
-        var po = this.offsetParent.offset();
-        if ((this.offsetParent[0] == document.body) || (this.offsetParent[0].tagName && this.offsetParent[0].tagName.toLowerCase() == 'html' && $D.isIE)) {
-            po = { top: 0, left: 0 };
-        }
-        return {
-            top: po.top + (parseInt(this.offsetParent.css("borderTopWidth"), 10) || 0),
-            left: po.left + (parseInt(this.offsetParent.css("borderLeftWidth"), 10) || 0)
-        };
-    };
-
-    DragHandler.prototype.refresh = function () {
-        this.panels = this.element.find('.ui-scrollview-clip');
-        this._refreshItems();
-        this.refreshPositions(false);
-        return this;
     };
 
     DragHandler.prototype._refreshItems = function () {
@@ -413,13 +380,9 @@ var DragHandler = (function () {
     };
 
     DragHandler.prototype.refreshPositions = function (fast) {
-        //This has to be redone because due to the item being moved out/into the offsetParent, the offsetParent's position will change
-        if (this.offsetParent && this.helper) {
-            this.offset.parent = this._getParentOffset();
-        }
         for (var i = this.items.length - 1; i >= 0; i--) {
             var item = this.items[i];
-            var t = this.options.toleranceElement ? $(this.options.toleranceElement, item.item) : item.item;
+            var t = $('> div.outline-header', item.item);
             if (!fast) {
                 item.width = t.outerWidth();
                 item.height = t.outerHeight();
@@ -432,18 +395,13 @@ var DragHandler = (function () {
         return this;
     };
 
-    DragHandler.prototype._getRelativeOffset = function () {
-        return { top: 0, left: 0 };
-    };
-
     DragHandler.prototype._convertPositionTo = function (d, pos) {
         if (!pos)
             pos = this.position;
         var mod = d == "absolute" ? 1 : -1;
-        var o = this.options;
         return {
-            top: (pos.top + this.offset.relative.top * mod + this.offset.parent.top * mod),
-            left: (pos.left + this.offset.relative.left * mod + this.offset.parent.left * mod)
+            top: (pos.top),
+            left: (pos.left)
         };
     };
 
@@ -480,8 +438,8 @@ var DragHandler = (function () {
             }
         }
         return {
-            top: (pageY - this.offset.click.top - this.offset.relative.top - this.offset.parent.top),
-            left: (pageX - this.offset.click.left - this.offset.relative.left - this.offset.parent.left)
+            top: (pageY - this.offset.click.top),
+            left: (pageX - this.offset.click.left)
         };
     };
 
@@ -521,7 +479,7 @@ var DragHandler = (function () {
             var d = item.dropboxes[item.dropboxes.length] = { type: type, item: item };
             if (type === 'droptop') {
                 // boundaries for drawn box (smaller than active hover area)
-                item[type] = $('<div></div>').appendTo(canvas).addClass('dropborder').css('top', (item.top - ctop) + 'px').css('left', (item.left - cleft + $D.lineHeight) + 'px').css('height', '0px').css('width', (item.width - 1.5 * $D.lineHeight) + 'px');
+                d.elem = $('<div></div>').appendTo(canvas).addClass('dropborder').css('top', (item.top - ctop) + 'px').css('left', (item.left - cleft + $D.lineHeight) + 'px').css('height', '0px').css('width', (item.width - 1.5 * $D.lineHeight) + 'px');
 
                 // boundaries for active hover-area, (larger than drawn area)
                 d.top = item.top - ($D.lineHeight / 2);
@@ -530,36 +488,33 @@ var DragHandler = (function () {
                 d.right = item.left + item.width - $D.lineHeight / 2;
                 d.parentView = View.get(item.item[0].id).parentView.parentView;
             } else if (type === 'dropbottom') {
-                item[type] = $('<div></div>').appendTo(canvas).addClass('dropborder').css('top', (item.top + item.height - ctop - 1) + 'px').css('left', (item.left - cleft + $D.lineHeight) + 'px').css('width', (item.width - 1.5 * $D.lineHeight) + 'px').css('height', '0px');
+                d.elem = $('<div></div>').appendTo(canvas).addClass('dropborder').css('top', (item.top + item.height - ctop - 1) + 'px').css('left', (item.left - cleft + $D.lineHeight) + 'px').css('width', (item.width - 1.5 * $D.lineHeight) + 'px').css('height', '0px');
                 d.top = item.top + item.height - 0.5 * $D.lineHeight;
                 d.bottom = item.top + item.height + 0.5 * $D.lineHeight;
                 d.left = item.left + $D.lineHeight; // stay clear of handle
                 d.right = item.left + item.width - $D.lineHeight / 2;
                 d.parentView = View.get(item.item[0].id).parentView.parentView;
             } else if (type === 'drophandle') {
-                item[type] = $('<div></div>').appendTo(canvas).addClass('droparrow').css('top', (item.top - ctop - 1) + 'px').css('left', (item.left - cleft - 1) + 'px');
+                d.elem = $('<div></div>').appendTo(canvas).addClass('droparrow').css('top', (item.top - ctop - 1) + 'px').css('left', (item.left - cleft - 1) + 'px');
                 d.top = item.top;
                 d.bottom = item.top + $D.lineHeight;
                 d.left = item.left;
                 d.right = item.left + $D.lineHeight;
                 d.parentView = View.get(item.item[0].id);
             } else if (type === 'dropleft') {
-                item[type] = $('<div></div>').appendTo(canvas).addClass('dropborder').css('top', (item.top - ctop) + 'px').css('left', (item.left - cleft - 1 - 5) + 'px').css('width', '0px').css('height', (item.height) + 'px');
+                d.elem = $('<div></div>').appendTo(canvas).addClass('dropborder').css('top', (item.top - ctop) + 'px').css('left', (item.left - cleft - 1 - 5) + 'px').css('width', '0px').css('height', (item.height) + 'px');
                 d.top = item.top;
                 d.bottom = item.top + item.height;
                 d.left = item.left - 5 - 5;
                 d.right = item.left - 5 + 5;
                 d.parentView = null;
             } else if (type === 'dropright') {
-                item[type] = $('<div></div>').appendTo(canvas).addClass('dropborder').css('top', (item.top - ctop) + 'px').css('left', (item.left + item.width - cleft - 1 + 5) + 'px').css('width', '0px').css('height', (item.height) + 'px');
+                d.elem = $('<div></div>').appendTo(canvas).addClass('dropborder').css('top', (item.top - ctop) + 'px').css('left', (item.left + item.width - cleft - 1 + 5) + 'px').css('width', '0px').css('height', (item.height) + 'px');
                 d.top = item.top;
                 d.bottom = item.top + item.height;
                 d.left = item.left + 5 + item.width - 5;
                 d.right = item.left + 5 + item.width + 5;
                 d.parentView = null;
-            }
-            if (item[type]) {
-                d.elem = item[type];
             }
         }, 2);
     };
@@ -576,7 +531,7 @@ var DragHandler = (function () {
     };
 
     DragHandler.prototype._emptyDropLayers = function () {
-        $(this.options.dropLayers).html('');
+        $('.droplayer').html('');
         var drawlayer = $('#' + View.getCurrentPage().drawlayer.id);
         drawlayer.children('.dropborder').remove();
     };
@@ -677,9 +632,6 @@ var DragHandler = (function () {
             }
             for (var i = that.items.length - 1; i >= 0; i--) {
                 var item = that.items[i], itemEl = item.item;
-                item.droptop = null;
-                item.dropbottom = null;
-                item.drophandle = null;
                 item.dropboxes = [];
                 var validate = that._validateDropItem(itemEl);
                 if (!validate) {

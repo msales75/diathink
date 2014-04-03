@@ -27,36 +27,35 @@ interface DropBox {
 }
 
 interface OffsetNested {
-    left:number;
-    top: number;
+    top?: number;
+    left?: number;
     click?:PositionI;
     relative?:PositionI;
-    parent?:PositionI;
 }
 
 class DragHandler {
 
-    element:JQuery; // set to body; phasing out
-    options; // phase out
+    options: {
+        grid?;
+        axis?;
+        expandOnHover?:boolean;
+    };
 
     currentItem:JQuery; // change to a View
-      margins:PositionI; // of currentItem; replace with view
+    margins:PositionI; // of currentItem; replace with view
 
     panels:JQuery; // use panel-manager
     items; // tricky: need a node-manager; list of views
 
     scrollPanel:JQuery; // should be scrollview
-      panelScrollStart:{[id:string]:number}; // get from scrollview
+    panelScrollStart:{[id:string]:number}; // get from scrollview
 
     helper:JQuery;
     helperProportions:Dimensions; // replace with cache in helper-view
 
-    offsetParent:JQuery; // view?
-
     originalPosition:PositionI; // from mousedown
-    originalPageX:number; // redundant, phase out
-    originalPageY:number; // redundant, phase out
-
+    originalPageX:number;
+    originalPageY:number;
     position:PositionI;
     positionAbs:PositionI;
 
@@ -69,24 +68,7 @@ class DragHandler {
     offset:OffsetNested;
 
     constructor(options?) {
-        this.element = $(document.body);
-        this.options = {
-            items: 'li',
-            scroll: true,
-            dropLayers: '.droplayer',
-            toleranceElement: '> div.outline-header',
-            helper: function(item) {
-                var newNode:HTMLElement = <HTMLElement> item[0].cloneNode(true);
-                newNode.id = '';
-                var drawlayer = $('#' + (<DiathinkView>View.getCurrentPage()).drawlayer.id);
-                drawlayer[0].appendChild(newNode);
-                return $(newNode).css({
-                    position: 'absolute',
-                    left: $(item).offset().left + 'px',
-                    top: $(item).offset().top + 'px'
-                });
-            }
-        };
+        this.options = {};
         if ($D.keyboard) {
             // override open/close keyboard methods
             $D.keyboard.softKeyboardOpen = this.softKeyboardOpen;
@@ -94,10 +76,10 @@ class DragHandler {
         }
         // todo: connect to panel-manager
         this.refresh();
-        this.offset = <OffsetNested>this.element.offset();
+        this.offset = <OffsetNested>{};
     }
 
-    dragStart(options:DragStartI) {
+    public dragStart(options:DragStartI) {
         var position:PositionI = options.pos;
         var currentView:NodeView = options.view.nodeView;
         this.currentItem = $(currentView.elem);
@@ -132,10 +114,9 @@ class DragHandler {
             click: { //Where the click happened, relative to the element
                 left: position.left - this.offset.left,
                 top: position.top - this.offset.top
-            },
-            parent: this._getParentOffset(),
-            relative: this._getRelativeOffset() //This is a relative to absolute position minus the actual position calculation - only used for relative positioned helper
+            }
         });
+
         // Only after we got the offset, we can change the helper's position to absolute
         // TODO: Still need to figure out a way to make relative sorting possible
         this.helper.css("position", "absolute");
@@ -154,12 +135,11 @@ class DragHandler {
         this._drawDropLines();
     }
 
-    dragMove(options:DragStartI) {
+    public dragMove(options:DragStartI) {
         var i, item, itemElement, intersection,
             scrolled = false, self = this;
         var position = options.pos;
         //Compute the helpers position
-        // relative to 'offsetParent' which is the nearest relative/absolute positioned element
         // todo: these come from sortable.js
         this.position = this._generatePosition(position);
         this.positionAbs = this._convertPositionTo("absolute");
@@ -269,7 +249,7 @@ class DragHandler {
         return false;
     }
 
-    dragStop(options:DragStartI) {
+    public dragStop(options:DragStartI) {
         var that = this;
         // mjs - clear the expansion-hovering timeout, just to be sure
         // $('.'+this.options.hoveringClass).removeClass(this.options.hoveringClass);
@@ -401,15 +381,23 @@ class DragHandler {
         }
     }
 
+    public refresh() {
+        this.panels = $(document).find('.ui-scrollview-clip');
+        this._refreshItems();
+        this.refreshPositions(false);
+        return this;
+    }
+
     private _createHelper() {
-        var o = this.options;
-        var helper = $.isFunction(o.helper) ? $(o.helper.apply(this.element[0], [this.currentItem])) : (o.helper == 'clone' ? this.currentItem.clone() : this.currentItem);
-        if (!helper.parents('body').length) //Add the helper to the DOM if that didn't happen already
-        {
-            $(o.appendTo != 'parent' ? o.appendTo : this.currentItem[0].parentNode)[0].appendChild(helper[0]);
-        }
-        if (helper[0].style.width == '' || o.forceHelperSize) helper.width(this.currentItem.width());
-        if (helper[0].style.height == '' || o.forceHelperSize) helper.height(this.currentItem.height());
+        var newNode:HTMLElement = <HTMLElement> this.currentItem[0].cloneNode(true);
+        newNode.id = '';
+        var drawlayer = $('#' + (<DiathinkView>View.getCurrentPage()).drawlayer.id);
+        drawlayer[0].appendChild(newNode);
+        var helper = $(newNode).css({
+                position: 'absolute',
+                left: $(this.currentItem).offset().left + 'px',
+                top: $(this.currentItem).offset().top + 'px'
+        });
         helper.addClass('ui-first-child').addClass('ui-last-child');
         return helper;
     }
@@ -428,29 +416,7 @@ class DragHandler {
         };
     }
 
-    private _getParentOffset() {
-        //Get the offsetParent and cache its position
-        this.offsetParent = this.helper.offsetParent();
-        var po = this.offsetParent.offset();
-        if ((this.offsetParent[0] == document.body) //This needs to be actually done for all browsers, since pageX/pageY includes this information
-            || (this.offsetParent[0].tagName && this.offsetParent[0].tagName.toLowerCase() == 'html' && $D.isIE)) //Ugly IE fix
-        {
-            po = { top: 0, left: 0 };
-        }
-        return {
-            top: po.top + (parseInt(this.offsetParent.css("borderTopWidth"), 10) || 0),
-            left: po.left + (parseInt(this.offsetParent.css("borderLeftWidth"), 10) || 0)
-        };
-    }
-
-    public refresh() {
-        this.panels = this.element.find('.ui-scrollview-clip');
-        this._refreshItems();
-        this.refreshPositions(false);
-        return this;
-    }
-
-    _refreshItems() {
+    private _refreshItems() {
         this.items = [];
         var items = this.items;
         var _queries = $('li');
@@ -467,15 +433,11 @@ class DragHandler {
         }
     }
 
-    refreshPositions(fast) {
+    private refreshPositions(fast) {
 
-        //This has to be redone because due to the item being moved out/into the offsetParent, the offsetParent's position will change
-        if (this.offsetParent && this.helper) {
-            this.offset.parent = this._getParentOffset();
-        }
         for (var i = this.items.length - 1; i >= 0; i--) {
             var item = this.items[i];
-            var t = this.options.toleranceElement ? $(this.options.toleranceElement, item.item) : item.item;
+            var t = $('> div.outline-header', item.item); // from toleranceElement
             if (!fast) {
                 item.width = t.outerWidth();
                 item.height = t.outerHeight();
@@ -488,29 +450,20 @@ class DragHandler {
         return this;
     }
 
-    private _getRelativeOffset() {
-            return { top: 0, left: 0 };
-    }
-
-    _convertPositionTo(d, pos?):PositionI {
+    private _convertPositionTo(d, pos?):PositionI {
         if (!pos) pos = this.position;
         var mod = d == "absolute" ? 1 : -1;
-        var o = this.options;
         return <PositionI>{
             top: (
                 pos.top																	// The absolute mouse position
-                    + this.offset.relative.top * mod										// Only for relative positioned nodes: Relative offset from element to offset parent
-                    + this.offset.parent.top * mod											// The offsetParent's offset without borders (offset + border)
                 ),
             left: (
                 pos.left																// The absolute mouse position
-                    + this.offset.relative.left * mod										// Only for relative positioned nodes: Relative offset from element to offset parent
-                    + this.offset.parent.left * mod											// The offsetParent's offset without borders (offset + border)
                 )
         };
     }
 
-    _closestPanel(element) {
+    private _closestPanel(element) {
         var cname;
         while (element) {
             if (element.nodeName.toLowerCase() === 'body') {return null;}
@@ -523,7 +476,7 @@ class DragHandler {
         return element;
     }
 
-    _generatePosition(position):PositionI {
+    private _generatePosition(position):PositionI {
         var pageX = position.left;
         var pageY = position.top;
         /*
@@ -543,19 +496,15 @@ class DragHandler {
             top: (
                 pageY																// The absolute mouse position
                     - this.offset.click.top													// Click offset (relative to the element)
-                    - this.offset.relative.top												// Only for relative positioned nodes: Relative offset from element to offset parent
-                    - this.offset.parent.top												// The offsetParent's offset without borders (offset + border)
                 ),
             left: (
                 pageX																// The absolute mouse position
                     - this.offset.click.left												// Click offset (relative to the element)
-                    - this.offset.relative.left												// Only for relative positioned nodes: Relative offset from element to offset parent
-                    - this.offset.parent.left												// The offsetParent's offset without borders (offset + border)
                 )
         };
     }
 
-    softKeyboardOpen() {
+    private softKeyboardOpen() {
         // scroll to active element in active-panel
         /*
          var input = $('li.ui-focus');
@@ -571,11 +520,11 @@ class DragHandler {
          */
     }
 
-    softKeyboardClose() {
+    private softKeyboardClose() {
 //            alert("softKeyboardClose");
     }
 
-    _drawDropLine(o) {
+    private _drawDropLine(o) {
         /* Implement this when doing drag/drop changes
          dropTargets: function() {
          // "drop-candidates" not minimized, possibly only on-screen
@@ -592,7 +541,7 @@ class DragHandler {
                 <DropBox>{type: type, item: item};
             if (type === 'droptop') {
                 // boundaries for drawn box (smaller than active hover area)
-                item[type] = $('<div></div>').appendTo(canvas)
+                d.elem = $('<div></div>').appendTo(canvas)
                     .addClass('dropborder')
                     .css('top', (item.top - ctop) + 'px')
                     .css('left', (item.left - cleft + $D.lineHeight) + 'px')
@@ -605,7 +554,7 @@ class DragHandler {
                 d.right = item.left + item.width - $D.lineHeight / 2;
                 d.parentView = (<HandleImageView>View.get(item.item[0].id)).parentView.parentView;
             } else if (type === 'dropbottom') {
-                item[type] = $('<div></div>').appendTo(canvas)
+                d.elem = $('<div></div>').appendTo(canvas)
                     .addClass('dropborder')
                     .css('top', (item.top + item.height - ctop - 1) + 'px')
                     .css('left', (item.left - cleft + $D.lineHeight) + 'px')
@@ -617,7 +566,7 @@ class DragHandler {
                 d.right = item.left + item.width - $D.lineHeight / 2;
                 d.parentView = (<HandleImageView>View.get(item.item[0].id)).parentView.parentView;
             } else if (type === 'drophandle') {
-                item[type] = $('<div></div>').appendTo(canvas)
+                d.elem = $('<div></div>').appendTo(canvas)
                     .addClass('droparrow')
                     .css('top', (item.top - ctop - 1) + 'px')
                     .css('left', (item.left - cleft - 1) + 'px');
@@ -627,7 +576,7 @@ class DragHandler {
                 d.right = item.left + $D.lineHeight;
                 d.parentView = <NodeView>View.get(item.item[0].id);
             } else if (type === 'dropleft') {
-                item[type] = $('<div></div>').appendTo(canvas)
+                d.elem = $('<div></div>').appendTo(canvas)
                     .addClass('dropborder')
                     .css('top', (item.top - ctop) + 'px')
                     .css('left', (item.left - cleft - 1 - 5) + 'px')
@@ -639,7 +588,7 @@ class DragHandler {
                 d.right = item.left - 5 + 5;
                 d.parentView = null;
             } else if (type === 'dropright') {
-                item[type] = $('<div></div>').appendTo(canvas)
+                d.elem = $('<div></div>').appendTo(canvas)
                     .addClass('dropborder')
                     .css('top', (item.top - ctop) + 'px')
                     .css('left', (item.left + item.width - cleft - 1 + 5) + 'px')
@@ -651,30 +600,27 @@ class DragHandler {
                 d.right = item.left + 5 + item.width + 5;
                 d.parentView = null;
             }
-            if (item[type]) {
-                d.elem = item[type];
-            }
         }, 2);
     }
 
-    _showDropLines() {
+    private _showDropLines() {
         $(document.body).addClass('drop-mode');
     }
 
-    _hideDropLines() {
+    private _hideDropLines() {
         $('body').removeClass('drop-mode').removeClass('transition-mode');
         if (this.activeBox != null) {
             this.activeBox.elem.removeClass('active');
         }
     }
 
-    _emptyDropLayers() {
-        $(this.options.dropLayers).html('');
+    private _emptyDropLayers() {
+        $('.droplayer').html('');
         var drawlayer = $('#' + (<DiathinkView>View.getCurrentPage()).drawlayer.id);
         drawlayer.children('.dropborder').remove();
     }
 
-    _validateDropItem(itemEl:JQuery):{bottom:boolean;top:boolean;handle:boolean} {
+    private _validateDropItem(itemEl:JQuery):{bottom:boolean;top:boolean;handle:boolean} {
         var noBottom = false, noTop = false, noHandle = false;
         // cannot drop current-item on itself
         if (itemEl[0] === this.currentItem[0]) {
@@ -719,7 +665,7 @@ class DragHandler {
         return {bottom: !noBottom, top: !noTop, handle: !noHandle};
     }
 
-    _drawDropLines() {
+    private _drawDropLines() {
         // loop over items
         // determine whether to draw top or bottom line
         // determine position to draw at
@@ -767,9 +713,6 @@ class DragHandler {
             }
             for (var i:number = that.items.length - 1; i >= 0; i--) {
                 var item = that.items[i], itemEl = item.item;
-                item.droptop = null;
-                item.dropbottom = null;
-                item.drophandle = null;
                 item.dropboxes = [];
                 var validate:{bottom:boolean;top:boolean;handle:boolean} = that._validateDropItem(itemEl);
                 if (!validate) {continue;}
@@ -809,7 +752,7 @@ class DragHandler {
     }
 
     // cache drop-coordinates - currently unused
-    _updateDropBoxes(item) {
+    private _updateDropBoxes(item) {
         var d;
         item.dropboxes = [];
         if (item.dropnull != null) {
@@ -832,7 +775,7 @@ class DragHandler {
         }
     }
 
-    _previewDropBoxes() {
+    private _previewDropBoxes() {
         var i, j, d;
         var PM:typeof PanelManager;
         PM = PanelManager;
@@ -880,16 +823,16 @@ class DragHandler {
         }
     }
 
-    drawDropLines() {
+    private drawDropLines() {
         this._drawDropLines();
     }
 
-    hideDropLines() {
+    private hideDropLines() {
         this._hideDropLines();
     }
 
     // mjs - this function is slightly modified to make it easier to hover over a collapsed element and have it expand
-    _insideDropBox():DropBox {
+    private _insideDropBox():DropBox {
         var i, j, d, n, p;
         $D.log(['debug', 'drag'], "Identifying drop-box");
         // this.position is same, scroll is different for each item
