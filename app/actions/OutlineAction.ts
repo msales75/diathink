@@ -17,8 +17,8 @@
 // todo: undo-scroll (maybe focus)
 m_require("app/actions/PlaceholderAnimAction.js");
 
+class OutlineAction extends PlaceholderAnimAction {
     oldModelContext:ModelContext;
-        class OutlineAction extends PlaceholderAnimAction {
     newModelContext:ModelContext;
     oldType:string;
     newType:string;
