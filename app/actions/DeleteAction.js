@@ -18,16 +18,15 @@ var DeleteAction = (function (_super) {
             requireOld: true,
             requireNew: false
         };
-        this.options = { activeID: null, transition: false };
     }
+    // options:ActionOptions = {activeID: null, transition: false};
     DeleteAction.prototype.focus = function () {
         var newRoot, li, model, collection, rank, cursorstart = false, cursor;
         if (this.options.undo) {
             li = this.getLineView(this.options.activeID, this.options.oldRoot);
             View.setFocus(li);
-            var elem = $('#' + li.header.name.text.id);
-            elem.setCursor(0);
-            elem.focus();
+            li.header.name.text.setCursor(0);
+            li.header.name.text.focus();
             return;
         }
         newRoot = this.options.newRoot;
@@ -54,14 +53,13 @@ var DeleteAction = (function (_super) {
             }
         }
         View.setFocus(li);
-        var elem = $('#' + li.header.name.text.id);
         if (cursorstart) {
-            elem.setCursor(0);
-            elem.focus();
+            li.header.name.text.setCursor(0);
+            li.header.name.text.focus();
         } else {
-            cursor = elem.val().length;
-            elem.setCursor(cursor);
-            elem.focus();
+            cursor = li.header.name.text.getValue().length;
+            li.header.name.text.setCursor(cursor);
+            li.header.name.text.focus();
         }
     };
     DeleteAction.prototype.getNewContext = function () {

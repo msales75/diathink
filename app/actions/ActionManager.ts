@@ -47,7 +47,7 @@ class ActionManager {
         return this.randomString(16);
     }
 
-    static schedule(f, f2?) {
+    static schedule(f:AnonFunction, f2?:AnonFunction) {
         var newlength = 1;
         this.queue.push(f);
         if (f2 != null) {
@@ -59,7 +59,7 @@ class ActionManager {
         }
     }
 
-    static subschedule(f, f2?) {
+    static subschedule(f:AnonFunction, f2?:AnonFunction) {
         if (this.queue.length < 1) {
             console.log('ERROR: preschedule called with empty queue');
             debugger;
@@ -75,7 +75,7 @@ class ActionManager {
         if (this.queue.length > 0) {
             var f:{()} = this.queue[0];
             var options = f();
-            if (!options) { // abort action without history
+            if (options==null) { // abort action without history
                 this.queueComplete(f, null);
                 return;
             }
@@ -88,7 +88,7 @@ class ActionManager {
             } else if (options.redo) {
                 options.action.exec(options);
             } else {
-                options.action = options.action.createAndExec(options);
+                options.action = options.actionType.createAndExec(options);
             }
             ActionManager.log(options.action);
         }
@@ -142,11 +142,11 @@ class ActionManager {
         // undone actions prior to latest action are now lost
         // check whether last action one was redone or not
         if (this.actions.length > 0) {
-            if (this.actions.at(this.lastAction).undone) {
-                this.actions.at(this.lastAction).lost = true;
+            if ((<Action>this.actions.at(this.lastAction)).undone) {
+                (<Action>this.actions.at(this.lastAction)).lost = true;
             }
             for (var rank = this.lastAction + 1; rank < this.actions.length; ++rank) {
-                this.actions.at(rank).lost = true;
+                (<Action>this.actions.at(rank)).lost = true;
             }
         }
         this.lastAction = this.actions.length;
@@ -157,7 +157,7 @@ class ActionManager {
     static nextUndo():number {
         if (this.actions.length === 0) {return -1;}
         var rank:number = this.lastAction;
-        while (this.actions.at(rank).undone === true) {
+        while ((<Action>this.actions.at(rank)).undone === true) {
             --rank;
             if (rank < 0) {return -1;}
         }
@@ -167,7 +167,7 @@ class ActionManager {
     static nextRedo():number {
         if (this.actions.length === 0) {return -1;}
         var rank:number = this.lastAction;
-        while ((this.actions.at(rank).undone === false) || (this.actions.at(rank).lost === true)) {
+        while (((<Action>this.actions.at(rank)).undone === false) || ((<Action>this.actions.at(rank)).lost === true)) {
             ++rank;
             if (rank >= this.actions.length) {return -1;}
         }
@@ -175,48 +175,52 @@ class ActionManager {
     }
 
     static undo() {
-        this.schedule(function():{action;undo?:boolean;redo?:boolean} {
+        this.schedule(function():SubAction {
             var rank:number = ActionManager.nextUndo();
             if (rank === -1) {return null;}
             ActionManager.lastAction = rank;
             return {
-                action: ActionManager.actions.at(rank),
+                actionType: typeof ActionManager.actions.at(rank),
+                action: <Action>ActionManager.actions.at(rank),
                 undo: true
             };
         });
     }
 
     static redo() {
-        this.schedule(function():{action;undo?:boolean;redo?:boolean} {
+        this.schedule(function():SubAction {
             var rank = ActionManager.nextRedo();
             if (rank === -1) {return null;}
             ActionManager.lastAction = rank;
             return {
-                action: ActionManager.actions.at(rank),
+                actionType: typeof ActionManager.actions.at(rank),
+                action: <Action>ActionManager.actions.at(rank),
                 redo: true
             };
         });
     }
 
     static subUndo() {
-        this.subschedule(function():{action;undo?:boolean;redo?:boolean} {
+        this.subschedule(function():SubAction {
             var rank = ActionManager.nextUndo();
             if (rank === -1) {return null;}
             ActionManager.lastAction = rank;
             return {
-                action: ActionManager.actions.at(rank),
+                actionType: typeof ActionManager.actions.at(rank),
+                action: <Action>ActionManager.actions.at(rank),
                 undo: true
             };
         });
     }
 
     static subRedo() {
-        this.subschedule(function():{action;undo?:boolean;redo?:boolean} {
+        this.subschedule(function():SubAction {
             var rank = ActionManager.nextRedo();
             if (rank === -1) {return null;}
             ActionManager.lastAction = rank;
             return {
-                action: ActionManager.actions.at(rank),
+                actionType: typeof ActionManager.actions.at(rank),
+                action: <Action>ActionManager.actions.at(rank),
                 redo: true
             };
         });

@@ -26,7 +26,7 @@ class PanelAnimAction extends AnimatedAction {
         var drawlayer = $('#'+View.getCurrentPage().drawlayer.id);
 
         // dock item to newPanel
-        var hiddenbread:BreadcrumbView = new BreadcrumbView;
+        var hiddenbread:BreadcrumbView = new BreadcrumbView({});
         // .breadcrumbs-dock hides last breadcrumb-item
         // hiddenbread.updateValue(this.getModel(this.options.activeID));
         var item = $(hiddenbread.render()).addClass('breadcrumbs-dock').appendTo(drawlayer);
@@ -35,7 +35,7 @@ class PanelAnimAction extends AnimatedAction {
 
         // if there's no helper, create a docking-clone
         if (r.createDockElem) {
-            activeView = activeView.header.name.text;
+            // activeView = activeView.header.name.text;
             this.options.dockElem = <HTMLElement> $('#'+activeLineView.id)[0].cloneNode(true);
         }
         // prepare to dock into panelContext

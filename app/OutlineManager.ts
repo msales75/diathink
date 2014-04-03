@@ -3,7 +3,7 @@
 
 class OutlineManager {
     static outlines:{[i:string]:OutlineRootView}= {};
-    static deleted:{[i:string]:OutlineRootView}= {};
+    static deleted:{[i:string]:string}= {};
 
     static add(id:string, controller:OutlineRootView) {
         if (OutlineManager.deleted[id]) {
@@ -12,7 +12,7 @@ class OutlineManager {
         OutlineManager.outlines[id] = controller;
     }
     static remove(outline:OutlineRootView) {
-        var id = outline.id;
+        var id:string = outline.id;
         OutlineManager.deleted[id] = id;
         delete OutlineManager.outlines[id];
     }

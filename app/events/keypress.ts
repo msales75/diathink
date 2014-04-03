@@ -16,9 +16,9 @@ $D.handleKeypress = function (view:TextAreaView, e) {
             // validate rank >=0
             if (rank > 0) { // indent the line
                 // make it the last child of its previous sibling
-                scheduleKey(e.simulated, id, function () {
+                scheduleKey(e.simulated, id, function ():SubAction {
                     return {
-                        action: MoveIntoAction,
+                        actionType: MoveIntoAction,
                         anim: 'indent',
                         activeID: liView.value.cid,
                         referenceID: collection.models[rank - 1].cid,
@@ -46,7 +46,7 @@ $D.handleKeypress = function (view:TextAreaView, e) {
     }
 };
 $(function() {
-    $(window).on('keypress', function (e) {
+    $(window).on('keypress', function (e:JQueryEventObjectD) {
         console.log('Acknowledging keypress, char="' + String.fromCharCode(e.charCode) + '"');
         if (ActionManager.queue.length === 0) {
             // retain browser-default behavior

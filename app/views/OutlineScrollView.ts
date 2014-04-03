@@ -6,6 +6,7 @@ class OutlineScrollView extends ScrollView {
     alist:OutlineRootView;
     scrollSpacer:ScrollSpacerView;
     droplayer:DropLayerView;
+    scrollY:number; // for use in draghandler
 
     init() {
         this.Class = OutlineScrollView;

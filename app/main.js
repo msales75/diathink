@@ -22,7 +22,8 @@ if (nav.userAgent.match(/iPhone/i) || nav.userAgent.match(/iPad/i) || nav.userAg
 }
 $D.is_touch_device = 'ontouchstart' in document.documentElement;
 
-$D.data = new $D.OutlineNodeCollection([
+$D.data = new OutlineNodeCollection();
+$D.data.fromJSON([
     {
         text: "Test 1",
         children: [

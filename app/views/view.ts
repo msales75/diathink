@@ -39,6 +39,9 @@
 ///<reference path="../PanelManager.ts"/>
 ///<reference path="../models/OutlineNodeModel.ts"/>
 
+interface JQueryEventObjectD extends JQueryEventObject {
+    simulated:boolean;
+}
 interface ViewTypeList {
     [name:string] : any
 }
@@ -61,10 +64,7 @@ interface Dimensions {
     width:number;
     height:number;
 }
-declare class NodeModel extends Backbone.Model {
-    views:View[];
-    children:Backbone.Collection;
-}
+
 interface ElemContext {prev:HTMLElement; next:HTMLElement; parent:HTMLElement}
 interface GridLayout {cssClass:string; columns: {[i:number]:string} }
 class View {
@@ -163,6 +163,7 @@ class View {
     public cssClass:string = null;
     public elem:HTMLElement = null;
     public isClickable = false;
+    public lastClicked:number; // for clickable items
     public isFocusable = false; // todo: node vs. textarea
     public isDragHandle:boolean = false;
     public isScrollable:boolean = false;
@@ -210,11 +211,11 @@ class View {
         // check they shouldn't already exist
         assert((!this.elem) || (this.elem.children.length === 0),
             "createListItems has children when creating more");
-        if (this.value instanceof Backbone.Collection) {
+        if (this.value instanceof Collection) {
             this.listItems = [];
             if (!this.hideList) {
                 // ensure you don't render ones that are collapsed
-                var models = (<Backbone.Collection>(this.value)).models;
+                var models = (<Collection>(this.value)).models;
                 for (var i = 0; i < models.length; ++i) {
                     this.listItems.push(new this.listItemTemplateView({
                         parentView: this,
@@ -417,7 +418,7 @@ class View {
         this.nodeRootView = view;
         if ((this instanceof ListView) && (this.value)) {
             var itemlist = this.value[this.items];
-            _.each(itemlist, function(item:NodeModel) {
+            _.each(itemlist, function(item:OutlineNodeModel) {
                 if (item.views && item.views[id]) {
                     item.views[id].setRootID(view);
                 }

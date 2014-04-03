@@ -1,9 +1,9 @@
 ///<reference path="actions/Action.ts"/>
 ///<reference path="models/OutlineNodeModel.ts"/>
 function validate() {
-    assert(Backbone.Relational.store._collections.length === 1, "");
+    // assert(Backbone.Relational.store._collections.length === 1, "");
     var outlines = OutlineManager.outlines;
-    var models = Backbone.Relational.store._collections[0]._byId;
+    var models = OutlineNodeModel.modelsById;
     var views = View.viewList;
 
     $('[id]').each(function () {
@@ -26,7 +26,7 @@ function validate() {
     }
 
     var collections = {};
-    var modelBase = $D.data._byId;
+    var modelBase = $D.data.modelsById;
 
     for (var m in modelBase) {
         assert(models[m] !== undefined, "modelBase " + m + " does not exist in model list");
@@ -39,7 +39,7 @@ function validate() {
         assert(models[m].cid === m, "Model " + m + " does not have a valid cid");
         assert(typeof models[m].attributes === 'object', "Model " + m + " does not have an attributes field");
 
-        if (models[m].deleted === false) {
+        if (models[m].attributes.deleted === false) {
             if (models[m].attributes.parent == null) {
                 assert(modelBase[m] != null, "Unable to find model " + m + " in top-level of $D.data, despite having parent=null");
             } else {
@@ -58,7 +58,7 @@ function validate() {
     // ignore deleted models from model-list for rest of tests
     var models2 = {};
     for (var m in models) {
-        if (models[m].deleted === false) {
+        if (models[m].attributes.deleted === false) {
             models2[m] = models[m];
         }
     }
@@ -81,8 +81,8 @@ function validate() {
             // (proves parent-refs are connected & acyclic)
             assert(p.attributes.children instanceof OutlineNodeCollection, "Parent-model " + p + " does not have children of type OutlineNodeCollection");
             var foundit = false;
-            for (var cp in p.attributes.children._byId) {
-                if (p.attributes.children._byId[cp] === models[m]) {
+            for (var cp in p.attributes.children.modelsById) {
+                if (p.attributes.children.modelsById[cp] === models[m]) {
                     foundit = true;
                     break;
                 }
@@ -95,9 +95,9 @@ function validate() {
         // parent matches children
         var c = models[m].attributes.children;
         assert(c instanceof OutlineNodeCollection, "The children of model " + m + " are not an OutlineNodeCollection");
-        for (var cm in c._byId) {
-            var obj = c._byId[cm];
-            assert(obj instanceof Backbone.RelationalModel, "The child " + cm + " of model " + m + " is not a RelationalModel");
+        for (var cm in c.modelsById) {
+            var obj = c.modelsById[cm];
+            assert(obj instanceof OutlineNodeModel, "The child " + cm + " of model " + m + " is not a RelationalModel");
             assert(models[obj.cid] === obj, "The child " + cm + " of model " + m + " is not in the model list");
             assert(obj.attributes.parent === models[m], "The child " + cm + " of model " + m + " does not have the matching parent-field");
         }
@@ -236,12 +236,12 @@ function validate() {
                 assert(pV.nodeRootView instanceof OutlineRootView, "Parent ListView " + pV + " has invalid nodeRootView");
                 assert(typeof pV.value === 'object', "Parent ListView " + pV + " has invalid value (not an object)");
                 assert(pV.value instanceof OutlineNodeCollection, "Parent ListView " + pV + " has a value that's not an OutlineNodeCollection");
-                assert(typeof pV.value._byId === 'object', "Parent ListView " + pV + " has a value without _byId");
-                for (k in pV.value._byId) {
-                    assert(typeof pV.value._byId[k] === 'object', "Parent ListView " + pV + " has a child-model " + k + " that is not an object");
-                    assert(typeof pV.value._byId[k].views === 'object', "Parent ListView " + pV + " has a child-model " + k + " without views");
-                    assert(typeof pV.value._byId[k].views[pV.nodeRootView.id] === 'object', "Parent ListView " + pV + " has a child-model " + k + " without rootNodeView.id " + pV.nodeRootView.id + " listed in views");
-                    if (pV.value._byId[k].views[pV.nodeRootView.id] === views[v]) {
+                assert(typeof pV.value.modelsById === 'object', "Parent ListView " + pV + " has a value without modelsById");
+                for (k in pV.value.modelsById) {
+                    assert(typeof pV.value.modelsById[k] === 'object', "Parent ListView " + pV + " has a child-model " + k + " that is not an object");
+                    assert(typeof pV.value.modelsById[k].views === 'object', "Parent ListView " + pV + " has a child-model " + k + " without views");
+                    assert(typeof pV.value.modelsById[k].views[pV.nodeRootView.id] === 'object', "Parent ListView " + pV + " has a child-model " + k + " without rootNodeView.id " + pV.nodeRootView.id + " listed in views");
+                    if (pV.value.modelsById[k].views[pV.nodeRootView.id] === views[v]) {
                         foundit = true;
                     }
                 }
@@ -324,25 +324,26 @@ function validate() {
                     assert(views[v].nodeRootView === views[v].parentView.nodeRootView, "View " + v + " is not in root-list, but has nodeRootView different than parent");
                 }
                 if (views[v] instanceof ListView) {
-                    assert(_.size(views[v].childViewTypes) === 0, "View " + v + " has type ListView but has more than zero childViewsTypes");
+                    var lview = views[v];
+                    assert(_.size(lview.childViewTypes) === 0, "View " + v + " has type ListView but has more than zero childViewsTypes");
                     assert(typeof views[v].value === 'object', "ListView " + v + " does not have a value");
                     assert(views[v].value instanceof OutlineNodeCollection, "ListView " + v + " value is not a OutlineNodeCollection");
-                    assert(typeof views[v].value._byId === 'object', "ListView " + v + " value does not have _byId attribute");
+                    assert(typeof lview.value.modelsById === 'object', "ListView " + v + " value does not have modelsById attribute");
                     if (views[v].value === $D.data) {
                     } else {
                         assert(_.contains(collections, views[v].value), "ListView " + v + " value is not in the model-collections list");
                     }
 
-                    for (k in views[v].value._byId) {
-                        assert(views[v].value._byId[k] instanceof OutlineNodeModel, "ListView " + v + " has child-model rank " + k + " is not an OutlineNodeModel");
-                        assert(models[views[v].value._byId[k].cid] === views[v].value._byId[k], "ListView " + v + " child-model " + views[v].value._byId[k].cid + " is not in the models list");
+                    for (k in lview.value.modelsById) {
+                        assert(lview.value.modelsById[k] instanceof OutlineNodeModel, "ListView " + v + " has child-model rank " + k + " is not an OutlineNodeModel");
+                        assert(models[lview.value.modelsById[k].cid] === lview.value.modelsById[k], "ListView " + v + " child-model " + lview.value.modelsById[k].cid + " is not in the models list");
                     }
                     var vElemParent = $('#' + v).parent('li');
                     if ((vElemParent.length === 0) || (vElemParent.hasClass('expanded'))) {
                         if (vElemParent.length > 0) {
                             assert(!vElemParent.hasClass('collapsed'), "List-item " + vElemParent[0].id + " has collapsed and expanded classes");
                         }
-                        for (i in views[v].value.models) {
+                        for (i = 0; i < lview.value.models.length; ++i) {
                             // rank is i
                             var vid = $($('#' + v).children().get(i)).attr('id');
                             assert(typeof vid === 'string', "Unable to find id of DOM-child " + i + " of view " + v);
@@ -365,7 +366,7 @@ function validate() {
 
                     assert(nView.parentView.value instanceof OutlineNodeCollection, "NodeView " + v + " parent view does not have value OutlineNodeCollection");
 
-                    assert(nView.parentView.value._byId[nView.value.cid] === models[nView.value.cid], "NodeView " + v + " parent view's collection does not include item's model ID " + views[v].value.cid);
+                    assert(nView.parentView.value.modelsById[nView.value.cid] === models[nView.value.cid], "NodeView " + v + " parent view's collection does not include item's model ID " + views[v].value.cid);
 
                     assert(nView.value != null, "NodeView " + v + " has no value");
                     assert(typeof nView.value === 'object', "NodeView " + v + " has invalid value (not an object)");

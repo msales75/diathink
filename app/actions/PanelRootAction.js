@@ -13,7 +13,6 @@ var PanelRootAction = (function (_super) {
         _super.apply(this, arguments);
         this.type = "PanelRootAction";
         this.newType = 'panel';
-        this.options = { activeID: null, collapsed: false };
         this._validateOptions = {
             requireActive: false,
             requireReference: false,
@@ -25,7 +24,8 @@ var PanelRootAction = (function (_super) {
         var that = this;
         that.addQueue('newModelAdd', ['context'], function () {
             if ((!that.options.undo) && (!that.options.redo)) {
-                var c = ActionManager;
+                var c;
+                c = ActionManager;
                 if (c.actions.at(c.lastAction) !== that) {
                     console.log('ERROR: lastAction is not this');
                     debugger;
@@ -67,8 +67,8 @@ var PanelRootAction = (function (_super) {
                             debugger;
                         }
                     } else {
-                        that.oldRootModel = View.get(that.options.oldRoot).rootModel;
-                        that.options.newRoot = View.get(that.options.oldRoot).parentView.parentView.changeRoot(model);
+                        that.oldRootModel = View.get(that.options.oldRoot).panelView.value;
+                        that.options.newRoot = View.get(that.options.oldRoot).panelView.changeRoot(model, null);
                     }
                 }
             }

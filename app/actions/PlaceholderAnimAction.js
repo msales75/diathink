@@ -17,7 +17,7 @@ var PlaceholderAnimAction = (function (_super) {
     }
     PlaceholderAnimAction.prototype.oldLinePlace = function (outline) {
         var r = this.runtime;
-        if (r.rOldLinePlaceholder[outline.nodeRootView.id]) {
+        if (r.rUseOldLinePlaceholder[outline.nodeRootView.id]) {
             var activeLineView = this.getLineView(this.options.activeID, outline.nodeRootView.id);
 
             // if view doesn't exist, insert no placeholder because it's invisible
@@ -65,9 +65,9 @@ var PlaceholderAnimAction = (function (_super) {
         if (!outline) {
             return;
         }
-        if (r.rNewLinePlaceholder[outline.nodeRootView.id]) {
+        if (r.rUseNewLinePlaceholder[outline.nodeRootView.id]) {
             var parentView = this.contextParentVisible(newModelContext, outline);
-            if (!parentView || parentView.collapsed) {
+            if (!parentView || parentView.hideList) {
                 console.log('ERROR');
                 debugger;
             }
@@ -101,10 +101,10 @@ var PlaceholderAnimAction = (function (_super) {
             } else {
                 speed = this.placeholderSpeed;
             }
-            if (r.rOldLinePlaceholder[outline.nodeRootView.id]) {
+            if (r.rUseOldLinePlaceholder[outline.nodeRootView.id]) {
                 startOldHeight = r.rOldLinePlaceholder[outline.nodeRootView.id].clientHeight;
             }
-            if (r.rNewLinePlaceholder[outline.nodeRootView.id]) {
+            if (r.rUseNewLinePlaceholder[outline.nodeRootView.id]) {
                 endNewHeight = r.activeLineHeight[outline.nodeRootView.id];
                 if (!endNewHeight) {
                     endNewHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
@@ -142,6 +142,10 @@ var PlaceholderAnimAction = (function (_super) {
         } else {
             $(this.runtime.rNewLinePlaceholder[rootID]).css('height', String(Math.round(frac * endNewHeight)) + 'px');
         }
+    };
+
+    PlaceholderAnimAction.prototype.contextParentVisible = function (a, b) {
+        return null;
     };
     return PlaceholderAnimAction;
 })(DockAnimAction);

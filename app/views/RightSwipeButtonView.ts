@@ -9,16 +9,16 @@ class RightSwipeButtonView extends SpanView {
     value = '>';
     onClick() {
         ActionManager.schedule(
-            function() {
+            function():SubAction {
                 if (View.focusedView) {
                     return Action.checkTextChange(View.focusedView.header.name.text.id);
                 } else {
                     return null;
                 }
             },
-            function() {
+            function():SubAction {
                 return {
-                    action: SlidePanelsAction,
+                    actionType: SlidePanelsAction,
                     direction: 'left',
                     focus: false
                 };

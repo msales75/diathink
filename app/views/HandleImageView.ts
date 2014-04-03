@@ -12,15 +12,15 @@ class HandleImageView extends ImageView {
         var li:NodeView = this.nodeView;
         var liElem = $(li.elem);
         ActionManager.schedule(
-            function() {
+            function():SubAction {
                 return Action.checkTextChange(li.header.name.text.id);
             },
-            function():{action;activeID;collapsed;oldRoot;newRoot;focus} {
+            function():SubAction {
                 if (!liElem.hasClass('branch')) {
                     return null;
                 }
                 return {
-                    action: CollapseAction,
+                    actionType: CollapseAction,
                     activeID: li.value.cid,
                     collapsed: !liElem.hasClass('collapsed'),
                     oldRoot: li.nodeRootView.id,
@@ -32,12 +32,12 @@ class HandleImageView extends ImageView {
     onDoubleClick() {
         var li:NodeView = this.nodeView;
         ActionManager.schedule(
-            function() {
+            function():SubAction {
                 return Action.checkTextChange(li.header.name.text.id);
             },
-            function() {
+            function():SubAction {
                 return {
-                    action: PanelRootAction,
+                    actionType: PanelRootAction,
                     activeID: li.value.cid,
                     oldRoot: li.nodeRootView.id,
                     newRoot: 'new'

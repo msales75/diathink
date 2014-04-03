@@ -2,11 +2,11 @@
 m_require("app/views/View.js");
 
 class NodeView extends View {
-    modelType;
+    modelType:typeof OutlineNodeModel;
     header:NodeHeaderView;
     children:OutlineListView;
     parentView:ListView;
-    value:NodeModel;
+    value:OutlineNodeModel;
     isCollapsed:boolean;
     init() {
         this.Class = NodeView;
@@ -19,7 +19,7 @@ class NodeView extends View {
 
     updateValue() {
         if (this.value) {
-            this.modelType.findOrCreate(this.value.cid).addView(this); // register view.id in model
+            this.value.addView(this); // register view.id in model
         }
         // check outline and value for collapse-status
         this.isCollapsed = this.value.get('collapsed');

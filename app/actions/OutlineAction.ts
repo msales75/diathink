@@ -17,8 +17,8 @@
 // todo: undo-scroll (maybe focus)
 m_require("app/actions/PlaceholderAnimAction.js");
 
-class OutlineAction extends PlaceholderAnimAction {
     oldModelContext:ModelContext;
+        class OutlineAction extends PlaceholderAnimAction {
     newModelContext:ModelContext;
     oldType:string;
     newType:string;
@@ -26,7 +26,7 @@ class OutlineAction extends PlaceholderAnimAction {
     useNewLinePlaceholder:boolean;
     _validateOptions;
     init() {
-        Action.prototype.init.call(this, arguments);
+        super.init.call(this, arguments);
         _.extend(this, {
             oldType: 'line',
             newType: 'line',
@@ -40,12 +40,14 @@ class OutlineAction extends PlaceholderAnimAction {
         });
     }
     runinit() {
-        Action.prototype.runinit.call(this, arguments);
+        super.runinit.call(this, arguments);
         _.extend(this.runtime, {
             activeLineElem: {},
             activeLineHeight: {},
             rOldContextType: {},
             rNewContextType: {},
+            rUseNewLinePlaceholder: {},
+            rUseOldLinePlaceholder: {},
             rNewLinePlaceholder: {},
             rOldLinePlaceholder: {},
             rOldLineVisible: {},
@@ -156,14 +158,14 @@ class OutlineAction extends PlaceholderAnimAction {
                 }
             }
 
-            r.rOldLinePlaceholder[i] = false;
-            r.rNewLinePlaceholder[i] = false;
+            r.rUseOldLinePlaceholder[i] = false;
+            r.rUseNewLinePlaceholder[i] = false;
             if ((r.rNewType==='line')&&(r.rOldType==='line')) {
-                if (r.rOldLineVisible[i] && this.useOldLinePlaceholder) {r.rOldLinePlaceholder[i] = true;}
-                if (r.rNewLineVisible[i] && this.useNewLinePlaceholder) {r.rNewLinePlaceholder[i] = true;}
+                if (r.rOldLineVisible[i] && this.useOldLinePlaceholder) {r.rUseOldLinePlaceholder[i] = true;}
+                if (r.rNewLineVisible[i] && this.useNewLinePlaceholder) {r.rUseNewLinePlaceholder[i] = true;}
             }
             r.useLinePlaceholderAnim[i] = false;
-            if ((r.rOldLinePlaceholder[i] || r.rNewLinePlaceholder[i])) {
+            if ((r.rUseOldLinePlaceholder[i] || r.rUseNewLinePlaceholder[i])) {
                 if (this.options.anim !== 'indent') {
                     r.useLinePlaceholderAnim[i] = true;
                 }
@@ -384,15 +386,15 @@ class OutlineAction extends PlaceholderAnimAction {
     getModel(id) {
         return OutlineNodeModel.getById(id);
     }
-    getLineView(id, rootid) {
+    getLineView(id, rootid):NodeView {
         var model = this.getModel(id);
         if (model.views == null) {return null;}
         return model.views[rootid];
     }
     // todo: should make node-model a doubly-linked list without relying on collection rank?
     getContextAt(id) {
-        var model = this.getModel(id);
-        var collection= model.parentCollection();
+        var model:OutlineNodeModel = this.getModel(id);
+        var collection:OutlineNodeCollection= <OutlineNodeCollection>model.parentCollection();
         var rank = model.rank();
         var context:ModelContext = {};
         if (rank===0) {
@@ -405,8 +407,8 @@ class OutlineAction extends PlaceholderAnimAction {
         } else {
             context.next = collection.at(rank+1).cid;
         }
-        if (collection.at(rank).get('parent')) {
-            context.parent = collection.at(rank).get('parent').cid;
+        if ((<OutlineNodeModel>collection.at(rank)).get('parent')) {
+            context.parent = (<OutlineNodeModel>collection.at(rank)).get('parent').cid;
         } else {
             context.parent = null;
         }
@@ -504,37 +506,37 @@ class OutlineAction extends PlaceholderAnimAction {
             }
         }
     }
-    contextParentVisible(context, outline):NodeView {
+    contextParentVisible(context, outline):ListView {
         if (!context) {return null;}
 
         if (context.parent != null) {
-            var parent = this.getLineView(context.parent, outline.nodeRootView.id);
+            var parent:NodeView = this.getLineView(context.parent, outline.nodeRootView.id);
             if (parent != null) {
                 if ($('#'+parent.id).hasClass('collapsed')) {
-                    parent.children.collapsed = true;
+                    // parent.children.collapsed = true;
                     return parent.children;
                 } else {
-                    parent.children.collapsed = false;
+                    // parent.children.collapsed = false;
                     return parent.children;
                 }
             } else { // parent is outside view, is it one level or more?
                 if (this.getModel(context.parent).get('children') ===
                     View.get(outline.nodeRootView.id).value) {
-                    return View.get(outline.nodeRootView.id);
+                    return <OutlineRootView>View.get(outline.nodeRootView.id);
                 } else { // context is out of scope
                     return null;
                 }
             }
         } else { // outline-root $D.data
             if (View.get(outline.nodeRootView.id).value === $D.data) {
-                return View.get(outline.nodeRootView.id);
+                return <OutlineRootView>View.get(outline.nodeRootView.id);
             } else {
                 return null;
             }
         }
-    }
+}
     restoreContext() {
-        var activeModel, collection, rank, oldCollection;
+        var activeModel:OutlineNodeModel, collection:OutlineNodeCollection, rank:number, oldCollection:OutlineNodeCollection;
         var that = this;
         this.addQueue('oldModelCollection', ['modelCreate'], function() {
             activeModel = that.getModel(that.options.activeID);
@@ -549,7 +551,7 @@ class OutlineAction extends PlaceholderAnimAction {
                     // don't do this with a collapse action.
                     if (parent) {
                         that.subactions.push({
-                            action: CollapseAction,
+                            actionType: CollapseAction,
                             activeID: parent.cid,
                             collapsed: false,
                             oldRoot: 'all',
@@ -559,6 +561,7 @@ class OutlineAction extends PlaceholderAnimAction {
                     }
                 }
                 oldCollection.remove(activeModel);
+                activeModel.set('parent', null);
             }
         });
         this.addQueue('newModelRank', ['oldModelRemove'], function() {
@@ -569,7 +572,7 @@ class OutlineAction extends PlaceholderAnimAction {
                 newModelContext = that.newModelContext;
             }
             if (newModelContext != null) { // if there was a prior location to revert to
-                activeModel.deleted = false;
+                activeModel.set('deleted', false);
                 if (newModelContext.parent != null) {
                     collection = that.getModel(newModelContext.parent).get('children');
                 } else {
@@ -581,7 +584,7 @@ class OutlineAction extends PlaceholderAnimAction {
                     rank = that.getModel(newModelContext.prev).rank()+1;
                 }
             } else {
-                activeModel.deleted = true;
+                activeModel.set('deleted', true);
             }
         });
         this.addQueue('newModelAdd', ['newModelRank'], function() {
@@ -592,9 +595,10 @@ class OutlineAction extends PlaceholderAnimAction {
                 newModelContext = that.newModelContext;
             }
             if (newModelContext != null) {
-                collection.add(activeModel, {at: rank});
+                collection.addAt(activeModel, rank);
+                activeModel.set('parent', OutlineNodeModel.getById(newModelContext.parent));
             } else {
-                activeModel.set({parent: null});
+                activeModel.set('parent', null);
             }
         });
     }
@@ -605,7 +609,7 @@ class OutlineAction extends PlaceholderAnimAction {
         this.addQueue(['view', outline.id], ['newModelAdd', 'anim'], function() {
             var r:RuntimeOptions= that.runtime;
             var collection, rank:number, oldParent, oldParentView:View=null;
-            var newModelContext, li, elem, oldspot, neighbor, neighborType, newParentView:NodeView, createActiveLineView:boolean=false;
+            var newModelContext, li, elem:JQuery, oldspot, neighbor, neighborType, newParentView:ListView, createActiveLineView:boolean=false;
 
             newModelContext = r.rNewModelContext;
             // todo: this is a mess, with placeholders and undo.  Need to simplify.
@@ -638,9 +642,9 @@ class OutlineAction extends PlaceholderAnimAction {
 
             // get parent listview; unless newModelContext is not in this view, then null
             newParentView = that.contextParentVisible(newModelContext, outline);
-            if (newParentView && newParentView.isCollapsed) {
+            if (newParentView && newParentView.hideList) {
                 // adding child to collapsed parent
-                newParentView.addClass('branch').removeClass('leaf');
+                newParentView.nodeView.addClass('branch').removeClass('leaf');
                 console.log('Nulling newModelContext because parent isnt visible');
                 newParentView = null;
             }
@@ -676,7 +680,7 @@ class OutlineAction extends PlaceholderAnimAction {
                 // put elem into newModelContext
                 // this cleans up destination-placeaholder; what about source-placeholder?
                 //   it could vanish automatically?
-                if (r.rNewLinePlaceholder[outline.id]) {
+                if (r.rUseNewLinePlaceholder[outline.id]) {
                     console.log('Replacing newlinePlaceholder for '+outline.id);
                     r.rNewLinePlaceholder[outline.id].parentNode.
                         replaceChild(elem[0], r.rNewLinePlaceholder[outline.id]);
@@ -728,12 +732,13 @@ class OutlineAction extends PlaceholderAnimAction {
                 }
             }
             // remove source-placeholder
-            if (r.rOldLinePlaceholder[outline.id]) {
+            if (r.rUseOldLinePlaceholder[outline.id]) {
                 console.log('Removing oldlinePlaceholder for '+outline.id);
                 r.rOldLinePlaceholder[outline.id].parentNode.removeChild(that.runtime.rOldLinePlaceholder[outline.id]);
                 r.rOldLinePlaceholder[outline.id] = undefined;
                 r.activeLineElem[outline.id] = undefined;
                 r.activeLineHeight[outline.id] = undefined;
+                r.rUseOldLinePlaceholder[outline.id] = undefined;
             }
 
             if (neighbor) { // fixup old location (expanded)
@@ -826,7 +831,7 @@ class OutlineAction extends PlaceholderAnimAction {
         var that = this;
         this.restoreViewContext(outline);
     }
-    getNewContext();
+    getNewContext() {}
 }
 
 

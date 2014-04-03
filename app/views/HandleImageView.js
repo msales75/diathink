@@ -28,7 +28,7 @@ var HandleImageView = (function (_super) {
                 return null;
             }
             return {
-                action: CollapseAction,
+                actionType: CollapseAction,
                 activeID: li.value.cid,
                 collapsed: !liElem.hasClass('collapsed'),
                 oldRoot: li.nodeRootView.id,
@@ -43,7 +43,7 @@ var HandleImageView = (function (_super) {
             return Action.checkTextChange(li.header.name.text.id);
         }, function () {
             return {
-                action: PanelRootAction,
+                actionType: PanelRootAction,
                 activeID: li.value.cid,
                 oldRoot: li.nodeRootView.id,
                 newRoot: 'new'

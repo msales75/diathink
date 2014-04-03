@@ -254,7 +254,7 @@ var DragHandler = (function () {
                     return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: MoveBeforeAction,
+                        actionType: MoveBeforeAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
                         oldRoot: targetview.nodeRootView.id,
@@ -269,7 +269,7 @@ var DragHandler = (function () {
                     return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: MoveAfterAction,
+                        actionType: MoveAfterAction,
                         activeID: targetview.value.cid,
                         referenceID: refview.value.cid,
                         oldRoot: targetview.nodeRootView.id,
@@ -284,7 +284,7 @@ var DragHandler = (function () {
                     return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: MoveIntoAction,
+                        actionType: MoveIntoAction,
                         referenceID: refview.value.cid,
                         activeID: targetview.value.cid,
                         oldRoot: targetview.nodeRootView.id,
@@ -299,7 +299,7 @@ var DragHandler = (function () {
                     return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: PanelCreateAction,
+                        actionType: PanelCreateAction,
                         activeID: targetview.value.cid,
                         prevPanel: PanelManager.prevpanel[refview.id],
                         oldRoot: targetview.nodeRootView.id,
@@ -313,7 +313,7 @@ var DragHandler = (function () {
                     return Action.checkTextChange(targetview.header.name.text.id);
                 }, function () {
                     return {
-                        action: PanelCreateAction,
+                        actionType: PanelCreateAction,
                         activeID: targetview.value.cid,
                         prevPanel: refview.id,
                         oldRoot: targetview.nodeRootView.id,

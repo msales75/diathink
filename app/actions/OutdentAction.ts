@@ -10,7 +10,7 @@ class OutdentAction extends OutlineAction {
         requireOld: true,
         requireNew: true
     };
-    options= {activeID: null, referenceID: null, transition: false};
+    // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     getNewContext() {
         this.newModelContext = this.getContextAfter(this.options.referenceID);
     }

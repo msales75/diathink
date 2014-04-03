@@ -298,9 +298,9 @@ class DragHandler {
                     function() {
                         return Action.checkTextChange(targetview.header.name.text.id);
                     },
-                    function() {
+                    function():SubAction {
                         return {
-                            action: MoveBeforeAction,
+                            actionType: MoveBeforeAction,
                             activeID: targetview.value.cid,
                             referenceID: refview.value.cid,
                             oldRoot: targetview.nodeRootView.id,
@@ -312,12 +312,12 @@ class DragHandler {
                     });
             } else if (this.activeBox.type === 'dropbottom') {
                 ActionManager.schedule(
-                    function() {
+                    function():SubAction {
                         return Action.checkTextChange(targetview.header.name.text.id);
                     },
-                    function() {
+                    function():SubAction {
                         return {
-                            action: MoveAfterAction,
+                            actionType: MoveAfterAction,
                             activeID: targetview.value.cid,
                             referenceID: refview.value.cid,
                             oldRoot: targetview.nodeRootView.id,
@@ -332,9 +332,9 @@ class DragHandler {
                     function() {
                         return Action.checkTextChange(targetview.header.name.text.id);
                     },
-                    function() {
+                    function():SubAction {
                         return {
-                            action: MoveIntoAction,
+                            actionType: MoveIntoAction,
                             referenceID: refview.value.cid,
                             activeID: targetview.value.cid,
                             oldRoot: targetview.nodeRootView.id,
@@ -349,9 +349,9 @@ class DragHandler {
                     function() {
                         return Action.checkTextChange(targetview.header.name.text.id);
                     },
-                    function() {
+                    function():SubAction {
                         return {
-                            action: PanelCreateAction,
+                            actionType: PanelCreateAction,
                             activeID: targetview.value.cid,
                             prevPanel: PanelManager.prevpanel[refview.id],
                             oldRoot: targetview.nodeRootView.id,
@@ -362,12 +362,12 @@ class DragHandler {
                     });
             } else if (this.activeBox.type === 'dropright') {
                 ActionManager.schedule(
-                    function() {
+                    function():SubAction {
                         return Action.checkTextChange(targetview.header.name.text.id);
                     },
-                    function() {
+                    function():SubAction {
                         return {
-                            action: PanelCreateAction,
+                            actionType: PanelCreateAction,
                             activeID: targetview.value.cid,
                             prevPanel: refview.id,
                             oldRoot: targetview.nodeRootView.id,
@@ -895,7 +895,7 @@ class DragHandler {
         // this.position is same, scroll is different for each item
         // cache scroll-positions of each panel
         this.panels.each(function() {
-            View.get(this.id).scrollY = View.get(this.id).scrollHandler.getScrollPosition().y;
+            (<OutlineScrollView>View.get(this.id)).scrollY = (<OutlineScrollView>View.get(this.id)).scrollHandler.getScrollPosition().y;
         });
         for (i = 0; i < this.items.length; ++i) {
             if (this.items[i].dropboxes == null) {continue;} // when mousedrag is called before initialization
@@ -904,7 +904,7 @@ class DragHandler {
                 var x = this.positionAbs.left + this.offset.click.left;
                 var y = this.positionAbs.top + this.offset.click.top;
                 var parentPanel = this.items[i].parentPanel;
-                y += View.get(parentPanel.attr('id')).scrollY -
+                y += (<OutlineScrollView>View.get(parentPanel.attr('id'))).scrollY -
                     this.panelScrollStart[parentPanel.attr('id')];
                 if (((x >= d.left) && (x <= d.right)) && ((y >= d.top) && (y <= d.bottom))) {
                     if (this.scrollPanel && (parentPanel.get(0) !==

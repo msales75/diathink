@@ -1,5 +1,4 @@
 ///<reference path="../views/View.ts"/>
-///<reference path="../models/OutlineNodeModel.ts"/>
 ///<reference path="../validate.ts"/>
 ///<reference path="ActionManager.ts"/>
 ///<reference path="AnimatedAction.ts"/>
@@ -18,8 +17,17 @@
 ///<reference path="PlaceholderAnimAction.ts"/>
 ///<reference path="SlidePanelsAction.ts"/>
 ///<reference path="TextAction.ts"/>
-var Action = (function () {
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+
+var Action = (function (_super) {
+    __extends(Action, _super);
     function Action(options) {
+        _super.call(this);
         this.type = "Action";
         this.indentSpeed = 80;
         this.createSpeed = 80;
@@ -30,8 +38,8 @@ var Action = (function () {
         this.newType = 'line';
         this.useOldLinePlaceholder = true;
         this.useNewLinePlaceholder = true;
-        this.init();
         this.options = _.extend({}, this.options, options);
+        this.init();
         return this;
     }
     Action.prototype.init = function () {
@@ -383,7 +391,7 @@ var Action = (function () {
         var value = $('#' + id).val();
         console.log('checkTextChange: id = ' + id);
         if (!View.get(id)) {
-            return false;
+            return null;
         }
         var view = View.get(id).parentView.parentView.parentView;
         var model = view.value;
@@ -391,7 +399,7 @@ var Action = (function () {
             //console.log("TextAction for id="+id+"; model="+
             //  model.cid+" with value="+$('#'+id).val());
             return {
-                action: TextAction,
+                actionType: TextAction,
                 activeID: model.cid,
                 text: value,
                 oldRoot: view.nodeRootView.id,
@@ -399,16 +407,19 @@ var Action = (function () {
                 focus: false
             };
         }
-        return false;
+        return null;
     };
     return Action;
-})();
+})(PModel);
 
 // outline-move op, animation-type,
 // commuting operations don't have to be undone/redone - optimization
-var ActionCollection = (function () {
+var ActionCollection = (function (_super) {
+    __extends(ActionCollection, _super);
     function ActionCollection() {
+        _super.apply(this, arguments);
+        this.model = typeof Action;
     }
     return ActionCollection;
-})();
+})(Collection);
 //# sourceMappingURL=Action.js.map

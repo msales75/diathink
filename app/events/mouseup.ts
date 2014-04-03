@@ -7,7 +7,7 @@ $(function() {
     }
     $(document.body).on(tap, '.ui-breadcrumb-link', function(e) {
         // $('input.ui-disable-scroll').removeClass('ui-disable-scroll');
-        var view = View.get($(this).parent().attr('id'));
+        var view:View = View.get($(this).parent().attr('id'));
         var now = (new Date()).getTime();
         if (!view.lastClicked || (view.lastClicked < now - 1000)) {
             view.lastClicked = now;
@@ -19,9 +19,9 @@ $(function() {
         }
         // todo-here - see if text changes appropriately.
         ActionManager.schedule(
-            function() {
+            function():SubAction {
                 return {
-                    action: PanelRootAction,
+                    actionType: PanelRootAction,
                     activeID: modelid,
                     oldRoot: panelview.outline.alist.nodeRootView.id,
                     newRoot: 'new'

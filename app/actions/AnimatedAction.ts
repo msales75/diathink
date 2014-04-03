@@ -5,16 +5,16 @@ m_require("app/actions/Action.js");
 class AnimatedAction extends Action {
 
     // Extensible subroutines
-    createDockElem();
-    dockAnim(newRoot:string);
-    panelPrep();
-    oldLinePlace(v:OutlineRootView);
-    newLinePlace(v:OutlineRootView);
-    linePlaceAnim(v:OutlineRootView);
-    oldLinePlaceAnimStep(f:number, v:OutlineRootView);
-    newLinePlaceAnimStep(f:number, v:OutlineRootView);
-    dockAnimStep(f:number, o:AnimOptions);
-    animFadeEnv(f:number, o:AnimOptions);
+    createDockElem() {}
+    dockAnim(newRoot:string) {}
+    panelPrep() {}
+    oldLinePlace(v:OutlineRootView) {}
+    newLinePlace(v:OutlineRootView) {}
+    linePlaceAnim(v:OutlineRootView) {}
+    oldLinePlaceAnimStep(f:number, v:AnimViewOptions) {}
+    newLinePlaceAnimStep(f:number, v:AnimViewOptions) {}
+    dockAnimStep(f:number, o:AnimOptions) {}
+    animFadeEnv(f:number, o:AnimOptions) {}
 
 
     animStepWrapper(f, duration, start, end) {
@@ -58,6 +58,7 @@ class AnimatedAction extends Action {
             that.panelPrep();
         });
         var outlines = OutlineManager.outlines;
+        var i:string;
         for (i in outlines) {
             (function(i) {
                 that.addQueue(['oldLinePlace', i], ['createDockElem'], function() {
@@ -101,7 +102,7 @@ class AnimatedAction extends Action {
     }
 
     // Used for all animation-frame-steps
-    animStep(frac) {
+    animStep(frac:number) {
         var i, r:RuntimeOptions = this.runtime,
             o:AnimOptions = this.runtime.animOptions;
         // loop over all outlines
@@ -111,10 +112,10 @@ class AnimatedAction extends Action {
                 if (!o.view[i]) {
                     continue;
                 }
-                if (r.rOldLinePlaceholder[i]) {// visually collapse old line
+                if (r.rUseOldLinePlaceholder[i]) {// visually collapse old line
                     this.oldLinePlaceAnimStep(frac, o.view[i]);
                 }
-                if (r.rNewLinePlaceholder[i]) {// visually expand new line
+                if (r.rUseNewLinePlaceholder[i]) {// visually expand new line
                     this.newLinePlaceAnimStep(frac, o.view[i]);
                 }
                 if (this.oldType === 'panel') {

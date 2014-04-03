@@ -18,8 +18,8 @@ var MoveBeforeAction = (function (_super) {
             requireOld: true,
             requireNew: true
         };
-        this.options = { activeID: null, referenceID: null, transition: false };
     }
+    // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     MoveBeforeAction.prototype.getNewContext = function () {
         this.newModelContext = this.getContextBefore(this.options.referenceID);
     };

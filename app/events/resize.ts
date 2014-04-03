@@ -62,7 +62,7 @@ $(window).resize(function() {
     if (changeWidth || changeFont) {
         (function() {
             $('textarea').each(function() {
-                View.get($(this).attr('id')).fixHeight();
+                (<TextAreaView>View.get($(this).attr('id'))).fixHeight();
             });
         })();
     }

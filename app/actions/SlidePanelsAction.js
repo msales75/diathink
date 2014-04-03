@@ -13,12 +13,13 @@ var SlidePanelsAction = (function (_super) {
         _super.apply(this, arguments);
         this.type = 'PanelSlide';
         this.oldLeftPanel = null;
-        this.options = { direction: null };
     }
+    // options:ActionOptions= {direction:null};
     SlidePanelsAction.prototype.execModel = function () {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function () {
-            var PM = PanelManager;
+            var PM;
+            PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
             var o = that.options;
             var dir;

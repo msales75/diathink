@@ -10,7 +10,7 @@ class MoveBeforeAction extends OutlineAction {
         requireOld: true,
         requireNew: true
     };
-    options= {activeID: null, referenceID: null, transition: false};
+    // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     getNewContext() {
         this.newModelContext = this.getContextBefore(this.options.referenceID);
     }

@@ -15,7 +15,7 @@ var PanelAnimAction = (function (_super) {
     PanelAnimAction.prototype.panelPrep = function () {
         return;
         var r = this.runtime;
-
+        var activeLineView;
         if (r.rOldType !== 'panel') {
             return;
         }
@@ -33,16 +33,17 @@ var PanelAnimAction = (function (_super) {
         var drawlayer = $('#' + View.getCurrentPage().drawlayer.id);
 
         // dock item to newPanel
-        var hiddenbread = new BreadcrumbView;
+        var hiddenbread = new BreadcrumbView({});
 
         // .breadcrumbs-dock hides last breadcrumb-item
-        hiddenbread.defineFromModel(this.getModel(this.options.activeID));
+        // hiddenbread.updateValue(this.getModel(this.options.activeID));
         var item = $(hiddenbread.render()).addClass('breadcrumbs-dock').appendTo(drawlayer);
+        hiddenbread.updateValue(); // todo: this won't work
         var endBreadcrumbHeight = item[0].clientHeight;
 
         // if there's no helper, create a docking-clone
         if (r.createDockElem) {
-            activeView = activeView.header.name.text;
+            // activeView = activeView.header.name.text;
             this.options.dockElem = $('#' + activeLineView.id)[0].cloneNode(true);
         }
         // prepare to dock into panelContext

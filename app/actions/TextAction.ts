@@ -4,7 +4,7 @@ m_require("app/actions/Action.js");
 
 class TextAction extends Action {
     type="TextAction";
-    options = {activeID: null, text: null, transition: false};
+    // options:ActionOptions = {activeID: null, text: null, transition: false};
     oldText:string;
     _validateOptions= {
         requireActive: true,

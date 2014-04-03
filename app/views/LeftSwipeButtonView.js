@@ -28,7 +28,7 @@ var LeftSwipeButtonView = (function (_super) {
             }
         }, function () {
             return {
-                action: SlidePanelsAction,
+                actionType: SlidePanelsAction,
                 direction: 'right',
                 focus: false
             };

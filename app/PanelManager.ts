@@ -178,7 +178,7 @@ class PanelManager {
             return 'right'; // push right with no change to leftPanel
         }
     }
-    static remove(id, slide) {
+    static remove(id, slide?) {
         if ((this.nextpanel[id]===undefined) || (this.prevpanel[id]===undefined) || (id==='')) {
             console.log('Error removing panel');
             debugger;

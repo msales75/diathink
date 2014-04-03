@@ -18,8 +18,8 @@ var MoveAfterAction = (function (_super) {
             requireOld: true,
             requireNew: true
         };
-        this.options = { activeID: null, referenceID: null, transition: false };
     }
+    // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     MoveAfterAction.prototype.getNewContext = function () {
         this.newModelContext = this.getContextAfter(this.options.referenceID);
     };

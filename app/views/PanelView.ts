@@ -8,7 +8,11 @@ class PanelView extends ContainerView {
     left:number;
     width:number;
     height:number;
-    value:Backbone.Model = null;
+
+    dropleft; // temporary placeholders for dropboxes - todo fix this up better
+    dropright;
+
+    value:OutlineNodeModel = null;
     Class:any;
 
     init() {

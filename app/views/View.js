@@ -37,6 +37,7 @@
 ///<reference path="UndoButtonView.ts"/>
 ///<reference path="../OutlineManager.ts"/>
 ///<reference path="../PanelManager.ts"/>
+///<reference path="../models/OutlineNodeModel.ts"/>
 
 var View = (function () {
     function View(opts) {
@@ -157,7 +158,7 @@ var View = (function () {
     View.prototype.createListItems = function () {
         // check they shouldn't already exist
         assert((!this.elem) || (this.elem.children.length === 0), "createListItems has children when creating more");
-        if (this.value instanceof Backbone.Collection) {
+        if (this.value instanceof Collection) {
             this.listItems = [];
             if (!this.hideList) {
                 // ensure you don't render ones that are collapsed

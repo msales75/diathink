@@ -7,7 +7,7 @@ class PlaceholderAnimAction extends DockAnimAction {
     placeholderSpeed= 160;
     oldLinePlace(outline) {
         var r = this.runtime;
-        if (r.rOldLinePlaceholder[outline.nodeRootView.id]) {
+        if (r.rUseOldLinePlaceholder[outline.nodeRootView.id]) {
             var activeLineView = this.getLineView(this.options.activeID, outline.nodeRootView.id);
 
             // if view doesn't exist, insert no placeholder because it's invisible
@@ -50,9 +50,9 @@ class PlaceholderAnimAction extends DockAnimAction {
         var r = this.runtime;
         var newModelContext = r.rNewModelContext;
         if (!outline) {return;}
-        if (r.rNewLinePlaceholder[outline.nodeRootView.id]) {
-            var parentView:NodeView = this.contextParentVisible(newModelContext, outline);
-            if (!parentView || parentView.isCollapsed) {
+        if (r.rUseNewLinePlaceholder[outline.nodeRootView.id]) {
+            var parentView:ListView = this.contextParentVisible(newModelContext, outline);
+            if (!parentView || parentView.hideList) {
                 console.log('ERROR');
                 debugger;
             }
@@ -82,10 +82,10 @@ class PlaceholderAnimAction extends DockAnimAction {
             if (this.options.anim==='delete') {speed = this.deleteSpeed;}
             else if (this.options.anim==='create') {speed = this.createSpeed;}
             else {speed = this.placeholderSpeed;}
-            if (r.rOldLinePlaceholder[outline.nodeRootView.id]) {
+            if (r.rUseOldLinePlaceholder[outline.nodeRootView.id]) {
                 startOldHeight = r.rOldLinePlaceholder[outline.nodeRootView.id].clientHeight;
             }
-            if (r.rNewLinePlaceholder[outline.nodeRootView.id]) {
+            if (r.rUseNewLinePlaceholder[outline.nodeRootView.id]) {
                 endNewHeight = r.activeLineHeight[outline.nodeRootView.id];
                 if (!endNewHeight) {
                     endNewHeight = Math.round(1.5*Number($(document.body).css('font-size').replace(/px/,'')));
@@ -127,6 +127,6 @@ class PlaceholderAnimAction extends DockAnimAction {
         }
     }
 
-    contextParentVisible(a,b):NodeView; // defined in OutlineAction
+    contextParentVisible(a,b):ListView {return null;} // defined in OutlineAction
 
 }

@@ -11,7 +11,7 @@ class MoveIntoAction extends OutlineAction {
         requireNew: false,
         requireNewReference: true
     };
-    options= {activeID: null, referenceID: null, transition: false};
+    // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     getNewContext() {
         this.newModelContext = this.getContextIn(this.options.referenceID);
     }

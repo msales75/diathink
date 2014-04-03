@@ -6,14 +6,14 @@ m_require("app/actions/Action.js");
 class SlidePanelsAction extends Action {
     type='PanelSlide';
     oldLeftPanel=null;
-    options= {direction:null};
+    // options:ActionOptions= {direction:null};
     execModel() {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function() {
             var PM:typeof PanelManager;
             PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
-            var o = that.options;
+            var o:ActionOptions = that.options;
             var dir;
             if (o.direction==='right') {
                 if (o.undo) {

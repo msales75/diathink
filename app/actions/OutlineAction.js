@@ -24,7 +24,7 @@ var OutlineAction = (function (_super) {
         _super.apply(this, arguments);
     }
     OutlineAction.prototype.init = function () {
-        Action.prototype.init.call(this, arguments);
+        _super.prototype.init.call(this, arguments);
         _.extend(this, {
             oldType: 'line',
             newType: 'line',
@@ -38,12 +38,14 @@ var OutlineAction = (function (_super) {
         });
     };
     OutlineAction.prototype.runinit = function () {
-        Action.prototype.runinit.call(this, arguments);
+        _super.prototype.runinit.call(this, arguments);
         _.extend(this.runtime, {
             activeLineElem: {},
             activeLineHeight: {},
             rOldContextType: {},
             rNewContextType: {},
+            rUseNewLinePlaceholder: {},
+            rUseOldLinePlaceholder: {},
             rNewLinePlaceholder: {},
             rOldLinePlaceholder: {},
             rOldLineVisible: {},
@@ -146,18 +148,18 @@ var OutlineAction = (function (_super) {
                 }
             }
 
-            r.rOldLinePlaceholder[i] = false;
-            r.rNewLinePlaceholder[i] = false;
+            r.rUseOldLinePlaceholder[i] = false;
+            r.rUseNewLinePlaceholder[i] = false;
             if ((r.rNewType === 'line') && (r.rOldType === 'line')) {
                 if (r.rOldLineVisible[i] && this.useOldLinePlaceholder) {
-                    r.rOldLinePlaceholder[i] = true;
+                    r.rUseOldLinePlaceholder[i] = true;
                 }
                 if (r.rNewLineVisible[i] && this.useNewLinePlaceholder) {
-                    r.rNewLinePlaceholder[i] = true;
+                    r.rUseNewLinePlaceholder[i] = true;
                 }
             }
             r.useLinePlaceholderAnim[i] = false;
-            if ((r.rOldLinePlaceholder[i] || r.rNewLinePlaceholder[i])) {
+            if ((r.rUseOldLinePlaceholder[i] || r.rUseNewLinePlaceholder[i])) {
                 if (this.options.anim !== 'indent') {
                     r.useLinePlaceholderAnim[i] = true;
                 }
@@ -358,19 +360,20 @@ var OutlineAction = (function (_super) {
                 }
             }
         }
-
         // todo: validate ViewContext, too.
         // todo: put text, collapsed, focus into oldModelContext and newModelContext.
         // (and oldRoot and newRoot?)
+        /*
         if (o.text) {
-            // todo:
+        // todo:
         }
         if (o.collapsed !== undefined) {
-            // todo:
+        // todo:
         }
         if (o.focus) {
-            // todo:
+        // todo:
         }
+        */
     };
     OutlineAction.prototype.contextStep = function () {
         this.getOldContext();
@@ -466,7 +469,10 @@ var OutlineAction = (function (_super) {
         return context;
     };
     OutlineAction.prototype.newModel = function () {
-        var activeModel = new OutlineNodeModel({ text: this.options.text, children: null });
+        var activeModel = new OutlineNodeModel({
+            text: this.options.text,
+            children: null
+        });
         this.options.activeID = activeModel.cid;
         return activeModel;
     };
@@ -513,10 +519,10 @@ var OutlineAction = (function (_super) {
             var parent = this.getLineView(context.parent, outline.nodeRootView.id);
             if (parent != null) {
                 if ($('#' + parent.id).hasClass('collapsed')) {
-                    parent.children.collapsed = true;
+                    // parent.children.collapsed = true;
                     return parent.children;
                 } else {
-                    parent.children.collapsed = false;
+                    // parent.children.collapsed = false;
                     return parent.children;
                 }
             } else {
@@ -550,7 +556,7 @@ var OutlineAction = (function (_super) {
                     // don't do this with a collapse action.
                     if (parent) {
                         that.subactions.push({
-                            action: CollapseAction,
+                            actionType: CollapseAction,
                             activeID: parent.cid,
                             collapsed: false,
                             oldRoot: 'all',
@@ -560,6 +566,7 @@ var OutlineAction = (function (_super) {
                     }
                 }
                 oldCollection.remove(activeModel);
+                activeModel.set('parent', null);
             }
         });
         this.addQueue('newModelRank', ['oldModelRemove'], function () {
@@ -570,7 +577,7 @@ var OutlineAction = (function (_super) {
                 newModelContext = that.newModelContext;
             }
             if (newModelContext != null) {
-                activeModel.deleted = false;
+                activeModel.set('deleted', false);
                 if (newModelContext.parent != null) {
                     collection = that.getModel(newModelContext.parent).get('children');
                 } else {
@@ -582,7 +589,7 @@ var OutlineAction = (function (_super) {
                     rank = that.getModel(newModelContext.prev).rank() + 1;
                 }
             } else {
-                activeModel.deleted = true;
+                activeModel.set('deleted', true);
             }
         });
         this.addQueue('newModelAdd', ['newModelRank'], function () {
@@ -593,9 +600,10 @@ var OutlineAction = (function (_super) {
                 newModelContext = that.newModelContext;
             }
             if (newModelContext != null) {
-                collection.add(activeModel, { at: rank });
+                collection.addAt(activeModel, rank);
+                activeModel.set('parent', OutlineNodeModel.getById(newModelContext.parent));
             } else {
-                activeModel.set({ parent: null });
+                activeModel.set('parent', null);
             }
         });
     };
@@ -640,9 +648,9 @@ var OutlineAction = (function (_super) {
             // oldParentView != null means it needs to be checked if it changed to a leaf
             // get parent listview; unless newModelContext is not in this view, then null
             newParentView = that.contextParentVisible(newModelContext, outline);
-            if (newParentView && newParentView.collapsed) {
+            if (newParentView && newParentView.hideList) {
                 // adding child to collapsed parent
-                newParentView.addClass('branch').removeClass('leaf');
+                newParentView.nodeView.addClass('branch').removeClass('leaf');
                 console.log('Nulling newModelContext because parent isnt visible');
                 newParentView = null;
             }
@@ -683,7 +691,7 @@ var OutlineAction = (function (_super) {
                 // put elem into newModelContext
                 // this cleans up destination-placeaholder; what about source-placeholder?
                 //   it could vanish automatically?
-                if (r.rNewLinePlaceholder[outline.id]) {
+                if (r.rUseNewLinePlaceholder[outline.id]) {
                     console.log('Replacing newlinePlaceholder for ' + outline.id);
                     r.rNewLinePlaceholder[outline.id].parentNode.replaceChild(elem[0], r.rNewLinePlaceholder[outline.id]);
                 } else {
@@ -736,12 +744,13 @@ var OutlineAction = (function (_super) {
             }
 
             // remove source-placeholder
-            if (r.rOldLinePlaceholder[outline.id]) {
+            if (r.rUseOldLinePlaceholder[outline.id]) {
                 console.log('Removing oldlinePlaceholder for ' + outline.id);
                 r.rOldLinePlaceholder[outline.id].parentNode.removeChild(that.runtime.rOldLinePlaceholder[outline.id]);
                 r.rOldLinePlaceholder[outline.id] = undefined;
                 r.activeLineElem[outline.id] = undefined;
                 r.activeLineHeight[outline.id] = undefined;
+                r.rUseOldLinePlaceholder[outline.id] = undefined;
             }
 
             if (neighbor) {
@@ -833,6 +842,8 @@ var OutlineAction = (function (_super) {
     OutlineAction.prototype.execView = function (outline) {
         var that = this;
         this.restoreViewContext(outline);
+    };
+    OutlineAction.prototype.getNewContext = function () {
     };
     return OutlineAction;
 })(PlaceholderAnimAction);

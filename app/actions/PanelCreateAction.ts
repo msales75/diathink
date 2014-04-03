@@ -6,12 +6,12 @@ m_require("app/actions/Action.js");
 class PanelCreateAction extends Action {
     type= "PanelCreate";
     prevPanel= null;
-    newPanel= null;
+    newPanel:string = null;
     leftPanel:string;
     nextPanel:string;
     postLeftPanel:string;
     postRightPanel:string;
-    options= {activeID: null, prevPanel: null, oldRoot: null, newRoot: 'new'};
+    // options:ActionOptions = {activeID: null, prevPanel: null, oldRoot: null, newRoot: 'new'};
     contextStep() { // save old context here
         this.leftPanel = PanelManager.leftPanel;
         this.nextPanel = PanelManager.nextpanel[this.prevPanel];
@@ -134,7 +134,7 @@ class PanelCreateAction extends Action {
             var PM : typeof PanelManager;
             PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
-            var o = that.options;
+            var o:ActionOptions = that.options;
             var dir;
             if (o.undo) {
                 dir = PM.remove(that.newPanel);

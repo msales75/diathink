@@ -12,7 +12,10 @@ m_require("app/views/PanelView.js");
 m_require("app/events/Router.js");
 m_require("app/actions/ActionManager.js");
 
-var nav = navigator;
+interface NavigatorD extends Navigator {
+    standalone?:boolean;
+}
+var nav:NavigatorD = navigator;
 if (nav.userAgent.match(/iPhone/i) ||
     nav.userAgent.match(/iPad/i) ||
     nav.userAgent.match(/iPod/i)) {
@@ -27,7 +30,8 @@ if (nav.userAgent.match(/iPhone/i) ||
 $D.is_touch_device = 'ontouchstart' in document.documentElement;
 
 
-$D.data = new $D.OutlineNodeCollection([
+$D.data = new OutlineNodeCollection();
+$D.data.fromJSON([
     {text: "Test 1",
         children: [
             {text: "Child 1 1",

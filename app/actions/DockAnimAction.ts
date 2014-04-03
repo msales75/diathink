@@ -1,6 +1,6 @@
 ///<reference path="Action.ts"/>
 
-m_require("app/animations/AnimatedAction.js");
+m_require("app/actions/AnimatedAction.js");
 
 class DockAnimAction extends AnimatedAction {
     indentSpeed= 80;
@@ -42,7 +42,7 @@ class DockAnimAction extends AnimatedAction {
             top: top+'px'
         };
         if ((this.options.anim==='indent')&&(left > startX)) {
-            css.width = String(o.startWidth-(left-startX))+'px';
+            css.width = String(o.startWidth-(Number(left)-startX))+'px';
         }
         if (o.startColor && o.endColor) {
             var color = [Math.round((1-frac)*o.startColor[0]+ frac*o.endColor[0]),
@@ -114,7 +114,7 @@ class DockAnimAction extends AnimatedAction {
                 console.log("ERROR: docking attempted with null context");
                 debugger;
             }
-            if (! r.rNewLinePlaceholder[newRoot]) { // nowhere to dock
+            if (! r.rUseNewLinePlaceholder[newRoot]) { // nowhere to dock
                 $(document.body).removeClass('transition-mode');
                 this.options.dockElem.parentNode.removeChild(this.options.dockElem);
                 this.options.dockElem = undefined;
@@ -132,8 +132,8 @@ class DockAnimAction extends AnimatedAction {
             var startY = this.options.dockElem.offsetTop;
             var startWidth = this.options.dockElem.clientWidth;
 
-            var destination = $(r.rNewLinePlaceholder[newRoot]).offset();
-            if (r.rOldLinePlaceholder[newRoot]) {
+            var destination:{top:number;left:number} = $(r.rNewLinePlaceholder[newRoot]).offset();
+            if (r.rUseOldLinePlaceholder[newRoot]) {
                 var oldOffset = $(r.rOldLinePlaceholder[newRoot]).offset();
                 if (destination.top > oldOffset.top) {destination.top -= r.activeLineHeight[newRoot];}
             }

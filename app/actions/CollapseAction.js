@@ -12,7 +12,7 @@ var CollapseAction = (function (_super) {
     function CollapseAction() {
         _super.apply(this, arguments);
         this.type = "CollapseAction";
-        this.options = { activeID: null, collapsed: false };
+        // options:ActionOptions = {activeID: null, collapsed: false};
         this._validateOptions = {
             requireActive: true,
             requireReference: false,

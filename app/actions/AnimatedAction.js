@@ -12,6 +12,28 @@ var AnimatedAction = (function (_super) {
     function AnimatedAction() {
         _super.apply(this, arguments);
     }
+    // Extensible subroutines
+    AnimatedAction.prototype.createDockElem = function () {
+    };
+    AnimatedAction.prototype.dockAnim = function (newRoot) {
+    };
+    AnimatedAction.prototype.panelPrep = function () {
+    };
+    AnimatedAction.prototype.oldLinePlace = function (v) {
+    };
+    AnimatedAction.prototype.newLinePlace = function (v) {
+    };
+    AnimatedAction.prototype.linePlaceAnim = function (v) {
+    };
+    AnimatedAction.prototype.oldLinePlaceAnimStep = function (f, v) {
+    };
+    AnimatedAction.prototype.newLinePlaceAnimStep = function (f, v) {
+    };
+    AnimatedAction.prototype.dockAnimStep = function (f, o) {
+    };
+    AnimatedAction.prototype.animFadeEnv = function (f, o) {
+    };
+
     AnimatedAction.prototype.animStepWrapper = function (f, duration, start, end) {
         var self = this;
         var frac = ((new Date()).getTime() - start) / duration;
@@ -53,6 +75,7 @@ var AnimatedAction = (function (_super) {
             that.panelPrep();
         });
         var outlines = OutlineManager.outlines;
+        var i;
         for (i in outlines) {
             (function (i) {
                 that.addQueue(['oldLinePlace', i], ['createDockElem'], function () {
@@ -106,10 +129,10 @@ var AnimatedAction = (function (_super) {
                 if (!o.view[i]) {
                     continue;
                 }
-                if (r.rOldLinePlaceholder[i]) {
+                if (r.rUseOldLinePlaceholder[i]) {
                     this.oldLinePlaceAnimStep(frac, o.view[i]);
                 }
-                if (r.rNewLinePlaceholder[i]) {
+                if (r.rUseNewLinePlaceholder[i]) {
                     this.newLinePlaceAnimStep(frac, o.view[i]);
                 }
                 if (this.oldType === 'panel') {

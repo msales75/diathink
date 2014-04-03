@@ -19,8 +19,8 @@ var MoveIntoAction = (function (_super) {
             requireNew: false,
             requireNewReference: true
         };
-        this.options = { activeID: null, referenceID: null, transition: false };
     }
+    // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     MoveIntoAction.prototype.getNewContext = function () {
         this.newModelContext = this.getContextIn(this.options.referenceID);
     };

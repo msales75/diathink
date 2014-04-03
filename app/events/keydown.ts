@@ -23,9 +23,9 @@ $D.handleKeydown = function(view:TextAreaView, e) {
         // validate rank >=0
         if (rank > 0) { // indent the line
             // make it the last child of its previous sibling
-            scheduleKey(e.simulated, id, function() {
+            scheduleKey(e.simulated, id, function():SubAction {
                 return {
-                    action: MoveIntoAction,
+                    actionType: MoveIntoAction,
                     anim: 'indent',
                     activeID: liView.value.cid,
                     referenceID: collection.models[rank - 1].cid,
@@ -48,9 +48,9 @@ $D.handleKeydown = function(view:TextAreaView, e) {
                 (liView.parentView.parentView instanceof NodeView) &&
                 (rank === collection.models.length - 1)) {
                 // make it the next child of its parent
-                scheduleKey(e.simulated, id, function() {
+                scheduleKey(e.simulated, id, function():SubAction {
                     return {
-                        action: OutdentAction,
+                        actionType: OutdentAction,
                         anim: 'indent',
                         activeID: liView.value.cid,
                         referenceID: liView.value.attributes.parent.cid,
@@ -64,9 +64,9 @@ $D.handleKeydown = function(view:TextAreaView, e) {
             } else { // delete or merge-lines?
                 if ($('#' + id).val() === "") {
                     if (liView.value.get('children').length === 0) {
-                        scheduleKey(e.simulated, id, function() {
+                        scheduleKey(e.simulated, id, function():SubAction {
                             return {
-                                action: DeleteAction,
+                                actionType: DeleteAction,
                                 anim: 'delete',
                                 activeID: liView.value.cid,
                                 oldRoot: liView.nodeRootView.id,
@@ -82,9 +82,9 @@ $D.handleKeydown = function(view:TextAreaView, e) {
         }
     } else if (e.which === 13) { // enter
         // todo: split line if in middle of text
-        scheduleKey(e.simulated, id, function() {
+        scheduleKey(e.simulated, id, function():SubAction {
             return {
-                action: InsertAfterAction,
+                actionType: InsertAfterAction,
                 anim: 'create',
                 referenceID: liView.value.cid,
                 oldRoot: liView.nodeRootView.id,
@@ -111,7 +111,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
     }
 };
 $(function() {
-    $(window).on('keydown', function(e) {
+    $(window).on('keydown', function(e:JQueryEventObjectD) {
         var keyDownCodes = {8: 8, 9: 9, 13: 13};
         if (!keyDownCodes[e.which]) {
             return true;
@@ -137,7 +137,7 @@ $(function() {
             }
         } else {
             console.log('Delaying keydown, code=' + e.which);
-            ActionManager.schedule(function() {
+            ActionManager.schedule(function():SubAction {
                 if (View.focusedView) {
                     e.simulated = true;
                     $D.handleKeydown(View.focusedView.header.name.text, e);
@@ -145,7 +145,7 @@ $(function() {
                 } else {
                     console.log('Missed delayed keydown, nothing focused');
                 }
-                return false;
+                return null;
             });
             e.preventDefault();
         }

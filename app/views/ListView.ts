@@ -1,7 +1,7 @@
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
 class ListView extends View {
-    value:Backbone.Collection;
+    value:OutlineNodeCollection;
 
     render() {
         var classes = 'ui-listview ui-listview-inset ui-corner-all ui-shadow ui-listview-c ' +

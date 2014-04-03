@@ -5,7 +5,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-m_require("app/animations/AnimatedAction.js");
+m_require("app/actions/AnimatedAction.js");
 
 var DockAnimAction = (function (_super) {
     __extends(DockAnimAction, _super);
@@ -14,34 +14,36 @@ var DockAnimAction = (function (_super) {
         this.indentSpeed = 80;
         this.dockSpeed = 160;
     }
-    DockAnimAction.prototype.getObjectParams = function (obj, textobj) {
-        // * Currently unused, precisely orients text in object-boundaries
-        // if old-type = new-type, don't need to deal with this
-        var oldParams = {};
-        oldParams.elem = oldObject;
-        var offset = $(oldObject).offset();
-        oldParams.top = offset.top;
-        oldParams.left = offset.left;
-        var textoffset = $(textobj).offset();
-        oldParams.textTop = textoffset.top - offset.top;
-        oldParams.textLeft = textoffset.left - offset.left;
-        oldParams.fontSize = Number($(textobj).css('font-size').replace(/px/, ''));
-        oldParams.textWidth = $(textobj).width();
-        oldParams.textHeight = $(textobj).height();
-        oldParams.color = $(textobj).css('color');
-        return oldParams;
-    };
+    /*
+    getObjectParams(obj, textobj) {
+    // * Currently unused, precisely orients text in object-boundaries
+    // if old-type = new-type, don't need to deal with this
+    var oldParams = {};
+    oldParams.elem = oldObject;
+    var offset = $(oldObject).offset();
+    oldParams.top = offset.top;
+    oldParams.left = offset.left;
+    var textoffset = $(textobj).offset();
+    oldParams.textTop = textoffset.top - offset.top;
+    oldParams.textLeft = textoffset.left - offset.left;
+    oldParams.fontSize = Number($(textobj).css('font-size').replace(/px/,''));
+    oldParams.textWidth = $(textobj).width();
+    oldParams.textHeight = $(textobj).height();
+    oldParams.color = $(textobj).css('color');
+    return oldParams;
+    } */
     DockAnimAction.prototype.dockAnimStep = function (frac, o) {
         var endX = o.endX, endY = o.endY, startX = o.startX, startY = o.startY;
 
         var left = String(Math.round(frac * endX + (1 - frac) * startX));
         var top = String(Math.round(frac * endY + (1 - frac) * startY));
-        var css = {
+        var css;
+        css = {
             left: left + 'px',
             top: top + 'px'
         };
         if ((this.options.anim === 'indent') && (left > startX)) {
-            css.width = String(o.startWidth - (left - startX)) + 'px';
+            css.width = String(o.startWidth - (Number(left) - startX)) + 'px';
         }
         if (o.startColor && o.endColor) {
             var color = [
@@ -110,7 +112,7 @@ var DockAnimAction = (function (_super) {
                 console.log("ERROR: docking attempted with null context");
                 debugger;
             }
-            if (!r.rNewLinePlaceholder[newRoot]) {
+            if (!r.rUseNewLinePlaceholder[newRoot]) {
                 $(document.body).removeClass('transition-mode');
                 this.options.dockElem.parentNode.removeChild(this.options.dockElem);
                 this.options.dockElem = undefined;
@@ -132,7 +134,7 @@ var DockAnimAction = (function (_super) {
             var startWidth = this.options.dockElem.clientWidth;
 
             var destination = $(r.rNewLinePlaceholder[newRoot]).offset();
-            if (r.rOldLinePlaceholder[newRoot]) {
+            if (r.rUseOldLinePlaceholder[newRoot]) {
                 var oldOffset = $(r.rOldLinePlaceholder[newRoot]).offset();
                 if (destination.top > oldOffset.top) {
                     destination.top -= r.activeLineHeight[newRoot];

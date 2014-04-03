@@ -14,8 +14,8 @@ var PanelCreateAction = (function (_super) {
         this.type = "PanelCreate";
         this.prevPanel = null;
         this.newPanel = null;
-        this.options = { activeID: null, prevPanel: null, oldroot: null, newRoot: 'new' };
     }
+    // options:ActionOptions = {activeID: null, prevPanel: null, oldRoot: null, newRoot: 'new'};
     PanelCreateAction.prototype.contextStep = function () {
         this.leftPanel = PanelManager.leftPanel;
         this.nextPanel = PanelManager.nextpanel[this.prevPanel];
@@ -67,7 +67,8 @@ var PanelCreateAction = (function (_super) {
     };
     PanelCreateAction.prototype.validateOptions = function () {
         // todo: check leftPanel
-        var PM = PanelManager;
+        var PM;
+        PM = PanelManager;
         var o = this.options;
         if (!o.redo && !o.undo) {
             this.leftPanel = PM.leftPanel;
@@ -89,7 +90,8 @@ var PanelCreateAction = (function (_super) {
     PanelCreateAction.prototype.redrawPanel = function (n, p, firsttime) {
         // should changeRoot it instead?
         var c;
-        var PM = PanelManager;
+        var PM;
+        PM = PanelManager;
         var grid = View.getCurrentPage().content.grid;
         if (grid['scroll' + String(n)]) {
             c = grid['scroll' + String(n)].destroy(); // save context for this
@@ -116,7 +118,7 @@ var PanelCreateAction = (function (_super) {
         // grid['scroll'+String(n)].theme();
         // grid['scroll'+String(n)].registerEvents();
         if (firsttime && (grid['scroll' + String(n)].id === this.newPanel)) {
-            grid['scroll' + String(n)].changeRoot(this.getModel(this.options.activeID));
+            grid['scroll' + String(n)].changeRoot(this.getModel(this.options.activeID), null);
         } else {
             grid['scroll' + String(n)].changeRoot(PM.rootModels[p], PM.rootViews[p]);
         }
@@ -129,7 +131,8 @@ var PanelCreateAction = (function (_super) {
     PanelCreateAction.prototype.execModel = function () {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function () {
-            var PM = PanelManager;
+            var PM;
+            PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
             var o = that.options;
             var dir;

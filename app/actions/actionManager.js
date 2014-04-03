@@ -74,7 +74,7 @@ var ActionManager = (function () {
         if (this.queue.length > 0) {
             var f = this.queue[0];
             var options = f();
-            if (!options) {
+            if (options == null) {
                 this.queueComplete(f, null);
                 return;
             }
@@ -88,7 +88,7 @@ var ActionManager = (function () {
             } else if (options.redo) {
                 options.action.exec(options);
             } else {
-                options.action = options.action.createAndExec(options);
+                options.action = options.actionType.createAndExec(options);
             }
             ActionManager.log(options.action);
         }
@@ -194,6 +194,7 @@ var ActionManager = (function () {
             }
             ActionManager.lastAction = rank;
             return {
+                actionType: typeof ActionManager.actions.at(rank),
                 action: ActionManager.actions.at(rank),
                 undo: true
             };
@@ -208,6 +209,7 @@ var ActionManager = (function () {
             }
             ActionManager.lastAction = rank;
             return {
+                actionType: typeof ActionManager.actions.at(rank),
                 action: ActionManager.actions.at(rank),
                 redo: true
             };
@@ -222,6 +224,7 @@ var ActionManager = (function () {
             }
             ActionManager.lastAction = rank;
             return {
+                actionType: typeof ActionManager.actions.at(rank),
                 action: ActionManager.actions.at(rank),
                 undo: true
             };
@@ -236,6 +239,7 @@ var ActionManager = (function () {
             }
             ActionManager.lastAction = rank;
             return {
+                actionType: typeof ActionManager.actions.at(rank),
                 action: ActionManager.actions.at(rank),
                 redo: true
             };

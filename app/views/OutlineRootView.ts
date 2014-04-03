@@ -2,6 +2,7 @@
 m_require("app/views/ListView.js");
 class OutlineRootView extends ListView {
     parentView:OutlineScrollView;
+    value:OutlineNodeCollection;
     data; // preserves collapse/expanded status within panel-outline
     init() {
         this.listItemTemplateView = NodeView;

@@ -36,10 +36,6 @@
 // todo: action stores oldFocus and newFocus ? (maybe not)
 // todo: handle focusID in context, and validate it.
 // todo: undo-scroll (maybe focus)
-interface SubAction {
-    action:Action;
-}
-interface AnonFunction{():any;}
 
 interface ActionOptions {
     undo?:boolean;
@@ -55,13 +51,34 @@ interface ActionOptions {
     text?:string;
     direction?: string;
     transition?:boolean;
+    prevPanel?:string;
+    collapsed?:boolean;
 }
+
+interface SubAction extends ActionOptions {
+    actionType: any;
+    action?: Action;
+}
+
+interface AnonFunction{():SubAction;}
+
 interface ViewNumbers {
     [i:string]:number;
 }
 interface AnimOptions {
-    view?:{[i:string]:View};
+    view?:{[i:string]:AnimViewOptions};
     dock?:boolean;
+    startX?:number;
+    startY?:number;
+    endX?: number;
+    endY?: number;
+    startWidth?: number;
+}
+interface AnimViewOptions {
+    rootID?: string;
+    startOldHeight?: number;
+    endNewHeight?: number;
+    sameHeight?: boolean;
 }
 interface ModelContext {
     next?:string;
@@ -100,24 +117,28 @@ interface RuntimeOptions {
     performDock?:boolean;
     createDockElem?:boolean;
     activeLineElem?:{[i:string]:HTMLElement};
-    activeLineHeight?:{[i:string]:HTMLElement};
-    rOldContextType?:{[i:string]:HTMLElement};
-    rNewContextType?:{[i:string]:HTMLElement};
+    activeLineHeight?:{[i:string]:number};
+    rOldContextType?:{[i:string]:string};
+    rNewContextType?:{[i:string]:string};
+    rUseNewLinePlaceholder?:{[i:string]:boolean};
+    rUseOldLinePlaceholder?:{[i:string]:boolean};
     rNewLinePlaceholder?:{[i:string]:HTMLElement};
     rOldLinePlaceholder?:{[i:string]:HTMLElement};
-    rOldLineVisible?:{[i:string]:HTMLElement};
-    rNewLineVisible?:{[i:string]:HTMLElement};
-    oldLineContext?:{[i:string]:HTMLElement};
-    createLineElem?:{[i:string]:HTMLElement};
-    destroyLineElem?:{[i:string]:HTMLElement};
+    rOldLineVisible?:{[i:string]:boolean};
+    rNewLineVisible?:{[i:string]:boolean};
+    oldLineContext?:{[i:string]:{ type: string; obj: any; }};
+    createLineElem?:{[i:string]:boolean};
+    destroyLineElem?:{[i:string]:boolean};
     useLinePlaceholderAnim?:{[i:string]:boolean};
     rOldModelContext?:ModelContext;
     rNewModelContext?:ModelContext;
     createModel?:boolean;
     destroyModel?:boolean;
+    rNewPanelContext?;
+
 }
 
-class Action {
+class Action extends PModel {
     type:string ="Action";
     options:ActionOptions;
     indentSpeed= 80;
@@ -139,8 +160,9 @@ class Action {
     useOldLinePlaceholder= true;
     useNewLinePlaceholder= true;
     constructor(options) {
-        this.init();
+        super();
         this.options = _.extend({}, this.options, options);
+        this.init();
         return this;
     }
     init() {
@@ -407,10 +429,10 @@ class Action {
         });
         this.nextQueue();
     }
-    getModel(id) {
+    getModel(id):OutlineNodeModel {
         return OutlineNodeModel.getById(id);
     }
-    getLineView(id, rootid) {
+    getLineView(id, rootid):NodeView {
         var model = this.getModel(id);
         if (model.views == null) {return null;}
         return model.views[rootid];
@@ -448,17 +470,17 @@ class Action {
     execModel() {}
     execView(outline) {}
 
-    static createAndExec(options) { // create a new action object
+    static createAndExec(options):Action { // create a new action object
         var action:Action = new this(options);
         action.exec(options);
         return action;
     }
-    static checkTextChange(id) {
+    static checkTextChange(id):SubAction {
         // console.log("Checking text change for id="+id);
         var value = $('#'+id).val();
         console.log('checkTextChange: id = '+id);
         if (!View.get(id)) {
-            return false; // view was deleted since being edited
+            return null; // view was deleted since being edited
         }
         var view = View.get(id).parentView.parentView.parentView;
         var model = view.value;
@@ -466,7 +488,7 @@ class Action {
             //console.log("TextAction for id="+id+"; model="+
               //  model.cid+" with value="+$('#'+id).val());
                 return {
-                    action: TextAction,
+                    actionType: TextAction,
                     activeID: model.cid,
                     text: value,
                     oldRoot: view.nodeRootView.id,
@@ -474,18 +496,18 @@ class Action {
                     focus: false
                 }
         }
-        return false;
+        return null;
     }
 }
 
 // outline-move op, animation-type,
 // commuting operations don't have to be undone/redone - optimization
 
-class ActionCollection  {
-    model: typeof Action;
-    length:number;
-    at(k:number):Action;
-    push(a:Action):void;
+class ActionCollection  extends Collection {
+    model= typeof Action;
+    // length:number;
+    // at(k:number):Action;
+    // push(a:Action):void;
 }
 
 

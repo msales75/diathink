@@ -23,7 +23,7 @@ var NodeView = (function (_super) {
 
     NodeView.prototype.updateValue = function () {
         if (this.value) {
-            this.modelType.findOrCreate(this.value.cid).addView(this); // register view.id in model
+            this.value.addView(this); // register view.id in model
         }
 
         // check outline and value for collapse-status

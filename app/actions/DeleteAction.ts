@@ -10,7 +10,7 @@ class DeleteAction extends OutlineAction {
         requireOld: true,
         requireNew: false
     };
-    options = {activeID: null, transition: false};
+    // options:ActionOptions = {activeID: null, transition: false};
     focus() {
         var newRoot, li, model, collection, rank, cursorstart=false, cursor;
         if (this.options.undo) {

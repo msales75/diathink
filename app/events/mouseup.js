@@ -21,7 +21,7 @@ $(function () {
         // todo-here - see if text changes appropriately.
         ActionManager.schedule(function () {
             return {
-                action: PanelRootAction,
+                actionType: PanelRootAction,
                 activeID: modelid,
                 oldRoot: panelview.outline.alist.nodeRootView.id,
                 newRoot: 'new'

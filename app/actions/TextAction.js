@@ -12,7 +12,6 @@ var TextAction = (function (_super) {
     function TextAction() {
         _super.apply(this, arguments);
         this.type = "TextAction";
-        this.options = { activeID: null, text: null, transition: false };
         this._validateOptions = {
             requireActive: true,
             requireReference: false,

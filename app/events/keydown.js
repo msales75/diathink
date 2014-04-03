@@ -28,7 +28,7 @@ $D.handleKeydown = function (view, e) {
             // make it the last child of its previous sibling
             scheduleKey(e.simulated, id, function () {
                 return {
-                    action: MoveIntoAction,
+                    actionType: MoveIntoAction,
                     anim: 'indent',
                     activeID: liView.value.cid,
                     referenceID: collection.models[rank - 1].cid,
@@ -52,7 +52,7 @@ $D.handleKeydown = function (view, e) {
                 // make it the next child of its parent
                 scheduleKey(e.simulated, id, function () {
                     return {
-                        action: OutdentAction,
+                        actionType: OutdentAction,
                         anim: 'indent',
                         activeID: liView.value.cid,
                         referenceID: liView.value.attributes.parent.cid,
@@ -68,7 +68,7 @@ $D.handleKeydown = function (view, e) {
                     if (liView.value.get('children').length === 0) {
                         scheduleKey(e.simulated, id, function () {
                             return {
-                                action: DeleteAction,
+                                actionType: DeleteAction,
                                 anim: 'delete',
                                 activeID: liView.value.cid,
                                 oldRoot: liView.nodeRootView.id,
@@ -86,7 +86,7 @@ $D.handleKeydown = function (view, e) {
         // todo: split line if in middle of text
         scheduleKey(e.simulated, id, function () {
             return {
-                action: InsertAfterAction,
+                actionType: InsertAfterAction,
                 anim: 'create',
                 referenceID: liView.value.cid,
                 oldRoot: liView.nodeRootView.id,
@@ -148,7 +148,7 @@ $(function () {
                 } else {
                     console.log('Missed delayed keydown, nothing focused');
                 }
-                return false;
+                return null;
             });
             e.preventDefault();
         }
