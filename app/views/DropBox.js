@@ -7,20 +7,43 @@ var __extends = this.__extends || function (d, b) {
 ///<reference path="../views/View.ts"/>
 ///<reference path="../PanelManager.ts"/>
 var DropBox = (function () {
-    function DropBox() {
+    function DropBox(view) {
+        this.view = view;
+        this.valid = this.validateDrop(DropBox.dragger.currentItem);
     }
+    DropBox.prototype.validateDrop = function (activeView) {
+        return true;
+    };
     DropBox.prototype.handleDrop = function (node, helper) {
     };
-
+    DropBox.removeAll = function () {
+        var i, nid, pid;
+        var panels = PanelView.panelsById;
+        var nodes = NodeView.nodesById;
+        for (nid in nodes) {
+            var boxes = nodes[nid].dropboxes;
+            for (i = 0; i < boxes.length; ++i) {
+                boxes[i].remove();
+            }
+            nodes[nid].dropboxes = [];
+        }
+        for (pid in panels) {
+            var boxes = panels[pid].dropboxes;
+            for (i = 0; i < boxes.length; ++i) {
+                boxes[i].remove();
+            }
+            panels[pid].dropboxes = [];
+        }
+    };
     DropBox.renderAll = function (dragger) {
         DropBox.dragger = dragger;
         var p, n, panel, node, n, nid;
         var PM, i;
         PM = PanelManager;
-        $('.droplayer').html('');
-        var drawlayer = $('#' + View.getCurrentPage().drawlayer.id);
-        drawlayer.children('.dropborder').remove();
+
+        DropBox.removeAll();
         $(document.body).addClass('drop-mode');
+
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
         var panelParent = (View.getCurrentPage()).content.grid;
         var canvas1 = panelParent.scroll1.outline.droplayer;
@@ -50,7 +73,6 @@ var DropBox = (function () {
             }
         }
     };
-
     DropBox.getHoverBox = function (mousePosition, scrollStart) {
         var j, d, n, p;
 
@@ -142,6 +164,12 @@ var DropBox = (function () {
         }
     };
 
+    DropBox.prototype.onHover = function () {
+        $(this.elem).addClass('active');
+    };
+    DropBox.prototype.onLeave = function () {
+        $(this.elem).removeClass('active');
+    };
     DropBox.prototype.render = function () {
         if (!this.valid) {
             return;
@@ -150,19 +178,71 @@ var DropBox = (function () {
         $(this.elem).appendTo(this.canvas.elem);
     };
 
-    DropBox.prototype.destroy = function () {
+    DropBox.prototype.validateNodeBox = function (activeNode, type) {
+        var targetNode = this.view;
+
+        // cannot drop current-item on itself
+        if (targetNode === activeNode) {
+            return false;
+        }
+
+        // cannot drop the current-item inside itself
+        var activeModel = activeNode.value;
+        var itemModel = targetNode.value;
+        var model = itemModel;
+        while ((model != null) && (model !== activeModel)) {
+            model = model.get('parent');
+        }
+        if (model != null) {
+            return false;
+        }
+
+        // cannot drop current-item adjacent to itself
+        if (activeModel.get('parent') === itemModel.get('parent')) {
+            var aRank = activeModel.rank();
+            var iRank = itemModel.rank();
+            if (aRank - iRank === 1) {
+                if (type === 'bottom')
+                    return false;
+            } else if (iRank - aRank === 1) {
+                if (type === 'top')
+                    return false;
+            }
+        }
+        if (activeModel.get('parent') === itemModel) {
+            if (type === 'handle')
+                return false;
+        }
+        var prevElement = targetNode.elem.previousSibling;
+        if (prevElement && View.getFromElement(prevElement).nodeView.children.elem.children.length !== 0) {
+            // predecessor has visible children, cannot drop above it
+            if (type === 'top')
+                return false;
+        }
+        if (targetNode.children.elem.children.length !== 0) {
+            // has visible children, cannot drop below it
+            if (type === 'bottom')
+                return false;
+        }
+        if (targetNode.elem.nextSibling != null) {
+            // not last in a list, cannot drop below it
+            if (type === 'bottom')
+                return false;
+        }
+        return true;
+    };
+
+    DropBox.prototype.remove = function () {
+        if (this.elem && this.elem.parentNode) {
+            this.elem.parentNode.removeChild(this.elem);
+        }
     };
     return DropBox;
 })();
 var DropBoxTop = (function (_super) {
     __extends(DropBoxTop, _super);
     function DropBoxTop(node) {
-        _super.call(this);
-        this.valid = DropBox.dragger.validateNodeDropBox(node, 'top');
-        if (!this.valid) {
-            return;
-        }
-        this.view = node;
+        _super.call(this, node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
             top: node.position.top - this.canvas.cacheOffset.top,
@@ -180,9 +260,7 @@ var DropBoxTop = (function (_super) {
     }
     DropBoxTop.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.schedule(function () {
-            return Action.checkTextChange(node.header.name.text.id);
-        }, function () {
+        ActionManager.simpleSchedule(node, function () {
             return {
                 actionType: MoveBeforeAction,
                 activeID: node.value.cid,
@@ -195,17 +273,15 @@ var DropBoxTop = (function (_super) {
             };
         });
     };
+    DropBoxTop.prototype.validateDrop = function (activeNode) {
+        return this.validateNodeBox(activeNode, 'top');
+    };
     return DropBoxTop;
 })(DropBox);
 var DropBoxBottom = (function (_super) {
     __extends(DropBoxBottom, _super);
     function DropBoxBottom(node) {
-        _super.call(this);
-        this.valid = DropBox.dragger.validateNodeDropBox(node, 'bottom');
-        if (!this.valid) {
-            return;
-        }
-        this.view = node;
+        _super.call(this, node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
             top: node.position.top + node.dimensions.height - this.canvas.cacheOffset.top - 1,
@@ -223,9 +299,7 @@ var DropBoxBottom = (function (_super) {
     }
     DropBoxBottom.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.schedule(function () {
-            return Action.checkTextChange(node.header.name.text.id);
-        }, function () {
+        ActionManager.simpleSchedule(node, function () {
             return {
                 actionType: MoveAfterAction,
                 activeID: node.value.cid,
@@ -238,17 +312,15 @@ var DropBoxBottom = (function (_super) {
             };
         });
     };
+    DropBoxBottom.prototype.validateDrop = function (activeNode) {
+        return this.validateNodeBox(activeNode, 'bottom');
+    };
     return DropBoxBottom;
 })(DropBox);
 var DropBoxHandle = (function (_super) {
     __extends(DropBoxHandle, _super);
     function DropBoxHandle(node) {
-        _super.call(this);
-        this.valid = DropBox.dragger.validateNodeDropBox(node, 'handle');
-        if (!this.valid) {
-            return;
-        }
-        this.view = node;
+        _super.call(this, node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
             top: node.position.top - this.canvas.cacheOffset.top - 1,
@@ -264,9 +336,7 @@ var DropBoxHandle = (function (_super) {
     }
     DropBoxHandle.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.schedule(function () {
-            return Action.checkTextChange(node.header.name.text.id);
-        }, function () {
+        ActionManager.simpleSchedule(node, function () {
             return {
                 actionType: MoveIntoAction,
                 referenceID: that.view.value.cid,
@@ -279,17 +349,15 @@ var DropBoxHandle = (function (_super) {
             };
         });
     };
+    DropBoxHandle.prototype.validateDrop = function (activeNode) {
+        return this.validateNodeBox(activeNode, 'handle');
+    };
     return DropBoxHandle;
 })(DropBox);
 var DropBoxLeft = (function (_super) {
     __extends(DropBoxLeft, _super);
     function DropBoxLeft(panel) {
-        _super.call(this);
-        this.valid = DropBox.dragger.validatePanelDropBox(panel, 'left');
-        if (!this.valid) {
-            return;
-        }
-        this.view = panel;
+        _super.call(this, panel);
         this.canvas = View.currentPage.drawlayer;
         this.box = {
             top: panel.top - this.canvas.cacheOffset.top,
@@ -307,9 +375,7 @@ var DropBoxLeft = (function (_super) {
     }
     DropBoxLeft.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.schedule(function () {
-            return Action.checkTextChange(node.header.name.text.id);
-        }, function () {
+        ActionManager.simpleSchedule(node, function () {
             return {
                 actionType: PanelCreateAction,
                 activeID: node.value.cid,
@@ -321,17 +387,18 @@ var DropBoxLeft = (function (_super) {
             };
         });
     };
+    DropBoxLeft.prototype.validateDrop = function (activeNode) {
+        if (PanelManager.leftPanel === this.view.id) {
+            return true;
+        }
+        return false;
+    };
     return DropBoxLeft;
 })(DropBox);
 var DropBoxRight = (function (_super) {
     __extends(DropBoxRight, _super);
     function DropBoxRight(panel) {
-        _super.call(this);
-        this.valid = DropBox.dragger.validatePanelDropBox(panel, 'right');
-        if (!this.valid) {
-            return;
-        }
-        this.view = panel;
+        _super.call(this, panel);
         this.canvas = View.currentPage.drawlayer;
         this.box = {
             top: panel.top - this.canvas.cacheOffset.top,
@@ -349,9 +416,7 @@ var DropBoxRight = (function (_super) {
     }
     DropBoxRight.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.schedule(function () {
-            return Action.checkTextChange(node.header.name.text.id);
-        }, function () {
+        ActionManager.simpleSchedule(node, function () {
             return {
                 actionType: PanelCreateAction,
                 activeID: node.value.cid,
@@ -362,6 +427,9 @@ var DropBoxRight = (function (_super) {
                 focus: false
             };
         });
+    };
+    DropBoxRight.prototype.validateDrop = function (activeNode) {
+        return true;
     };
     return DropBoxRight;
 })(DropBox);

@@ -47,6 +47,14 @@ class ActionManager {
         return this.randomString(16);
     }
 
+    static simpleSchedule(node, f:AnonFunction) {
+        ActionManager.schedule(
+            function():SubAction {
+                return Action.checkTextChange(node.header.name.text.id);
+            },
+            f);
+    }
+
     static schedule(f:AnonFunction, f2?:AnonFunction) {
         var newlength = 1;
         this.queue.push(f);

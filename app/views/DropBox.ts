@@ -19,19 +19,41 @@ class DropBox {
         bottom?:number;
     };
     elem:HTMLElement;
-    handleDrop(node:NodeView, helper:HTMLElement) {
 
+    constructor(view:View) {
+        this.view = view;
+        this.valid = this.validateDrop(DropBox.dragger.currentItem);
     }
-
+    validateDrop(activeView:View):boolean {return true;}
+    handleDrop(node:NodeView, helper:HTMLElement) {}
+    static removeAll() {
+        var i:number, nid:string, pid:string;
+        var panels = PanelView.panelsById;
+        var nodes = NodeView.nodesById;
+        for (nid in nodes) {
+            var boxes = nodes[nid].dropboxes;
+            for (i=0; i<boxes.length; ++i) {
+                boxes[i].remove();
+            }
+            nodes[nid].dropboxes = [];
+        }
+        for (pid in panels) {
+            var boxes = panels[pid].dropboxes;
+            for (i=0; i<boxes.length; ++i) {
+                boxes[i].remove();
+            }
+            panels[pid].dropboxes = [];
+        }
+    }
     static renderAll(dragger:DragHandler) {
         DropBox.dragger = dragger;
         var p:string, n:number, panel:PanelView, node:NodeView, n:number, nid:string;
         var PM:typeof PanelManager, i:number;
         PM = PanelManager;
-        $('.droplayer').html('');
-        var drawlayer = $('#' + (<DiathinkView>View.getCurrentPage()).drawlayer.id);
-        drawlayer.children('.dropborder').remove();
+
+        DropBox.removeAll();
         $(document.body).addClass('drop-mode');
+
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
         var panelParent = (View.getCurrentPage()).content.grid;
         var canvas1 = panelParent.scroll1.outline.droplayer;
@@ -63,7 +85,6 @@ class DropBox {
             }
         }
     }
-
     static getHoverBox(mousePosition:PositionI, scrollStart:{[i:string]:number}):DropBox {
         var j:number, d:DropBox, n:number, p:string;
         // cache scroll-positions of each panel
@@ -165,6 +186,12 @@ class DropBox {
 
     }
 
+    onHover() {
+       $(this.elem).addClass('active');
+    }
+    onLeave() {
+        $(this.elem).removeClass('active');
+    }
     render() {
         if (!this.valid) {return;}
         this.elem = $('<div></div>')
@@ -176,7 +203,56 @@ class DropBox {
         $(this.elem).appendTo(this.canvas.elem);
     }
 
-    destroy() { // improve garbage collection vs. dropboxes = []?
+    validateNodeBox(activeNode:NodeView, type:string) {
+        var targetNode = <NodeView>this.view;
+        // cannot drop current-item on itself
+        if (targetNode=== activeNode) {
+            return false;
+        }
+        // cannot drop the current-item inside itself
+        var activeModel = activeNode.value;
+        var itemModel = targetNode.value;
+        var model = itemModel;
+        while ((model != null) && (model !== activeModel)) {
+            model = model.get('parent');
+        }
+        if (model != null) { // it is a child of itself
+            return false;
+        }
+
+        // cannot drop current-item adjacent to itself
+        if (activeModel.get('parent') === itemModel.get('parent')) {
+            var aRank = activeModel.rank();
+            var iRank = itemModel.rank();
+            if (aRank - iRank === 1) {
+                if (type==='bottom') return false;
+            } else if (iRank - aRank === 1) {
+                if (type==='top') return false;
+            }
+        }
+        if (activeModel.get('parent') === itemModel) {
+            if (type==='handle') return false;
+        }
+        var prevElement:HTMLElement = <HTMLElement>targetNode.elem.previousSibling;
+        if (prevElement && View.getFromElement(prevElement).nodeView.children.elem.children.length !== 0) {
+            // predecessor has visible children, cannot drop above it
+            if (type==='top') return false;
+        }
+        if (targetNode.children.elem.children.length !== 0) {
+            // has visible children, cannot drop below it
+            if (type==='bottom') return false;
+        }
+        if (targetNode.elem.nextSibling != null) {
+            // not last in a list, cannot drop below it
+            if (type==='bottom') return false;
+        }
+        return true;
+    }
+
+    remove() {
+        if (this.elem && this.elem.parentNode) {
+            this.elem.parentNode.removeChild(this.elem);
+        }
     }
 }
 class DropBoxTop extends DropBox {
@@ -184,10 +260,7 @@ class DropBoxTop extends DropBox {
     canvas:DropLayerView;
 
     constructor(node:NodeView) {
-        super();
-        this.valid = DropBox.dragger.validateNodeDropBox(node, 'top');
-        if (!this.valid) {return;}
-        this.view = node;
+        super(node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
             top: node.position.top - this.canvas.cacheOffset.top,
@@ -205,10 +278,7 @@ class DropBoxTop extends DropBox {
     }
     handleDrop(node:NodeView, helper:HTMLElement) {
         var that = this;
-        ActionManager.schedule(
-            function() {
-                return Action.checkTextChange(node.header.name.text.id);
-            },
+        ActionManager.simpleSchedule(node,
             function():SubAction {
                 return {
                     actionType: MoveBeforeAction,
@@ -222,16 +292,17 @@ class DropBoxTop extends DropBox {
                 };
             });
     }
+    validateDrop(activeNode:NodeView) {
+        return this.validateNodeBox(activeNode, 'top');
+    }
+
 }
 class DropBoxBottom extends DropBox {
     view:NodeView;
     canvas:DropLayerView;
 
     constructor(node:NodeView) {
-        super();
-        this.valid = DropBox.dragger.validateNodeDropBox(node, 'bottom');
-        if (!this.valid) {return;}
-        this.view = node;
+        super(node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
             top: node.position.top + node.dimensions.height - this.canvas.cacheOffset.top - 1,
@@ -249,10 +320,7 @@ class DropBoxBottom extends DropBox {
     }
     handleDrop(node:NodeView, helper:HTMLElement) {
         var that = this;
-        ActionManager.schedule(
-            function():SubAction {
-                return Action.checkTextChange(node.header.name.text.id);
-            },
+        ActionManager.simpleSchedule(node,
             function():SubAction {
                 return {
                     actionType: MoveAfterAction,
@@ -264,17 +332,18 @@ class DropBoxBottom extends DropBox {
                     dockElem: helper,
                     focus: false
                 };
-            });    }
+            });
+    }
+    validateDrop(activeNode:NodeView) {
+        return this.validateNodeBox(activeNode, 'bottom');
+    }
 }
 class DropBoxHandle extends DropBox {
     view:NodeView;
     canvas:DropLayerView;
 
     constructor(node:NodeView) {
-        super();
-        this.valid = DropBox.dragger.validateNodeDropBox(node, 'handle');
-        if (!this.valid) {return;}
-        this.view = node;
+        super(node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
             top: node.position.top - this.canvas.cacheOffset.top - 1,
@@ -290,10 +359,7 @@ class DropBoxHandle extends DropBox {
     }
     handleDrop(node:NodeView, helper:HTMLElement) {
         var that = this;
-        ActionManager.schedule(
-            function() {
-                return Action.checkTextChange(node.header.name.text.id);
-            },
+        ActionManager.simpleSchedule(node,
             function():SubAction {
                 return {
                     actionType: MoveIntoAction,
@@ -307,16 +373,16 @@ class DropBoxHandle extends DropBox {
                 };
             });
     }
+    validateDrop(activeNode:NodeView) {
+        return this.validateNodeBox(activeNode, 'handle');
+    }
 }
 class DropBoxLeft extends DropBox {
     view:PanelView;
     canvas:DrawLayerView;
 
     constructor(panel:PanelView) {
-        super();
-        this.valid = DropBox.dragger.validatePanelDropBox(panel, 'left');
-        if (!this.valid) {return;}
-        this.view = panel;
+        super(panel);
         this.canvas = View.currentPage.drawlayer;
         this.box = {
             top: panel.top - this.canvas.cacheOffset.top,
@@ -334,10 +400,7 @@ class DropBoxLeft extends DropBox {
     }
     handleDrop(node:NodeView, helper:HTMLElement) {
         var that = this;
-        ActionManager.schedule(
-            function() {
-                return Action.checkTextChange(node.header.name.text.id);
-            },
+        ActionManager.simpleSchedule(node,
             function():SubAction {
                 return {
                     actionType: PanelCreateAction,
@@ -350,16 +413,19 @@ class DropBoxLeft extends DropBox {
                 };
             });
     }
+    validateDrop(activeNode:NodeView) {
+        if (PanelManager.leftPanel === this.view.id) {
+            return true;
+        }
+        return false;
+    }
 }
 class DropBoxRight extends DropBox {
     view:PanelView;
     canvas:DrawLayerView;
 
     constructor(panel:PanelView) {
-        super();
-        this.valid = DropBox.dragger.validatePanelDropBox(panel, 'right');
-        if (!this.valid) {return;}
-        this.view = panel;
+        super(panel);
         this.canvas = View.currentPage.drawlayer;
         this.box = {
             top: panel.top - this.canvas.cacheOffset.top,
@@ -377,10 +443,7 @@ class DropBoxRight extends DropBox {
     }
     handleDrop(node:NodeView, helper:HTMLElement) {
         var that = this;
-        ActionManager.schedule(
-            function():SubAction {
-                return Action.checkTextChange(node.header.name.text.id);
-            },
+        ActionManager.simpleSchedule(node,
             function():SubAction {
                 return {
                     actionType: PanelCreateAction,
@@ -392,6 +455,9 @@ class DropBoxRight extends DropBox {
                     focus: false
                 };
             });
+    }
+    validateDrop(activeNode:NodeView) {
+        return true;
     }
 }
 

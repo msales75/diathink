@@ -46,6 +46,12 @@ var ActionManager = (function () {
         return this.randomString(16);
     };
 
+    ActionManager.simpleSchedule = function (node, f) {
+        ActionManager.schedule(function () {
+            return Action.checkTextChange(node.header.name.text.id);
+        }, f);
+    };
+
     ActionManager.schedule = function (f, f2) {
         var newlength = 1;
         this.queue.push(f);

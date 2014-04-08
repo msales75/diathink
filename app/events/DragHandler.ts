@@ -139,7 +139,7 @@ class DragHandler {
         // todo: embed hover-variables into a class?
         if ($D.timer) {clearTimeout($D.timer);}
         if (box) {
-            $(box.elem).addClass('active');
+            box.onHover();
             // add a virtual-hover over parent-element
             if (box.view) {
                 if (box.view instanceof NodeView) {
@@ -161,7 +161,7 @@ class DragHandler {
             }
         }
         if (this.activeBox && (this.activeBox != box)) {
-            $(this.activeBox.elem).removeClass('active');
+            this.activeBox.onLeave();
         }
         this.activeBox = box;
         this.hovering = this.hovering ? this.hovering : null;
@@ -315,59 +315,8 @@ class DragHandler {
     private _hideDropLines() {
         $('body').removeClass('drop-mode').removeClass('transition-mode');
         if (this.activeBox != null) {
-            $(this.activeBox.elem).removeClass('active');
+            this.activeBox.onLeave();
         }
-    }
-    public validatePanelDropBox(panel:PanelView, type:string):boolean {
-        if (type==='right') {return true;}
-        else if (type==='left') {
-            // todo: is it in the first position
-            return false;
-        }
-        else return false;
-    }
-    public validateNodeDropBox(node:NodeView, type:string):boolean {
-        // cannot drop current-item on itself
-        if (node === this.currentItem) {
-            return false;
-        }
-        // cannot drop the current-item inside itself
-        var activeModel = this.currentItem.value;
-        var itemModel = node.value;
-        var model = itemModel;
-        while ((model != null) && (model !== activeModel)) {
-            model = model.get('parent');
-        }
-        if (model != null) { // it is a child of itself
-            return false;
-        }
-        // cannot drop current-item adjacent to itself
-        if (activeModel.get('parent') === itemModel.get('parent')) {
-            var aRank = activeModel.rank();
-            var iRank = itemModel.rank();
-            if (aRank - iRank === 1) {
-                if (type==='bottom') return false;
-            } else if (iRank - aRank === 1) {
-                if (type==='top') return false;
-            }
-        }
-        if (activeModel.get('parent') === itemModel) {
-            if (type==='handle') return false;
-        }
-        var prevElement:HTMLElement = <HTMLElement>node.elem.previousSibling;
-        if (prevElement && View.getFromElement(prevElement).nodeView.children.elem.children.length !== 0) {
-            // predecessor has visible children, cannot drop above it
-            if (type==='top') return false;
-        }
-        if (node.children.elem.children.length !== 0) {
-            // has visible children, cannot drop below it
-            if (type==='bottom') return false;
-        }
-        if (node.elem.nextSibling != null) {
-            // not last in a list, cannot drop below it
-            if (type==='bottom') return false;
-        }
-        return true;
     }
 
     private hideDropLines() {
