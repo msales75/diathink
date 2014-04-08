@@ -8,7 +8,7 @@ class PanelView extends ContainerView {
     left:number;
     width:number;
     height:number;
-
+    static panelsById:{[i:string]:PanelView} = {};
     dropleft; // temporary placeholders for dropboxes - todo fix this up better
     dropright;
 
@@ -21,6 +21,7 @@ class PanelView extends ContainerView {
             breadcrumbs: BreadcrumbView,
             outline: OutlineScrollView
         }
+        PanelView.panelsById[this.id] = this;
     }
 
     cachePosition() {
@@ -41,9 +42,8 @@ class PanelView extends ContainerView {
         } else {
             c = null;
         }
-        // this.outline.alist.destroy();
-        // this.outline.alist = null;
-        View.prototype.destroy.call(this);
+        delete PanelView.panelsById[this.id];
+        super.destroy();
         return c;
     }
 
@@ -59,7 +59,7 @@ class PanelView extends ContainerView {
         this.breadcrumbs.updateValue();
         this.breadcrumbs.renderUpdate();
         this.cachePosition();
-        (<Router>$D.router).dragger.refresh();
+        NodeView.refreshPositions();
         // $('#' + View.getCurrentPage().id).nestedSortable('update');
         // todo: this breaks dragging after changeroot
 

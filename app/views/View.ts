@@ -35,6 +35,7 @@
 ///<reference path="ToolbarView.ts"/>
 ///<reference path="UndoButtonContainerView.ts"/>
 ///<reference path="UndoButtonView.ts"/>
+///<reference path="DropBox.ts"/>
 ///<reference path="../OutlineManager.ts"/>
 ///<reference path="../PanelManager.ts"/>
 ///<reference path="../models/OutlineNodeModel.ts"/>
@@ -180,7 +181,7 @@ class View {
     hideList:boolean;
     public items:string = 'models'; // eliminate
     // droppable is defined in view.dropboxes
-    public dropboxes = []; // places to drop objects in drag-mode
+    public dropboxes:DropBox[] = []; // places to drop objects in drag-mode
     constructor(opts:{id?:string;parentView?:View; value?:any; hideList?:boolean; mesg?}) {
         if ((opts == null) || (opts.id == null)) {
             this.id = View.getNextId();

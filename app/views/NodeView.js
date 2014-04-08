@@ -12,13 +12,37 @@ var NodeView = (function (_super) {
     function NodeView() {
         _super.apply(this, arguments);
     }
+    NodeView.refreshPositions = function () {
+        var items = NodeView.nodesById;
+        var nid;
+        for (nid in items) {
+            var item = items[nid];
+            var header = item.header;
+            item.dimensions = {
+                width: $(header.elem).outerWidth(),
+                height: $(header.elem).outerHeight()
+            };
+            var p = $(header.elem).offset();
+            item.position = {
+                left: p.left,
+                top: p.top
+            };
+        }
+        return this;
+    };
+
     NodeView.prototype.init = function () {
         this.Class = NodeView;
         this.modelType = OutlineNodeModel;
+        NodeView.nodesById[this.id] = this;
         this.childViewTypes = {
             header: NodeHeaderView,
             children: OutlineListView
         };
+    };
+    NodeView.prototype.destroy = function () {
+        delete NodeView.nodesById[this.id];
+        _super.prototype.destroy.call(this);
     };
 
     NodeView.prototype.updateValue = function () {
@@ -83,6 +107,7 @@ var NodeView = (function (_super) {
             elem.addClass('ui-last-child');
         }
     };
+    NodeView.nodesById = {};
     return NodeView;
 })(View);
 //# sourceMappingURL=NodeView.js.map

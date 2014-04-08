@@ -8,13 +8,42 @@ class NodeView extends View {
     parentView:ListView;
     value:OutlineNodeModel;
     isCollapsed:boolean;
+    static nodesById:{[i:string]:NodeView} = {};
+    position:PositionI;
+    dimensions:Dimensions;
+
+    public static refreshPositions() {
+        var items = NodeView.nodesById;
+        var nid:string;
+        for (nid in items) {
+            var item:NodeView = items[nid];
+            var header = item.header;
+            item.dimensions = {
+                width: $(header.elem).outerWidth(),
+                height: $(header.elem).outerHeight()
+            };
+            var p = $(header.elem).offset();
+            item.position = {
+                left: p.left,
+                top: p.top
+            };
+        }
+        return this;
+    }
+
+
     init() {
         this.Class = NodeView;
         this.modelType = OutlineNodeModel;
+        NodeView.nodesById[this.id] = this;
         this.childViewTypes = {
             header: NodeHeaderView,
             children: OutlineListView
         };
+    }
+    destroy() {
+        delete NodeView.nodesById[this.id];
+        super.destroy();
     }
 
     updateValue() {

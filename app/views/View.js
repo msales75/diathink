@@ -35,6 +35,7 @@
 ///<reference path="ToolbarView.ts"/>
 ///<reference path="UndoButtonContainerView.ts"/>
 ///<reference path="UndoButtonView.ts"/>
+///<reference path="DropBox.ts"/>
 ///<reference path="../OutlineManager.ts"/>
 ///<reference path="../PanelManager.ts"/>
 ///<reference path="../models/OutlineNodeModel.ts"/>

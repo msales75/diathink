@@ -19,6 +19,7 @@ var PanelView = (function (_super) {
             breadcrumbs: BreadcrumbView,
             outline: OutlineScrollView
         };
+        PanelView.panelsById[this.id] = this;
     };
 
     PanelView.prototype.cachePosition = function () {
@@ -39,10 +40,8 @@ var PanelView = (function (_super) {
         } else {
             c = null;
         }
-
-        // this.outline.alist.destroy();
-        // this.outline.alist = null;
-        View.prototype.destroy.call(this);
+        delete PanelView.panelsById[this.id];
+        _super.prototype.destroy.call(this);
         return c;
     };
 
@@ -61,7 +60,7 @@ var PanelView = (function (_super) {
         this.breadcrumbs.updateValue();
         this.breadcrumbs.renderUpdate();
         this.cachePosition();
-        $D.router.dragger.refresh();
+        NodeView.refreshPositions();
 
         // $('#' + View.getCurrentPage().id).nestedSortable('update');
         // todo: this breaks dragging after changeroot
@@ -70,6 +69,7 @@ var PanelView = (function (_super) {
         PanelManager.rootModels[this.id] = model;
         return newlist.id;
     };
+    PanelView.panelsById = {};
     return PanelView;
 })(ContainerView);
 //# sourceMappingURL=PanelView.js.map
