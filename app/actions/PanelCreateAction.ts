@@ -138,7 +138,7 @@ class PanelCreateAction extends Action {
             var o:ActionOptions = that.options;
             var dir;
             if (o.undo) {
-                dir = grid.remove(<PanelView>View.get(that.newPanel));
+                dir = View.get(that.newPanel).destroy();
             } else {
                 if (!that.newPanel) { // if id isn't chosen yet
                     that.newPanel = View.getNextId();

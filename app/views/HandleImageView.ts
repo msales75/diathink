@@ -16,13 +16,13 @@ class HandleImageView extends ImageView {
                 return Action.checkTextChange(li.header.name.text.id);
             },
             function():SubAction {
-                if (!liElem.hasClass('branch')) {
+                if (li.isLeaf) {
                     return null;
                 }
                 return {
                     actionType: CollapseAction,
                     activeID: li.value.cid,
-                    collapsed: !liElem.hasClass('collapsed'),
+                    collapsed: !li.isCollapsed,
                     oldRoot: li.nodeRootView.id,
                     newRoot: li.nodeRootView.id,
                     focus: false

@@ -71,7 +71,7 @@ class CollapseAction extends Action {
                     (that.options.oldRoot==='all')) {
                     collapsed = that.options.collapsed;
                 } else {
-                    collapsed = $('#'+activeLineView.id).hasClass('collapsed');
+                    collapsed = activeLineView.isCollapsed;
                 }
             }
             outline.setData(that.options.activeID, collapsed);
@@ -82,18 +82,7 @@ class CollapseAction extends Action {
                 }
                 collapsed = activeModel.get('collapsed');
             }
-            activeLineView.isCollapsed = collapsed; // is this needed?
-            if (collapsed) {
-                if (! $('#'+activeLineView.id).hasClass('collapsed')) {
-                    $('#'+activeLineView.id).removeClass('expanded').addClass('collapsed');
-                    activeLineView.children.collapseList();
-                }
-            } else {
-                if ($('#'+activeLineView.id).hasClass('collapsed')) {
-                    $('#'+activeLineView.id).addClass('expanded').removeClass('collapsed');
-                    activeLineView.children.expandList();
-                }
-            }
+            activeLineView.setCollapsed(collapsed);
             // satisfy additional dependencies that are never used in this actiontype
             // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });

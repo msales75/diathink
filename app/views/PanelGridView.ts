@@ -89,7 +89,7 @@ class PanelGridView extends GridView {
         return this.insertAfter(null, panel);
     }
 
-    remove(panel:PanelView, slide?:string) {
+    detach(panel:PanelView, slide?:string) {
         var id:string = panel.id;
         var mid:string = panel.value.cid;
         var filler:string;
@@ -107,8 +107,9 @@ class PanelGridView extends GridView {
             }
         }
         // remove panel from model-list
+        // don't destroy it here, just detach it
         this.value.remove(id);
-        panel.destroy(); // also removes from listItems view list
+        this.listItems.remove(panel.id);
 
         if (direction==='left') {
             this.slideLeft();
@@ -116,33 +117,6 @@ class PanelGridView extends GridView {
             this.slideRight();
         }
         return direction;
-        /*
-            // add panel from right
-            filler = this.value.next[this.listItems.last()];
-            if (filler!=='') {
-                assert(DeadView.viewList[filler] instanceof DeadPanel,
-                    "Missing dead panel to right of "+id);
-                fPanel = new PanelView({id: filler});
-                this.listItems.insertAfter(filler, fPanel, this.listItems.last());
-                if (this.elem) {
-                    fPanel.render();
-                    this.elem.appendChild(fPanel.elem);
-                }
-            }
-        } else if (direction==='right') {
-            // add panel from left
-            filler = this.value.prev[this.listItems.first()];
-            assert(DeadView.viewList[filler] instanceof DeadPanel,
-                "Missing dead panel to left of "+id);
-            fPanel = new PanelView({id: filler});
-            this.listItems.insertAfter(filler, fPanel, '');
-            if (this.elem) {
-                fPanel.render();
-                this.elem.insertBefore(fPanel.elem, this.listItems.obj[this.listItems.first()].elem);
-            }
-        }
-         this.updatePanelButtons();
-        */
     }
 
     slideRight() {

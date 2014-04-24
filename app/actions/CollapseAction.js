@@ -79,7 +79,7 @@ var CollapseAction = (function (_super) {
                 if ((that.options.oldRoot === outline.nodeRootView.id) || (that.options.oldRoot === 'all')) {
                     collapsed = that.options.collapsed;
                 } else {
-                    collapsed = $('#' + activeLineView.id).hasClass('collapsed');
+                    collapsed = activeLineView.isCollapsed;
                 }
             }
             outline.setData(that.options.activeID, collapsed);
@@ -91,18 +91,7 @@ var CollapseAction = (function (_super) {
                 }
                 collapsed = activeModel.get('collapsed');
             }
-            activeLineView.isCollapsed = collapsed; // is this needed?
-            if (collapsed) {
-                if (!$('#' + activeLineView.id).hasClass('collapsed')) {
-                    $('#' + activeLineView.id).removeClass('expanded').addClass('collapsed');
-                    activeLineView.children.collapseList();
-                }
-            } else {
-                if ($('#' + activeLineView.id).hasClass('collapsed')) {
-                    $('#' + activeLineView.id).addClass('expanded').removeClass('collapsed');
-                    activeLineView.children.expandList();
-                }
-            }
+            activeLineView.setCollapsed(collapsed);
             // satisfy additional dependencies that are never used in this actiontype
             // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });

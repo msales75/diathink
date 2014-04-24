@@ -140,8 +140,7 @@ class OutlineAction extends PlaceholderAnimAction {
                     (r.rOldContextType[i]==='parentIsExpandedLine')) {
                     r.rOldLineVisible[i] = true;
                 } else {
-                    console.log('ERROR');
-                    debugger;
+                    assert(false, 'ERROR');
                 }
             }
             if (r.rNewType==='line') {
@@ -153,8 +152,7 @@ class OutlineAction extends PlaceholderAnimAction {
                     (r.rNewContextType[i]==='parentIsExpandedLine')) {
                     r.rNewLineVisible[i] = true;
                 } else {
-                    console.log('ERROR');
-                    debugger;
+                    assert(false, 'ERROR');
                 }
             }
 
@@ -264,7 +262,7 @@ class OutlineAction extends PlaceholderAnimAction {
             if (v.requireNewReference && o.undo) {
                 if (o.newRoot !== 'all') {
                     if (!activeModel.views || !activeModel.views[o.newRoot]) {
-                        if (! $('#'+refModel.views[o.newRoot].id).hasClass('collapsed')) {
+                        if (! refModel.views[o.newRoot].isCollapsed) {
                             console.log('ERROR: Missing newRoot for activeID='+ o.activeID);
                             debugger;
                         }
@@ -385,7 +383,7 @@ class OutlineAction extends PlaceholderAnimAction {
         if (context.parent !== OutlineNodeModel.root.cid) {
             var parent = this.getNodeView(context.parent, outline.nodeRootView.id);
             if (parent != null) {
-                if ($('#'+parent.id).hasClass('collapsed')) {
+                if (parent.isCollapsed) {
                     return 'parentIsCollapsedLine';
                 } else {
                     return 'parentIsExpandedLine';
@@ -492,11 +490,7 @@ class OutlineAction extends PlaceholderAnimAction {
             var
                 r:RuntimeOptions=that.runtime,
                 newModelContext:ModelContext,
-                oldParent:OutlineNodeModel,
-                oldParentView:NodeView=null,
                 elem:JQuery,
-                neighbor:NodeView,
-                neighborType:string,
                 newListView:ListView,
                 createActiveLineView:boolean=false;
 
@@ -504,39 +498,17 @@ class OutlineAction extends PlaceholderAnimAction {
 
             // oldViewVisible, newViewVisible, oldParent, newParent, oldList, newList
 
-            // check if model was deleted?
-
             var activeNodeView = that.getNodeView(that.options.activeID, outline.id);
             if (activeNodeView!=null) { // original element was visible in this view
-                if (!r.oldLineContext[outline.id]) {
-                    console.log("ERROR: Oldspot does not exist for action "+that.type+
+                assert(r.oldLineContext[outline.id],
+                    "ERROR: Oldspot does not exist for action "+that.type+
                         "; undo="+that.options.undo+"; redo="+that.options.redo+
                         "; activeID="+that.options.activeID+"; view="+outline.id);
-                    debugger;
-                }
-                neighbor = r.oldLineContext[outline.id].obj;
-                neighborType = r.oldLineContext[outline.id].type;
-            } else { // if old-view isn't visible, check if parent needs collapse-update
-                // todo: can oldParent be replaced with a newModelContext-newListView instead?
-                if (that.options.undo) {
-                    if (that.newModelContext) {
-                        oldParent = OutlineNodeModel.getById(that.newModelContext.parent);
-                    }
-                } else if (that.oldModelContext) {
-                    oldParent = OutlineNodeModel.getById(that.oldModelContext.parent);
-                }
-                if (oldParent && oldParent.views && oldParent.views[outline.id]) {
-                    oldParentView = oldParent.views[outline.id];
-                }
             }
-            // todo: why don't we define oldParent earlier?
-            // todo: we want to define oldParentView.children even if oldParentView isn't defined
 
             // get parent listview; unless newModelContext is not in this view, then null
             newListView = that.contextParentVisible(newModelContext, outline);
             if (newListView && newListView.hideList) {
-                // add child to collapsed parent
-                newListView.nodeView.addClass('branch').removeClass('leaf');
                 newListView = null;
             }
 
@@ -544,9 +516,11 @@ class OutlineAction extends PlaceholderAnimAction {
 
 
             if (newModelContext === null) {
-                console.log('Have newModelContext = null for outline='+outline.id);
-                if (activeNodeView != null) {activeNodeView.destroy();}
-                // destroy() also detaches view-reference from model, and removes from listItems
+                // console.log('Have newModelContext = null for outline='+outline.id);
+                if (activeNodeView != null) {
+                    activeNodeView.destroy();
+                    // destroy() also detaches view-reference from model, and removes from listItems
+                }
             } else {
                 if (activeNodeView == null) { // create
                     activeNodeView= new newListView.listItemTemplate({
@@ -555,123 +529,42 @@ class OutlineAction extends PlaceholderAnimAction {
                         cssClass: 'leaf'
                     });
                     elem = $(activeNodeView.render());
-                    createActiveLineView = true;
-                } else { // move
+                } else { // detach from old location
                     // remove item from list in listItems
                     var oldListView = that.contextParentVisible(r.rOldModelContext, outline);
-                    oldListView.listItems.remove(activeNodeView.id);
-                    if (r.activeLineElem[outline.id] && r.activeLineElem[outline.id].id === activeNodeView.id) {
-                        elem = $(r.activeLineElem[outline.id]);
-                        r.activeLineElem[outline.id] = undefined;
-                    } else {
-                        elem = $('#'+activeNodeView.id).detach();
-                        // todo: remove entry from listItems - but need correct list:
-                    }
-                    // restore height if it was lost
-                    elem.css('height','').removeClass('drag-hidden');
+                    oldListView.detach(activeNodeView);
                     activeNodeView.changeParent(newListView);
                 }
 
-                // fixup listItems
+                // insert in new location
                 if (newModelContext.prev==null) {
-                    newListView.listItems.insertAfter(activeNodeView.id, activeNodeView, '');
+                    newListView.insertAfter(null, activeNodeView,
+                        r.rNewLinePlaceholder[outline.id]);
                 } else {
-                    newListView.listItems.insertAfter(activeNodeView.id, activeNodeView,
-                        that.getNodeView(newModelContext.prev, outline.id).id);
+                    newListView.insertAfter(
+                        that.getNodeView(newModelContext.prev, outline.id),
+                        activeNodeView, r.rNewLinePlaceholder[outline.id]);
                 }
 
-                // put elem into newModelContext
-                // this cleans up destination-placeaholder; what about source-placeholder?
-                //   it could vanish automatically?
+                // restore height if it was lost
+                $(activeNodeView.elem).css('height','').removeClass('drag-hidden');
 
-                if (r.rUseNewLinePlaceholder[outline.id]) {
-                    console.log('Replacing newlinePlaceholder for '+outline.id);
-                    r.rNewLinePlaceholder[outline.id].parentNode.
-                        replaceChild(elem[0], r.rNewLinePlaceholder[outline.id]);
-                } else {
-                    if (newModelContext.prev == null) {
-                        var parentElem = $('#'+newListView.id);
-                        parentElem.prepend(elem);
-                    } else {
-                        var prevView:NodeView = that.getNodeView(newModelContext.prev, outline.id);
-                        var prevElem = $('#'+prevView.id);
-                        prevElem.after(elem);
-                    }
-                }
                 // do this after rNewLinePlaceholder has been replaced, so correct element is visible.
                 if (that.options.dockElem) {
                     $(document.body).removeClass('transition-mode');
                     that.options.dockElem.parentNode.removeChild(that.options.dockElem);
                     that.options.dockElem = undefined;
                 }
-
-                if (createActiveLineView) { // todo: add classes in detached-mode instead of here?
-                    activeNodeView.header.name.text.fixHeight(); // add classes and if there is content, fixHeight
-                    if (activeNodeView.value.get('collapsed')) {
-                        activeNodeView.addClass('collapsed').addClass('branch').removeClass('leaf');
-                    } else {
-                        if (activeNodeView.value.get('children').length>0) {
-                            activeNodeView.addClass('expanded').addClass('branch').removeClass('leaf');
-                        } else {
-                            activeNodeView.addClass('expanded').addClass('leaf').removeClass('branch');
-                        }
-                    }
-                }
-
-                // fix activeNodeView's top/bottom corners
-                activeNodeView.themeFirst(); // could check if this two are strictly necessary
-                activeNodeView.themeLast();
-
-                // fixup new neighborhood
-                if (newModelContext.next && (newModelContext.prev == null)) {
-                    $('#'+activeNodeView.id).next().removeClass('ui-first-child');
-                }
-                if (newModelContext.prev && (newModelContext.next == null)) {
-                    $('#'+activeNodeView.id).prev().removeClass('ui-last-child');
-                }
-                if ((newModelContext.prev==null)&&(newModelContext.next==null)) {
-                    // todo: could parentView be outline-root?
-                    // adding child to expanded parent
-                    var elem = $('#'+activeNodeView.parentView.parentView.id);
-                    elem.addClass('branch').removeClass('leaf');
-                }
             }
 
             // remove source-placeholder
             if (r.rUseOldLinePlaceholder[outline.id]) {
-                console.log('Removing oldlinePlaceholder for '+outline.id);
+                // console.log('Removing oldlinePlaceholder for '+outline.id);
                 r.rOldLinePlaceholder[outline.id].parentNode.removeChild(that.runtime.rOldLinePlaceholder[outline.id]);
                 r.rOldLinePlaceholder[outline.id] = undefined;
                 r.activeLineElem[outline.id] = undefined;
                 r.activeLineHeight[outline.id] = undefined;
                 r.rUseOldLinePlaceholder[outline.id] = undefined;
-            }
-
-            if (neighbor) { // fixup old location (expanded)
-                var neighborElem = $('#'+neighbor.id);
-                if (neighborType==='next') {
-                    var prev = neighborElem.prev('li');
-                    if (prev.length===0) {
-                        neighborElem.addClass('ui-first-child');
-                    }
-                } else if (neighborType==='prev') {
-                    var next = neighborElem.next('li');
-                    if (next.length===0) {
-                        neighborElem.addClass('ui-last-child');
-                    }
-                } else if (neighborType==='parent') {
-                    // removing last child from expanded parent
-                    var elem = $('#'+neighbor.id);
-                    elem.addClass('leaf').removeClass('branch').
-                        addClass('expanded').removeClass('collapsed');
-                } else if (neighborType==='root') {
-                    // todo: add a placeholder for empty panel
-                }
-            } else if (oldParentView) { // (collapsed)
-                if (oldParent.get('children').count===0) {
-                    // removing last child from collapsed parent
-                    $('#'+oldParentView.id).removeClass('branch').addClass('leaf');
-                }
             }
 
             // check if this view breadcrumbs were modified, if activeID is ancestor of outline.
@@ -719,15 +612,13 @@ class OutlineAction extends PlaceholderAnimAction {
         }
     }
     execModel() {
-        var that = this, newModelContext:ModelContext;
-        if (this.undo) {
-            newModelContext = this.oldModelContext;
-        } else {
-            newModelContext = this.newModelContext;
-        }
+        var that = this;
         this.addQueue('modelCreate', ['context'], function() {
             if (!that.options.activeID) {
-                var activeModel = new OutlineNodeModel({text: that.options.text, children: null});
+                var activeModel = new OutlineNodeModel({
+                    text: that.options.text,
+                    children: null
+                });
                 that.options.activeID = activeModel.cid;
             }
         });

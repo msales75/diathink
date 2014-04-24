@@ -92,22 +92,53 @@ var NodeView = (function (_super) {
         return this.elem;
     };
 
-    // todo: manual list-checking shouldn't be necessary for first/last
-    NodeView.prototype.themeFirst = function () {
-        var elem = $(this.elem);
-        if (elem.prev('li').length > 0) {
-            this.removeClass('ui-first-child');
+    NodeView.prototype.setCollapsed = function (collapsed) {
+        if (collapsed === this.isCollapsed) {
+            return;
+        }
+        this.isCollapsed = collapsed;
+        if (collapsed) {
+            this.addClass('collapsed').removeClass('expanded');
+            this.children.collapseList();
         } else {
-            this.addClass('ui-first-child');
+            this.addClass('expanded').removeClass('collapsed');
+            this.children.expandList();
         }
     };
 
-    NodeView.prototype.themeLast = function () {
-        var elem = $(this.elem);
-        if (elem.next('li').length > 0) {
-            elem.removeClass('ui-last-child');
+    // todo: manual list-checking shouldn't be necessary for first/last
+    NodeView.prototype.themeFirst = function (first) {
+        if (first === this.isFirst) {
+            return;
+        }
+        this.isFirst = first;
+        if (first) {
+            this.addClass('ui-first-child');
         } else {
-            elem.addClass('ui-last-child');
+            this.removeClass('ui-first-child');
+        }
+    };
+
+    NodeView.prototype.themeLast = function (last) {
+        if (last === this.isLast) {
+            return;
+        }
+        this.isLast = last;
+        if (last) {
+            this.addClass('ui-last-child');
+        } else {
+            this.removeClass('ui-last-child');
+        }
+    };
+    NodeView.prototype.themeLeaf = function (leaf) {
+        if (leaf === this.isLeaf) {
+            return;
+        }
+        this.isLeaf = leaf;
+        if (leaf) {
+            this.addClass('leaf').removeClass('branch');
+        } else {
+            this.addClass('branch').removeClass('leaf');
         }
     };
     NodeView.prototype.validate = function () {

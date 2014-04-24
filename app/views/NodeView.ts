@@ -11,6 +11,9 @@ class NodeView extends View {
     isCollapsed:boolean;
     position:PositionI;
     dimensions:Dimensions;
+    isFirst:boolean;
+    isLast:boolean;
+    isLeaf:boolean;
 
     public static refreshPositions() {
         var items = NodeView.nodesById;
@@ -95,22 +98,46 @@ class NodeView extends View {
         return this.elem;
     }
 
-    // todo: manual list-checking shouldn't be necessary for first/last
-    themeFirst() {
-        var elem = $(this.elem);
-        if (elem.prev('li').length > 0) {
-            this.removeClass('ui-first-child');
+    setCollapsed(collapsed:boolean) {
+        if (collapsed === this.isCollapsed) {return;}
+        this.isCollapsed = collapsed;
+        if (collapsed) {
+            this.addClass('collapsed').removeClass('expanded');
+            this.children.collapseList();
         } else {
-            this.addClass('ui-first-child');
+            this.addClass('expanded').removeClass('collapsed');
+            this.children.expandList();
         }
     }
 
-    themeLast() {
-        var elem = $(this.elem);
-        if (elem.next('li').length > 0) {
-            elem.removeClass('ui-last-child');
+
+    // todo: manual list-checking shouldn't be necessary for first/last
+    themeFirst(first) {
+        if (first === this.isFirst) {return;}
+        this.isFirst = first;
+        if (first) {
+            this.addClass('ui-first-child');
         } else {
-            elem.addClass('ui-last-child');
+            this.removeClass('ui-first-child');
+        }
+    }
+
+    themeLast(last) {
+        if (last === this.isLast) {return;}
+        this.isLast = last;
+        if (last) {
+            this.addClass('ui-last-child');
+        } else {
+            this.removeClass('ui-last-child');
+        }
+    }
+    themeLeaf(leaf:boolean) {
+        if (leaf === this.isLeaf) {return;}
+        this.isLeaf = leaf;
+        if (leaf) {
+            this.addClass('leaf').removeClass('branch');
+        } else {
+            this.addClass('branch').removeClass('leaf');
         }
     }
     validate() {

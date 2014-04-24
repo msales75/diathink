@@ -54,11 +54,11 @@ var DeadView = (function () {
             value: this.value
         };
     };
+
     DeadView.prototype.resurrect = function () {
         delete DeadView.viewList[this.id];
         return new View(this.getOptions());
     };
-
     DeadView.prototype.validate = function () {
         assert(View.viewList[this.id] === undefined, "View " + this.id + " is dead and alive");
         assert((View.viewList[this.parent] instanceof View) || (DeadView.viewList[this.parent] instanceof DeadView), "DeadView " + this.id + " parent is neither dead nor alive");
@@ -66,7 +66,6 @@ var DeadView = (function () {
     DeadView.viewList = {};
     return DeadView;
 })();
-
 var View = (function () {
     function View(opts) {
         this.value = null;
@@ -121,13 +120,11 @@ var View = (function () {
         if (opts.parentView !== undefined) {
             this.registerParent(opts.parentView);
         }
-
         this.updateValue();
         if (this.value instanceof LinkedList) {
             this.listItems = new LinkedList();
         }
         this.createListItems();
-
         for (var v in this.childViewTypes) {
             if (this.childViewTypes.hasOwnProperty(v)) {
                 var childOpts = { _name: v, parentView: this };
@@ -228,6 +225,7 @@ var View = (function () {
             }
         }
     };
+
     View.prototype.changeParent = function (parent) {
         this.registerParent(parent);
         var v;
@@ -261,22 +259,35 @@ var View = (function () {
     View.prototype.updateValue = function () {
     };
 
-    View.prototype.themeFirst = function () {
+    View.prototype.themeFirst = function (b) {
     };
-    View.prototype.themeLast = function () {
+    View.prototype.themeLast = function (b) {
     };
     View.prototype.onClick = function () {
     };
 
     View.prototype.onDoubleClick = function () {
     };
+    View.prototype.detach = function (v, opts) {
+        if ((v.parentView === this) && v.elem && v.elem.parentNode) {
+            v.elem.parentNode.removeChild(v.elem);
+        }
+    };
 
     View.prototype.render = function () {
         return this.elem;
     };
 
-    View.prototype.destroy = function () {
+    View.prototype.destroy = function (opts) {
         var elem = this.elem;
+
+        // detach from parent-view
+        if (this.parentView && (this.parentView.listItems != null)) {
+            this.parentView.detach(this, { destroyList: true });
+            this.elem = null;
+        }
+
+        // detach from model
         if (this.nodeRootView && this.value && this.value.clearView) {
             this.value.clearView(this.nodeRootView); // remove view from model-outline
         }
@@ -288,17 +299,8 @@ var View = (function () {
                 }
             }
         }
-
-        // remove from parent list
-        if (this.parentView && (this.parentView.listItems != null)) {
-            this.parentView.listItems.remove(this.id);
-        }
         if (this.listItems != null) {
             this.removeListItems();
-        }
-        if (elem && elem.parentNode) {
-            elem.parentNode.removeChild(elem);
-            this.elem = null;
         }
         View.unregister(this);
     };
@@ -325,12 +327,8 @@ var View = (function () {
             li.render();
 
             // post-rendering modifications, based on knowledge of list-placement
-            if (items.prev[m] === '') {
-                li.themeFirst();
-            }
-            if (items.next[m] === '') {
-                li.themeLast();
-            }
+            li.themeFirst(items.prev[m] === '');
+            li.themeLast(items.next[m] === '');
         }
     };
 
@@ -581,7 +579,6 @@ var View = (function () {
             // Confirm that view-parent is a DOM parent
             assert($(this.elem).parents('#' + this.parentView.id).length === 1, "View " + v + " does not have parent-view " + this.parentView.id);
         }
-
         assert(this.elem != null, "View " + v + " has no element");
         assert(this.elem instanceof HTMLElement, "View " + v + " has no valid element");
         assert(this.id === this.elem.id, "Element for view " + v + " has wrong id");

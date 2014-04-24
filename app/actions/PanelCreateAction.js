@@ -147,7 +147,7 @@ var PanelCreateAction = (function (_super) {
             var o = that.options;
             var dir;
             if (o.undo) {
-                dir = grid.remove(View.get(that.newPanel));
+                dir = View.get(that.newPanel).destroy();
             } else {
                 if (!that.newPanel) {
                     that.newPanel = View.getNextId();

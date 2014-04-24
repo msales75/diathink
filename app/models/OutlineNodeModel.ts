@@ -70,6 +70,7 @@ class OutlineNodeModel extends PModel {
         children?:OutlineNodeCollection;
         parent?:OutlineNodeModel;
         text?:string;
+        collapsed?:boolean;
         deleted?:boolean;
     } = {};
     views:{[i:string]:NodeView} = {};
@@ -79,6 +80,7 @@ class OutlineNodeModel extends PModel {
         this.cid = View.getNextId();
         this.attributes.deleted = false;
         this.attributes.parent = null;
+        this.attributes.collapsed= false;
         OutlineNodeModel.modelsById[this.cid] = this;
         if (options!=null) {
             if (options.text != null) {

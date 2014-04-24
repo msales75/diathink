@@ -72,6 +72,7 @@ var OutlineNodeModel = (function (_super) {
         this.cid = View.getNextId();
         this.attributes.deleted = false;
         this.attributes.parent = null;
+        this.attributes.collapsed = false;
         OutlineNodeModel.modelsById[this.cid] = this;
         if (options != null) {
             if (options.text != null) {
