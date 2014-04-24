@@ -44,7 +44,7 @@ var TextAction = (function (_super) {
             } else {
                 text = that.options.text;
             }
-            var activeLineView = that.getLineView(that.options.activeID, outline.nodeRootView.id);
+            var activeLineView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
             if (activeLineView != null) {
                 activeLineView.header.name.text.value = text;
 

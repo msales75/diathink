@@ -136,7 +136,7 @@ class ActionManager {
          */
     }
 
-    static log(action) {
+    static log(action:Action) {
         if (action.options.undo) {
             console.log("Done undoing action " + action.historyRank + ': ' + action.type);
         } else if (action.options.redo) {

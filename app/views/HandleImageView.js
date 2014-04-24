@@ -50,6 +50,10 @@ var HandleImageView = (function (_super) {
             };
         });
     };
+    HandleImageView.prototype.validate = function () {
+        _super.prototype.validate.call(this);
+        assert(this.handleView === this, "View " + this.id + " is a handleView that doesn't know it");
+    };
     return HandleImageView;
 })(ImageView);
 //# sourceMappingURL=HandleImageView.js.map

@@ -6,24 +6,46 @@ var __extends = this.__extends || function (d, b) {
 };
 ///<reference path="View.ts"/>
 m_require("app/views/ListView.js");
+
+var DeadOutlineRoot = (function (_super) {
+    __extends(DeadOutlineRoot, _super);
+    function DeadOutlineRoot(outline) {
+        _super.call(this, outline);
+        this.data = outline.data;
+    }
+    DeadOutlineRoot.prototype.getOptions = function () {
+        return {
+            id: this.id,
+            parentView: View.get(this.parent),
+            value: this.value,
+            data: this.data
+        };
+    };
+    DeadOutlineRoot.prototype.resurrect = function () {
+        delete DeadView.viewList[this.id];
+        return new OutlineRootView(this.getOptions());
+    };
+    DeadOutlineRoot.prototype.validate = function () {
+        _super.prototype.validate.call(this);
+        assert(this.value instanceof OutlineNodeCollection, "DeadOutline " + this.id + " does not have a valid value");
+    };
+    return DeadOutlineRoot;
+})(DeadView);
 var OutlineRootView = (function (_super) {
     __extends(OutlineRootView, _super);
     function OutlineRootView(opts) {
         _super.call(this, opts);
-        OutlineManager.add(this.id, this);
+        OutlineRootView.outlinesById[this.id] = this;
     }
     OutlineRootView.prototype.init = function () {
-        this.listItemTemplateView = NodeView;
+        this.listItemTemplate = NodeView;
         this.Class = OutlineRootView;
     };
 
     OutlineRootView.prototype.updateValue = function () {
-        assert(this.parentView.parentView instanceof PanelView, "Invalid location for root list");
-        this.panelView = this.parentView.parentView;
-        if (this.panelView.value != null) {
+        if (this.panelView != null) {
+            assert(this.parentView.parentView instanceof PanelView, "Invalid location for root list");
             this.value = this.panelView.value.get('children');
-        } else {
-            this.value = $D.data;
         }
     };
 
@@ -34,10 +56,9 @@ var OutlineRootView = (function (_super) {
         } else {
             context = null;
         }
-        OutlineManager.remove(this); // move to graveyard
-
-        // is the rest of this standard destroy-operation?
-        View.prototype.destroy.call(this);
+        new DeadOutlineRoot(this); // move to graveyard
+        delete OutlineRootView.outlinesById[this.id];
+        _super.prototype.destroy.call(this);
         return context;
     };
 
@@ -61,6 +82,23 @@ var OutlineRootView = (function (_super) {
             return this.data[key];
         }
     };
+    OutlineRootView.prototype.validate = function () {
+        _super.prototype.validate.call(this);
+        var outlines = OutlineRootView.outlinesById;
+        var panels = PanelView.panelsById;
+        var o = this.id;
+        assert(outlines[this.id] === this, "Outline " + this.id + " not in list");
+        assert(_.size(this.childViewTypes) === 0, "Outline view " + o + " does not have zero childViewTypes");
+        assert(this.nodeRootView === this, "OutlineRootView " + o + " does not have nodeRootView==self");
+        assert(this.parentView.nodeRootView === null, "OutlineRootView " + o + " has parent with same nodeRootView");
+
+        // for now, require all outlines to be in a panel
+        assert(panels[this.parentView.parentView.id] instanceof PanelView, "Outline view " + o + " does not have parent-parent-view a panel");
+        assert(this.parentView.parentView.outline.alist === this, "Outline view " + o + " does not match parent.parent.outline.alist in a panel");
+        assert(this.value instanceof OutlineNodeCollection, "OutlineRootView " + o + " does not have value of type OutlineNodeCollection");
+        // todo: validate this.data[key]=val
+    };
+    OutlineRootView.outlinesById = {};
     return OutlineRootView;
 })(ListView);
 //# sourceMappingURL=OutlineRootView.js.map

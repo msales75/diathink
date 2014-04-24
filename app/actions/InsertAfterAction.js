@@ -21,7 +21,7 @@ var InsertAfterAction = (function (_super) {
         };
     }
     InsertAfterAction.prototype.getNewContext = function () {
-        this.newModelContext = this.getContextAfter(this.options.referenceID);
+        this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
     };
     return InsertAfterAction;
 })(OutlineAction);

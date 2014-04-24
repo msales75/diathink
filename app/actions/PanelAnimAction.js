@@ -29,7 +29,7 @@ var PanelAnimAction = (function (_super) {
         // we need paneldock when moving to a panel, or when undoing back to a panel
         var panelContext = r.rNewPanelContext;
 
-        var activeView = this.getLineView(this.options.activeID, this.options.oldRoot);
+        var activeView = this.getNodeView(this.options.activeID, this.options.oldRoot);
         var drawlayer = $('#' + View.getCurrentPage().drawlayer.id);
 
         // dock item to newPanel

@@ -4,7 +4,7 @@ m_require("app/views/View.js");
 $D.handleKeypress = function (view, e) {
     var id = view.id;
     var key = String.fromCharCode(e.charCode);
-    var liView, collection, rank, sel;
+    var liView, collection, sel;
     liView = View.get(id).parentView.parentView.parentView;
     if (key === ' ') {
         sel = view.getSelection();
@@ -13,17 +13,16 @@ $D.handleKeypress = function (view, e) {
         if (sel && (sel[0] === 0) && (sel[1] === 0)) {
             // get parent-collection and rank
             collection = liView.parentView.value;
-            rank = _.indexOf(collection.models, liView.value);
 
-            // validate rank >=0
-            if (rank > 0) {
+            // validate rank >0
+            if (collection.prev[liView.value.cid] !== '') {
                 // make it the last child of its previous sibling
                 scheduleKey(e.simulated, id, function () {
                     return {
                         actionType: MoveIntoAction,
                         anim: 'indent',
                         activeID: liView.value.cid,
-                        referenceID: collection.models[rank - 1].cid,
+                        referenceID: collection.prev[liView.value.cid],
                         oldRoot: liView.nodeRootView.id,
                         newRoot: liView.nodeRootView.id,
                         focus: true

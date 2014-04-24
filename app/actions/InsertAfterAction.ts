@@ -12,7 +12,7 @@ class InsertAfterAction extends OutlineAction {
         requireNew: true
     };
     getNewContext() {
-        this.newModelContext = this.getContextAfter(this.options.referenceID);
+        this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
     }
 }
 

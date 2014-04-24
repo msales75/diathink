@@ -5,7 +5,6 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 ///<reference path="../views/View.ts"/>
-///<reference path="../PanelManager.ts"/>
 var DropBox = (function () {
     function DropBox(view) {
         this.view = view;
@@ -37,23 +36,28 @@ var DropBox = (function () {
     };
     DropBox.renderAll = function (dragger) {
         DropBox.dragger = dragger;
-        var p, n, panel, node, n, nid;
-        var PM, i;
-        PM = PanelManager;
+        var i, p, n, panel, node, nid;
 
         DropBox.removeAll();
         $(document.body).addClass('drop-mode');
 
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
         var panelParent = (View.getCurrentPage()).content.grid;
-        var canvas1 = panelParent.scroll1.outline.droplayer;
-        var canvas2 = panelParent.scroll2.outline.droplayer;
         var canvas0 = View.getCurrentPage().drawlayer;
-        canvas1.cacheOffset = $(canvas1.elem).offset();
-        canvas2.cacheOffset = $(canvas2.elem).offset();
         canvas0.cacheOffset = $(canvas0.elem).offset();
-        for (n = 1, p = PM.leftPanel; (p !== '') && (n <= PM.panelsPerScreen); ++n, p = PM.nextpanel[p]) {
-            panel = View.get(p);
+
+        var m;
+        var panels = panelParent.listItems;
+        for (m = panels.first(); m !== ''; m = panels.next[m]) {
+            var canvas1 = panels.obj[m].outline.droplayer;
+            canvas1.cacheOffset = $(canvas1.elem).offset();
+        }
+
+        var panels = View.getCurrentPage().content.grid.listItems;
+        var pid;
+
+        for (pid = panels.first(); pid !== ''; pid = panels.next[pid]) {
+            panel = View.get(pid);
             panel.cachePosition();
             panel.dropboxes = [];
             panel.dropboxes.push(new DropBoxLeft(panel));
@@ -74,20 +78,16 @@ var DropBox = (function () {
         }
     };
     DropBox.getHoverBox = function (mousePosition, scrollStart) {
-        var j, d, n, p;
+        var j, d;
 
         // cache scroll-positions of each panel
-        var panels = PanelView.panelsById;
         var pid;
-        for (pid in panels) {
-            var scrollView = panels[pid].outline;
-            scrollView.scrollY = scrollView.scrollHandler.getScrollPosition().y;
-        }
-        var PM;
-        PM = PanelManager;
+        var panels = View.getCurrentPage().content.grid.listItems;
 
-        for (n = 1, p = PM.leftPanel; (p !== '') && (n <= PM.panelsPerScreen); ++n, p = PM.nextpanel[p]) {
-            var panel = View.get(p);
+        for (pid = panels.first(); pid !== ''; pid = panels.next[pid]) {
+            var panel = View.get(pid);
+            var scrollView = panel.outline;
+            scrollView.scrollY = scrollView.scrollHandler.getScrollPosition().y;
             if (panel.dropboxes == null) {
                 continue;
             }
@@ -125,10 +125,10 @@ var DropBox = (function () {
     };
     DropBox.previewDropBoxes = function () {
         var i, j, d;
-        var PM;
-        PM = PanelManager;
-        for (var n = 1, p = PM.leftPanel; (p !== '') && (n <= PM.panelsPerScreen); ++n, p = PM.nextpanel[p]) {
-            var panel = View.get(p);
+        var pid;
+        var panels = View.getCurrentPage().content.grid.listItems;
+        for (pid = panels.first(); pid !== ''; pid = panels.next[pid]) {
+            var panel = View.get(pid);
             var canvas = $('#' + View.getCurrentPage().drawlayer.id);
             var ctop = canvas.offset().top;
             var cleft = canvas.offset().left;
@@ -199,12 +199,11 @@ var DropBox = (function () {
 
         // cannot drop current-item adjacent to itself
         if (activeModel.get('parent') === itemModel.get('parent')) {
-            var aRank = activeModel.rank();
-            var iRank = itemModel.rank();
-            if (aRank - iRank === 1) {
+            var nodes = activeModel.get('parent').attributes.children;
+            if (nodes.next[itemModel.cid] === activeModel.cid) {
                 if (type === 'bottom')
                     return false;
-            } else if (iRank - aRank === 1) {
+            } else if (nodes.next[activeModel.cid] === itemModel.cid) {
                 if (type === 'top')
                     return false;
             }
@@ -379,7 +378,7 @@ var DropBoxLeft = (function (_super) {
             return {
                 actionType: PanelCreateAction,
                 activeID: node.value.cid,
-                prevPanel: PanelManager.prevpanel[that.view.id],
+                prevPanel: View.getCurrentPage().content.grid.listItems.prev[that.view.id],
                 oldRoot: node.nodeRootView.id,
                 newRoot: 'new',
                 dockElem: helper,
@@ -388,7 +387,7 @@ var DropBoxLeft = (function (_super) {
         });
     };
     DropBoxLeft.prototype.validateDrop = function (activeNode) {
-        if (PanelManager.leftPanel === this.view.id) {
+        if (View.getCurrentPage().content.grid.listItems.first() === this.view.id) {
             return true;
         }
         return false;

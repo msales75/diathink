@@ -22,7 +22,7 @@ var OutdentAction = (function (_super) {
     }
     // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     OutdentAction.prototype.getNewContext = function () {
-        this.newModelContext = this.getContextAfter(this.options.referenceID);
+        this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
     };
     return OutdentAction;
 })(OutlineAction);

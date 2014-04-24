@@ -49,7 +49,7 @@ class CollapseAction extends Action {
             //  between open/closed/null
 
             var activeModel:OutlineNodeModel = that.getModel(that.options.activeID);
-            var activeLineView:NodeView = that.getLineView(that.options.activeID, outline.nodeRootView.id);
+            var activeLineView:NodeView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
             if (!activeLineView) {
                 console.log("Action collapse="+collapsed+" has no activeLineView, with activeID="+
                     that.options.activeID+"; oldRoot="+outline.nodeRootView.id+

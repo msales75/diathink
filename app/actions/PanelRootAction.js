@@ -34,8 +34,8 @@ var PanelRootAction = (function (_super) {
                 if ((prevAction.type === 'CollapseAction') && (prevAction.options.activeID === that.options.activeID)) {
                     var activeModel = that.getModel(that.options.activeID);
                     activeModel.set('collapsed', prevAction.oldCollapsed);
-                    for (var o in OutlineManager.outlines) {
-                        OutlineManager.outlines[o].setData(that.options.activeID, prevAction.oldViewCollapsed[o]);
+                    for (var o in OutlineRootView.outlinesById) {
+                        OutlineRootView.outlinesById[o].setData(that.options.activeID, prevAction.oldViewCollapsed[o]);
                     }
                     prevAction.undone = true;
                     prevAction.lost = true;

@@ -22,7 +22,7 @@ var MoveIntoAction = (function (_super) {
     }
     // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     MoveIntoAction.prototype.getNewContext = function () {
-        this.newModelContext = this.getContextIn(this.options.referenceID);
+        this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextIn();
     };
     return MoveIntoAction;
 })(OutlineAction);

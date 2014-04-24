@@ -1,4 +1,4 @@
-///<reference path="views/OutlineRootView.ts"/>
+///<reference path="../app/views/OutlineRootView.ts"/>
 
 
 class OutlineManager {

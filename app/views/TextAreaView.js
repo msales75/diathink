@@ -205,6 +205,13 @@ var TextAreaView = (function (_super) {
         var elem = this.elem;
         return [elem.selectionStart, elem.selectionEnd];
     };
+    TextAreaView.prototype.validate = function () {
+        _super.prototype.validate.call(this);
+        assert(this.nodeRootView != null, "TextAreaView cannot have null nodeRootView");
+        assert(this.parentView.parentView.parentView instanceof NodeView, "TextAreaView " + this.id + " does not appear inside a ListItem View");
+        assert(this.parentView.parentView.parentView.value != null, "TextAreaView " + this.id + " parent-parent has no value");
+        assert(this.value === this.parentView.parentView.parentView.value.attributes.text, "TextAreaView " + this.id + " does not match value " + this.value + " with listitem-parent");
+    };
     return TextAreaView;
 })(View);
 //# sourceMappingURL=TextAreaView.js.map

@@ -15,12 +15,16 @@ var OutlineListView = (function (_super) {
         this.items = 'models';
     }
     OutlineListView.prototype.init = function () {
-        this.listItemTemplateView = NodeView;
+        this.listItemTemplate = NodeView;
         this.Class = OutlineListView;
     };
     OutlineListView.prototype.updateValue = function () {
         this.value = this.parentView.value.attributes.children;
         this.hideList = this.parentView.isCollapsed;
+    };
+    OutlineListView.prototype.validate = function () {
+        _super.prototype.validate.call(this);
+        assert(this.nodeRootView != null, "TextAreaView cannot have null nodeRootView");
     };
     return OutlineListView;
 })(ListView);

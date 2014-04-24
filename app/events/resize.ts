@@ -1,3 +1,4 @@
+///<reference path="../views/View.ts"/>
 // correct height of scrollview on resize
 $(window).resize(function() {
     // avoid class-based jQuery selections
@@ -31,14 +32,16 @@ $(window).resize(function() {
     if (!page) {return;}
     var scrollContainer = $('#'+page.content.grid.id);
     if (scrollContainer.length===0) {return;}
-    var scrollViews = $([
-        $('#'+page.content.grid.scroll1.outline.id).get(0),
-        $('#'+page.content.grid.scroll2.outline.id).get(0)
-    ]);
-    var scrollSpacer = $([
-        $('#'+page.content.grid.scroll1.outline.scrollSpacer.id).get(0),
-        $('#'+page.content.grid.scroll2.outline.scrollSpacer.id).get(0)
-    ]);
+    var panels = page.content.grid.listItems;
+    var m:string;
+    var scrollviews=[];
+    var scrollspacers=[];
+    for (m=panels.first();m!=='';m=panels.next[m]) {
+        scrollviews.push(panels.obj[m].outline.elem);
+        scrollspacers.push(panels.obj[m].outline.scrollSpacer.elem);
+    }
+    var scrollViews = $(scrollviews);
+    var scrollSpacer = $(scrollspacers);
     var header = $('#'+page.header.id);
     // might header-height have changed?
 

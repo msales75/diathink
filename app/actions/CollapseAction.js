@@ -59,7 +59,7 @@ var CollapseAction = (function (_super) {
             // Undoing future changes should record the change in view-status.
             //  between open/closed/null
             var activeModel = that.getModel(that.options.activeID);
-            var activeLineView = that.getLineView(that.options.activeID, outline.nodeRootView.id);
+            var activeLineView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
             if (!activeLineView) {
                 console.log("Action collapse=" + collapsed + " has no activeLineView, with activeID=" + that.options.activeID + "; oldRoot=" + outline.nodeRootView.id + "; undo=" + that.options.undo);
 

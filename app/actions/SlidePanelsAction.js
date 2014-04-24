@@ -15,11 +15,22 @@ var SlidePanelsAction = (function (_super) {
         this.oldLeftPanel = null;
     }
     // options:ActionOptions= {direction:null};
+    SlidePanelsAction.prototype.validateOptions = function () {
+        var o = this.options;
+        var panels = View.currentPage.content.grid.listItems;
+        if (!o.redo && !o.undo) {
+            this.oldLeftPanel = panels.first();
+        }
+        if (o.redo) {
+            if (this.oldLeftPanel !== panels.first()) {
+                console.log("leftPanel doesn't match");
+                debugger;
+            }
+        }
+    };
     SlidePanelsAction.prototype.execModel = function () {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function () {
-            var PM;
-            PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
             var o = that.options;
             var dir;
@@ -37,13 +48,10 @@ var SlidePanelsAction = (function (_super) {
                 }
             }
             if (dir === 'right') {
-                PM.leftPanel = PM.prevpanel[PM.leftPanel];
-                $D.redrawPanels('right');
+                grid.slideRight();
             } else if (dir === 'left') {
-                PM.leftPanel = PM.nextpanel[PM.leftPanel];
-                $D.redrawPanels('left');
+                grid.slideLeft();
             }
-            $D.updatePanelButtons();
         });
     };
     SlidePanelsAction.prototype.execView = function (outline) {

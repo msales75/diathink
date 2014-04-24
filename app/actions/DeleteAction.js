@@ -23,7 +23,7 @@ var DeleteAction = (function (_super) {
     DeleteAction.prototype.focus = function () {
         var newRoot, li, model, collection, rank, cursorstart = false, cursor;
         if (this.options.undo) {
-            li = this.getLineView(this.options.activeID, this.options.oldRoot);
+            li = this.getNodeView(this.options.activeID, this.options.oldRoot);
             View.setFocus(li);
             li.header.name.text.setCursor(0);
             li.header.name.text.focus();
@@ -36,17 +36,17 @@ var DeleteAction = (function (_super) {
             // check if parent is visible
             li = null;
             if (this.oldModelContext.parent != null) {
-                li = this.getLineView(this.oldModelContext.parent, newRoot);
+                li = this.getNodeView(this.oldModelContext.parent, newRoot);
             }
             if (!li) {
                 if (this.oldModelContext.next == null) {
                     return;
                 }
-                li = this.getLineView(this.oldModelContext.next, newRoot);
+                li = this.getNodeView(this.oldModelContext.next, newRoot);
                 cursorstart = true;
             }
         } else {
-            li = this.getLineView(this.oldModelContext.prev, newRoot);
+            li = this.getNodeView(this.oldModelContext.prev, newRoot);
             if (!li) {
                 console.log('ERROR: Missing prior view for focus');
                 debugger;

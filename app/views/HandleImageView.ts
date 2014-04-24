@@ -44,4 +44,10 @@ class HandleImageView extends ImageView {
                 };
             });
     }
+    validate() {
+        super.validate();
+        assert(this.handleView === this,
+            "View "+this.id+" is a handleView that doesn't know it");
+
+    }
 }

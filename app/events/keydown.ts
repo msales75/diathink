@@ -15,20 +15,19 @@ function scheduleKey(simulated, id, opts) {
 };
 $D.handleKeydown = function(view:TextAreaView, e) {
     var id = view.id;
-    var liView, collection, rank, sel;
-    liView = View.get(id).parentView.parentView.parentView;
+    var liView, collection, sel;
+    liView = view.nodeView
     if (e.which === 9) { // tab
         collection = liView.parentView.value;
-        rank = _.indexOf(collection.models, liView.value);
-        // validate rank >=0
-        if (rank > 0) { // indent the line
+        // validate not first in list
+        if (collection.prev[liView.value.cid]!=='') { // indent the line
             // make it the last child of its previous sibling
             scheduleKey(e.simulated, id, function():SubAction {
                 return {
                     actionType: MoveIntoAction,
                     anim: 'indent',
                     activeID: liView.value.cid,
-                    referenceID: collection.models[rank - 1].cid,
+                    referenceID: collection.prev[liView.value.cid],
                     oldRoot: liView.nodeRootView.id,
                     newRoot: liView.nodeRootView.id,
                     focus: true
@@ -42,11 +41,9 @@ $D.handleKeydown = function(view:TextAreaView, e) {
         if (sel && (sel[0] === 0) && (sel[1] === 0)) {
             // get parent-collection and rank
             collection = liView.parentView.value;
-            rank = _.indexOf(collection.models, liView.value);
             // if it is the last item in its collection
-            if ((liView.parentView.parentView != null) &&
-                (liView.parentView.parentView instanceof NodeView) &&
-                (rank === collection.models.length - 1)) {
+            if ((liView.parentView.nodeView instanceof NodeView) &&
+                (collection.next[liView.value.cid]==='')) {
                 // make it the next child of its parent
                 scheduleKey(e.simulated, id, function():SubAction {
                     return {
@@ -63,7 +60,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
                 return;
             } else { // delete or merge-lines?
                 if ($('#' + id).val() === "") {
-                    if (liView.value.get('children').length === 0) {
+                    if (liView.value.get('children').count === 0) {
                         scheduleKey(e.simulated, id, function():SubAction {
                             return {
                                 actionType: DeleteAction,

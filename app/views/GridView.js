@@ -6,53 +6,35 @@ var __extends = this.__extends || function (d, b) {
 };
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
-var TWO_COLUMNS = {
-    cssClass: 'ui-grid-a',
-    columns: {
-        scroll1: 'ui-block-a',
-        scroll2: 'ui-block-b'
-    }
-};
-var THREE_COLUMNS = {
-    cssClass: 'ui-grid-b',
-    columns: {
-        scroll1: 'ui-block-a',
-        scroll2: 'ui-block-b',
-        scroll3: 'ui-block-c'
-    }
-};
-var FOUR_COLUMNS = {
-    cssClass: 'ui-grid-c',
-    columns: {
-        scroll1: 'ui-block-a',
-        scroll2: 'ui-block-b',
-        scroll3: 'ui-block-c',
-        scroll4: 'ui-block-d'
-    }
-};
+
 var GridView = (function (_super) {
     __extends(GridView, _super);
     function GridView() {
         _super.apply(this, arguments);
     }
     GridView.prototype.render = function () {
-        var i, html = '';
-        assert(this.layout != null, 'No layout specified for GridView (' + this.id + ')!');
-        for (i in this.layout.columns) {
-            html += '<div class="' + this.layout.columns[i] + '"></div>';
-        }
         this._create({
             type: 'div',
-            classes: this.layout.cssClass + ' ' + this.cssClass,
-            html: html
+            classes: this.cssClass,
+            html: ''
         });
-        this.renderChildViews();
-        var n = 0;
-        for (i in this.layout.columns) {
-            this.elem.children[n].appendChild(this[i].elem);
-            ++n;
-        }
+        this.insertListItems();
         return this.elem;
+    };
+    GridView.prototype.renderListItems = function () {
+        _super.prototype.renderListItems.call(this);
+        this.updateWidths();
+    };
+    GridView.prototype.updateWidths = function () {
+        if (this.elem) {
+            var width = 100.0 / this.numCols;
+            var widthS = String(Math.round(10000 * width) / 10000) + '%';
+            var m;
+            var children = this.listItems;
+            for (m = children.first(); m !== ''; m = children.next[m]) {
+                children.obj[m].elem.style.width = widthS;
+            }
+        }
     };
     return GridView;
 })(View);

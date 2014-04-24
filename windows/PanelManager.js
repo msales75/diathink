@@ -1,8 +1,6 @@
 ///<reference path="views/View.ts"/>
-
-
 $D.updatePanelButtons = function () {
-    var content = (<DiathinkView>View.getCurrentPage()).content;
+    var content = View.getCurrentPage().content;
     var l = $('#' + content.leftbutton.id);
     var r = $('#' + content.rightbutton.id);
     var n, p;
@@ -35,9 +33,7 @@ $D.redrawPanels = function (dir) {
     var p, n;
     var PM = PanelManager;
 
-    for (p = PM.leftPanel, n = 1;
-        (p !== '') && (n <= PM.panelsPerScreen);
-        ++n, p = PM.nextpanel[p]) {
+    for (p = PM.leftPanel, n = 1; (p !== '') && (n <= PM.panelsPerScreen); ++n, p = PM.nextpanel[p]) {
         if (dir === 'right') {
             $D.redrawPanel(n, p, false);
         }
@@ -49,9 +45,7 @@ $D.redrawPanels = function (dir) {
     if (dir === 'left') {
         --n;
         p = PM.prevpanel[p];
-        for (;
-            (p !== '') && (n >= 1);
-            --n, p = PM.prevpanel[p]) {
+        for (; (p !== '') && (n >= 1); --n, p = PM.prevpanel[p]) {
             $D.redrawPanel(n, p, false);
         }
     }
@@ -63,9 +57,10 @@ $D.redrawPanel = function (n, p, firsttime) {
     // should changeRoot it instead?
     var c;
     var PM = PanelManager;
-    var grid = (<DiathinkView>View.currentPage).content.grid;
+    var grid = View.currentPage.content.grid;
     if (grid['scroll' + String(n)]) {
         c = grid['scroll' + String(n)].destroy(); // save context for this
+
         // panel destroy() respects outline graveyard.
         grid['scroll' + String(n)] = null;
     } else {
@@ -86,58 +81,48 @@ $D.redrawPanel = function (n, p, firsttime) {
 
     // grid['scroll'+String(n)].theme();
     // grid['scroll'+String(n)].registerEvents();
-    grid['scroll' + String(n)].changeRoot(
-        PM.rootModels[p],
-        PM.rootViews[p]
-    );
+    grid['scroll' + String(n)].changeRoot(PM.rootModels[p], PM.rootViews[p]);
 };
 
 $D.removePanel = function (n) {
-    var grid = (<DiathinkView>View.getCurrentPage()).content.grid;
+    var grid = View.getCurrentPage().content.grid;
     grid['scroll' + String(n)].destroy();
     grid['scroll' + String(n)] = null;
 };
 
-class PanelManager {
-    static nextpanel= {'': ''};
-    static prevpanel= {'': ''};
-    static rootViews= {};
-    static rootModels= {};
-    static count= 0;
-    static leftPanel= '';
-    static panelsPerScreen= 2;
-    static deleted= {};
-    static updateRoots() {
-        var p=this.leftPanel;
-        while ((p !== '')&&(View.get(p))) {
-            this.rootViews[p] = (<PanelView>View.get(p)).outline.alist.id;
-            this.rootModels[p] = (<PanelView>View.get(p)).value;
+var PanelManager = (function () {
+    function PanelManager() {
+    }
+    PanelManager.updateRoots = function () {
+        var p = this.leftPanel;
+        while ((p !== '') && (View.get(p))) {
+            this.rootViews[p] = View.get(p).outline.alist.id;
+            this.rootModels[p] = View.get(p).value;
             p = this.nextpanel[p];
         }
-    }
-    static getRank(id) {
+    };
+    PanelManager.getRank = function (id) {
         var n, panel = this.nextpanel[''];
-        for (n=1; panel !== ''; ++n) {
-            if (panel === id) { return n; }
+        for (n = 1; panel !== ''; ++n) {
+            if (panel === id) {
+                return n;
+            }
             panel = this.nextpanel[panel];
         }
         return -1;
-    }
-    static initFromDOM(grid) {
+    };
+    PanelManager.initFromDOM = function (grid) {
         this.insertAfter(grid.scroll2.id, '');
         this.insertAfter(grid.scroll1.id, '');
         this.updateRoots();
-
-    }
-    static insertAfter(newid, previousid) {
-        if ((this.nextpanel[newid]!==undefined) ||
-            (this.prevpanel[newid]!==undefined) || (newid === '')) {
+    };
+    PanelManager.insertAfter = function (newid, previousid) {
+        if ((this.nextpanel[newid] !== undefined) || (this.prevpanel[newid] !== undefined) || (newid === '')) {
             console.log('Error inserting invalid id'); // error
             debugger;
             return;
         }
-        if ((this.nextpanel[previousid]===undefined)||
-            (this.prevpanel[previousid]===undefined)) {
+        if ((this.nextpanel[previousid] === undefined) || (this.prevpanel[previousid] === undefined)) {
             console.log('Error inserting panel previous-id'); // error
             debugger;
             return;
@@ -158,58 +143,58 @@ class PanelManager {
         // MUST slide right if there is no rightPanel
         // SHOULD slide left if it's put after last panel
         // Default slide right
-        if (this.count===1) { // first panel
+        if (this.count === 1) {
             this.leftPanel = newid;
             return 'right';
         }
         var leftOffset = this.getRank(this.leftPanel);
         var newOffset = this.getRank(newid);
-        if ((leftOffset<1)||(newOffset<1)) {
+        if ((leftOffset < 1) || (newOffset < 1)) {
             console.log("leftOffset or newOffset not defined for insert");
             debugger;
         }
         if (newOffset < leftOffset) {
             this.leftPanel = newid;
-            return 'right'; // push panels to right
-        } else if (newOffset >= leftOffset + this.panelsPerScreen) { // last panel on screen
+            return 'right';
+        } else if (newOffset >= leftOffset + this.panelsPerScreen) {
             this.leftPanel = this.nextpanel[this.leftPanel];
-            return 'left'; // push panels to left
+            return 'left';
         } else {
-            return 'right'; // push right with no change to leftPanel
+            return 'right';
         }
-    }
-    static remove(id, slide?) {
-        if ((this.nextpanel[id]===undefined) || (this.prevpanel[id]===undefined) || (id==='')) {
+    };
+    PanelManager.remove = function (id, slide) {
+        if ((this.nextpanel[id] === undefined) || (this.prevpanel[id] === undefined) || (id === '')) {
             console.log('Error removing panel');
             debugger;
             return;
         }
 
         // Update leftPanel after removal
-        var offset = this.getRank(this.leftPanel)-1;
-        var isPanelToLeft = !(this.prevpanel[this.leftPanel]==='');
+        var offset = this.getRank(this.leftPanel) - 1;
+        var isPanelToLeft = !(this.prevpanel[this.leftPanel] === '');
         var isPanelToRight = (this.count - offset > this.panelsPerScreen);
-        var direction:string = 'left'; // default
-        if (!isPanelToLeft) { // must slide left
+        var direction = 'left';
+        if (!isPanelToLeft) {
             direction = 'left';
-        } else if (isPanelToLeft && !isPanelToRight) { // must slide right
+        } else if (isPanelToLeft && !isPanelToRight) {
             direction = 'right';
         } else {
-            if (slide==='right') {
-                direction='right';
+            if (slide === 'right') {
+                direction = 'right';
             }
         }
 
-        if (this.leftPanel === id) { // if leftPanel is being removed
-            if (direction==='left') {
+        if (this.leftPanel === id) {
+            if (direction === 'left') {
                 this.leftPanel = this.nextpanel[this.leftPanel];
             } else {
                 this.leftPanel = this.prevpanel[this.leftPanel];
             }
         } else {
-            if (direction==='left') {
+            if (direction === 'left') {
                 // leftPanel is unchanged.
-            } else if (direction==='right') {
+            } else if (direction === 'right') {
                 this.leftPanel = this.prevpanel[this.leftPanel];
             }
         }
@@ -223,19 +208,19 @@ class PanelManager {
         delete this.prevpanel[id];
         this.deleted[id] = id;
         return direction;
-    }
-    static moveAfter(id, previousid) { // currently unused
-        if ((this.nextpanel[id]===undefined) || (this.prevpanel[id]===undefined) || (id==='')) {
+    };
+    PanelManager.moveAfter = function (id, previousid) {
+        if ((this.nextpanel[id] === undefined) || (this.prevpanel[id] === undefined) || (id === '')) {
             console.log('Error moving panel');
             debugger;
             return;
         }
-        if ((this.nextpanel[previousid]===undefined)||
-            (this.prevpanel[previousid]===undefined)) {
+        if ((this.nextpanel[previousid] === undefined) || (this.prevpanel[previousid] === undefined)) {
             console.log('Error moving panel after previous-id'); // error
             debugger;
             return;
         }
+
         // remove id
         var next = this.nextpanel[id];
         var prev = this.prevpanel[id];
@@ -248,5 +233,17 @@ class PanelManager {
         this.prevpanel[id] = previousid;
         this.nextpanel[id] = oldnext;
         this.prevpanel[oldnext] = id;
-    }
-}
+    };
+    PanelManager.nextpanel = { '': '' };
+    PanelManager.prevpanel = { '': '' };
+    PanelManager.rootViews = {};
+    PanelManager.rootModels = {};
+    PanelManager.count = 0;
+
+    PanelManager.leftPanel = '';
+    PanelManager.panelsPerScreen = 2;
+
+    PanelManager.deleted = {};
+    return PanelManager;
+})();
+//# sourceMappingURL=PanelManager.js.map

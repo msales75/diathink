@@ -21,7 +21,7 @@ var MoveAfterAction = (function (_super) {
     }
     // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     MoveAfterAction.prototype.getNewContext = function () {
-        this.newModelContext = this.getContextAfter(this.options.referenceID);
+        this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
     };
     return MoveAfterAction;
 })(OutlineAction);

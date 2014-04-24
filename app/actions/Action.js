@@ -280,7 +280,7 @@ var Action = (function (_super) {
         // todo: assumptions and issue-handling
         this.execModel();
 
-        var outlines = OutlineManager.outlines;
+        var outlines = OutlineRootView.outlinesById;
         var focusDeps = [];
         for (i in outlines) {
             this.execView(outlines[i]);
@@ -328,8 +328,11 @@ var Action = (function (_super) {
     Action.prototype.getModel = function (id) {
         return OutlineNodeModel.getById(id);
     };
-    Action.prototype.getLineView = function (id, rootid) {
+    Action.prototype.getNodeView = function (id, rootid) {
         var model = this.getModel(id);
+        if (!model) {
+            model = OutlineNodeModel.deletedById[id];
+        }
         if (model.views == null) {
             return null;
         }
@@ -353,12 +356,12 @@ var Action = (function (_super) {
         } else {
             newRoot = this.options.newRoot;
         }
-        var lineView = this.getLineView(this.options.activeID, newRoot);
-        if (!lineView) {
+        var nodeView = this.getNodeView(this.options.activeID, newRoot);
+        if (!nodeView) {
             return;
         }
-        View.setFocus(lineView);
-        var id = lineView.header.name.text.id;
+        View.setFocus(nodeView);
+        var id = nodeView.header.name.text.id;
         $('#' + id).focus();
     };
 
@@ -408,6 +411,38 @@ var Action = (function (_super) {
             };
         }
         return null;
+    };
+    Action.prototype.validate = function () {
+        var actions = ActionManager.actions;
+        var lastaction = ActionManager.lastAction;
+        var foundit;
+        var i = this.historyRank;
+
+        if (i >= lastaction + 1) {
+            assert(actions.at(i).undone === true, "Action at " + i + " is after last-action " + lastaction + ", but is not undone");
+        }
+
+        assert(_.size(this.runtime.queue) === 0, "Action at " + i + " has non-empty runtime queue");
+        if (this.parentAction) {
+            assert(this.parentAction.subactions.length > 0, "Parent action of " + i + " has no subactions");
+            foundit = false;
+            for (var j = 0; j < this.parentAction.subactions.length; ++j) {
+                var subact = this.parentAction.subactions[j].action;
+                if (subact === this) {
+                    foundit = true;
+                    assert(actions.at(i - j - 1) === this.parentAction, "Action at " + i + " does not have parent-action at " + (i - j - 1));
+                    break;
+                }
+            }
+            assert(foundit, "Action at " + i + " is not on list of subactions for parentAction");
+        }
+        if (this.subactions.length > 0) {
+            for (var j = 0; j < this.subactions.length; ++j) {
+                var subact = this.subactions[j].action;
+                assert(actions.at(i + j + 1) === subact, "Action at " + i + " cannot find subaction offset by " + j);
+                assert(subact.parentAction === this, "Action " + this.cid + " subaction " + j + " does not have matching parentAction");
+            }
+        }
     };
     return Action;
 })(PModel);

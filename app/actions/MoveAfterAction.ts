@@ -12,6 +12,6 @@ class MoveAfterAction extends OutlineAction {
     };
     // options:ActionOptions= {activeID: null, referenceID: null, transition: false};
     getNewContext() {
-        this.newModelContext = this.getContextAfter(this.options.referenceID);
+        this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
     }
 }

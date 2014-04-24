@@ -22,7 +22,7 @@ class PanelAnimAction extends AnimatedAction {
 
         var panelContext = r.rNewPanelContext;
 
-        var activeView = this.getLineView(this.options.activeID, this.options.oldRoot);
+        var activeView = this.getNodeView(this.options.activeID, this.options.oldRoot);
         var drawlayer = $('#'+View.getCurrentPage().drawlayer.id);
 
         // dock item to newPanel

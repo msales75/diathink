@@ -3,7 +3,7 @@
 
 class Router {
     public dragMode:number = 0;
-    public scrollMode:number= 0;
+    public scrollMode:number = 0;
     public dragStart:DragStartI = null;
     private lastClicked:number = null;
     private doubleClickFlag:boolean = false;

@@ -57,7 +57,7 @@ class AnimatedAction extends Action {
         this.addQueue('panelPrep', ['context'], function() {
             that.panelPrep();
         });
-        var outlines = OutlineManager.outlines;
+        var outlines = OutlineRootView.outlinesById;
         var i:string;
         for (i in outlines) {
             (function(i) {
@@ -106,7 +106,7 @@ class AnimatedAction extends Action {
         var i, r:RuntimeOptions = this.runtime,
             o:AnimOptions = this.runtime.animOptions;
         // loop over all outlines
-        var outlines = OutlineManager.outlines;
+        var outlines = OutlineRootView.outlinesById;
         if (o.view) {
             for (i in outlines) {
                 if (!o.view[i]) {

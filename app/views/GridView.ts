@@ -1,50 +1,30 @@
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
-var TWO_COLUMNS:GridLayout = {
-    cssClass: 'ui-grid-a',
-    columns: {
-        scroll1: 'ui-block-a',
-        scroll2: 'ui-block-b'
-    }
-};
-var THREE_COLUMNS:GridLayout = {
-    cssClass: 'ui-grid-b',
-    columns: {
-        scroll1: 'ui-block-a',
-        scroll2: 'ui-block-b',
-        scroll3: 'ui-block-c'
-    }
-};
-var FOUR_COLUMNS:GridLayout = {
-    cssClass: 'ui-grid-c',
-    columns: {
-        scroll1: 'ui-block-a',
-        scroll2: 'ui-block-b',
-        scroll3: 'ui-block-c',
-        scroll4: 'ui-block-d'
-    }
-};
-class GridView extends View {
-    layout:GridLayout;
 
+class GridView extends View {
+    numCols: number;
     render() {
-        var i, html = '';
-        assert(this.layout != null,
-            'No layout specified for GridView (' + this.id + ')!');
-        for (i in this.layout.columns) {
-            html += '<div class="' + this.layout.columns[i] + '"></div>';
-        }
         this._create({
             type: 'div',
-            classes: this.layout.cssClass + ' ' + this.cssClass,
-            html: html
+            classes: this.cssClass,
+            html: ''
         });
-        this.renderChildViews();
-        var n = 0;
-        for (i in this.layout.columns) {
-            this.elem.children[n].appendChild(this[i].elem);
-            ++n;
-        }
+        this.insertListItems();
         return this.elem;
+    }
+    renderListItems() {
+        super.renderListItems();
+        this.updateWidths();
+    }
+    updateWidths() {
+        if (this.elem) { // don't do this until the view's been rendered
+            var width:number = 100.0/this.numCols;
+            var widthS = String(Math.round(10000*width)/10000)+'%';
+            var m:string;
+            var children:LinkedList<PanelView> = <LinkedList<PanelView>>this.listItems;
+            for (m=children.first();m!=='';m=children.next[m]) {
+                children.obj[m].elem.style.width = widthS;
+            }
+        }
     }
 }

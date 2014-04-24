@@ -1,6 +1,5 @@
 ///<reference path="../views/View.ts"/>
 ///<reference path="../actions/ActionManager.ts"/>
-///<reference path="../PanelManager.ts"/>
 var DragHandler = (function () {
     function DragHandler(options) {
         this.options = {};
@@ -53,6 +52,7 @@ var DragHandler = (function () {
 
         //Recache the helper size
         this._cacheHelperProportions();
+        this.scrollPanel = null;
         this.helper.addClass("ui-sortable-helper");
         this.dragMove(options); //Execute the drag once - this causes the helper not to be visible before getting its correct position
         DropBox.renderAll(this);

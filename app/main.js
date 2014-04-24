@@ -1,11 +1,9 @@
 ///<reference path="views/View.ts"/>
-///<reference path="PanelManager.ts"/>
 ///<reference path="keyboard.ts"/>
 ///<reference path="events/Router.ts"/>
 ///<reference path="util/fixFontSize.ts"/>
 ///<reference path="actions/ActionManager.ts"/>
 ///<reference path="validate.ts"/>
-m_require("app/PanelManager.js");
 m_require("app/views/DiathinkView.js");
 m_require("app/views/PanelView.js");
 m_require("app/events/Router.js");
@@ -21,37 +19,39 @@ if (nav.userAgent.match(/iPhone/i) || nav.userAgent.match(/iPad/i) || nav.userAg
     }
 }
 $D.is_touch_device = 'ontouchstart' in document.documentElement;
-
-$D.data = new OutlineNodeCollection();
-$D.data.fromJSON([
-    {
-        text: "Test 1",
-        children: [
-            {
-                text: "Child 1 1",
-                children: [
-                    { text: "Child 1 1 - 1" }
-                ] },
-            { text: "Child 1 2" }
-        ] },
-    { text: "Test 2" }
-]);
-
+OutlineNodeModel.root = new OutlineNodeModel();
+OutlineNodeModel.root.fromJSON({
+    text: 'Home',
+    children: [
+        {
+            text: "Test 1",
+            children: [
+                {
+                    text: "Child 1 1",
+                    children: [
+                        { text: "Child 1 1 - 1" }
+                    ] },
+                { text: "Child 1 2" }
+            ] },
+        { text: "Test 2" }
+    ]
+});
 $(function () {
     $D.router = new Router(document.body);
     new DiathinkView({});
-
-    // Update Panel-Manager with grid-panels
-    PanelManager.initFromDOM(View.currentPage.content.grid);
+    var grid = View.currentPage.content.grid;
+    grid.numCols = 2;
+    grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
+    grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
     View.currentPage.render();
-    var grid = View.currentPage.content.grid, grid_n = 1;
-    while (grid['scroll' + String(grid_n)]) {
-        grid['scroll' + String(grid_n)].cachePosition();
-        ++grid_n;
+    var panels = grid.listItems;
+    var p;
+    for (p = panels.first(); p !== ''; p = panels.next[p]) {
+        View.get(p).cachePosition();
     }
     fixFontSize();
     ActionManager.refreshButtons();
-    $D.updatePanelButtons();
+    grid.updatePanelButtons();
     $D.keyboard = new keyboardSetup();
     $D.keyboard.init({});
     setTimeout(function () {

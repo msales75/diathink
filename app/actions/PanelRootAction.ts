@@ -30,8 +30,8 @@ class PanelRootAction extends Action {
                     (prevAction.options.activeID === that.options.activeID)) {
                     var activeModel= that.getModel(that.options.activeID);
                     activeModel.set('collapsed', (<CollapseAction>prevAction).oldCollapsed);
-                    for (var o in OutlineManager.outlines) {
-                        OutlineManager.outlines[o].setData(
+                    for (var o in OutlineRootView.outlinesById) {
+                        OutlineRootView.outlinesById[o].setData(
                             that.options.activeID,
                             (<CollapseAction>prevAction).oldViewCollapsed[o]);
                     }

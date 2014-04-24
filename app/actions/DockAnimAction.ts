@@ -75,7 +75,7 @@ class DockAnimAction extends AnimatedAction {
             // if (r.rOldType === 'panel')
 
             var oldRoot = r.rOldRoot;
-            var activeLineView = this.getLineView(this.options.activeID, oldRoot);
+            var activeLineView = this.getNodeView(this.options.activeID, oldRoot);
             if (!activeLineView) { // no find item to dock, e.g. undoing drag-into collapsed list
                 return;
             }

@@ -74,7 +74,7 @@ var AnimatedAction = (function (_super) {
         this.addQueue('panelPrep', ['context'], function () {
             that.panelPrep();
         });
-        var outlines = OutlineManager.outlines;
+        var outlines = OutlineRootView.outlinesById;
         var i;
         for (i in outlines) {
             (function (i) {
@@ -123,7 +123,7 @@ var AnimatedAction = (function (_super) {
         var i, r = this.runtime, o = this.runtime.animOptions;
 
         // loop over all outlines
-        var outlines = OutlineManager.outlines;
+        var outlines = OutlineRootView.outlinesById;
         if (o.view) {
             for (i in outlines) {
                 if (!o.view[i]) {

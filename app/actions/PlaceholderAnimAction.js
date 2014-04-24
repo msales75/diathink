@@ -18,7 +18,7 @@ var PlaceholderAnimAction = (function (_super) {
     PlaceholderAnimAction.prototype.oldLinePlace = function (outline) {
         var r = this.runtime;
         if (r.rUseOldLinePlaceholder[outline.nodeRootView.id]) {
-            var activeLineView = this.getLineView(this.options.activeID, outline.nodeRootView.id);
+            var activeLineView = this.getNodeView(this.options.activeID, outline.nodeRootView.id);
 
             // if view doesn't exist, insert no placeholder because it's invisible
             if (activeLineView == null) {
@@ -80,9 +80,9 @@ var PlaceholderAnimAction = (function (_super) {
                 place.addClass('ui-last-child');
             }
             if (newModelContext.next) {
-                place.insertBefore('#' + this.getLineView(newModelContext.next, outline.nodeRootView.id).id);
+                place.insertBefore('#' + this.getNodeView(newModelContext.next, outline.nodeRootView.id).id);
             } else if (newModelContext.prev) {
-                place.insertAfter('#' + this.getLineView(newModelContext.prev, outline.nodeRootView.id).id);
+                place.insertAfter('#' + this.getNodeView(newModelContext.prev, outline.nodeRootView.id).id);
             } else if (newModelContext.parent) {
                 place.appendTo('#' + parentView.id);
             }

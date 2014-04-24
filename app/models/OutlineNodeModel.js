@@ -1,10 +1,12 @@
+///<reference path="../views/View.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-///<reference path="../views/View.ts"/>
+m_require("app/LinkedList.js");
+
 var PModel = (function () {
     function PModel() {
     }
@@ -48,7 +50,7 @@ var Collection = (function () {
         this.modelsById[m.cid] = m;
     };
     Collection.prototype.fromJSON = function (input) {
-        var i, elem;
+        var i;
         if (!input) {
             return;
         }
@@ -89,12 +91,13 @@ var OutlineNodeModel = (function (_super) {
     OutlineNodeModel.prototype.setChildren = function (children) {
         if (children != null) {
             this.attributes.children = children;
-            var cmodels = children.models;
-            var i;
-            for (i = 0; i < cmodels.length; ++i) {
-                var oldParent = cmodels[i].get('parent');
+
+            // fix parent of child-models
+            var m;
+            for (m = children.first(); m !== ''; m = children.next[m]) {
+                var oldParent = children.obj[m].get('parent');
                 assert((oldParent == null) || (oldParent === this), "Multiple parents given to child-node");
-                cmodels[i].set('parent', this);
+                children.obj[m].set('parent', this);
             }
         } else {
             this.attributes.children = new OutlineNodeCollection();
@@ -107,28 +110,9 @@ var OutlineNodeModel = (function (_super) {
         this.attributes[key] = value;
     };
     OutlineNodeModel.prototype.parentCollection = function () {
-        if (this.attributes.parent == null) {
-            if ($D.data.get(this.cid) === this) {
-                return $D.data;
-            } else {
-                return null;
-            }
-        } else {
-            return this.attributes.parent.attributes.children;
-        }
+        assert(this.attributes.parent != null, "parentCollection with null parent");
+        return this.attributes.parent.attributes.children;
     };
-
-    OutlineNodeModel.prototype.rank = function () {
-        var c = this.parentCollection();
-        var i;
-        for (i = 0; i < c.models.length; ++i) {
-            if (c.models[i] === this) {
-                return i;
-            }
-        }
-        return null;
-    };
-
     OutlineNodeModel.prototype.addView = function (view) {
         if ((this.views == null) || (typeof this.views !== 'object')) {
             this.views = {};
@@ -145,6 +129,17 @@ var OutlineNodeModel = (function (_super) {
             this.views = null;
         }
     };
+    OutlineNodeModel.prototype.delete = function () {
+        this.set('deleted', true);
+        OutlineNodeModel.deletedById[this.cid] = this;
+        delete OutlineNodeModel.modelsById[this.cid];
+        this.set('parent', null);
+    };
+    OutlineNodeModel.prototype.resurrect = function () {
+        OutlineNodeModel.modelsById[this.cid] = this;
+        delete OutlineNodeModel.deletedById[this.cid];
+        this.set('deleted', false);
+    };
 
     OutlineNodeModel.prototype.fromJSON = function (n) {
         var children;
@@ -154,17 +149,169 @@ var OutlineNodeModel = (function (_super) {
         this.setChildren(children);
         return this;
     };
+
+    OutlineNodeModel.prototype.getContextAt = function () {
+        var id = this.cid;
+        var model = OutlineNodeModel.getById(id);
+        var collection = model.parentCollection();
+        var context = {};
+        if (collection.prev[model.cid] === '') {
+            context.prev = null;
+        } else {
+            context.prev = collection.prev[model.cid];
+        }
+        if (collection.next[model.cid] === '') {
+            context.next = null;
+        } else {
+            context.next = collection.next[model.cid];
+        }
+        context.parent = model.get('parent').cid;
+        return context;
+    };
+
+    // return the context for an item inserted after id
+    OutlineNodeModel.prototype.getContextAfter = function () {
+        var id = this.cid;
+        var context;
+        var collection = this.parentCollection();
+        var parent = this.attributes.parent;
+        assert(parent != null, "parent is null in getContextAfter");
+        context = { parent: parent.cid };
+        context.prev = id;
+        if (collection.next[id] === '') {
+            context.next = null;
+        } else {
+            context.next = collection.next[id];
+        }
+        return context;
+    };
+
+    // return the context for an item inserted before id
+    OutlineNodeModel.prototype.getContextBefore = function () {
+        var id = this.cid;
+        var context;
+        var collection = this.parentCollection();
+        var parent = this.attributes.parent;
+        assert(parent != null, "parent is null in getContextBefore");
+        context = { parent: parent.cid };
+        context.next = id;
+        if (collection.prev[id] === '') {
+            context.prev = null;
+        } else {
+            context.prev = collection.prev[id];
+        }
+        return context;
+    };
+
+    // return the context for an item inserted inside id, at end of list
+    OutlineNodeModel.prototype.getContextIn = function () {
+        var id = this.cid;
+        var collection = this.attributes.children;
+        var context = { parent: id, next: null };
+        if (collection.count === 0) {
+            context.prev = null;
+        } else {
+            context.prev = collection.last();
+        }
+        return context;
+    };
+    OutlineNodeModel.prototype.validate = function () {
+        var m = this.cid;
+        var outlines = OutlineRootView.outlinesById;
+        var views = View.viewList;
+        var models = OutlineNodeModel.modelsById;
+        var deleted = OutlineNodeModel.deletedById;
+        var cm;
+
+        assert(typeof this.attributes === 'object', "Model " + m + " does not have an attributes field");
+        if (this.attributes.deleted === false) {
+            assert(models[m] === this, "Model " + m + " does not have a valid cid");
+            assert(deleted[m] === undefined, "Model " + m + " is in deleted list");
+            if (this.attributes.parent == null) {
+                assert(OutlineNodeModel.root === this, "Model " + m + " has parent=null");
+            }
+
+            assert(this.attributes.text != null, "The model " + m + " does not have a text attribute");
+            assert(typeof this.attributes.text === 'string', "The model " + m + " has a text-attribute that is not a string");
+
+            // parent matches children
+            var c = this.attributes.children;
+            assert(c instanceof OutlineNodeCollection, "The children of model " + m + " are not an OutlineNodeCollection");
+            for (cm = c.first(); cm !== ''; cm = c.next[cm]) {
+                var obj = c.obj[cm];
+                assert(obj instanceof OutlineNodeModel, "The child " + cm + " of model " + m + " is not a RelationalModel");
+                assert(models[obj.cid] === obj, "The child " + cm + " of model " + m + " is not in the model list");
+                assert(obj.attributes.parent === this, "The child " + cm + " of model " + m + " does not have the matching parent-field");
+            }
+
+            if (this !== OutlineNodeModel.root) {
+                var p = this.attributes.parent;
+                assert(models[p.cid] === p, "The parent of model " + m + ", " + p.cid + ", does not point to a listed model");
+                var parents = [m];
+                var pt = p;
+                while (pt && (!_.contains(parents, pt.cid))) {
+                    parents.push(pt.cid);
+                    pt = pt.attributes.parent;
+                }
+                assert(pt == null, "The model " + m + " does not have ancestry to a root model ");
+
+                // (proves parent-refs are connected & acyclic)
+                assert(p.attributes.children instanceof OutlineNodeCollection, "Parent-model " + p + " does not have children of type OutlineNodeCollection");
+                p.attributes.children.validate(); // validate linked-list properties
+                var foundit = false;
+                var models1 = p.attributes.children;
+                var cp, k;
+                for (cp in models1.obj) {
+                    if (models1.obj[cp] === this) {
+                        foundit = true;
+                        break;
+                    }
+                }
+                assert(foundit, "Model " + m + " is not in the child-list of parent-model " + pt);
+            }
+
+            assert(this.views !== undefined, "The model " + m + " does not have a views array defined.");
+            assert(typeof this.views === 'object', "The model " + m + " does not have a views-object");
+            for (k in this.views) {
+                assert(outlines[k] != null, "The key " + k + " in the views of model " + m + " is not in the outline list");
+                assert(this.views[k] instanceof NodeView, "The view in outline " + k + " for model " + m + " is not of type NodeView");
+                assert(this.views[k] === views[this.views[k].id], "The view in outline " + k + " for model " + m + " is not in the views list");
+                assert(this.views[k].value.cid === m, "The view " + this.views[k].id + " in model " + m + " and outline " + k + " does not have model Id=" + m);
+            }
+        } else {
+            assert(models[m] === undefined, "Deleted model " + m + " was not removed from model list");
+            assert(deleted[m] === this, "Deleted model " + m + " is not in deleted list");
+            assert(this.attributes.parent === null, "Deleted model " + m + " has a parent not null");
+            assert(this.attributes.children.count === 0, "Deleted model " + m + " has children not empty");
+            assert(this.views === null, "Deleted model " + m + " has views not null");
+        }
+    };
     OutlineNodeModel.modelsById = {};
+    OutlineNodeModel.deletedById = {};
     return OutlineNodeModel;
 })(PModel);
+
 var OutlineNodeCollection = (function (_super) {
     __extends(OutlineNodeCollection, _super);
     function OutlineNodeCollection() {
         _super.apply(this, arguments);
-        this.model = OutlineNodeModel;
-        this.models = [];
-        this.modelsById = {};
     }
+    // model=OutlineNodeModel;
+    // models:OutlineNodeModel[] = [];
+    // modelsById:{[i:string]:OutlineNodeModel} = {};
+    // at(i:number):Action;
+    // push(a:Action):void;
+    OutlineNodeCollection.prototype.fromJSON = function (input) {
+        var i;
+        if (!input) {
+            return;
+        }
+        for (i = 0; i < input.length; ++i) {
+            var m = new OutlineNodeModel();
+            m.fromJSON(input[i]);
+            this.append(m.cid, m);
+        }
+    };
     return OutlineNodeCollection;
-})(Collection);
+})(LinkedList);
 //# sourceMappingURL=OutlineNodeModel.js.map

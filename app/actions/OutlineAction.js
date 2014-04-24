@@ -66,7 +66,7 @@ var OutlineAction = (function (_super) {
                 focus: 0,
                 end: 0,
                 view: {},
-                // todo: should separate these into animatino-file:?
+                // todo: should separate these into animation-file?
                 createDockElem: 0,
                 dockAnim: 0,
                 panelPrep: 0,
@@ -115,7 +115,7 @@ var OutlineAction = (function (_super) {
             r.destroyModel = true;
         }
 
-        var outlines = OutlineManager.outlines;
+        var outlines = OutlineRootView.outlinesById;
         for (var i in outlines) {
             // figure out what kind of object activeID is in each outline.
             r.rOldContextType[i] = this.getContextType(r.rOldModelContext, outlines[i]);
@@ -123,7 +123,7 @@ var OutlineAction = (function (_super) {
 
             if (r.rOldType === 'line') {
                 if (this.options.activeID) {
-                    var lineView = this.getLineView(this.options.activeID, i);
+                    var lineView = this.getNodeView(this.options.activeID, i);
                     if (lineView) {
                         r.oldLineContext[i] = this.getLineContext(lineView);
                     }
@@ -198,13 +198,13 @@ var OutlineAction = (function (_super) {
             debugger;
         }
         if (o.oldRoot !== 'all') {
-            if (!OutlineManager.outlines[o.oldRoot] && !OutlineManager.deleted[o.oldRoot]) {
+            if (!OutlineRootView.outlinesById[o.oldRoot] && !(DeadView.viewList[o.oldRoot] instanceof DeadOutlineRoot)) {
                 console.log('ERROR: Action ' + this.type + ' has invalid oldRoot');
                 debugger;
             }
         }
         if ((o.newRoot !== 'all') && (o.newRoot !== 'new')) {
-            if (!OutlineManager.outlines[o.newRoot] && !OutlineManager.deleted[o.newRoot]) {
+            if (!OutlineRootView.outlinesById[o.newRoot] && !(DeadView.viewList[o.newRoot] instanceof DeadOutlineRoot)) {
                 console.log('ERROR: Action ' + this.type + ' has invalid newRoot');
                 debugger;
             }
@@ -214,7 +214,10 @@ var OutlineAction = (function (_super) {
         }
 
         if (o.activeID) {
-            var activeModel = this.getModel(o.activeID);
+            var activeModel = OutlineNodeModel.getById(o.activeID);
+            if (!activeModel) {
+                activeModel = OutlineNodeModel.deletedById[o.activeID];
+            }
             if (!activeModel) {
                 console.log('ERROR: invalid activeModel for activeID=' + o.activeID);
                 debugger;
@@ -237,7 +240,10 @@ var OutlineAction = (function (_super) {
             }
         }
         if (o.referenceID) {
-            var refModel = this.getModel(o.referenceID);
+            var refModel = OutlineNodeModel.getById(o.referenceID);
+            if (!refModel) {
+                refModel = OutlineNodeModel.deletedById[o.referenceID];
+            }
             if (!refModel) {
                 console.log('ERROR: invalid refModel for activeID=' + o.activeID);
                 debugger;
@@ -323,41 +329,20 @@ var OutlineAction = (function (_super) {
 
         // otherwise context must exist
         if (o.activeID != null) {
-            var model = this.getModel(o.activeID);
-            if (model.get('parent')) {
-                if (context.parent !== model.get('parent').cid) {
-                    console.log('ERROR: context.parent does not match');
-                    debugger;
-                }
-            } else {
-                if (context.parent !== null) {
-                    console.log('ERROR: context.parent is not null');
-                    debugger;
-                }
-            }
+            var model = OutlineNodeModel.getById(o.activeID);
+            assert(context.parent === model.get('parent').cid, "context.parent does not match");
             var collection = model.parentCollection();
-            var rank = model.rank();
-            if (rank === 0) {
-                if (context.prev !== null) {
-                    console.log('ERROR: context.prev is not null though rank=0');
-                    debugger;
-                }
+
+            // var rank = model.rank();
+            if (model.cid === collection.first()) {
+                assert(context.prev === null, 'ERROR: context.prev is not null though rank=0');
             } else {
-                if (context.prev !== collection.at(rank - 1).cid) {
-                    console.log('ERROR: context.prev does not match');
-                    debugger;
-                }
+                assert(context.prev === collection.prev[model.cid], 'ERROR: context.prev does not match');
             }
-            if (rank === collection.length - 1) {
-                if (context.next !== null) {
-                    console.log('ERROR: context.next is not null');
-                    debugger;
-                }
+            if (model.cid === collection.last()) {
+                assert(context.next === null, 'ERROR: context.next is not null');
             } else {
-                if (context.next !== collection.at(rank + 1).cid) {
-                    console.log('ERROR: context.next does not match');
-                    debugger;
-                }
+                assert(context.next === collection.next[model.cid], 'ERROR: context.next does not match');
             }
         }
         // todo: validate ViewContext, too.
@@ -379,95 +364,7 @@ var OutlineAction = (function (_super) {
         this.getOldContext();
         this.getNewContext();
     };
-    OutlineAction.prototype.getModel = function (id) {
-        return OutlineNodeModel.getById(id);
-    };
-    OutlineAction.prototype.getLineView = function (id, rootid) {
-        var model = this.getModel(id);
-        if (model.views == null) {
-            return null;
-        }
-        return model.views[rootid];
-    };
 
-    // todo: should make node-model a doubly-linked list without relying on collection rank?
-    OutlineAction.prototype.getContextAt = function (id) {
-        var model = this.getModel(id);
-        var collection = model.parentCollection();
-        var rank = model.rank();
-        var context = {};
-        if (rank === 0) {
-            context.prev = null;
-        } else {
-            context.prev = collection.at(rank - 1).cid;
-        }
-        if (rank === collection.length - 1) {
-            context.next = null;
-        } else {
-            context.next = collection.at(rank + 1).cid;
-        }
-        if (collection.at(rank).get('parent')) {
-            context.parent = collection.at(rank).get('parent').cid;
-        } else {
-            context.parent = null;
-        }
-        return context;
-    };
-
-    // return the context for an item inserted after id
-    OutlineAction.prototype.getContextAfter = function (id) {
-        var context;
-        var reference = this.getModel(id);
-        var collection = reference.parentCollection();
-        var refrank = reference.rank();
-        var parent = reference.get('parent');
-        if (parent != null) {
-            context = { parent: parent.cid };
-        } else {
-            context = { parent: null };
-        }
-        context.prev = id;
-        if (refrank === collection.length - 1) {
-            context.next = null;
-        } else {
-            context.next = collection.at(refrank + 1).cid;
-        }
-        return context;
-    };
-
-    // return the context for an item inserted before id
-    OutlineAction.prototype.getContextBefore = function (id) {
-        var context;
-        var reference = this.getModel(id);
-        var collection = reference.parentCollection();
-        var refrank = reference.rank();
-        var parent = reference.get('parent');
-        if (parent != null) {
-            context = { parent: parent.cid };
-        } else {
-            context = { parent: null };
-        }
-        context.next = id;
-        if (refrank === 0) {
-            context.prev = null;
-        } else {
-            context.prev = collection.at(refrank - 1).cid;
-        }
-        return context;
-    };
-
-    // return the context for an item inserted inside id, at end of list
-    OutlineAction.prototype.getContextIn = function (id) {
-        var reference = OutlineNodeModel.getById(id);
-        var collection = reference.get('children');
-        var context = { parent: id, next: null };
-        if (collection.length === 0) {
-            context.prev = null;
-        } else {
-            context.prev = collection.at(collection.length - 1).cid;
-        }
-        return context;
-    };
     OutlineAction.prototype.newModel = function () {
         var activeModel = new OutlineNodeModel({
             text: this.options.text,
@@ -476,13 +373,14 @@ var OutlineAction = (function (_super) {
         this.options.activeID = activeModel.cid;
         return activeModel;
     };
+
     OutlineAction.prototype.getContextType = function (context, outline) {
         if (!context) {
             return 'none';
         }
-
-        if (context.parent != null) {
-            var parent = this.getLineView(context.parent, outline.nodeRootView.id);
+        assert(context.parent != null, "context.parent is null");
+        if (context.parent !== OutlineNodeModel.root.cid) {
+            var parent = this.getNodeView(context.parent, outline.nodeRootView.id);
             if (parent != null) {
                 if ($('#' + parent.id).hasClass('collapsed')) {
                     return 'parentIsCollapsedLine';
@@ -490,7 +388,7 @@ var OutlineAction = (function (_super) {
                     return 'parentIsExpandedLine';
                 }
             } else {
-                if (this.getModel(context.parent).get('children') === View.get(outline.nodeRootView.id).value) {
+                if (OutlineNodeModel.getById(context.parent).get('children') === View.get(outline.nodeRootView.id).value) {
                     return 'parentIsRoot';
                 } else {
                     return 'parentInvisible';
@@ -498,15 +396,11 @@ var OutlineAction = (function (_super) {
                 }
             }
         } else {
-            if (View.get(outline.nodeRootView.id).value === $D.data) {
+            if (View.get(outline.nodeRootView.id).value.get('parent') === OutlineNodeModel.root) {
+                assert(outline.panelView.value === OutlineNodeModel.root, "Panelview is wrong");
                 return 'parentIsRoot';
             } else {
                 return 'parentInvisible';
-
-                // context is outside of outline
-                console.log('called getContext with no parent but not at root');
-                debugger;
-                return null;
             }
         }
     };
@@ -514,84 +408,59 @@ var OutlineAction = (function (_super) {
         if (!context) {
             return null;
         }
+        assert(context.parent != null, "context is null");
 
-        if (context.parent != null) {
-            var parent = this.getLineView(context.parent, outline.nodeRootView.id);
-            if (parent != null) {
-                if ($('#' + parent.id).hasClass('collapsed')) {
-                    // parent.children.collapsed = true;
-                    return parent.children;
-                } else {
-                    // parent.children.collapsed = false;
-                    return parent.children;
-                }
-            } else {
-                if (this.getModel(context.parent).get('children') === View.get(outline.nodeRootView.id).value) {
-                    return View.get(outline.nodeRootView.id);
-                } else {
-                    return null;
-                }
-            }
+        var parent = this.getNodeView(context.parent, outline.nodeRootView.id);
+        if (parent != null) {
+            return parent.children;
         } else {
-            if (View.get(outline.nodeRootView.id).value === $D.data) {
-                return View.get(outline.nodeRootView.id);
+            if (OutlineNodeModel.getById(context.parent).get('children') === View.get(outline.nodeRootView.id).value) {
+                return outline.nodeRootView;
             } else {
                 return null;
             }
         }
     };
     OutlineAction.prototype.restoreContext = function () {
-        var activeModel, collection, rank, oldCollection;
+        var activeModel, collection, oldCollection;
         var that = this;
         this.addQueue('oldModelCollection', ['modelCreate'], function () {
-            activeModel = that.getModel(that.options.activeID);
-            oldCollection = activeModel.parentCollection();
+            activeModel = OutlineNodeModel.getById(that.options.activeID);
+            if (!activeModel) {
+                activeModel = OutlineNodeModel.deletedById[that.options.activeID];
+                activeModel.resurrect();
+            }
+
+            // check for resurrection
+            if (activeModel.get('parent') != null) {
+                oldCollection = activeModel.attributes.parent.attributes.children;
+            } else {
+                oldCollection = null;
+            }
         });
         this.addQueue('oldModelRemove', ['oldModelCollection'], function () {
+            // if parent-collection is empty, reset collapsed=false
             if (oldCollection != null) {
-                // if parent-collection is empty, reset collapse
-                if ((!that.options.undo) && (!that.options.redo) && (oldCollection.models.length === 1) && (that.type !== 'CollapseAction')) {
+                if ((!that.options.undo) && (!that.options.redo) && (oldCollection.count === 1) && (that.type !== 'CollapseAction')) {
                     var parent = activeModel.get('parent');
 
                     // don't do this with a collapse action.
-                    if (parent) {
-                        that.subactions.push({
-                            actionType: CollapseAction,
-                            activeID: parent.cid,
-                            collapsed: false,
-                            oldRoot: 'all',
-                            newRoot: 'all',
-                            focus: false
-                        });
-                    }
+                    that.subactions.push({
+                        actionType: CollapseAction,
+                        activeID: parent.cid,
+                        collapsed: false,
+                        oldRoot: 'all',
+                        newRoot: 'all',
+                        focus: false
+                    });
                 }
-                oldCollection.remove(activeModel);
+                oldCollection.remove(activeModel.cid);
                 activeModel.set('parent', null);
             }
         });
         this.addQueue('newModelRank', ['oldModelRemove'], function () {
-            var newModelContext;
-            if (that.options.undo) {
-                newModelContext = that.oldModelContext;
-            } else {
-                newModelContext = that.newModelContext;
-            }
-            if (newModelContext != null) {
-                activeModel.set('deleted', false);
-                if (newModelContext.parent != null) {
-                    collection = that.getModel(newModelContext.parent).get('children');
-                } else {
-                    collection = $D.data;
-                }
-                if (newModelContext.prev === null) {
-                    rank = 0;
-                } else {
-                    rank = that.getModel(newModelContext.prev).rank() + 1;
-                }
-            } else {
-                activeModel.set('deleted', true);
-            }
         });
+
         this.addQueue('newModelAdd', ['newModelRank'], function () {
             var newModelContext;
             if (that.options.undo) {
@@ -600,10 +469,16 @@ var OutlineAction = (function (_super) {
                 newModelContext = that.newModelContext;
             }
             if (newModelContext != null) {
-                collection.addAt(activeModel, rank);
+                collection = OutlineNodeModel.getById(newModelContext.parent).get('children');
+                if (newModelContext.prev == null) {
+                    collection.insertAfter(activeModel.cid, activeModel, '');
+                } else {
+                    collection.insertAfter(activeModel.cid, activeModel, newModelContext.prev);
+                }
                 activeModel.set('parent', OutlineNodeModel.getById(newModelContext.parent));
             } else {
-                activeModel.set('parent', null);
+                assert(activeModel.attributes.children.count === 0, "Cannot delete node with children");
+                activeModel.delete();
             }
         });
     };
@@ -612,80 +487,86 @@ var OutlineAction = (function (_super) {
         var that = this;
         assert(outline.id === outline.nodeRootView.id, "Invalid outline in restoreViewContext");
         this.addQueue(['view', outline.id], ['newModelAdd', 'anim'], function () {
-            var r = that.runtime;
-            var collection, rank, oldParent, oldParentView = null;
-            var newModelContext, li, elem, oldspot, neighbor, neighborType, newParentView, createActiveLineView = false;
+            var r = that.runtime, newModelContext, oldParent, oldParentView = null, elem, neighbor, neighborType, newListView, createActiveLineView = false;
 
             newModelContext = r.rNewModelContext;
 
-            // todo: this is a mess, with placeholders and undo.  Need to simplify.
-            var activeLineView = that.getLineView(that.options.activeID, outline.id);
-
-            // activeLineView should not be affected by rOldLinePlaceholder, except for DOM presence
-            if (activeLineView != null) {
+            // oldViewVisible, newViewVisible, oldParent, newParent, oldList, newList
+            // check if model was deleted?
+            var activeNodeView = that.getNodeView(that.options.activeID, outline.id);
+            if (activeNodeView != null) {
                 if (!r.oldLineContext[outline.id]) {
                     console.log("ERROR: Oldspot does not exist for action " + that.type + "; undo=" + that.options.undo + "; redo=" + that.options.redo + "; activeID=" + that.options.activeID + "; view=" + outline.id);
                     debugger;
                 }
-
-                // should get this earlier, per view, like rNewLineContext
                 neighbor = r.oldLineContext[outline.id].obj;
                 neighborType = r.oldLineContext[outline.id].type;
             } else {
-                // todo: can oldParent be replaced with a newModelContext-newParentView instead?
+                // todo: can oldParent be replaced with a newModelContext-newListView instead?
                 if (that.options.undo) {
                     if (that.newModelContext) {
-                        oldParent = that.getModel(that.newModelContext.parent);
+                        oldParent = OutlineNodeModel.getById(that.newModelContext.parent);
                     }
                 } else if (that.oldModelContext) {
-                    oldParent = that.getModel(that.oldModelContext.parent);
+                    oldParent = OutlineNodeModel.getById(that.oldModelContext.parent);
                 }
                 if (oldParent && oldParent.views && oldParent.views[outline.id]) {
                     oldParentView = oldParent.views[outline.id];
                 }
             }
 
-            // oldParentView != null means it needs to be checked if it changed to a leaf
+            // todo: why don't we define oldParent earlier?
+            // todo: we want to define oldParentView.children even if oldParentView isn't defined
             // get parent listview; unless newModelContext is not in this view, then null
-            newParentView = that.contextParentVisible(newModelContext, outline);
-            if (newParentView && newParentView.hideList) {
-                // adding child to collapsed parent
-                newParentView.nodeView.addClass('branch').removeClass('leaf');
-                console.log('Nulling newModelContext because parent isnt visible');
-                newParentView = null;
+            newListView = that.contextParentVisible(newModelContext, outline);
+            if (newListView && newListView.hideList) {
+                // add child to collapsed parent
+                newListView.nodeView.addClass('branch').removeClass('leaf');
+                newListView = null;
             }
 
-            if (!newParentView) {
-                newParentView = null;
+            if (!newListView) {
+                newListView = null;
                 newModelContext = null;
             }
 
             if (newModelContext === null) {
                 console.log('Have newModelContext = null for outline=' + outline.id);
-                if (activeLineView != null) {
-                    activeLineView.destroy();
+                if (activeNodeView != null) {
+                    activeNodeView.destroy();
                 }
-                // destroy() also detaches view-reference from model
+                // destroy() also detaches view-reference from model, and removes from listItems
             } else {
-                if (activeLineView == null) {
-                    activeLineView = new newParentView.listItemTemplateView({
-                        parentView: newParentView,
+                if (activeNodeView == null) {
+                    activeNodeView = new newListView.listItemTemplate({
+                        parentView: newListView,
                         value: OutlineNodeModel.getById(that.options.activeID),
                         cssClass: 'leaf'
                     });
-                    elem = $(activeLineView.render());
+                    elem = $(activeNodeView.render());
                     createActiveLineView = true;
                 } else {
-                    if (r.activeLineElem[outline.id] && r.activeLineElem[outline.id].id === activeLineView.id) {
+                    // remove item from list in listItems
+                    var oldListView = that.contextParentVisible(r.rOldModelContext, outline);
+                    oldListView.listItems.remove(activeNodeView.id);
+                    if (r.activeLineElem[outline.id] && r.activeLineElem[outline.id].id === activeNodeView.id) {
                         elem = $(r.activeLineElem[outline.id]);
                         r.activeLineElem[outline.id] = undefined;
                     } else {
-                        elem = $('#' + activeLineView.id).detach();
+                        elem = $('#' + activeNodeView.id).detach();
+                        // todo: remove entry from listItems - but need correct list:
                     }
 
                     // restore height if it was lost
                     elem.css('height', '').removeClass('drag-hidden');
-                    activeLineView.parentView = newParentView;
+                    activeNodeView.changeParent(newListView);
+                }
+
+                // fixup listItems
+                if (newModelContext.prev == null) {
+                    newListView.listItems.insertAfter(activeNodeView.id, activeNodeView, '');
+                } else {
+                    newListView.listItems.insertAfter(activeNodeView.id, activeNodeView, that.getNodeView(newModelContext.prev, outline.id).id);
                 }
 
                 // put elem into newModelContext
@@ -696,10 +577,11 @@ var OutlineAction = (function (_super) {
                     r.rNewLinePlaceholder[outline.id].parentNode.replaceChild(elem[0], r.rNewLinePlaceholder[outline.id]);
                 } else {
                     if (newModelContext.prev == null) {
-                        var parentElem = $('#' + newParentView.id);
+                        var parentElem = $('#' + newListView.id);
                         parentElem.prepend(elem);
                     } else {
-                        var prevElem = $('#' + that.getLineView(newModelContext.prev, outline.id).id);
+                        var prevView = that.getNodeView(newModelContext.prev, outline.id);
+                        var prevElem = $('#' + prevView.id);
                         prevElem.after(elem);
                     }
                 }
@@ -712,33 +594,33 @@ var OutlineAction = (function (_super) {
                 }
 
                 if (createActiveLineView) {
-                    activeLineView.header.name.text.fixHeight(); // add classes and if there is content, fixHeight
-                    if (activeLineView.value.get('collapsed')) {
-                        activeLineView.addClass('collapsed').addClass('branch').removeClass('leaf');
+                    activeNodeView.header.name.text.fixHeight(); // add classes and if there is content, fixHeight
+                    if (activeNodeView.value.get('collapsed')) {
+                        activeNodeView.addClass('collapsed').addClass('branch').removeClass('leaf');
                     } else {
-                        if (activeLineView.value.get('children').length > 0) {
-                            activeLineView.addClass('expanded').addClass('branch').removeClass('leaf');
+                        if (activeNodeView.value.get('children').length > 0) {
+                            activeNodeView.addClass('expanded').addClass('branch').removeClass('leaf');
                         } else {
-                            activeLineView.addClass('expanded').addClass('leaf').removeClass('branch');
+                            activeNodeView.addClass('expanded').addClass('leaf').removeClass('branch');
                         }
                     }
                 }
 
-                // fix activeLineView's top/bottom corners
-                activeLineView.themeFirst(); // could check if this two are strictly necessary
-                activeLineView.themeLast();
+                // fix activeNodeView's top/bottom corners
+                activeNodeView.themeFirst(); // could check if this two are strictly necessary
+                activeNodeView.themeLast();
 
                 // fixup new neighborhood
                 if (newModelContext.next && (newModelContext.prev == null)) {
-                    $('#' + activeLineView.id).next().removeClass('ui-first-child');
+                    $('#' + activeNodeView.id).next().removeClass('ui-first-child');
                 }
                 if (newModelContext.prev && (newModelContext.next == null)) {
-                    $('#' + activeLineView.id).prev().removeClass('ui-last-child');
+                    $('#' + activeNodeView.id).prev().removeClass('ui-last-child');
                 }
                 if ((newModelContext.prev == null) && (newModelContext.next == null)) {
                     // todo: could parentView be outline-root?
                     // adding child to expanded parent
-                    var elem = $('#' + activeLineView.parentView.parentView.id);
+                    var elem = $('#' + activeNodeView.parentView.parentView.id);
                     elem.addClass('branch').removeClass('leaf');
                 }
             }
@@ -773,14 +655,14 @@ var OutlineAction = (function (_super) {
                     // todo: add a placeholder for empty panel
                 }
             } else if (oldParentView) {
-                if (oldParent.get('children').models.length === 0) {
+                if (oldParent.get('children').count === 0) {
                     // removing last child from collapsed parent
                     $('#' + oldParentView.id).removeClass('branch').addClass('leaf');
                 }
             }
 
             // check if this view breadcrumbs were modified, if activeID is ancestor of outline.
-            if (!activeLineView) {
+            if (!activeNodeView) {
                 var model = outline.panelView.value;
                 while (model && (model.cid !== that.options.activeID)) {
                     model = model.get('parent');
@@ -821,7 +703,7 @@ var OutlineAction = (function (_super) {
         if (!this.options.activeID) {
             this.oldModelContext = null;
         } else {
-            this.oldModelContext = this.getContextAt(this.options.activeID);
+            this.oldModelContext = OutlineNodeModel.getById(this.options.activeID).getContextAt();
         }
     };
     OutlineAction.prototype.execModel = function () {

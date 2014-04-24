@@ -73,7 +73,7 @@ var DockAnimAction = (function (_super) {
             // is start-location a line or panel
             // if (r.rOldType === 'panel')
             var oldRoot = r.rOldRoot;
-            var activeLineView = this.getLineView(this.options.activeID, oldRoot);
+            var activeLineView = this.getNodeView(this.options.activeID, oldRoot);
             if (!activeLineView) {
                 return;
             }

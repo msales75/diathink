@@ -196,4 +196,14 @@ class TextAreaView extends View {
         var elem = this.elem;
         return [elem.selectionStart, elem.selectionEnd];
     }
+    validate() {
+        super.validate();
+        assert(this.nodeRootView !=  null,"TextAreaView cannot have null nodeRootView");
+        assert(this.parentView.parentView.parentView instanceof NodeView,
+            "TextAreaView " + this.id + " does not appear inside a ListItem View");
+        assert(this.parentView.parentView.parentView.value != null,
+            "TextAreaView " + this.id + " parent-parent has no value");
+        assert(this.value === this.parentView.parentView.parentView.value.attributes.text,
+            "TextAreaView " + this.id + " does not match value " + this.value + " with listitem-parent");
+    }
 }

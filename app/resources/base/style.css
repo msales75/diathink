@@ -259,8 +259,13 @@ a:active, a:focus {
 }
 
 /* Margins around page */
-.scroll-container {
-    margin: 0px 10px;
+.horizontal-grid {
+    margin: 0px 0px;
+    width: 90%;
+    float: left;
+}
+.horizontal-grid > div {
+    float: left;
 }
 
 .ui-grid-a > div, .ui-grid-a > div > div {
@@ -520,9 +525,6 @@ li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
 .grid-wrapper > .left-button:hover,
 .grid-wrapper > .right-button:hover {
     color: #EEE;
-}
-.grid-wrapper > .scroll-container {
-    width: 90%;
 }
 
 

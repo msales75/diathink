@@ -5,13 +5,24 @@ m_require("app/actions/Action.js");
 
 class SlidePanelsAction extends Action {
     type='PanelSlide';
-    oldLeftPanel=null;
+    oldLeftPanel:string=null;
     // options:ActionOptions= {direction:null};
+    validateOptions() {
+        var o:ActionOptions = this.options;
+        var panels = View.currentPage.content.grid.listItems;
+        if (!o.redo && !o.undo) {
+            this.oldLeftPanel = panels.first();
+        }
+        if (o.redo) {
+            if (this.oldLeftPanel !== panels.first()) {
+                console.log("leftPanel doesn't match");
+                debugger;
+            }
+        }
+    }
     execModel() {
         var that = this;
         this.addQueue('newModelAdd', ['context'], function() {
-            var PM:typeof PanelManager;
-            PM = PanelManager;
             var grid = View.getCurrentPage().content.grid;
             var o:ActionOptions = that.options;
             var dir;
@@ -29,13 +40,10 @@ class SlidePanelsAction extends Action {
                 }
             }
             if (dir==='right') {
-                PM.leftPanel = PM.prevpanel[PM.leftPanel];
-                $D.redrawPanels('right');
+                grid.slideRight();
             } else if (dir==='left') {
-                PM.leftPanel = PM.nextpanel[PM.leftPanel];
-                $D.redrawPanels('left');
+                grid.slideLeft();
             }
-            $D.updatePanelButtons();
         });
 
     }
