@@ -5,7 +5,7 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 ///<reference path="Action.ts"/>
-m_require("app/actions/Action.js");
+m_require("app/actions/PanelAnimAction.js");
 var PanelCreateAction = (function (_super) {
     __extends(PanelCreateAction, _super);
     function PanelCreateAction() {
@@ -148,6 +148,9 @@ var PanelCreateAction = (function (_super) {
             var dir;
             if (o.undo) {
                 dir = View.get(that.newPanel).destroy();
+                grid.value.remove(that.newPanel);
+                grid.slideFill('left');
+                // do we need to slide the list here?
             } else {
                 if (!that.newPanel) {
                     that.newPanel = View.getNextId();
@@ -188,5 +191,5 @@ var PanelCreateAction = (function (_super) {
         });
     };
     return PanelCreateAction;
-})(Action);
+})(PanelAnimAction);
 //# sourceMappingURL=PanelCreateAction.js.map

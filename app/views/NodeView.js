@@ -40,9 +40,9 @@ var NodeView = (function (_super) {
             children: OutlineListView
         };
     };
-    NodeView.prototype.destroy = function () {
+    NodeView.prototype.destroy = function (opts) {
         delete NodeView.nodesById[this.id];
-        _super.prototype.destroy.call(this);
+        _super.prototype.destroy.call(this, opts);
     };
 
     NodeView.prototype.updateValue = function () {

@@ -113,7 +113,7 @@ var ListView = (function (_super) {
         if (node.elem && node.elem.parentNode) {
             node.elem.parentNode.removeChild(node.elem);
         }
-        if (!opts.destroyList) {
+        if (!opts || !opts.destroyList) {
             if ((previd === '') && (nextid !== '')) {
                 this.listItems.obj[nextid].themeFirst(true);
             } else if ((nextid === '') && (previd !== '')) {

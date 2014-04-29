@@ -17,6 +17,8 @@
 ///<reference path="PlaceholderAnimAction.ts"/>
 ///<reference path="SlidePanelsAction.ts"/>
 ///<reference path="TextAction.ts"/>
+///<reference path="../NodeDropSource.ts"/>
+///<reference path="../NodeDropTarget.ts"/>
 
 
 
@@ -108,6 +110,7 @@ interface RuntimeOptions {
         dockAnim?:number;
         panelPrep?:number;
         anim?:number;
+        animCleanup?:number;
         oldLinePlace?:ViewNumbers;
         newLinePlace?:ViewNumbers;
         linePlaceAnim?:ViewNumbers;
@@ -215,6 +218,7 @@ class Action extends PModel {
     }
     addQueue(self, deps, f, async?) {
         if (!async) {async=false;}
+        if ((self instanceof Array)&&(self.length===1)) {self = self[0];}
         if (typeof self === 'object') {
             if (this.runtime.queue[self[0]+':'+self[1]]!==undefined) {alert("Queued twice: "+self[0]+':'+self[1]); return;}
             this.runtime.queue[self[0]+':'+self[1]] = [self, deps, f, async];
@@ -237,6 +241,7 @@ class Action extends PModel {
 
             // never start the same job twice
             self = queue[i][0];
+            if ((self instanceof Array) &&(self.length===1)) {self = self[0];}
             if (typeof self === 'object') { // array
                 self0 = this.runtime.status[self[0]];
                 // console.log("Considering queue item "+i+" type="+self[0]+":"+self[1]);
@@ -257,6 +262,7 @@ class Action extends PModel {
             ready=1;
             // console.log("Checking dependencies for "+i+": "+deps.join(','));
             for (j=0; j<deps.length; ++j) {
+                if ((deps[j] instanceof Array) &&(deps[j].length===1)) {deps[j] = deps[j][0];}
                 if (typeof deps[j] === 'object') { // a dependency-array
                     depj = this.runtime.status[deps[j][0]];
                     if (!(depj && (depj[deps[j][1]]===2))) {
@@ -286,6 +292,7 @@ class Action extends PModel {
         var q, that:Action = this;
         q = this.runtime.queue[i];
         // console.log("Scheduling "+i);
+        if ((q[0] instanceof Array) &&(q[0].length===1)) {q[0] = q[0][0];}
         if (typeof q[0] === 'object') {
             that.runtime.status[q[0][0]][q[0][1]] = 1;
         } else {
@@ -392,6 +399,9 @@ class Action extends PModel {
            this.execView(outlines[i]);
            focusDeps.push(['view', outlines[i].nodeRootView.id]);
         }
+
+        this.animCleanup();
+
         this.addQueue('focus', focusDeps, function() {
             if (that.options.focus) {
                 that.focus();
@@ -402,7 +412,7 @@ class Action extends PModel {
         this.addQueue('undobuttons', ['newModelAdd'],
             function() {ActionManager.refreshButtons();});
 
-        this.addQueue('end',['focus', 'undobuttons', 'anim'], function() {
+        this.addQueue('end',['focus', 'undobuttons', 'anim', 'animCleanup'], function() {
             var i, sub;
             that.validateNewContext();
             if (!that.options.undo && !that.options.redo) {
@@ -471,8 +481,9 @@ class Action extends PModel {
     validateNewContext() {}
     contextStep() {}
     animSetup() { this.runtime.status.anim = 2; }
+    animCleanup() { this.runtime.status.animCleanup = 2;}
     execModel() {}
-    execView(outline) {}
+    execView(outline) {this.runtime.status.view[outline.id] = 2;}
 
     static createAndExec(options):Action { // create a new action object
         var action:Action = new this(options);

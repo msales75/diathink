@@ -1,45 +1,70 @@
 
+
+* Add cleanup of old-placeholder, and possibly new placeholder.
+
+Animation components and relevance:
+
+Line: Per-panel Placeholders & docking
+Line-as-link: no placeholder-animation; different docking graphic
+Panel: Unique placeholder if not change-root; dock to/from name
+Text-Link: Per-panel placeholders & docking to/from text
+Breadcrumb-link: No placeholder anim;
+
+
+1. Make docking rules independent of placeholders.
+2. Define subroutines for creation, animation & deletion of each type of placeholders.
+3. Each type of DropSource and DropTarget gets its own placeholder/docking rules
+
+* different object-box & fade for docking dimensions
+
+  no placeholders,
+  panel-placeholder,
+  per-view line-placeholders,
+  per-view link placeholders
+
+
+Do we rely
+
+AnimatedAction:
+ animSetup defines template, calls:
+    createDockElem - same when dragging node
+    dockAnim - change to use coordinates
+    panelPrep - panel-like placeholder for one view
+    oldLinePlace - unused
+    newLinePlace - unused
+    linePlaceAnim - replace with panelSlide
+    oldLinePlaceAnimStep - unused
+    newLinePlaceAnimStep - unused
+    dockAnimStep - reuse
+    animFadeEnv - new
+
+    Need substitutes for:
+    dockAnim -> modify as needed in DockAnimAction
+    newLinePlace -> panelPrep
+    linePlaceAnim -> panelSlideAnim
+    oldLinePlaceAnimStep -> panelSlideAnimStep
+    animFadeEnv -> add later
+
+
+
 --Panel creation---
 
 * Associate PanelManager with GridView
 
 Useful Refactorings:
-  * Eliminate jquery-mobile
-  * Eliminate M-project event-bindings
-  * Need a DOM render-manager in view.js
-  * Need to replace design/extend with Backbone object
-  * Need a linked-list-manager
-  * Need global list of visible panels & lines
+OK Eliminate jquery-mobile
+OK Eliminate M-project event-bindings
+OK Need a DOM render-manager in view.js
+OK Need to replace design/extend with Backbone object
+OK Need a linked-list-manager
+OK Need global list of visible panels & lines
+OK Test PanelManager consistency in validation
 
- input:
-       whether line or panel (or link) on each end
-       activeID = model-id for panel viewport
-         panelPosition:
-       old/new-panel-location if-exists
-       if line, view ID of original line
-         (and a way to get root/panel from it)
- for-undo:
-    created panel-id
-    panel/outline/view-id to focus-on
 
-    create or remove panel
-      edit active/removed outline-roots and panels
-      Do we need oldPanel & newPanel, in addition to
-        oldRoot and newRoot?
-      What about location?
-      render in DOM
-       render at: page.content.scroll{i}
-       PanelOutlineView, like in
-
-    if line, focus on line
-
-    Add graphical indicator for additional panels to right/left
-    Add horizontal-swipe layer
-    (Don't render outlines outside-view?)
-
+Add graphical indicator for additional panels to right/left
+Add horizontal-swipe layer
+(Don't render outlines outside-view?)
 Subpanel linkage & anchoring
-
-Test PanelManager consistency in validation
 
 -------
 

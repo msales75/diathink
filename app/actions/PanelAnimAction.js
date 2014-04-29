@@ -5,13 +5,39 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-m_require("app/animations/AnimatedAction.js");
+m_require("app/actions/AnimatedAction.js");
 
 var PanelAnimAction = (function (_super) {
     __extends(PanelAnimAction, _super);
     function PanelAnimAction() {
         _super.apply(this, arguments);
     }
+    PanelAnimAction.prototype.runinit = function () {
+        _super.prototype.runinit.call(this);
+        _.extend(this.runtime, {
+            status: {
+                context: 0,
+                log: 0,
+                undobuttons: 0,
+                oldModelCollection: 0,
+                oldModelRemove: 0,
+                modelCreate: 0,
+                newModelRank: 0,
+                newModelAdd: 0,
+                focus: 0,
+                end: 0,
+                view: {},
+                // todo: should separate these into animation-file?
+                createDockElem: 0,
+                dockAnim: 0,
+                panelPrep: 0,
+                anim: 0,
+                oldLinePlace: {},
+                newLinePlace: {},
+                linePlaceAnim: {}
+            }
+        });
+    };
     PanelAnimAction.prototype.panelPrep = function () {
         return;
         var r = this.runtime;

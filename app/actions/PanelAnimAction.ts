@@ -1,9 +1,35 @@
 ///<reference path="Action.ts"/>
 
-m_require("app/animations/AnimatedAction.js");
+m_require("app/actions/AnimatedAction.js");
 
 class PanelAnimAction extends AnimatedAction {
-    panelPrep() {
+    runinit() { // pasted from OutlineAction.ts?
+        super.runinit();
+        _.extend(this.runtime, {
+            status: {
+                context: 0,
+                log: 0,
+                undobuttons: 0,
+                oldModelCollection: 0,
+                oldModelRemove: 0,
+                modelCreate: 0,
+                newModelRank: 0,
+                newModelAdd: 0,
+                focus: 0,
+                end: 0,
+                view: {},
+                // todo: should separate these into animation-file?
+                createDockElem: 0,
+                dockAnim: 0,
+                panelPrep: 0,
+                anim: 0,
+                oldLinePlace: {},
+                newLinePlace: {},
+                linePlaceAnim: {}
+            }
+        });
+    }
+        panelPrep() {
         return;
         var r:RuntimeOptions = this.runtime;
         var activeLineView:NodeView;

@@ -15,47 +15,23 @@
 // todo: action stores oldFocus and newFocus ? (maybe not)
 // todo: handle focusID in context, and validate it.
 // todo: undo-scroll (maybe focus)
-m_require("app/actions/PlaceholderAnimAction.js");
+m_require("app/actions/AnimatedAction.js");
 
-class OutlineAction extends PlaceholderAnimAction {
+class OutlineAction extends AnimatedAction {
     oldModelContext:ModelContext;
     newModelContext:ModelContext;
-    oldType:string;
-    newType:string;
-    useOldLinePlaceholder:boolean;
-    useNewLinePlaceholder:boolean;
     _validateOptions;
     init() {
-        super.init.call(this, arguments);
+        super.init();
         _.extend(this, {
-            oldType: 'line',
-            newType: 'line',
             oldModelContext:null,
-            newModelContext:null,
-            oldPanelContext:null,
-            newPanelContext:null,
-            oldViewCollapsed: {},
-            useOldLinePlaceholder: true,
-            useNewLinePlaceholder: true
+            newModelContext:null
         });
     }
     runinit() {
         super.runinit.call(this, arguments);
         _.extend(this.runtime, {
-            activeLineElem: {},
-            activeLineHeight: {},
-            rOldContextType: {},
-            rNewContextType: {},
-            rUseNewLinePlaceholder: {},
-            rUseOldLinePlaceholder: {},
-            rNewLinePlaceholder: {},
-            rOldLinePlaceholder: {},
-            rOldLineVisible: {},
-            rNewLineVisible: {},
             oldLineContext: {},
-            createLineElem: {},
-            destroyLineElem: {},
-            useLinePlaceholderAnim: {},
             status: {
                 context: 0,
                 log: 0,
@@ -68,7 +44,6 @@ class OutlineAction extends PlaceholderAnimAction {
                 focus: 0,
                 end: 0,
                 view: {},
-             // todo: should separate these into animation-file?
                 createDockElem: 0,
                 dockAnim: 0,
                 panelPrep: 0,
@@ -78,25 +53,14 @@ class OutlineAction extends PlaceholderAnimAction {
                 linePlaceAnim: {}
             }
         });
-        var o:ActionOptions = this.options, r:RuntimeOptions = this.runtime;
+        var o:ActionOptions = this.options,
+            r:RuntimeOptions = this.runtime;
         if (o.undo) {
             r.rNewRoot = o.oldRoot;
             r.rOldRoot = o.newRoot;
         } else {
             r.rNewRoot = o.newRoot;
             r.rOldRoot = o.oldRoot;
-        }
-        console.log("Setting performDock based on anim = "+ o.anim);
-        if ((o.anim==='dock')||(o.anim==='indent')||(o.anim==='paneldock')) {
-            r.performDock = true;
-            if (o.dockElem) {
-                r.createDockElem = false;
-            } else {
-                r.createDockElem = true;
-            }
-        } else {
-            r.performDock = false;
-            r.createDockElem = false;
         }
     }
     runinit2() {
@@ -109,82 +73,17 @@ class OutlineAction extends PlaceholderAnimAction {
             r.rOldModelContext = this.oldModelContext;
             r.rNewModelContext = this.newModelContext;
         }
-
-        r.createModel = false;
-        r.destroyModel = false;
-        if (r.rOldModelContext && !r.rNewModelContext) {
-            r.createModel = true;
-        } else if (r.rNewModelContext && !r.rOldModelContext) {
-            r.destroyModel = true;
-        }
-
-
-        var outlines = OutlineRootView.outlinesById;
-        for (var i in outlines) {
-            // figure out what kind of object activeID is in each outline.
-            r.rOldContextType[i] = this.getContextType(r.rOldModelContext, outlines[i]);
-            r.rNewContextType[i] = this.getContextType(r.rNewModelContext, outlines[i]);
-
-            if (r.rOldType==='line') {
-                if (this.options.activeID) {
-                    var lineView = this.getNodeView(this.options.activeID, i);
-                    if (lineView) { // lineView can be null when creating new element
-                        r.oldLineContext[i] = this.getLineContext(lineView);
-                    }
-                }
-                if ((r.rOldContextType[i]==='none')||
-                    (r.rOldContextType[i]==='parentInvisible')||
-                    (r.rOldContextType[i]==='parentIsCollapsedLine')) {
-                    r.rOldLineVisible[i] = false;
-                } else if ((r.rOldContextType[i]==='parentIsRoot')||
-                    (r.rOldContextType[i]==='parentIsExpandedLine')) {
-                    r.rOldLineVisible[i] = true;
-                } else {
-                    assert(false, 'ERROR');
-                }
-            }
-            if (r.rNewType==='line') {
-                if ((r.rNewContextType[i]==='none')||
-                    (r.rNewContextType[i]==='parentInvisible')||
-                    (r.rNewContextType[i]==='parentIsCollapsedLine')) {
-                    r.rNewLineVisible[i] = false;
-                } else if ((r.rNewContextType[i]==='parentIsRoot')||
-                    (r.rNewContextType[i]==='parentIsExpandedLine')) {
-                    r.rNewLineVisible[i] = true;
-                } else {
-                    assert(false, 'ERROR');
-                }
-            }
-
-            r.rUseOldLinePlaceholder[i] = false;
-            r.rUseNewLinePlaceholder[i] = false;
-            if ((r.rNewType==='line')&&(r.rOldType==='line')) {
-                if (r.rOldLineVisible[i] && this.useOldLinePlaceholder) {r.rUseOldLinePlaceholder[i] = true;}
-                if (r.rNewLineVisible[i] && this.useNewLinePlaceholder) {r.rUseNewLinePlaceholder[i] = true;}
-            }
-            r.useLinePlaceholderAnim[i] = false;
-            if ((r.rUseOldLinePlaceholder[i] || r.rUseNewLinePlaceholder[i])) {
-                if (this.options.anim !== 'indent') {
-                    r.useLinePlaceholderAnim[i] = true;
-                }
-            }
-
-            r.createLineElem[i] = false;
-            r.destroyLineElem[i] = false;
-            if ((r.rNewType==='line') && r.rNewLineVisible[i] && !r.rOldLineVisible[i]) {
-                r.createLineElem[i] = true;
-            } else if ((r.rOldType==='line') && r.rOldLineVisible[i] && !r.rNewLineVisible[i]) {
-                r.destroyLineElem[i] = true;
-            }
-            // r.rNewLinePlaceholder[i] = {};
-            // r.activeLineElem[i]
-            // r.activeLineHeight[i]
-            // rOldModelContext, rNewModelContext
-            // panelContext,
-            // r.rOldPanelPlaceholder;
-            // r.rNewPanelPlaceholder;
-            // r.activePanelElem
-        }
+        this.dropSource = new NodeDropSource({
+            activeID: this.options.activeID,
+            outlineID: r.rOldRoot,
+            dockElem:this.options.dockElem
+        });
+        this.dropTarget = new NodeDropTarget({
+            rNewModelContext: r.rNewModelContext,
+            activeID:this.options.activeID,
+            outlineID: r.rNewRoot,
+            oldOutlineID: r.rOldRoot
+        });
     }
 
     validateOptions() {
@@ -366,6 +265,7 @@ class OutlineAction extends PlaceholderAnimAction {
     contextStep() {
         this.getOldContext();
         this.getNewContext();
+
     }
 
     newModel() {
@@ -499,12 +399,6 @@ class OutlineAction extends PlaceholderAnimAction {
             // oldViewVisible, newViewVisible, oldParent, newParent, oldList, newList
 
             var activeNodeView = that.getNodeView(that.options.activeID, outline.id);
-            if (activeNodeView!=null) { // original element was visible in this view
-                assert(r.oldLineContext[outline.id],
-                    "ERROR: Oldspot does not exist for action "+that.type+
-                        "; undo="+that.options.undo+"; redo="+that.options.redo+
-                        "; activeID="+that.options.activeID+"; view="+outline.id);
-            }
 
             // get parent listview; unless newModelContext is not in this view, then null
             newListView = that.contextParentVisible(newModelContext, outline);
@@ -528,7 +422,7 @@ class OutlineAction extends PlaceholderAnimAction {
                         value: OutlineNodeModel.getById(that.options.activeID),
                         cssClass: 'leaf'
                     });
-                    elem = $(activeNodeView.render());
+                    activeNodeView.render();
                 } else { // detach from old location
                     // remove item from list in listItems
                     var oldListView = that.contextParentVisible(r.rOldModelContext, outline);
@@ -539,32 +433,13 @@ class OutlineAction extends PlaceholderAnimAction {
                 // insert in new location
                 if (newModelContext.prev==null) {
                     newListView.insertAfter(null, activeNodeView,
-                        r.rNewLinePlaceholder[outline.id]);
+                        that.dropTarget.getPlaceholder(outline.id));
                 } else {
                     newListView.insertAfter(
                         that.getNodeView(newModelContext.prev, outline.id),
-                        activeNodeView, r.rNewLinePlaceholder[outline.id]);
+                        activeNodeView, that.dropTarget.getPlaceholder(outline.id));
                 }
 
-                // restore height if it was lost
-                $(activeNodeView.elem).css('height','').removeClass('drag-hidden');
-
-                // do this after rNewLinePlaceholder has been replaced, so correct element is visible.
-                if (that.options.dockElem) {
-                    $(document.body).removeClass('transition-mode');
-                    that.options.dockElem.parentNode.removeChild(that.options.dockElem);
-                    that.options.dockElem = undefined;
-                }
-            }
-
-            // remove source-placeholder
-            if (r.rUseOldLinePlaceholder[outline.id]) {
-                // console.log('Removing oldlinePlaceholder for '+outline.id);
-                r.rOldLinePlaceholder[outline.id].parentNode.removeChild(that.runtime.rOldLinePlaceholder[outline.id]);
-                r.rOldLinePlaceholder[outline.id] = undefined;
-                r.activeLineElem[outline.id] = undefined;
-                r.activeLineHeight[outline.id] = undefined;
-                r.rUseOldLinePlaceholder[outline.id] = undefined;
             }
 
             // check if this view breadcrumbs were modified, if activeID is ancestor of outline.

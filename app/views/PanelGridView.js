@@ -100,11 +100,7 @@ var PanelGridView = (function (_super) {
         return this.insertAfter(null, panel);
     };
 
-    PanelGridView.prototype.detach = function (panel, slide) {
-        var id = panel.id;
-        var mid = panel.value.cid;
-        var filler;
-        var fPanel = null;
+    PanelGridView.prototype.slideFill = function (slide) {
         var isPanelToLeft = (this.listItems.first() !== this.value.first());
         var isPanelToRight = (this.listItems.last() !== this.value.last());
         var direction = 'left';
@@ -117,18 +113,34 @@ var PanelGridView = (function (_super) {
                 direction = 'right';
             }
         }
-
-        // remove panel from model-list
-        // don't destroy it here, just detach it
-        this.value.remove(id);
-        this.listItems.remove(panel.id);
-
         if (direction === 'left') {
             this.slideLeft();
         } else if (direction === 'right') {
             this.slideRight();
         }
         return direction;
+    };
+
+    PanelGridView.prototype.detach = function (panel, slide) {
+        var id = panel.id;
+        var mid = panel.value.cid;
+        var filler;
+        var fPanel = null;
+
+        // remove panel from model-list
+        // don't destroy it here, just detach it
+        this.listItems.remove(panel.id);
+
+        if (panel.elem && panel.elem.parentNode) {
+            panel.elem.parentNode.removeChild(panel.elem);
+        }
+        /*
+        if (direction==='right') {
+        this.slideRight();
+        } else if (direction==='left') {
+        this.slideLeft();
+        }
+        */
     };
 
     PanelGridView.prototype.slideRight = function () {

@@ -1,10 +1,10 @@
 ///<reference path="Action.ts"/>
 
-m_require("app/actions/Action.js");
+m_require("app/actions/PanelAnimAction.js");
 
 
 
-class PanelRootAction extends Action {
+class PanelRootAction extends PanelAnimAction {
     type="PanelRootAction";
     newType= 'panel';
     // options:ActionOptions= {activeID: null, collapsed: false};

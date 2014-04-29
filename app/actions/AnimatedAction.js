@@ -1,39 +1,16 @@
-///<reference path="Action.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+///<reference path="Action.ts"/>
 m_require("app/actions/Action.js");
-
 var AnimatedAction = (function (_super) {
     __extends(AnimatedAction, _super);
     function AnimatedAction() {
         _super.apply(this, arguments);
     }
-    // Extensible subroutines
-    AnimatedAction.prototype.createDockElem = function () {
-    };
-    AnimatedAction.prototype.dockAnim = function (newRoot) {
-    };
-    AnimatedAction.prototype.panelPrep = function () {
-    };
-    AnimatedAction.prototype.oldLinePlace = function (v) {
-    };
-    AnimatedAction.prototype.newLinePlace = function (v) {
-    };
-    AnimatedAction.prototype.linePlaceAnim = function (v) {
-    };
-    AnimatedAction.prototype.oldLinePlaceAnimStep = function (f, v) {
-    };
-    AnimatedAction.prototype.newLinePlaceAnimStep = function (f, v) {
-    };
-    AnimatedAction.prototype.dockAnimStep = function (f, o) {
-    };
-    AnimatedAction.prototype.animFadeEnv = function (f, o) {
-    };
-
     AnimatedAction.prototype.animStepWrapper = function (f, duration, start, end) {
         var self = this;
         var frac = ((new Date()).getTime() - start) / duration;
@@ -53,54 +30,58 @@ var AnimatedAction = (function (_super) {
     AnimatedAction.prototype.animSetup = function () {
         var that = this;
         var r = this.runtime;
-        this.addQueue('createDockElem', ['context'], function () {
-            if (r.createDockElem) {
-                that.createDockElem();
-            }
-        });
-        if (r.performDock) {
-            var newRoot = r.rNewRoot;
-            console.log("Using newRoot = " + newRoot);
-            this.addQueue('dockAnim', [
-                ['newLinePlace', newRoot],
-                ['oldLinePlace', newRoot]
-            ], function () {
-                that.dockAnim(newRoot);
-            });
-        } else {
-            console.log('Skipping dockAnim because performDock=false, anim=' + this.options.anim);
-            that.runtime.status.dockAnim = 2;
-        }
-        this.addQueue('panelPrep', ['context'], function () {
-            that.panelPrep();
-        });
         var outlines = OutlineRootView.outlinesById;
         var i;
+        this.addQueue(['createDockElem'], [['context']], function () {
+            if (that.dropSource && !that.options.dockElem && that.runtime.rNewModelContext) {
+                that.options.dockElem = that.dropSource.createDockElem();
+            }
+        });
+        this.addQueue(['createUniqueSourcePlace'], [['createDockElem']], function () {
+            if (that.dropSource) {
+                that.dropSource.createUniquePlaceholder();
+            }
+        });
+        this.addQueue(['createUniqueTargetPlace'], [['createUniqueSourcePlace']], function () {
+            if (that.dropTarget) {
+                that.dropTarget.createUniquePlaceholder();
+            }
+        });
+        var origplaceholders = [['createUniqueSourcePlace'], ['createUniqueTargetPlace']];
+        var placeholders = [['createUniqueSourcePlace'], ['createUniqueTargetPlace']];
         for (i in outlines) {
             (function (i) {
-                that.addQueue(['oldLinePlace', i], ['createDockElem'], function () {
-                    that.oldLinePlace(outlines[i]);
-                });
-                that.addQueue(['newLinePlace', i], ['context', ['oldLinePlace', i]], function () {
-                    that.newLinePlace(outlines[i]);
-                });
-                that.addQueue(['linePlaceAnim', i], [
-                    ['oldLinePlace', i],
-                    ['newLinePlace', i]
-                ], function () {
-                    if (r.useLinePlaceholderAnim[i]) {
-                        that.linePlaceAnim(outlines[i]);
+                that.addQueue(['oldLinePlace', i], origplaceholders, function () {
+                    if (that.dropSource) {
+                        that.dropSource.createViewPlaceholder(outlines[i]);
                     }
                 });
+                that.addQueue(['newLinePlace', i], _.extend([['oldLinePlace', i]], origplaceholders), function () {
+                    if (that.dropTarget) {
+                        that.dropTarget.createViewPlaceholder(outlines[i]);
+                    }
+                });
+                placeholders.push(['oldLinePlace', i]);
+                placeholders.push(['newLinePlace', i]);
             })(i);
         }
-        var animDeps = [];
-        for (i in outlines) {
-            animDeps.push(['linePlaceAnim', i]);
-        }
-        animDeps.push('dockAnim');
-        this.addAsync('anim', animDeps, function () {
-            if (r.performDock || _.contains(r.useLinePlaceholderAnim, true)) {
+        this.addQueue('setupPlaceholderAnim', _.extend([['context'], ['createDockElem']], placeholders), function () {
+            if (that.dropSource) {
+                that.dropSource.setupPlaceholderAnim();
+            }
+            if (that.dropTarget) {
+                that.dropTarget.setupPlaceholderAnim();
+            }
+        });
+
+        this.addQueue('setupDockAnim', placeholders, function () {
+            if (that.dropTarget) {
+                that.dropTarget.setupDockAnim(that.options.dockElem);
+            }
+        });
+
+        this.addAsync('anim', [['setupPlaceholderAnim'], ['setupDockAnim']], function () {
+            if (true) {
                 var time = 200;
                 var start = (new Date()).getTime();
                 setTimeout(function () {
@@ -117,31 +98,34 @@ var AnimatedAction = (function (_super) {
             }
         });
     };
+    AnimatedAction.prototype.animCleanup = function () {
+        var that = this;
+        var views = [];
+        var o;
+        var outlines = OutlineRootView.outlinesById;
+        for (o in outlines) {
+            views.push(['view', o]);
+        }
+        this.addQueue('animCleanup', _.extend(['anim'], views), function () {
+            if (that.dropSource) {
+                that.dropSource.cleanup();
+            }
+            if (that.dropTarget) {
+                that.dropTarget.cleanup();
+            }
+            that.options.dockElem = null;
+        });
+    };
 
     // Used for all animation-frame-steps
     AnimatedAction.prototype.animStep = function (frac) {
-        var i, r = this.runtime, o = this.runtime.animOptions;
-
-        // loop over all outlines
-        var outlines = OutlineRootView.outlinesById;
-        if (o.view) {
-            for (i in outlines) {
-                if (!o.view[i]) {
-                    continue;
-                }
-                if (r.rUseOldLinePlaceholder[i]) {
-                    this.oldLinePlaceAnimStep(frac, o.view[i]);
-                }
-                if (r.rUseNewLinePlaceholder[i]) {
-                    this.newLinePlaceAnimStep(frac, o.view[i]);
-                }
-                if (this.oldType === 'panel') {
-                }
-            }
+        if (this.dropSource) {
+            this.dropSource.placeholderAnimStep(frac);
         }
-        if (o.dock) {
-            this.dockAnimStep(frac, o);
-            this.animFadeEnv(frac, o);
+        if (this.dropTarget) {
+            this.dropTarget.placeholderAnimStep(frac);
+            this.dropTarget.dockAnimStep(frac);
+            this.dropTarget.fadeAnimStep(frac);
         }
     };
 

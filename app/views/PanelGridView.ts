@@ -89,11 +89,7 @@ class PanelGridView extends GridView {
         return this.insertAfter(null, panel);
     }
 
-    detach(panel:PanelView, slide?:string) {
-        var id:string = panel.id;
-        var mid:string = panel.value.cid;
-        var filler:string;
-        var fPanel:PanelView = null;
+    slideFill(slide:string) {
         var isPanelToLeft:boolean = (this.listItems.first() !== this.value.first());
         var isPanelToRight:boolean = (this.listItems.last() !== this.value.last());
         var direction:string = 'left'; // default
@@ -106,17 +102,33 @@ class PanelGridView extends GridView {
                 direction = 'right';
             }
         }
-        // remove panel from model-list
-        // don't destroy it here, just detach it
-        this.value.remove(id);
-        this.listItems.remove(panel.id);
-
         if (direction==='left') {
             this.slideLeft();
         } else if (direction==='right') {
             this.slideRight();
         }
         return direction;
+    }
+
+    detach(panel:PanelView, slide?:string) {
+        var id:string = panel.id;
+        var mid:string = panel.value.cid;
+        var filler:string;
+        var fPanel:PanelView = null;
+        // remove panel from model-list
+        // don't destroy it here, just detach it
+        this.listItems.remove(panel.id);
+
+        if (panel.elem && panel.elem.parentNode) {
+            panel.elem.parentNode.removeChild(panel.elem);
+        }
+        /*
+        if (direction==='right') {
+            this.slideRight();
+        } else if (direction==='left') {
+            this.slideLeft();
+        }
+        */
     }
 
     slideRight() {

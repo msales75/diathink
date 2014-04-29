@@ -336,8 +336,8 @@ class View {
         var elem = this.elem;
 
         // detach from parent-view
-        if (this.parentView && (this.parentView.listItems != null)) {
-            this.parentView.detach(this, {destroyList:true});
+        if (this.parentView) {
+            this.parentView.detach(this, opts);
             this.elem = null;
         }
         // detach from model
@@ -405,7 +405,7 @@ class View {
         var elem:HTMLElement = this.elem;
         assert(this.listItems instanceof LinkedList, "listITems is not a linked list");
         for (id in this.listItems.obj) {
-            View.get(id).destroy();
+            View.get(id).destroy({destroyList: true});
         }
         this.listItems.reset();
         assert(this.listItems.count === 0,

@@ -44,9 +44,9 @@ class NodeView extends View {
             children: OutlineListView
         };
     }
-    destroy() {
+    destroy(opts?) {
         delete NodeView.nodesById[this.id];
-        super.destroy();
+        super.destroy(opts);
     }
 
     updateValue() {

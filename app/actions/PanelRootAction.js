@@ -5,7 +5,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-m_require("app/actions/Action.js");
+m_require("app/actions/PanelAnimAction.js");
 
 var PanelRootAction = (function (_super) {
     __extends(PanelRootAction, _super);
@@ -76,5 +76,5 @@ var PanelRootAction = (function (_super) {
         });
     };
     return PanelRootAction;
-})(Action);
+})(PanelAnimAction);
 //# sourceMappingURL=PanelRootAction.js.map

@@ -17,6 +17,8 @@
 ///<reference path="PlaceholderAnimAction.ts"/>
 ///<reference path="SlidePanelsAction.ts"/>
 ///<reference path="TextAction.ts"/>
+///<reference path="../NodeDropSource.ts"/>
+///<reference path="../NodeDropTarget.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -93,6 +95,9 @@ var Action = (function (_super) {
         if (!async) {
             async = false;
         }
+        if ((self instanceof Array) && (self.length === 1)) {
+            self = self[0];
+        }
         if (typeof self === 'object') {
             if (this.runtime.queue[self[0] + ':' + self[1]] !== undefined) {
                 alert("Queued twice: " + self[0] + ':' + self[1]);
@@ -123,6 +128,9 @@ var Action = (function (_super) {
 
             // never start the same job twice
             self = queue[i][0];
+            if ((self instanceof Array) && (self.length === 1)) {
+                self = self[0];
+            }
             if (typeof self === 'object') {
                 self0 = this.runtime.status[self[0]];
 
@@ -142,6 +150,9 @@ var Action = (function (_super) {
             ready = 1;
 
             for (j = 0; j < deps.length; ++j) {
+                if ((deps[j] instanceof Array) && (deps[j].length === 1)) {
+                    deps[j] = deps[j][0];
+                }
                 if (typeof deps[j] === 'object') {
                     depj = this.runtime.status[deps[j][0]];
                     if (!(depj && (depj[deps[j][1]] === 2))) {
@@ -175,6 +186,9 @@ var Action = (function (_super) {
         q = this.runtime.queue[i];
 
         // console.log("Scheduling "+i);
+        if ((q[0] instanceof Array) && (q[0].length === 1)) {
+            q[0] = q[0][0];
+        }
         if (typeof q[0] === 'object') {
             that.runtime.status[q[0][0]][q[0][1]] = 1;
         } else {
@@ -286,6 +300,9 @@ var Action = (function (_super) {
             this.execView(outlines[i]);
             focusDeps.push(['view', outlines[i].nodeRootView.id]);
         }
+
+        this.animCleanup();
+
         this.addQueue('focus', focusDeps, function () {
             if (that.options.focus) {
                 that.focus();
@@ -297,7 +314,7 @@ var Action = (function (_super) {
             ActionManager.refreshButtons();
         });
 
-        this.addQueue('end', ['focus', 'undobuttons', 'anim'], function () {
+        this.addQueue('end', ['focus', 'undobuttons', 'anim', 'animCleanup'], function () {
             var i, sub;
             that.validateNewContext();
             if (!that.options.undo && !that.options.redo) {
@@ -379,9 +396,13 @@ var Action = (function (_super) {
     Action.prototype.animSetup = function () {
         this.runtime.status.anim = 2;
     };
+    Action.prototype.animCleanup = function () {
+        this.runtime.status.animCleanup = 2;
+    };
     Action.prototype.execModel = function () {
     };
     Action.prototype.execView = function (outline) {
+        this.runtime.status.view[outline.id] = 2;
     };
 
     Action.createAndExec = function (options) {

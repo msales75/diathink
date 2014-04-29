@@ -110,7 +110,7 @@ class ListView extends View {
         if (node.elem && node.elem.parentNode) {
             node.elem.parentNode.removeChild(node.elem);
         }
-        if (! opts.destroyList) { // don't fix theme if we're going to destroy whole list
+        if (!opts || !opts.destroyList) { // don't fix theme if we're going to destroy whole list
             if ((previd==='')&&(nextid!=='')) {
                 this.listItems.obj[nextid].themeFirst(true);
             } else if ((nextid==='')&&(previd!=='')) {

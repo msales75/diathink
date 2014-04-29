@@ -1,21 +1,8 @@
 ///<reference path="Action.ts"/>
-
 m_require("app/actions/Action.js");
-
 class AnimatedAction extends Action {
-
-    // Extensible subroutines
-    createDockElem() {}
-    dockAnim(newRoot:string) {}
-    panelPrep() {}
-    oldLinePlace(v:OutlineRootView) {}
-    newLinePlace(v:OutlineRootView) {}
-    linePlaceAnim(v:OutlineRootView) {}
-    oldLinePlaceAnimStep(f:number, v:AnimViewOptions) {}
-    newLinePlaceAnimStep(f:number, v:AnimViewOptions) {}
-    dockAnimStep(f:number, o:AnimOptions) {}
-    animFadeEnv(f:number, o:AnimOptions) {}
-
+    dropSource:DropSource; // defined by instantiation
+    dropTarget:DropTarget;
 
     animStepWrapper(f, duration, start, end) {
         var self:AnimatedAction = this;
@@ -36,54 +23,61 @@ class AnimatedAction extends Action {
     animSetup() {
         var that = this;
         var r:RuntimeOptions = this.runtime;
-        this.addQueue('createDockElem', ['context'], function() {
-            if (r.createDockElem) {
-                that.createDockElem();
-            }
-        });
-        if (r.performDock) {
-            var newRoot = r.rNewRoot;
-            console.log("Using newRoot = " + newRoot);
-            this.addQueue('dockAnim', [
-                ['newLinePlace', newRoot],
-                ['oldLinePlace', newRoot]
-            ], function() {
-                that.dockAnim(newRoot);
-            });
-        } else {
-            console.log('Skipping dockAnim because performDock=false, anim=' + this.options.anim);
-            that.runtime.status.dockAnim = 2;
-        }
-        this.addQueue('panelPrep', ['context'], function() {
-            that.panelPrep();
-        });
         var outlines = OutlineRootView.outlinesById;
         var i:string;
+        this.addQueue(['createDockElem'], [['context']], function() {
+            if (that.dropSource && !that.options.dockElem && that.runtime.rNewModelContext) {
+                that.options.dockElem = that.dropSource.createDockElem();
+            }
+        });
+        this.addQueue(['createUniqueSourcePlace'], [['createDockElem']], function() {
+            if (that.dropSource) {
+                that.dropSource.createUniquePlaceholder();
+            }
+        });
+        this.addQueue(['createUniqueTargetPlace'], [['createUniqueSourcePlace']], function() {
+            if (that.dropTarget) {
+                that.dropTarget.createUniquePlaceholder();
+            }
+        });
+        var origplaceholders = [['createUniqueSourcePlace'], ['createUniqueTargetPlace']];
+        var placeholders = [['createUniqueSourcePlace'], ['createUniqueTargetPlace']];
         for (i in outlines) {
             (function(i) {
-                that.addQueue(['oldLinePlace', i], ['createDockElem'], function() {
-                    that.oldLinePlace(outlines[i]);
-                });
-                that.addQueue(['newLinePlace', i], ['context', ['oldLinePlace', i]], function() {
-                    that.newLinePlace(outlines[i]);
-                });
-                that.addQueue(['linePlaceAnim', i], [
-                    ['oldLinePlace', i],
-                    ['newLinePlace', i]
-                ], function() {
-                    if (r.useLinePlaceholderAnim[i]) {
-                        that.linePlaceAnim(outlines[i]);
+                that.addQueue(['oldLinePlace', i], origplaceholders, function() {
+                    if (that.dropSource) {
+                        that.dropSource.createViewPlaceholder(outlines[i]);
                     }
                 });
+                that.addQueue(['newLinePlace', i],
+                    _.extend([['oldLinePlace', i]], origplaceholders), function() {
+                        if (that.dropTarget) {
+                            that.dropTarget.createViewPlaceholder(outlines[i]);
+                        }
+                    });
+                placeholders.push(['oldLinePlace',i]);
+                placeholders.push(['newLinePlace',i]);
             })(i);
         }
-        var animDeps = [];
-        for (i in outlines) {
-            animDeps.push(['linePlaceAnim', i]);
-        }
-        animDeps.push('dockAnim');
-        this.addAsync('anim', animDeps, function() {
-            if (r.performDock || _.contains(r.useLinePlaceholderAnim, true)) {
+        this.addQueue('setupPlaceholderAnim',
+            _.extend([['context'], ['createDockElem']], placeholders),
+            function() {
+            if (that.dropSource) {
+                that.dropSource.setupPlaceholderAnim();
+            }
+            if (that.dropTarget) {
+                that.dropTarget.setupPlaceholderAnim();
+            }
+        });
+
+        this.addQueue('setupDockAnim', placeholders, function() {
+            if (that.dropTarget) {
+                that.dropTarget.setupDockAnim(that.options.dockElem);
+            }
+        });
+
+        this.addAsync('anim', [['setupPlaceholderAnim'],['setupDockAnim']], function() {
+            if (true) {
                 var time = 200; // todo: this should vary.
                 var start = (new Date()).getTime();
                 setTimeout(function() {
@@ -100,31 +94,34 @@ class AnimatedAction extends Action {
             }
         });
     }
+    animCleanup() {
+        var that = this;
+        var views = [];
+        var o:string;
+        var outlines = OutlineRootView.outlinesById;
+        for (o in outlines) {
+            views.push(['view', o]);
+        }
+        this.addQueue('animCleanup', _.extend(['anim'],views), function() {
+            if (that.dropSource) {
+                that.dropSource.cleanup();
+            }
+            if (that.dropTarget) {
+                that.dropTarget.cleanup();
+            }
+            that.options.dockElem = null;
+        });
+    }
 
     // Used for all animation-frame-steps
     animStep(frac:number) {
-        var i, r:RuntimeOptions = this.runtime,
-            o:AnimOptions = this.runtime.animOptions;
-        // loop over all outlines
-        var outlines = OutlineRootView.outlinesById;
-        if (o.view) {
-            for (i in outlines) {
-                if (!o.view[i]) {
-                    continue;
-                }
-                if (r.rUseOldLinePlaceholder[i]) {// visually collapse old line
-                    this.oldLinePlaceAnimStep(frac, o.view[i]);
-                }
-                if (r.rUseNewLinePlaceholder[i]) {// visually expand new line
-                    this.newLinePlaceAnimStep(frac, o.view[i]);
-                }
-                if (this.oldType === 'panel') {
-                }
-            }
+        if (this.dropSource) {
+            this.dropSource.placeholderAnimStep(frac);
         }
-        if (o.dock) {
-            this.dockAnimStep(frac, o);
-            this.animFadeEnv(frac, o);
+        if (this.dropTarget) {
+            this.dropTarget.placeholderAnimStep(frac);
+            this.dropTarget.dockAnimStep(frac);
+            this.dropTarget.fadeAnimStep(frac);
         }
     }
 

@@ -1,6 +1,6 @@
 ///<reference path="Action.ts"/>
-m_require("app/actions/Action.js");
-class PanelCreateAction extends Action {
+m_require("app/actions/PanelAnimAction.js");
+class PanelCreateAction extends PanelAnimAction {
     type = "PanelCreate";
     prevPanel:string = null;
     newPanel:string = null;
@@ -139,6 +139,10 @@ class PanelCreateAction extends Action {
             var dir;
             if (o.undo) {
                 dir = View.get(that.newPanel).destroy();
+                grid.value.remove(that.newPanel);
+                grid.slideFill('left');
+
+                // do we need to slide the list here?
             } else {
                 if (!that.newPanel) { // if id isn't chosen yet
                     that.newPanel = View.getNextId();
