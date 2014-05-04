@@ -19,6 +19,8 @@
 ///<reference path="TextAction.ts"/>
 ///<reference path="../NodeDropSource.ts"/>
 ///<reference path="../NodeDropTarget.ts"/>
+///<reference path="../PanelDropSource.ts"/>
+///<reference path="../PanelDropTarget.ts"/>
 
 
 
@@ -49,7 +51,7 @@ interface ActionOptions {
     activeID?:string;
     referenceID?:string;
     anim?:string;
-    dockElem?:HTMLElement;
+    dockView?:View;
     text?:string;
     direction?: string;
     transition?:boolean;
@@ -106,39 +108,21 @@ interface RuntimeOptions {
         focus?:number;
         end?:number;
         view?:ViewNumbers;
+        uniqueView:number;
         createDockElem?:number;
         dockAnim?:number;
         panelPrep?:number;
         anim?:number;
+        anim2?:number;
         animCleanup?:number;
         oldLinePlace?:ViewNumbers;
         newLinePlace?:ViewNumbers;
-        linePlaceAnim?:ViewNumbers;
     };
     rNewRoot?;
     rOldRoot?;
-    performDock?:boolean;
-    createDockElem?:boolean;
-    activeLineElem?:{[i:string]:HTMLElement};
-    activeLineHeight?:{[i:string]:number};
-    rOldContextType?:{[i:string]:string};
-    rNewContextType?:{[i:string]:string};
-    rUseNewLinePlaceholder?:{[i:string]:boolean};
-    rUseOldLinePlaceholder?:{[i:string]:boolean};
-    rNewLinePlaceholder?:{[i:string]:HTMLElement};
-    rOldLinePlaceholder?:{[i:string]:HTMLElement};
-    rOldLineVisible?:{[i:string]:boolean};
-    rNewLineVisible?:{[i:string]:boolean};
     oldLineContext?:{[i:string]:{ type: string; obj: any; }};
-    createLineElem?:{[i:string]:boolean};
-    destroyLineElem?:{[i:string]:boolean};
-    useLinePlaceholderAnim?:{[i:string]:boolean};
     rOldModelContext?:ModelContext;
     rNewModelContext?:ModelContext;
-    createModel?:boolean;
-    destroyModel?:boolean;
-    rNewPanelContext?;
-
 }
 
 class Action extends PModel {
@@ -196,6 +180,7 @@ class Action extends PModel {
                 log: 0,
                 undobuttons: 0,
                 view: {},
+                uniqueView: 0,
                 end: 0
             }
         };
@@ -304,7 +289,7 @@ class Action extends PModel {
         }, 0);
         setTimeout(function() {
             // console.log("Updating status of item "+i+"before execution");
-            // console.log("Executing "+i);
+            console.log("Executing "+i);
             (q[2])();
             if (!q[3]) { // unless it ends asynchronously like an animation
                 // console.log("Updating status after finishing non-async item "+i);
@@ -392,9 +377,10 @@ class Action extends PModel {
 
         // todo: assumptions and issue-handling
         this.execModel();
+        this.execUniqueView();
 
         var outlines = OutlineRootView.outlinesById;
-        var focusDeps = [];
+        var focusDeps = [['uniqueView']];
         for (i in outlines) {
            this.execView(outlines[i]);
            focusDeps.push(['view', outlines[i].nodeRootView.id]);
@@ -482,8 +468,9 @@ class Action extends PModel {
     contextStep() {}
     animSetup() { this.runtime.status.anim = 2; }
     animCleanup() { this.runtime.status.animCleanup = 2;}
-    execModel() {}
+    execModel() { this.runtime.status.newModelAdd = 2;}
     execView(outline) {this.runtime.status.view[outline.id] = 2;}
+    execUniqueView() {this.runtime.status.uniqueView = 2;}
 
     static createAndExec(options):Action { // create a new action object
         var action:Action = new this(options);

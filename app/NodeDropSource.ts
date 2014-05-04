@@ -1,6 +1,6 @@
 ///<reference path="actions/Action.ts"/>
 class DropSource {
-    dockElem:HTMLElement;
+    dockView:View;
     outlineID:string;
     animOptions:{
         startX?:number;
@@ -23,7 +23,8 @@ class DropSource {
     createViewPlaceholder(outline) {}
     setupPlaceholderAnim() {}
     placeholderAnimStep(frac:number) {}
-    createDockElem():HTMLElement {return null}
+    postAnimStep(frac:number) {}
+    createDockElem():View {if (this.dockView) {return this.dockView;} else {return null;}}
     getHelperParams() {}
     cleanup() {}
 }
@@ -32,15 +33,21 @@ class NodeDropSource extends DropSource {
     deleteSpeed = 80;
     placeholderSpeed = 160;
     activeID:string;
+    usePlaceholder:boolean;
+    useDock:boolean;
+    dockTextOnly:boolean=false;
     outlineID:string;
     activeLineHeight:{[i:string]:number} = {}; // how much we are moving underneath
     rOldLinePlaceholder:{[i:string]:HTMLElement} = {};
 
-    constructor(opts:{activeID:string;outlineID:string;dockElem:HTMLElement}) { // more flags?
+    constructor(opts:{activeID:string;outlineID:string;usePlaceholder:boolean;useDock:boolean;dockTextOnly?:boolean;dockView:View}) { // more flags?
         super(opts);
         this.activeID = opts.activeID;
         this.outlineID = opts.outlineID;
-        this.dockElem = opts.dockElem;
+        this.dockView = opts.dockView;
+        this.useDock = opts.useDock;
+        this.dockTextOnly= opts.dockTextOnly;
+        this.usePlaceholder = opts.usePlaceholder;
     }
 
     getNodeView(id, rootid):NodeView {
@@ -53,6 +60,7 @@ class NodeDropSource extends DropSource {
     }
 
     createViewPlaceholder(outline) {
+        if (!this.usePlaceholder) {return;}
         if (this.activeID==null) {return;}
         var activeLineView = this.getNodeView(this.activeID, outline.id);
         if (activeLineView == null) {
@@ -118,10 +126,45 @@ class NodeDropSource extends DropSource {
             }
         }
     }
+    createTextFromNode(node:NodeView) {
+        var elem:HTMLElement = node.header.name.text.elem;
+        var offset = $(elem).offset();
+        var paddingLeft = Number($(elem).css('padding-left').replace('px',''));
+        var paddingRight = Number($(elem).css('padding-right').replace('px',''));
+        var paddingTop = Number($(elem).css('padding-top').replace('px',''));
+        var paddingBottom = Number($(elem).css('padding-bottom').replace('px',''));
+        var paddingWidth = paddingLeft + paddingRight;
+        var paddingHeight = paddingTop + paddingBottom;
+        var width = elem.clientWidth - paddingWidth;
+        var height = elem.clientHeight - paddingHeight;
+        this.dockView = new ContainerView({parentView: View.currentPage.drawlayer});
+        this.dockView.render();
+        this.dockView.elem.innerHTML = node.header.name.text.elem.innerHTML;
+        $(this.dockView.elem).css({
+            position: 'absolute',
+            'z-index': 2,
+            top: (offset.top+paddingTop)+'px',
+            left: (offset.left+paddingLeft)+'px',
+            width: width+'px',
+            height: height+'px',
+            'line-height': $(elem).css('line-height'),
+            'font-size': $(elem).css('font-size'),
+            color: $(elem).css('color'),
+            'background': 'transparent'
+        }).appendTo(View.currentPage.drawlayer.elem);
+    }
 
-    createDockElem():HTMLElement {
-        if (this.dockElem!=null) {
-            return this.dockElem;
+    createDockElem():View {
+        if (!this.useDock) {return null;}
+        if (this.dockView!=null) { // todo: convert to text-only with dockTextOnly
+            if (!this.dockTextOnly) {
+                return this.dockView;
+            }
+            var node:NodeView = <NodeView>this.dockView;
+            this.createTextFromNode(node);
+            node.destroy(); // todo?: add fade-out?
+            $(document.body).addClass('transition-mode');
+            return this.dockView;
         }
         if (this.activeID==null) {return null;}
         var activeLineView = this.getNodeView(this.activeID, this.outlineID);
@@ -132,22 +175,30 @@ class NodeDropSource extends DropSource {
             console.log('ERROR: activeLineView exists with missing element');
             debugger;
         }
+        if (this.dockTextOnly) { // use only text to dock
+            this.createTextFromNode(activeLineView);
+        } else { // use whole node as dock element
+            this.dockView = new NodeView({
+                parentView: View.currentPage.drawlayer,
+                value: activeLineView.value,
+                isCollapsed: activeLineView.isCollapsed
+            });
+            this.dockView.renderAt({parent: View.currentPage.drawlayer.elem});
+            this.dockView.themeFirst(true);
+            this.dockView.themeLast(true);
+            var offset = $(activeLineView.elem).offset();
+            $(this.dockView.elem).css({
+                position: 'absolute',
+                left: (offset.left) + 'px',
+                top: (offset.top) + 'px',
+                width: (activeLineView.elem.clientWidth)+'px',
+                height: (activeLineView.elem.clientHeight)+'px'
+            });
+        }
         // if PanelRootAction, change the helper to be just the text instead of activeLineView
         // how do we know if 'source' is a panel?
-        this.dockElem = <HTMLElement> activeLineView.elem.cloneNode(true);
-        this.dockElem.id = '';
-        var drawlayer:HTMLElement = View.getCurrentPage().drawlayer.elem;
-        drawlayer.appendChild(this.dockElem);
-        var offset = $(activeLineView.elem).offset();
-        $(this.dockElem).css({
-            position: 'absolute',
-            left: offset.left + 'px',
-            top: offset.top + 'px',
-            width: activeLineView.elem.clientWidth,
-            height: activeLineView.elem.clientHeight
-        });
         $(document.body).addClass('transition-mode');
-        return this.dockElem;
+        return this.dockView;
     }
 
     getHelperParams() {
@@ -163,6 +214,5 @@ class NodeDropSource extends DropSource {
                 delete this.rOldLinePlaceholder[o];
             }
         }
-
     }
 }

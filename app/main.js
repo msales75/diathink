@@ -39,7 +39,7 @@ OutlineNodeModel.root.fromJSON({
 $(function () {
     $D.router = new Router(document.body);
     new DiathinkView({});
-    var grid = View.currentPage.content.grid;
+    var grid = View.currentPage.content.gridwrapper.grid;
     grid.numCols = 2;
     grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
     grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
@@ -52,6 +52,7 @@ $(function () {
     fixFontSize();
     ActionManager.refreshButtons();
     grid.updatePanelButtons();
+    grid.resize();
     $D.keyboard = new keyboardSetup();
     $D.keyboard.init({});
     setTimeout(function () {

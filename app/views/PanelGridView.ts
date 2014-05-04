@@ -16,7 +16,15 @@ class PanelGridView extends GridView {
     updateValue() {
     }
 
-    insertViewAfter(prevPanel:PanelView, panel:PanelView) {
+    getInsertLocation(prevPanel:string):string {
+        if (this.listItems.next[prevPanel]==='') {
+            return prevPanel;
+        } else {
+            return this.listItems.next[prevPanel];
+        }
+    }
+
+    insertViewAfter(prevPanel:PanelView, panel:PanelView, placeholder?:HTMLElement) {
         var id:string, previd:string; // viewid's
         // update the view-list
         id = panel.id;
@@ -32,35 +40,47 @@ class PanelGridView extends GridView {
         // update value to include reference based on view (hmm this seems sloppy)
         // update DOM
         if (this.elem) { // render panels if the grid is currently rendered
-            var nextPanel = this.listItems.next[id];
             if (!panel.elem) {panel.render();}
-            if (nextPanel === '') {
-                this.elem.appendChild(panel.elem);
+            $(panel.elem).css('width', String(this.itemWidth)+'px');
+            if (placeholder) {
+                assert(placeholder.parentNode === this.elem, "Placeholder is not a child of of grid");
+                this.elem.replaceChild(panel.elem, placeholder);
             } else {
-                this.elem.insertBefore(panel.elem, this.listItems.obj[nextPanel].elem);
+                var nextPanel = this.listItems.next[id];
+                if (nextPanel === '') {
+                    this.elem.appendChild(panel.elem);
+                } else {
+                    this.elem.insertBefore(panel.elem, this.listItems.obj[nextPanel].elem);
+                }
             }
+            // fix width based on gridwrapper/numcols
         }
+        var dir:string = 'right';   // Default slide right
         // Remove clipped panel and indicate animation-direction
         // decide whether we push-right or push-left
         // MUST slide right if there is no rightPanel
         // SHOULD slide left if it's put after last panel
-        var dir:string = 'right';   // Default slide right
+
+        // don't remove extra-panel if its being animated.
         if (this.listItems.count > this.numCols) {
             if (id === this.listItems.last()) {
                 dir = 'left';
                 var firstPanel:PanelView = <PanelView>this.listItems.obj[this.listItems.first()];
-                firstPanel.destroy();
+                if (!firstPanel.animating) {
+                    firstPanel.destroy();
+                }
             } else {
                 var lastPanel:PanelView = <PanelView>this.listItems.obj[this.listItems.last()];
-                lastPanel.destroy();
+                if (!lastPanel.animating) {
+                    lastPanel.destroy();
+                }
             }
         }
         this.updatePanelButtons();
-        this.updateWidths();
         return dir;
     }
 
-    insertAfter(prevPanel:PanelView, panel:PanelView) {
+    insertAfter(prevPanel:PanelView, panel:PanelView, placeholder?:HTMLElement) {
         var id:string, previd:string;
         assert(panel !== null, "No panel given to insert");
         id = panel.id;
@@ -78,7 +98,7 @@ class PanelGridView extends GridView {
                 "insertAfter has unknown previous id");
         }
         this.value.insertAfter(panel.id, true, previd);
-        return this.insertViewAfter(prevPanel, panel);
+        return this.insertViewAfter(prevPanel, panel, placeholder);
     }
 
     append(panel:PanelView) {
@@ -88,20 +108,23 @@ class PanelGridView extends GridView {
     prepend(panel:PanelView) {
         return this.insertAfter(null, panel);
     }
-
-    slideFill(slide:string) {
+    getSlideDirection(slide?:string):string {
         var isPanelToLeft:boolean = (this.listItems.first() !== this.value.first());
         var isPanelToRight:boolean = (this.listItems.last() !== this.value.last());
-        var direction:string = 'left'; // default
         if (!isPanelToLeft) { // must slide left
-            direction = 'left';
+            return 'left';
         } else if (isPanelToLeft && !isPanelToRight) { // must slide right
-            direction = 'right';
+            return 'right';
         } else {
             if (slide === 'right') {
-                direction = 'right';
+                return 'right';
             }
+            return 'left'; // default
         }
+    }
+
+    slideFill(slide:string) {
+        var direction = this.getSlideDirection();
         if (direction==='left') {
             this.slideLeft();
         } else if (direction==='right') {

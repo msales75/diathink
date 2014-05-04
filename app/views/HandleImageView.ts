@@ -13,7 +13,8 @@ class HandleImageView extends ImageView {
         var liElem = $(li.elem);
         ActionManager.schedule(
             function():SubAction {
-                return Action.checkTextChange(li.header.name.text.id);
+                if (!View.focusedView) {return null;}
+                return Action.checkTextChange(View.focusedView.header.name.text.id);
             },
             function():SubAction {
                 if (li.isLeaf) {
@@ -33,7 +34,8 @@ class HandleImageView extends ImageView {
         var li:NodeView = this.nodeView;
         ActionManager.schedule(
             function():SubAction {
-                return Action.checkTextChange(li.header.name.text.id);
+                if (!View.focusedView) {return null;}
+                return Action.checkTextChange(View.focusedView.header.name.text.id);
             },
             function():SubAction {
                 return {

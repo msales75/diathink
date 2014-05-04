@@ -24,11 +24,11 @@ var DropTarget = (function () {
     DropTarget.prototype.placeholderAnimStep = function (frac) {
     };
 
-    DropTarget.prototype.setupDockAnim = function (dockElem) {
+    DropTarget.prototype.setupDockAnim = function (dockView) {
     };
 
     DropTarget.prototype.dockAnimStep = function (frac) {
-        if (!this.dockElem) {
+        if (!this.dockView) {
             return;
         }
         var endX = this.animOptions.endX, endY = this.animOptions.endY, startX = this.animOptions.startX, startY = this.animOptions.startY;
@@ -53,7 +53,9 @@ var DropTarget = (function () {
         if (o.startSize && o.endSize) {
             css['font-size'] = [Math.round((1 - frac) * o.startSize + frac * o.endSize), 'px'].join('');
         }
-        $(this.dockElem).css(css);
+        $(this.dockView.elem).css(css);
+    };
+    DropTarget.prototype.postAnimStep = function (frac) {
     };
 
     DropTarget.prototype.setupDockFade = function () {
@@ -191,17 +193,17 @@ var NodeDropTarget = (function (_super) {
         }
     };
 
-    NodeDropTarget.prototype.setupDockAnim = function (dockElem) {
-        this.dockElem = dockElem;
+    NodeDropTarget.prototype.setupDockAnim = function (dockView) {
+        this.dockView = dockView;
 
         // Is newLinePlace for this view above or below source?
-        if ((this.rNewModelContext == null) || (!this.dockElem)) {
+        if ((this.rNewModelContext == null) || (!this.dockView)) {
             return;
         }
         if (!this.rNewLinePlaceholder[this.outlineID]) {
             $(document.body).removeClass('transition-mode');
-            this.dockElem.parentNode.removeChild(this.dockElem);
-            this.dockElem = undefined;
+            this.dockView.destroy();
+            this.dockView = undefined;
 
             // console.log('Missing rNewLinePlaceholder in dockAnim');
             return;
@@ -212,10 +214,10 @@ var NodeDropTarget = (function (_super) {
                 destination.top -= this.activeLineHeight[this.outlineID];
             }
         }
-        var startX = this.dockElem.offsetLeft;
-        var startY = this.dockElem.offsetTop;
-        var startWidth = this.dockElem.clientWidth;
-        $(this.dockElem).addClass('ui-first-child').addClass('ui-last-child');
+        var startX = this.dockView.elem.offsetLeft;
+        var startY = this.dockView.elem.offsetTop;
+        var startWidth = this.dockView.elem.clientWidth;
+        this.dockView.addClass('ui-first-child').addClass('ui-last-child');
 
         // todo: inject speed and take max-duration?
         _.extend(this.animOptions, {
@@ -253,12 +255,10 @@ var NodeDropTarget = (function (_super) {
                 }
             }
         }
-        if (this.dockElem) {
+        if (this.dockView) {
             $(document.body).removeClass('transition-mode');
-            if (this.dockElem.parentNode) {
-                this.dockElem.parentNode.removeChild(this.dockElem);
-            }
-            this.dockElem = undefined;
+            this.dockView.destroy();
+            this.dockView = undefined;
         }
     };
     return NodeDropTarget;

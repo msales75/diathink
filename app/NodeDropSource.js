@@ -20,8 +20,14 @@ var DropSource = (function () {
     };
     DropSource.prototype.placeholderAnimStep = function (frac) {
     };
+    DropSource.prototype.postAnimStep = function (frac) {
+    };
     DropSource.prototype.createDockElem = function () {
-        return null;
+        if (this.dockView) {
+            return this.dockView;
+        } else {
+            return null;
+        }
     };
     DropSource.prototype.getHelperParams = function () {
     };
@@ -36,11 +42,15 @@ var NodeDropSource = (function (_super) {
         _super.call(this, opts);
         this.deleteSpeed = 80;
         this.placeholderSpeed = 160;
+        this.dockTextOnly = false;
         this.activeLineHeight = {};
         this.rOldLinePlaceholder = {};
         this.activeID = opts.activeID;
         this.outlineID = opts.outlineID;
-        this.dockElem = opts.dockElem;
+        this.dockView = opts.dockView;
+        this.useDock = opts.useDock;
+        this.dockTextOnly = opts.dockTextOnly;
+        this.usePlaceholder = opts.usePlaceholder;
     }
     NodeDropSource.prototype.getNodeView = function (id, rootid) {
         var model = OutlineNodeModel.getById(id);
@@ -54,6 +64,9 @@ var NodeDropSource = (function (_super) {
     };
 
     NodeDropSource.prototype.createViewPlaceholder = function (outline) {
+        if (!this.usePlaceholder) {
+            return;
+        }
         if (this.activeID == null) {
             return;
         }
@@ -125,10 +138,47 @@ var NodeDropSource = (function (_super) {
             }
         }
     };
+    NodeDropSource.prototype.createTextFromNode = function (node) {
+        var elem = node.header.name.text.elem;
+        var offset = $(elem).offset();
+        var paddingLeft = Number($(elem).css('padding-left').replace('px', ''));
+        var paddingRight = Number($(elem).css('padding-right').replace('px', ''));
+        var paddingTop = Number($(elem).css('padding-top').replace('px', ''));
+        var paddingBottom = Number($(elem).css('padding-bottom').replace('px', ''));
+        var paddingWidth = paddingLeft + paddingRight;
+        var paddingHeight = paddingTop + paddingBottom;
+        var width = elem.clientWidth - paddingWidth;
+        var height = elem.clientHeight - paddingHeight;
+        this.dockView = new ContainerView({ parentView: View.currentPage.drawlayer });
+        this.dockView.render();
+        this.dockView.elem.innerHTML = node.header.name.text.elem.innerHTML;
+        $(this.dockView.elem).css({
+            position: 'absolute',
+            'z-index': 2,
+            top: (offset.top + paddingTop) + 'px',
+            left: (offset.left + paddingLeft) + 'px',
+            width: width + 'px',
+            height: height + 'px',
+            'line-height': $(elem).css('line-height'),
+            'font-size': $(elem).css('font-size'),
+            color: $(elem).css('color'),
+            'background': 'transparent'
+        }).appendTo(View.currentPage.drawlayer.elem);
+    };
 
     NodeDropSource.prototype.createDockElem = function () {
-        if (this.dockElem != null) {
-            return this.dockElem;
+        if (!this.useDock) {
+            return null;
+        }
+        if (this.dockView != null) {
+            if (!this.dockTextOnly) {
+                return this.dockView;
+            }
+            var node = this.dockView;
+            this.createTextFromNode(node);
+            node.destroy(); // todo?: add fade-out?
+            $(document.body).addClass('transition-mode');
+            return this.dockView;
         }
         if (this.activeID == null) {
             return null;
@@ -141,23 +191,31 @@ var NodeDropSource = (function (_super) {
             console.log('ERROR: activeLineView exists with missing element');
             debugger;
         }
+        if (this.dockTextOnly) {
+            this.createTextFromNode(activeLineView);
+        } else {
+            this.dockView = new NodeView({
+                parentView: View.currentPage.drawlayer,
+                value: activeLineView.value,
+                isCollapsed: activeLineView.isCollapsed
+            });
+            this.dockView.renderAt({ parent: View.currentPage.drawlayer.elem });
+            this.dockView.themeFirst(true);
+            this.dockView.themeLast(true);
+            var offset = $(activeLineView.elem).offset();
+            $(this.dockView.elem).css({
+                position: 'absolute',
+                left: (offset.left) + 'px',
+                top: (offset.top) + 'px',
+                width: (activeLineView.elem.clientWidth) + 'px',
+                height: (activeLineView.elem.clientHeight) + 'px'
+            });
+        }
 
         // if PanelRootAction, change the helper to be just the text instead of activeLineView
         // how do we know if 'source' is a panel?
-        this.dockElem = activeLineView.elem.cloneNode(true);
-        this.dockElem.id = '';
-        var drawlayer = View.getCurrentPage().drawlayer.elem;
-        drawlayer.appendChild(this.dockElem);
-        var offset = $(activeLineView.elem).offset();
-        $(this.dockElem).css({
-            position: 'absolute',
-            left: offset.left + 'px',
-            top: offset.top + 'px',
-            width: activeLineView.elem.clientWidth,
-            height: activeLineView.elem.clientHeight
-        });
         $(document.body).addClass('transition-mode');
-        return this.dockElem;
+        return this.dockView;
     };
 
     NodeDropSource.prototype.getHelperParams = function () {

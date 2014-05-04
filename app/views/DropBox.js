@@ -20,11 +20,13 @@ var DropBox = (function () {
         var panels = PanelView.panelsById;
         var nodes = NodeView.nodesById;
         for (nid in nodes) {
-            var boxes = nodes[nid].dropboxes;
-            for (i = 0; i < boxes.length; ++i) {
-                boxes[i].remove();
+            if (nodes[nid].nodeRootView != null) {
+                var boxes = nodes[nid].dropboxes;
+                for (i = 0; i < boxes.length; ++i) {
+                    boxes[i].remove();
+                }
+                nodes[nid].dropboxes = [];
             }
-            nodes[nid].dropboxes = [];
         }
         for (pid in panels) {
             var boxes = panels[pid].dropboxes;
@@ -42,7 +44,7 @@ var DropBox = (function () {
         $(document.body).addClass('drop-mode');
 
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
-        var panelParent = (View.getCurrentPage()).content.grid;
+        var panelParent = (View.getCurrentPage()).content.gridwrapper.grid;
         var canvas0 = View.getCurrentPage().drawlayer;
         canvas0.cacheOffset = $(canvas0.elem).offset();
 
@@ -53,7 +55,7 @@ var DropBox = (function () {
             canvas1.cacheOffset = $(canvas1.elem).offset();
         }
 
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         var pid;
 
         for (pid = panels.first(); pid !== ''; pid = panels.next[pid]) {
@@ -68,12 +70,14 @@ var DropBox = (function () {
         }
         for (nid in NodeView.nodesById) {
             node = NodeView.nodesById[nid];
-            node.dropboxes = [];
-            node.dropboxes.push(new DropBoxTop(node));
-            node.dropboxes.push(new DropBoxBottom(node));
-            node.dropboxes.push(new DropBoxHandle(node));
-            for (i = 0; i < node.dropboxes.length; ++i) {
-                node.dropboxes[i].render();
+            if (node.nodeRootView != null) {
+                node.dropboxes = [];
+                node.dropboxes.push(new DropBoxTop(node));
+                node.dropboxes.push(new DropBoxBottom(node));
+                node.dropboxes.push(new DropBoxHandle(node));
+                for (i = 0; i < node.dropboxes.length; ++i) {
+                    node.dropboxes[i].render();
+                }
             }
         }
     };
@@ -82,7 +86,7 @@ var DropBox = (function () {
 
         // cache scroll-positions of each panel
         var pid;
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
 
         for (pid = panels.first(); pid !== ''; pid = panels.next[pid]) {
             var panel = View.get(pid);
@@ -126,7 +130,7 @@ var DropBox = (function () {
     DropBox.previewDropBoxes = function () {
         var i, j, d;
         var pid;
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         for (pid = panels.first(); pid !== ''; pid = panels.next[pid]) {
             var panel = View.get(pid);
             var canvas = $('#' + View.getCurrentPage().drawlayer.id);
@@ -147,6 +151,9 @@ var DropBox = (function () {
         var nid;
         for (nid in nodes) {
             var node = nodes[nid];
+            if (node.nodeRootView == null) {
+                continue;
+            }
             var view = node.panelView.outline;
             var canvas = $('#' + view.droplayer.id);
             var ctop = canvas.offset().top;
@@ -259,7 +266,7 @@ var DropBoxTop = (function (_super) {
     }
     DropBoxTop.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.simpleSchedule(node, function () {
+        ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: MoveBeforeAction,
                 activeID: node.value.cid,
@@ -267,7 +274,7 @@ var DropBoxTop = (function (_super) {
                 oldRoot: node.nodeRootView.id,
                 newRoot: that.view.nodeRootView.id,
                 anim: 'dock',
-                dockElem: helper,
+                dockView: helper,
                 focus: false
             };
         });
@@ -298,7 +305,7 @@ var DropBoxBottom = (function (_super) {
     }
     DropBoxBottom.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.simpleSchedule(node, function () {
+        ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: MoveAfterAction,
                 activeID: node.value.cid,
@@ -306,7 +313,7 @@ var DropBoxBottom = (function (_super) {
                 oldRoot: node.nodeRootView.id,
                 newRoot: that.view.nodeRootView.id,
                 anim: 'dock',
-                dockElem: helper,
+                dockView: helper,
                 focus: false
             };
         });
@@ -335,7 +342,7 @@ var DropBoxHandle = (function (_super) {
     }
     DropBoxHandle.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.simpleSchedule(node, function () {
+        ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: MoveIntoAction,
                 referenceID: that.view.value.cid,
@@ -343,7 +350,7 @@ var DropBoxHandle = (function (_super) {
                 oldRoot: node.nodeRootView.id,
                 newRoot: that.view.nodeRootView.id,
                 anim: 'dock',
-                dockElem: helper,
+                dockView: helper,
                 focus: false
             };
         });
@@ -374,20 +381,20 @@ var DropBoxLeft = (function (_super) {
     }
     DropBoxLeft.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.simpleSchedule(node, function () {
+        ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: PanelCreateAction,
                 activeID: node.value.cid,
-                prevPanel: View.getCurrentPage().content.grid.listItems.prev[that.view.id],
+                prevPanel: View.getCurrentPage().content.gridwrapper.grid.listItems.prev[that.view.id],
                 oldRoot: node.nodeRootView.id,
                 newRoot: 'new',
-                dockElem: helper,
+                dockView: helper,
                 focus: false
             };
         });
     };
     DropBoxLeft.prototype.validateDrop = function (activeNode) {
-        if (View.getCurrentPage().content.grid.listItems.first() === this.view.id) {
+        if (View.getCurrentPage().content.gridwrapper.grid.listItems.first() === this.view.id) {
             return true;
         }
         return false;
@@ -415,14 +422,14 @@ var DropBoxRight = (function (_super) {
     }
     DropBoxRight.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.simpleSchedule(node, function () {
+        ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: PanelCreateAction,
                 activeID: node.value.cid,
                 prevPanel: that.view.id,
                 oldRoot: node.nodeRootView.id,
                 newRoot: 'new',
-                dockElem: helper,
+                dockView: helper,
                 focus: false
             };
         });

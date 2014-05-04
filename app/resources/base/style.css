@@ -21,7 +21,8 @@ body {
 
 ul.ui-listview {
     overflow: hidden;
-    background-color: #EEE;
+    /* Used to be #EEE */
+    background-color: #FFF;
 }
 .ui-btn-inner {
     font-size: 1em; /* Override 16px default */
@@ -37,7 +38,7 @@ li.ui-li > div > .drag-handle {
     opacity: 0.1;
     cursor: pointer;
     border: solid 1px black;
-    border-radius: 0.675em;
+    border-radius: 0.675em; /* Used to be 0.675em */
     margin: 0px;
 }
 
@@ -55,7 +56,7 @@ li.ui-li.ui-btn-hover-c > div > .drag-handle {
 
 /* Handle transformation when open or closed */
 li.collapsed.branch > div > .disclose {
-    background-color: #888;
+    background-color: #CCC; /* Used to be 888 */
 }
 
 li.collapsed > ul {
@@ -66,6 +67,11 @@ li.collapsed > ul {
    since it messes up column spacing */
 .ui-content {
     padding: 0;
+}
+
+.ui-corner-all {
+  -webkit-border-radius: .2em;
+  border-radius: .2em;
 }
 
 /* Fix line-spacing for inset-list */
@@ -91,8 +97,8 @@ li.ui-li > div.ui-li.ui-btn-inner {
 /* Style draggable helper in drop-mode */
 .drop-mode li.ui-li.ui-sortable-helper {
     opacity: 0.9;
-    border: solid 1px #888;
-    border-radius: 0.675em;
+    border: solid 1px #CCC; /* Used to be 888 */
+    border-radius: 0.25em; /* Used to be 0.675em */
 }
 
 /* Remove extra padding around ui-link-inherit */
@@ -114,7 +120,7 @@ li.ui-li > div.ui-li.ui-btn-inner {
 /* Set page background */
 .ui-page,  .ui-body-c {
     background-image: none;
-    background-color: #888;
+    background-color: #CCC; /* Used to be 888 */
 }
 
 /* Remove border around body and text-area*/
@@ -132,7 +138,8 @@ li.ui-li > div.ui-li.ui-btn-inner {
 /* Mask other hover-effects when in drop-mode */
 .drop-mode .ui-btn-hover-c {
     border-color: transparent;
-    background-color: #eee;
+    /* Used to be #eee */
+    background-color: #fff;
     background-image: none;
     font-weight: bold;
     color: #333;
@@ -202,7 +209,8 @@ li.ui-li > div.ui-li.ui-btn-inner {
 }
 
 .ui-header {
-    background-color: #EEE;
+    background-color: #FFF;
+    /* Used to be #EEE */
     background-image: none;
     height: 42px;
 }
@@ -259,10 +267,11 @@ a:active, a:focus {
 }
 
 /* Margins around page */
-.horizontal-grid {
+.horizontal-grid-container {
     margin: 0px 0px;
     width: 90%;
     float: left;
+    overflow: hidden;
 }
 .horizontal-grid > div {
     float: left;
@@ -282,21 +291,23 @@ li.ui-li.ui-focus, li.ui-li.ui-focus:hover {
 }
 
 li.ui-li.ui-last-child {
-    -webkit-border-bottom-left-radius:0.6em;
-    border-bottom-left-radius:0.6em;
-    -webkit-border-bottom-right-radius:0.6em;
-    border-bottom-right-radius:0.6em;
+    /* Used to be 0.6em */
+    -webkit-border-bottom-left-radius:0.2em;
+    border-bottom-left-radius:0.2em;
+    -webkit-border-bottom-right-radius:0.2em;
+    border-bottom-right-radius:0.2em;
 }
 
 li.ui-li.ui-first-child {
-    -webkit-border-top-left-radius:0.6em;
-    border-top-left-radius:0.6em;
-    -webkit-border-top-right-radius:0.6em;
-    border-top-right-radius:0.6em
+    -webkit-border-top-left-radius:0.2em;
+    border-top-left-radius:0.2em;
+    -webkit-border-top-right-radius:0.2em;
+    border-top-right-radius:0.2em
 }
 
 li.ui-li {
-    background-color: #EEE;
+    /* Used to be #EEE */
+    background-color: #FFF;
 }
 
 li.ui-li.drag-hidden {
@@ -313,7 +324,8 @@ li.li-placeholder, div.li-placeholder {
     padding: 0;
     margin: 0;
     width: 100%;
-    background-color: #EEE;
+    /* Used to be #EEE */
+    background-color: #FFF;
     overflow: hidden;
 }
 
@@ -345,6 +357,7 @@ li.ui-li .outline-header > div.outline-content_container {
 }
 
 li.ui-li .outline-header > div > textarea.outline-content.ui-input-text {
+    resize: none;
     display: block;
     margin: 0; /* 12px; */
     font-weight: normal;
@@ -353,7 +366,7 @@ li.ui-li .outline-header > div > textarea.outline-content.ui-input-text {
     font-size: 1em; /* 18px; */
     min-height: 1.25em; /* 22px; */
     line-height: 1.25em; /* 22px; */
-    border-radius: 0.675em; /* 8px; */
+    border-radius: 0.25em; /* 8px; */ /* Used to be 0.675em */
     outline: none;
     text-shadow: 1px 1px 0 #ccc;
     background-color: transparent;
@@ -373,7 +386,7 @@ div.hiddendiv {
     margin: 0;
     padding: 0;
     border: none;
-    border-radius: 0.675em; /* 8px; */
+    border-radius: 0.25em; /* 8px; used to be 0.675em */
     outline: none;
     position: absolute;
     min-height: 1.25em;
@@ -416,13 +429,19 @@ div.hiddeninput {
 }
 */
 
-
+.ui-body-c .panel-name {
+    color: #222;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #AAA;
+}
 .ui-body-c .ui-link {
     color: #DDD;
+    font-weight: bold;
     text-shadow: 1px 1px 0 #333;
 }
 .ui-body-c .ui-link:hover {
-    color: #EEE;
+    /* Used to be #EEE */
+    color: #FFF;
 }
 
 .ui-btn:focus,.ui-link-inherit:focus,
@@ -524,8 +543,13 @@ li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
 }
 .grid-wrapper > .left-button:hover,
 .grid-wrapper > .right-button:hover {
-    color: #EEE;
+    /* Used to be #EEE */
+    color: #FFF;
 }
 
+.inner-panel {
+    margin: 0 auto;
+    width: 95%;
+}
 
 /* End of debug */

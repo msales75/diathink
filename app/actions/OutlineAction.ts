@@ -49,8 +49,7 @@ class OutlineAction extends AnimatedAction {
                 panelPrep: 0,
                 anim: 0,
                 oldLinePlace: {},
-                newLinePlace: {},
-                linePlaceAnim: {}
+                newLinePlace: {}
             }
         });
         var o:ActionOptions = this.options,
@@ -74,9 +73,11 @@ class OutlineAction extends AnimatedAction {
             r.rNewModelContext = this.newModelContext;
         }
         this.dropSource = new NodeDropSource({
+            useDock: (r.rNewModelContext!=null),
+            usePlaceholder: true,
             activeID: this.options.activeID,
             outlineID: r.rOldRoot,
-            dockElem:this.options.dockElem
+            dockView:this.options.dockView
         });
         this.dropTarget = new NodeDropTarget({
             rNewModelContext: r.rNewModelContext,

@@ -5,7 +5,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-m_require("app/actions/PanelAnimAction.js");
+m_require("app/actions/AnimatedAction.js");
 
 var PanelRootAction = (function (_super) {
     __extends(PanelRootAction, _super);
@@ -20,33 +20,67 @@ var PanelRootAction = (function (_super) {
             requireNew: false
         };
     }
-    PanelRootAction.prototype.execModel = function () {
+    PanelRootAction.prototype.runinit2 = function () {
+        var o = this.options, r = this.runtime;
+        if (this.options.undo) {
+            this.dropSource = new PanelDropSource({
+                activeID: this.oldRootModel.cid,
+                panelID: View.get(this.options.newRoot).panelView.id
+            });
+            this.dropTarget = new NodeDropTarget({
+                activeID: this.options.activeID,
+                outlineID: this.options.newRoot
+            });
+        } else {
+            assert(this.options.dockView == null, "How did we get dockElem in PanelRoot?");
+            this.dropSource = new NodeDropSource({
+                activeID: this.options.activeID,
+                outlineID: this.options.oldRoot,
+                dockView: this.options.dockView,
+                useDock: true,
+                dockTextOnly: true,
+                usePlaceholder: false
+            });
+            this.dropTarget = new PanelDropTarget({
+                panelID: View.get(this.options.oldRoot).panelView.id,
+                activeID: this.options.activeID,
+                useFadeOut: true
+            });
+        }
+    };
+    PanelRootAction.prototype.contextStep = function () {
         var that = this;
-        that.addQueue('newModelAdd', ['context'], function () {
-            if ((!that.options.undo) && (!that.options.redo)) {
-                var c;
-                c = ActionManager;
-                if (c.actions.at(c.lastAction) !== that) {
-                    console.log('ERROR: lastAction is not this');
-                    debugger;
-                }
-                var prevAction = c.actions.at(c.lastAction - 1);
-                if ((prevAction.type === 'CollapseAction') && (prevAction.options.activeID === that.options.activeID)) {
-                    var activeModel = that.getModel(that.options.activeID);
-                    activeModel.set('collapsed', prevAction.oldCollapsed);
-                    for (var o in OutlineRootView.outlinesById) {
-                        OutlineRootView.outlinesById[o].setData(that.options.activeID, prevAction.oldViewCollapsed[o]);
-                    }
-                    prevAction.undone = true;
-                    prevAction.lost = true;
+
+        // need to do this before createDockElem
+        var c;
+        c = ActionManager;
+        if (c.actions.at(c.lastAction) !== that) {
+            console.log('ERROR: lastAction is not this');
+            debugger;
+        }
+        var prevAction = c.actions.at(c.lastAction - 1);
+        if ((prevAction.type === 'CollapseAction') && (prevAction.options.activeID === that.options.activeID)) {
+            // todo: this is a bit redundant with CollapseAction
+            var activeModel = that.getModel(that.options.activeID);
+            activeModel.set('collapsed', prevAction.oldCollapsed);
+            for (var o in OutlineRootView.outlinesById) {
+                OutlineRootView.outlinesById[o].setData(that.options.activeID, prevAction.oldViewCollapsed[o]);
+                var activeView = activeModel.views[o];
+                if (activeView) {
+                    activeView.setCollapsed(prevAction.oldViewCollapsed[o]);
                 }
             }
-            // todo: save current perspective into model?
+            prevAction.undone = true;
+            prevAction.lost = true;
+        }
+    };
+    PanelRootAction.prototype.execModel = function () {
+        this.addQueue(['newModelAdd'], [['context']], function () {
         });
     };
     PanelRootAction.prototype.execView = function (outline) {
         var that = this;
-        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd'], function () {
+        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd', 'anim'], function () {
             var model = null;
             if (that.options.undo) {
                 if (outline.nodeRootView.id === that.options.newRoot) {
@@ -76,5 +110,5 @@ var PanelRootAction = (function (_super) {
         });
     };
     return PanelRootAction;
-})(PanelAnimAction);
+})(AnimatedAction);
 //# sourceMappingURL=PanelRootAction.js.map

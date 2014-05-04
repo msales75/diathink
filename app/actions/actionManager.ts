@@ -50,6 +50,7 @@ class ActionManager {
     static simpleSchedule(node, f:AnonFunction) {
         ActionManager.schedule(
             function():SubAction {
+                if (!node) {return null;}
                 return Action.checkTextChange(node.header.name.text.id);
             },
             f);

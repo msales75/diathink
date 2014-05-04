@@ -5,14 +5,14 @@ class PageContentView extends ContainerView {
     cssClass = "grid-wrapper";
     leftbutton:LeftSwipeButtonView;
     rightbutton:RightSwipeButtonView;
-    grid:PanelGridView;
+    gridwrapper:GridContainerView;
 
     init() {
         this.Class = PageContentView;
         this.childViewTypes = {
             leftbutton: LeftSwipeButtonView,
             rightbutton: RightSwipeButtonView,
-            grid: PanelGridView
+            gridwrapper: GridContainerView
         };
     }
 }

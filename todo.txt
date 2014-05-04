@@ -1,14 +1,21 @@
+? Undo changeRoot doesn't animate (should it?)
+
+Node-rendering breaks fixHeight (expand/collapse and panel-rendering)
+ Solution: calculate text-width & font-size pre-rendering in instantiation?
+* Send down a postRender command to all of the nodes, like changeParent.
 
 
-* Add cleanup of old-placeholder, and possibly new placeholder.
+* Panel insertions & undo
+* Up/down arrows
+* Preserve location with return/backspace
+
 
 Animation components and relevance:
-
-Line: Per-panel Placeholders & docking
-Line-as-link: no placeholder-animation; different docking graphic
-Panel: Unique placeholder if not change-root; dock to/from name
-Text-Link: Per-panel placeholders & docking to/from text
-Breadcrumb-link: No placeholder anim;
+ Line: Per-panel Placeholders & docking
+ Line-as-link: no placeholder-animation; different docking graphic
+ Panel: Unique placeholder if not change-root; dock to/from name
+ Text-Link: Per-panel placeholders & docking to/from text
+ Breadcrumb-link: No placeholder anim;
 
 
 1. Make docking rules independent of placeholders.
@@ -113,6 +120,11 @@ Backtracing in UI (identify characteristics of image)
 
 Next:
 ---------
+OK Add cleanup of old-placeholder, and possibly new placeholder.
+OK Collapse-leaf is causing error
+OK Temporary-breadcrumb is not wrapping crumbs
+OK Some actions not updating text-fields before starting?
+OK Line-height is broken.
 OK Update breadcrumbs if view moved to new parent (or undone)
 OK Handle text-buffer overflow if typing in undefined-space while performing actions
 OK diathink.helper could be reset when dragging while another actions animates

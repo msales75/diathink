@@ -15,7 +15,7 @@ class DragHandler {
     currentItem:NodeView;
     scrollPanel:PanelView; // panel being scrolled, based on mouse position
     panelScrollStart:{[id:string]:number}; // get from scrollview
-    helper:JQuery;
+    helper:NodeView;
     helperProportions:Dimensions; // replace with cache in helper-view
     mousePosition:PositionI;
     originalPosition:PositionI; // mousePosition at mousedown
@@ -47,7 +47,8 @@ class DragHandler {
         // $('#' + textid).text($('#' + textid).val());
         ActionManager.schedule(
             function() {
-                return Action.checkTextChange(currentView.header.name.text.id);
+                if (!View.focusedView) {return null;}
+                return Action.checkTextChange(View.focusedView.header.name.text.id);
             });
         NodeView.refreshPositions();
 
@@ -65,22 +66,14 @@ class DragHandler {
             top: this.mousePosition.top
         };
 
-        // Only after we got the offset, we can change the helper's position to absolute
-        // TODO: Still need to figure out a way to make relative sorting possible
-        this.helper.css("position", "absolute");
-        //Generate the original position
-
-        //If the helper is not the original, hide the original so it's not playing any role during the drag, won't cause anything bad this way
-        if (this.helper[0] !== this.currentItem.elem) {
-            this.currentItem.addClass('drag-hidden');
-        }
+        this.currentItem.addClass('drag-hidden');
         //Recache the helper size
         this._cacheHelperProportions();
         this.scrollPanel = null;
         this.helper.addClass("ui-sortable-helper");
         this.dragMove(options); //Execute the drag once - this causes the helper not to be visible before getting its correct position
         DropBox.renderAll(this);
-        DropBox.previewDropBoxes();
+        // DropBox.previewDropBoxes();
     }
 
     public dragMove(options:DragStartI) {
@@ -96,10 +89,10 @@ class DragHandler {
 
         //Set the helper position
         if (!this.options.axis || this.options.axis !== "y") {
-            this.helper[0].style.left = helperPosition.left + "px";
+            this.helper.elem.style.left = helperPosition.left + "px";
         }
         if (!this.options.axis || this.options.axis !== "x") {
-            this.helper[0].style.top = helperPosition.top + "px";
+            this.helper.elem.style.top = helperPosition.top + "px";
         }
         if (this.scrollPanel) {
             var left = $(this.scrollPanel.elem).offset().left;
@@ -223,20 +216,19 @@ class DragHandler {
             if (!(targetview instanceof NodeView)) {
                 console.log("targetview is of the wrong type with id=" + targetview.id);
             }
-            this.activeBox.handleDrop(this.currentItem, this.helper[0]);
+            this.activeBox.handleDrop(this.currentItem, this.helper);
             this.activeBox = null;
             return true;
         } else { // cancel action
             var that = this;
             var cur = $(this.currentItem.elem).offset();
             this.reverting = true;
-            this.helper.animate({
+            $(this.helper.elem).animate({
                 left: cur.left,
                 top: cur.top
             }, 200, function() {
                 that.currentItem.removeClass('drag-hidden');
-                that.helper[0].parentNode.removeChild(that.helper[0]);
-                that.helper[0] = null;
+                that.helper.destroy();
                 that.helper = null;
                 that.hideDropLines();
                 that.reverting = false;
@@ -245,24 +237,28 @@ class DragHandler {
         }
     }
 
-    private _createHelper() {
-        var newNode:HTMLElement = <HTMLElement> this.currentItem.elem.cloneNode(true);
-        newNode.id = '';
-        var drawlayer = View.getCurrentPage().drawlayer;
-        drawlayer.elem.appendChild(newNode);
-        var helper = $(newNode).css({
+    private _createHelper():NodeView {
+        var newNode:NodeView = null;
+        newNode = new NodeView({
+            parentView:View.currentPage.drawlayer,
+            value: this.currentItem.value,
+            isCollapsed: this.currentItem.isCollapsed
+        });
+        newNode.renderAt({parent: View.currentPage.drawlayer.elem});
+        newNode.themeFirst(true);
+        newNode.themeLast(true);
+        $(newNode.elem).css({
             position: 'absolute',
             left: $(this.currentItem.elem).offset().left + 'px',
             top: $(this.currentItem.elem).offset().top + 'px'
         });
-        helper.addClass('ui-first-child').addClass('ui-last-child');
-        return helper;
+        return newNode;
     }
 
     private _cacheHelperProportions() {
         this.helperProportions = {
-            width: this.helper.outerWidth(),
-            height: this.helper.outerHeight()
+            width: $(this.helper.elem).outerWidth(),
+            height: $(this.helper.elem).outerHeight()
         };
     }
 

@@ -22,7 +22,10 @@ var HandleImageView = (function (_super) {
         var li = this.nodeView;
         var liElem = $(li.elem);
         ActionManager.schedule(function () {
-            return Action.checkTextChange(li.header.name.text.id);
+            if (!View.focusedView) {
+                return null;
+            }
+            return Action.checkTextChange(View.focusedView.header.name.text.id);
         }, function () {
             if (li.isLeaf) {
                 return null;
@@ -40,7 +43,10 @@ var HandleImageView = (function (_super) {
     HandleImageView.prototype.onDoubleClick = function () {
         var li = this.nodeView;
         ActionManager.schedule(function () {
-            return Action.checkTextChange(li.header.name.text.id);
+            if (!View.focusedView) {
+                return null;
+            }
+            return Action.checkTextChange(View.focusedView.header.name.text.id);
         }, function () {
             return {
                 actionType: PanelRootAction,

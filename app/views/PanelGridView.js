@@ -24,7 +24,15 @@ var PanelGridView = (function (_super) {
     PanelGridView.prototype.updateValue = function () {
     };
 
-    PanelGridView.prototype.insertViewAfter = function (prevPanel, panel) {
+    PanelGridView.prototype.getInsertLocation = function (prevPanel) {
+        if (this.listItems.next[prevPanel] === '') {
+            return prevPanel;
+        } else {
+            return this.listItems.next[prevPanel];
+        }
+    };
+
+    PanelGridView.prototype.insertViewAfter = function (prevPanel, panel, placeholder) {
         var id, previd;
 
         // update the view-list
@@ -41,38 +49,49 @@ var PanelGridView = (function (_super) {
         // update value to include reference based on view (hmm this seems sloppy)
         // update DOM
         if (this.elem) {
-            var nextPanel = this.listItems.next[id];
             if (!panel.elem) {
                 panel.render();
             }
-            if (nextPanel === '') {
-                this.elem.appendChild(panel.elem);
+            $(panel.elem).css('width', String(this.itemWidth) + 'px');
+            if (placeholder) {
+                assert(placeholder.parentNode === this.elem, "Placeholder is not a child of of grid");
+                this.elem.replaceChild(panel.elem, placeholder);
             } else {
-                this.elem.insertBefore(panel.elem, this.listItems.obj[nextPanel].elem);
+                var nextPanel = this.listItems.next[id];
+                if (nextPanel === '') {
+                    this.elem.appendChild(panel.elem);
+                } else {
+                    this.elem.insertBefore(panel.elem, this.listItems.obj[nextPanel].elem);
+                }
             }
+            // fix width based on gridwrapper/numcols
         }
+        var dir = 'right';
 
         // Remove clipped panel and indicate animation-direction
         // decide whether we push-right or push-left
         // MUST slide right if there is no rightPanel
         // SHOULD slide left if it's put after last panel
-        var dir = 'right';
+        // don't remove extra-panel if its being animated.
         if (this.listItems.count > this.numCols) {
             if (id === this.listItems.last()) {
                 dir = 'left';
                 var firstPanel = this.listItems.obj[this.listItems.first()];
-                firstPanel.destroy();
+                if (!firstPanel.animating) {
+                    firstPanel.destroy();
+                }
             } else {
                 var lastPanel = this.listItems.obj[this.listItems.last()];
-                lastPanel.destroy();
+                if (!lastPanel.animating) {
+                    lastPanel.destroy();
+                }
             }
         }
         this.updatePanelButtons();
-        this.updateWidths();
         return dir;
     };
 
-    PanelGridView.prototype.insertAfter = function (prevPanel, panel) {
+    PanelGridView.prototype.insertAfter = function (prevPanel, panel, placeholder) {
         var id, previd;
         assert(panel !== null, "No panel given to insert");
         id = panel.id;
@@ -89,7 +108,7 @@ var PanelGridView = (function (_super) {
             assert(this.value.obj[previd] === true, "insertAfter has unknown previous id");
         }
         this.value.insertAfter(panel.id, true, previd);
-        return this.insertViewAfter(prevPanel, panel);
+        return this.insertViewAfter(prevPanel, panel, placeholder);
     };
 
     PanelGridView.prototype.append = function (panel) {
@@ -99,20 +118,23 @@ var PanelGridView = (function (_super) {
     PanelGridView.prototype.prepend = function (panel) {
         return this.insertAfter(null, panel);
     };
-
-    PanelGridView.prototype.slideFill = function (slide) {
+    PanelGridView.prototype.getSlideDirection = function (slide) {
         var isPanelToLeft = (this.listItems.first() !== this.value.first());
         var isPanelToRight = (this.listItems.last() !== this.value.last());
-        var direction = 'left';
         if (!isPanelToLeft) {
-            direction = 'left';
+            return 'left';
         } else if (isPanelToLeft && !isPanelToRight) {
-            direction = 'right';
+            return 'right';
         } else {
             if (slide === 'right') {
-                direction = 'right';
+                return 'right';
             }
+            return 'left';
         }
+    };
+
+    PanelGridView.prototype.slideFill = function (slide) {
+        var direction = this.getSlideDirection();
         if (direction === 'left') {
             this.slideLeft();
         } else if (direction === 'right') {

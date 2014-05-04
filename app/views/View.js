@@ -6,6 +6,7 @@
 ///<reference path="DrawLayerView.ts"/>
 ///<reference path="DropLayerView.ts"/>
 ///<reference path="GridView.ts"/>
+///<reference path="GridContainerView.ts"/>
 ///<reference path="HandleImageView.ts"/>
 ///<reference path="HeaderTitleView.ts"/>
 ///<reference path="HeaderToolbarView.ts"/>

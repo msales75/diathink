@@ -10,7 +10,35 @@ var AnimatedAction = (function (_super) {
     __extends(AnimatedAction, _super);
     function AnimatedAction() {
         _super.apply(this, arguments);
+        this.useAnim = true;
+        this.usePostAnim = false;
     }
+    AnimatedAction.prototype.runinit = function () {
+        _super.prototype.runinit.call(this);
+        _.extend(this.runtime, {
+            oldLineContext: {},
+            status: {
+                context: 0,
+                log: 0,
+                undobuttons: 0,
+                oldModelCollection: 0,
+                oldModelRemove: 0,
+                modelCreate: 0,
+                newModelRank: 0,
+                newModelAdd: 0,
+                focus: 0,
+                end: 0,
+                createDockElem: 0,
+                dockAnim: 0,
+                anim: 0,
+                anim2: 0,
+                uniqueView: 0,
+                view: {},
+                oldLinePlace: {},
+                newLinePlace: {}
+            }
+        });
+    };
     AnimatedAction.prototype.animStepWrapper = function (f, duration, start, end) {
         var self = this;
         var frac = ((new Date()).getTime() - start) / duration;
@@ -33,8 +61,8 @@ var AnimatedAction = (function (_super) {
         var outlines = OutlineRootView.outlinesById;
         var i;
         this.addQueue(['createDockElem'], [['context']], function () {
-            if (that.dropSource && !that.options.dockElem && that.runtime.rNewModelContext) {
-                that.options.dockElem = that.dropSource.createDockElem();
+            if (that.dropSource) {
+                that.options.dockView = that.dropSource.createDockElem();
             }
         });
         this.addQueue(['createUniqueSourcePlace'], [['createDockElem']], function () {
@@ -76,12 +104,12 @@ var AnimatedAction = (function (_super) {
 
         this.addQueue('setupDockAnim', placeholders, function () {
             if (that.dropTarget) {
-                that.dropTarget.setupDockAnim(that.options.dockElem);
+                that.dropTarget.setupDockAnim(that.options.dockView);
             }
         });
 
         this.addAsync('anim', [['setupPlaceholderAnim'], ['setupDockAnim']], function () {
-            if (true) {
+            if (that.useAnim) {
                 var time = 200;
                 var start = (new Date()).getTime();
                 setTimeout(function () {
@@ -103,17 +131,38 @@ var AnimatedAction = (function (_super) {
         var views = [];
         var o;
         var outlines = OutlineRootView.outlinesById;
+        views = [['uniqueView']];
         for (o in outlines) {
             views.push(['view', o]);
         }
-        this.addQueue('animCleanup', _.extend(['anim'], views), function () {
+        this.addAsync(['anim2'], _.extend(['anim'], views), function () {
+            if (that.usePostAnim) {
+                var time = 200;
+                var start = (new Date()).getTime();
+                setTimeout(function () {
+                    that.animStepWrapper(function (f) {
+                        that.anim2Step(f);
+                    }, time, start, function () {
+                        that.runtime.status.anim2 = 2;
+                        that.nextQueue();
+                    });
+                }, 0);
+            } else {
+                that.runtime.status.anim2 = 2;
+                that.nextQueue();
+            }
+        });
+        this.addQueue('animCleanup', ['anim2'], function () {
+            console.log("starting animCleanup**");
             if (that.dropSource) {
                 that.dropSource.cleanup();
+                that.dropSource = null;
             }
             if (that.dropTarget) {
                 that.dropTarget.cleanup();
+                that.dropTarget = null;
             }
-            that.options.dockElem = null;
+            that.options.dockView = null;
         });
     };
 
@@ -126,6 +175,14 @@ var AnimatedAction = (function (_super) {
             this.dropTarget.placeholderAnimStep(frac);
             this.dropTarget.dockAnimStep(frac);
             this.dropTarget.fadeAnimStep(frac);
+        }
+    };
+    AnimatedAction.prototype.anim2Step = function (frac) {
+        if (this.dropSource) {
+            this.dropSource.postAnimStep(frac);
+        }
+        if (this.dropTarget) {
+            this.dropSource.postAnimStep(frac);
         }
     };
 

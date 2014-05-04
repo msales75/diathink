@@ -34,7 +34,7 @@ class DeadPanel extends DeadView {
     }
 }
 
-class PanelView extends ContainerView {
+class PanelView extends View {
     static panelsById:{[i:string]:PanelView} = {};
     breadcrumbs:BreadcrumbView;
     outline:OutlineScrollView;
@@ -44,6 +44,8 @@ class PanelView extends ContainerView {
     width:number;
     height:number;
     Class:any;
+    widthFrac:string;
+    animating:boolean = false;
 
     init() {
         this.Class = PanelView;
@@ -53,6 +55,22 @@ class PanelView extends ContainerView {
         }
         assert(PanelView.panelsById[this.id]===undefined, "Multiple panels with same ID");
         PanelView.panelsById[this.id] = this;
+    }
+    render() {
+        this._create({
+            type: 'div',
+            classes: this.cssClass,
+            html: '<div class="inner-panel"></div>'
+        });
+        this.renderChildViews();
+        for (var name in this.childViewTypes) {
+            this.elem.children[0].appendChild((<View>(this[name])).elem);
+        }
+        return this.elem;
+    }
+    freezeWidth() {
+        var width = this.elem.clientWidth;
+        $(this.elem).css('width', String(width)+'px');
     }
 
     cachePosition() {
@@ -91,7 +109,7 @@ class PanelView extends ContainerView {
         this.cachePosition();
         NodeView.refreshPositions();
 
-        $(window).resize(); // fix height of new panel, spacer
+        $(window).resize(); // fix height of new panel, spacer; a bit hacky
         return newlist.id;
     }
     validate() {

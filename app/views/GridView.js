@@ -6,12 +6,30 @@ var __extends = this.__extends || function (d, b) {
 };
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
-
 var GridView = (function (_super) {
     __extends(GridView, _super);
     function GridView() {
         _super.apply(this, arguments);
     }
+    GridView.prototype.resize = function () {
+        if (this.elem) {
+            if (this.elem.parentNode) {
+                var p;
+                this.itemWidth = Math.floor(this.parentView.elem.clientWidth / this.numCols);
+                for (p in this.listItems.obj) {
+                    $(this.listItems.obj[p].elem).css('width', String(this.itemWidth) + 'px');
+                }
+            } else {
+                var p;
+                var relativeWidth = String(Math.round(100000.0 / this.numCols) / 1000) + '%';
+                for (p in this.listItems.obj) {
+                    0;
+                    $(this.listItems.obj[p].elem).css('width', relativeWidth);
+                }
+            }
+        }
+    };
+
     GridView.prototype.render = function () {
         this._create({
             type: 'div',
@@ -21,20 +39,10 @@ var GridView = (function (_super) {
         this.insertListItems();
         return this.elem;
     };
+
     GridView.prototype.renderListItems = function () {
         _super.prototype.renderListItems.call(this);
-        this.updateWidths();
-    };
-    GridView.prototype.updateWidths = function () {
-        if (this.elem) {
-            var width = 100.0 / this.numCols;
-            var widthS = String(Math.round(10000 * width) / 10000) + '%';
-            var m;
-            var children = this.listItems;
-            for (m = children.first(); m !== ''; m = children.next[m]) {
-                children.obj[m].elem.style.width = widthS;
-            }
-        }
+        this.resize();
     };
     return GridView;
 })(View);

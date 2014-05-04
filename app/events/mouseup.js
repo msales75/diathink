@@ -20,6 +20,11 @@ $(function () {
 
         // todo-here - see if text changes appropriately.
         ActionManager.schedule(function () {
+            if (!View.focusedView) {
+                return null;
+            }
+            return Action.checkTextChange(View.focusedView.header.name.text.id);
+        }, function () {
             return {
                 actionType: PanelRootAction,
                 activeID: modelid,

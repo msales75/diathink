@@ -6,7 +6,7 @@ class NodeView extends View {
     modelType:typeof OutlineNodeModel;
     header:NodeHeaderView;
     children:OutlineListView;
-    parentView:ListView;
+    // parentView:ListView;
     value:OutlineNodeModel;
     isCollapsed:boolean;
     position:PositionI;
@@ -20,6 +20,7 @@ class NodeView extends View {
         var nid:string;
         for (nid in items) {
             var item:NodeView = items[nid];
+            if (item.nodeRootView==null) {continue;}
             var header = item.header;
             item.dimensions = {
                 width: $(header.elem).outerWidth(),
@@ -34,15 +35,14 @@ class NodeView extends View {
         return this;
     }
 
-
     init() {
         this.Class = NodeView;
         this.modelType = OutlineNodeModel;
-        NodeView.nodesById[this.id] = this;
         this.childViewTypes = {
             header: NodeHeaderView,
             children: OutlineListView
         };
+        NodeView.nodesById[this.id] = this;
     }
     destroy(opts?) {
         delete NodeView.nodesById[this.id];
@@ -78,14 +78,17 @@ class NodeView extends View {
         }
 
         if (this.isCollapsed) {
+            this.isLeaf = false;
             this.addClass('branch').removeClass('leaf').
                 addClass('collapsed').removeClass('expanded');
         } else {
             if (this.children.elem.children.length > 0) {
                 // this is defined because rendering is bottom-up
+                this.isLeaf = false;
                 this.addClass('branch').removeClass('leaf').
                     addClass('expanded').removeClass('collapsed');
             } else {
+                this.isLeaf = true;
                 this.addClass('leaf').removeClass('branch').
                     addClass('expanded').removeClass('collapsed');
             }
@@ -99,6 +102,7 @@ class NodeView extends View {
     }
 
     setCollapsed(collapsed:boolean) {
+        if (this.isLeaf) {collapsed = false;}
         if (collapsed === this.isCollapsed) {return;}
         this.isCollapsed = collapsed;
         if (collapsed) {
@@ -106,7 +110,11 @@ class NodeView extends View {
             this.children.collapseList();
         } else {
             this.addClass('expanded').removeClass('collapsed');
-            this.children.expandList();
+            if (! this.isLeaf) {
+                this.children.expandList();
+                // todo: fix this hack
+                $(window).resize();
+            }
         }
     }
 

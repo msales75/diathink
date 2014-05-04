@@ -19,6 +19,8 @@
 ///<reference path="TextAction.ts"/>
 ///<reference path="../NodeDropSource.ts"/>
 ///<reference path="../NodeDropTarget.ts"/>
+///<reference path="../PanelDropSource.ts"/>
+///<reference path="../PanelDropTarget.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -71,6 +73,7 @@ var Action = (function (_super) {
                 log: 0,
                 undobuttons: 0,
                 view: {},
+                uniqueView: 0,
                 end: 0
             }
         };
@@ -200,7 +203,7 @@ var Action = (function (_super) {
         }, 0);
         setTimeout(function () {
             // console.log("Updating status of item "+i+"before execution");
-            // console.log("Executing "+i);
+            console.log("Executing " + i);
             (q[2])();
             if (!q[3]) {
                 // console.log("Updating status after finishing non-async item "+i);
@@ -293,9 +296,10 @@ var Action = (function (_super) {
 
         // todo: assumptions and issue-handling
         this.execModel();
+        this.execUniqueView();
 
         var outlines = OutlineRootView.outlinesById;
-        var focusDeps = [];
+        var focusDeps = [['uniqueView']];
         for (i in outlines) {
             this.execView(outlines[i]);
             focusDeps.push(['view', outlines[i].nodeRootView.id]);
@@ -400,9 +404,13 @@ var Action = (function (_super) {
         this.runtime.status.animCleanup = 2;
     };
     Action.prototype.execModel = function () {
+        this.runtime.status.newModelAdd = 2;
     };
     Action.prototype.execView = function (outline) {
         this.runtime.status.view[outline.id] = 2;
+    };
+    Action.prototype.execUniqueView = function () {
+        this.runtime.status.uniqueView = 2;
     };
 
     Action.createAndExec = function (options) {

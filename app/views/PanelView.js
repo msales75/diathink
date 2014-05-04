@@ -42,6 +42,7 @@ var PanelView = (function (_super) {
     __extends(PanelView, _super);
     function PanelView() {
         _super.apply(this, arguments);
+        this.animating = false;
     }
     PanelView.prototype.init = function () {
         this.Class = PanelView;
@@ -51,6 +52,22 @@ var PanelView = (function (_super) {
         };
         assert(PanelView.panelsById[this.id] === undefined, "Multiple panels with same ID");
         PanelView.panelsById[this.id] = this;
+    };
+    PanelView.prototype.render = function () {
+        this._create({
+            type: 'div',
+            classes: this.cssClass,
+            html: '<div class="inner-panel"></div>'
+        });
+        this.renderChildViews();
+        for (var name in this.childViewTypes) {
+            this.elem.children[0].appendChild((this[name]).elem);
+        }
+        return this.elem;
+    };
+    PanelView.prototype.freezeWidth = function () {
+        var width = this.elem.clientWidth;
+        $(this.elem).css('width', String(width) + 'px');
     };
 
     PanelView.prototype.cachePosition = function () {
@@ -90,7 +107,7 @@ var PanelView = (function (_super) {
         this.cachePosition();
         NodeView.refreshPositions();
 
-        $(window).resize(); // fix height of new panel, spacer
+        $(window).resize(); // fix height of new panel, spacer; a bit hacky
         return newlist.id;
     };
     PanelView.prototype.validate = function () {
@@ -127,5 +144,5 @@ var PanelView = (function (_super) {
     };
     PanelView.panelsById = {};
     return PanelView;
-})(ContainerView);
+})(View);
 //# sourceMappingURL=PanelView.js.map

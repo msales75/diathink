@@ -1,6 +1,6 @@
 ///<reference path="actions/Action.ts"/>
 class DropTarget {
-    dockElem:HTMLElement;
+    dockView:View;
     outlineID:string;
     oldOutlineID:string;
     animOptions:{
@@ -29,10 +29,10 @@ class DropTarget {
 
     placeholderAnimStep(frac:number) {}
 
-    setupDockAnim(dockElem:HTMLElement) {}
+    setupDockAnim(dockView:View) {}
 
     dockAnimStep(frac:number) {
-        if (!this.dockElem) {return;}
+        if (!this.dockView) {return;}
         var endX = this.animOptions.endX, endY = this.animOptions.endY,
             startX = this.animOptions.startX, startY = this.animOptions.startY;
         var left = Math.round(frac * endX + (1 - frac) * startX);
@@ -60,8 +60,9 @@ class DropTarget {
         if (o.startSize && o.endSize) {
             css['font-size'] = [Math.round((1 - frac) * o.startSize + frac * o.endSize), 'px'].join('');
         }
-        $(this.dockElem).css(css);
+        $(this.dockView.elem).css(css);
     }
+    postAnimStep(frac:number) {}
 
     setupDockFade() {}
 
@@ -192,16 +193,16 @@ class NodeDropTarget extends DropTarget {
         }
     }
 
-    setupDockAnim(dockElem:HTMLElement) {
-        this.dockElem = dockElem;
+    setupDockAnim(dockView:View) {
+        this.dockView = dockView;
         // Is newLinePlace for this view above or below source?
-        if ((this.rNewModelContext == null) || (!this.dockElem)) {
+        if ((this.rNewModelContext == null) || (!this.dockView)) {
             return;
         }
         if (!this.rNewLinePlaceholder[this.outlineID]) { // nowhere to dock
             $(document.body).removeClass('transition-mode');
-            this.dockElem.parentNode.removeChild(this.dockElem);
-            this.dockElem = undefined;
+            this.dockView.destroy();
+            this.dockView = undefined;
             // console.log('Missing rNewLinePlaceholder in dockAnim');
             return;
         }
@@ -211,10 +212,10 @@ class NodeDropTarget extends DropTarget {
                 destination.top -= this.activeLineHeight[this.outlineID];
             }
         }
-        var startX = this.dockElem.offsetLeft;
-        var startY = this.dockElem.offsetTop;
-        var startWidth = this.dockElem.clientWidth;
-        $(this.dockElem).addClass('ui-first-child').addClass('ui-last-child');
+        var startX = this.dockView.elem.offsetLeft;
+        var startY = this.dockView.elem.offsetTop;
+        var startWidth = this.dockView.elem.clientWidth;
+        this.dockView.addClass('ui-first-child').addClass('ui-last-child');
         // todo: inject speed and take max-duration?
         _.extend(this.animOptions, {
             startX: startX,
@@ -251,12 +252,10 @@ class NodeDropTarget extends DropTarget {
                 }
             }
         }
-        if (this.dockElem) {
+        if (this.dockView) {
             $(document.body).removeClass('transition-mode');
-            if (this.dockElem.parentNode) {
-                this.dockElem.parentNode.removeChild(this.dockElem);
-            }
-            this.dockElem = undefined;
+            this.dockView.destroy();
+            this.dockView = undefined;
         }
     }
 }

@@ -74,7 +74,7 @@ var CollapseAction = (function (_super) {
                 // console.log("Undo retrieved collapsed = "+collapsed+" for view="+outline.nodeRootView.id);
             } else {
                 if (!that.options.redo) {
-                    that.oldViewCollapsed[outline.nodeRootView.id] = outline.getData(that.options.activeID);
+                    that.oldViewCollapsed[outline.id] = outline.getData(that.options.activeID);
                 }
                 if ((that.options.oldRoot === outline.nodeRootView.id) || (that.options.oldRoot === 'all')) {
                     collapsed = that.options.collapsed;

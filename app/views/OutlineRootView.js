@@ -12,6 +12,7 @@ var DeadOutlineRoot = (function (_super) {
     function DeadOutlineRoot(outline) {
         _super.call(this, outline);
         this.data = outline.data;
+        // set width equal to panel based on current screensize
     }
     DeadOutlineRoot.prototype.getOptions = function () {
         return {
@@ -75,9 +76,9 @@ var OutlineRootView = (function (_super) {
 
     OutlineRootView.prototype.getData = function (key) {
         if (!this.data) {
-            return null;
+            return false;
         } else if (this.data[key] == null) {
-            return null;
+            return false;
         } else {
             return this.data[key];
         }

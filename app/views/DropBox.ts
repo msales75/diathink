@@ -24,17 +24,19 @@ class DropBox {
         this.valid = this.validateDrop(DropBox.dragger.currentItem);
     }
     validateDrop(activeView:View):boolean {return true;}
-    handleDrop(node:NodeView, helper:HTMLElement) {}
+    handleDrop(node:NodeView, helper:View) {}
     static removeAll() {
         var i:number, nid:string, pid:string;
         var panels = PanelView.panelsById;
         var nodes = NodeView.nodesById;
         for (nid in nodes) {
-            var boxes = nodes[nid].dropboxes;
-            for (i=0; i<boxes.length; ++i) {
-                boxes[i].remove();
+            if (nodes[nid].nodeRootView!=null) {
+                var boxes = nodes[nid].dropboxes;
+                for (i=0; i<boxes.length; ++i) {
+                    boxes[i].remove();
+                }
+                nodes[nid].dropboxes = [];
             }
-            nodes[nid].dropboxes = [];
         }
         for (pid in panels) {
             var boxes = panels[pid].dropboxes;
@@ -52,7 +54,7 @@ class DropBox {
         $(document.body).addClass('drop-mode');
 
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
-        var panelParent = (View.getCurrentPage()).content.grid;
+        var panelParent = (View.getCurrentPage()).content.gridwrapper.grid;
         var canvas0 = (<DiathinkView>View.getCurrentPage()).drawlayer;
         canvas0.cacheOffset = $(canvas0.elem).offset();
 
@@ -63,7 +65,7 @@ class DropBox {
             canvas1.cacheOffset = $(canvas1.elem).offset();
         }
 
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         var pid:string;
 
         for (pid=panels.first(); pid!==''; pid=panels.next[pid]) {
@@ -78,12 +80,14 @@ class DropBox {
         }
         for (nid in NodeView.nodesById) {
             node = NodeView.nodesById[nid];
-            node.dropboxes = [];
-            node.dropboxes.push(new DropBoxTop(node));
-            node.dropboxes.push(new DropBoxBottom(node));
-            node.dropboxes.push(new DropBoxHandle(node));
-            for (i = 0; i < node.dropboxes.length; ++i) {
-                node.dropboxes[i].render();
+            if (node.nodeRootView!=null) { // node is not detached
+                node.dropboxes = [];
+                node.dropboxes.push(new DropBoxTop(node));
+                node.dropboxes.push(new DropBoxBottom(node));
+                node.dropboxes.push(new DropBoxHandle(node));
+                for (i = 0; i < node.dropboxes.length; ++i) {
+                    node.dropboxes[i].render();
+                }
             }
         }
     }
@@ -91,7 +95,7 @@ class DropBox {
         var j:number, d:DropBox;
         // cache scroll-positions of each panel
         var pid:string;
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         // loop over panels to return correct dropbox
 
         for (pid=panels.first(); pid!==''; pid=panels.next[pid]) {
@@ -132,7 +136,7 @@ class DropBox {
     static previewDropBoxes() {
         var i, j, d;
         var pid:string;
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         for (pid=panels.first(); pid!==''; pid=panels.next[pid]) {
             var panel = View.get(pid);
             var canvas = $('#' + View.getCurrentPage().drawlayer.id);
@@ -158,6 +162,7 @@ class DropBox {
         var nid:string;
         for (nid in nodes) {
             var node:NodeView = nodes[nid];
+            if (node.nodeRootView==null) {continue;}
             var view:OutlineScrollView = node.panelView.outline;
             var canvas = $('#' + view.droplayer.id);
             var ctop = canvas.offset().top;
@@ -270,9 +275,9 @@ class DropBoxTop extends DropBox {
             right: node.position.left + node.dimensions.width - $D.lineHeight / 2
         };
     }
-    handleDrop(node:NodeView, helper:HTMLElement) {
+    handleDrop(node:NodeView, helper:View) {
         var that = this;
-        ActionManager.simpleSchedule(node,
+        ActionManager.simpleSchedule(View.focusedView,
             function():SubAction {
                 return {
                     actionType: MoveBeforeAction,
@@ -281,7 +286,7 @@ class DropBoxTop extends DropBox {
                     oldRoot: node.nodeRootView.id,
                     newRoot: that.view.nodeRootView.id,
                     anim: 'dock',
-                    dockElem: helper,
+                    dockView: helper,
                     focus: false
                 };
             });
@@ -312,9 +317,9 @@ class DropBoxBottom extends DropBox {
             right: node.position.left + node.dimensions.width - $D.lineHeight / 2
         };
     }
-    handleDrop(node:NodeView, helper:HTMLElement) {
+    handleDrop(node:NodeView, helper:View) {
         var that = this;
-        ActionManager.simpleSchedule(node,
+        ActionManager.simpleSchedule(View.focusedView,
             function():SubAction {
                 return {
                     actionType: MoveAfterAction,
@@ -323,7 +328,7 @@ class DropBoxBottom extends DropBox {
                     oldRoot: node.nodeRootView.id,
                     newRoot: that.view.nodeRootView.id,
                     anim: 'dock',
-                    dockElem: helper,
+                    dockView: helper,
                     focus: false
                 };
             });
@@ -351,9 +356,9 @@ class DropBoxHandle extends DropBox {
             right: node.position.left + $D.lineHeight
         };
     }
-    handleDrop(node:NodeView, helper:HTMLElement) {
+    handleDrop(node:NodeView, helper:View) {
         var that = this;
-        ActionManager.simpleSchedule(node,
+        ActionManager.simpleSchedule(View.focusedView,
             function():SubAction {
                 return {
                     actionType: MoveIntoAction,
@@ -362,7 +367,7 @@ class DropBoxHandle extends DropBox {
                     oldRoot: node.nodeRootView.id,
                     newRoot: that.view.nodeRootView.id,
                     anim: 'dock',
-                    dockElem: helper,
+                    dockView: helper,
                     focus: false
                 };
             });
@@ -392,23 +397,23 @@ class DropBoxLeft extends DropBox {
             right: panel.left - 5 + 5
         };
     }
-    handleDrop(node:NodeView, helper:HTMLElement) {
+    handleDrop(node:NodeView, helper:View) {
         var that = this;
-        ActionManager.simpleSchedule(node,
+        ActionManager.simpleSchedule(View.focusedView,
             function():SubAction {
                 return {
                     actionType: PanelCreateAction,
                     activeID: node.value.cid,
-                    prevPanel: View.getCurrentPage().content.grid.listItems.prev[that.view.id],
+                    prevPanel: View.getCurrentPage().content.gridwrapper.grid.listItems.prev[that.view.id],
                     oldRoot: node.nodeRootView.id,
                     newRoot: 'new',
-                    dockElem: helper,
+                    dockView: helper,
                     focus: false
                 };
             });
     }
     validateDrop(activeNode:NodeView) {
-        if (View.getCurrentPage().content.grid.listItems.first() === this.view.id) {
+        if (View.getCurrentPage().content.gridwrapper.grid.listItems.first() === this.view.id) {
             return true;
         }
         return false;
@@ -435,9 +440,9 @@ class DropBoxRight extends DropBox {
             right: panel.left + panel.width + 5 + 5
         };
     }
-    handleDrop(node:NodeView, helper:HTMLElement) {
+    handleDrop(node:NodeView, helper:View) {
         var that = this;
-        ActionManager.simpleSchedule(node,
+        ActionManager.simpleSchedule(View.focusedView,
             function():SubAction {
                 return {
                     actionType: PanelCreateAction,
@@ -445,7 +450,7 @@ class DropBoxRight extends DropBox {
                     prevPanel: that.view.id,
                     oldRoot: node.nodeRootView.id,
                     newRoot: 'new',
-                    dockElem: helper,
+                    dockView: helper,
                     focus: false
                 };
             });

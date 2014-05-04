@@ -25,7 +25,7 @@ $(window).resize(function () {
         }
     })();
     if (!changeHeight && !changeWidth && !changeFont) {
-        return;
+        //return; // todo: horrible for performance to comment this out - need cached dimensions
     }
 
     // get scroll-container
@@ -33,11 +33,11 @@ $(window).resize(function () {
     if (!page) {
         return;
     }
-    var scrollContainer = $('#' + page.content.grid.id);
+    var scrollContainer = $('#' + page.content.gridwrapper.grid.id);
     if (scrollContainer.length === 0) {
         return;
     }
-    var panels = page.content.grid.listItems;
+    var panels = page.content.gridwrapper.grid.listItems;
     var m;
     var scrollviews = [];
     var scrollspacers = [];
@@ -63,18 +63,20 @@ $(window).resize(function () {
         scrollContainer.height(height - mtop - mbottom);
     }
 
+    View.currentPage.content.gridwrapper.grid.resize();
+
     var scrollViewOffset = scrollViews.offset().top - headerHeight;
     scrollViews.height(height - mtop - mbottom - scrollViewOffset);
     scrollSpacer.height(Math.round(height * 0.8));
 
-    if (changeWidth || changeFont) {
-        (function () {
-            $('textarea').each(function () {
-                View.get($(this).attr('id')).fixHeight();
-            });
-        })();
-    }
+    //if (changeWidth || changeFont) {
+    (function () {
+        $('textarea').each(function () {
+            View.get($(this).attr('id')).fixHeight();
+        });
+    })();
 
+    // }
     $D.lastHeight = newHeight;
     $D.lastWidth = newWidth;
     $D.lastFont = newFont;

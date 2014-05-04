@@ -17,6 +17,9 @@ var NodeView = (function (_super) {
         var nid;
         for (nid in items) {
             var item = items[nid];
+            if (item.nodeRootView == null) {
+                continue;
+            }
             var header = item.header;
             item.dimensions = {
                 width: $(header.elem).outerWidth(),
@@ -34,11 +37,11 @@ var NodeView = (function (_super) {
     NodeView.prototype.init = function () {
         this.Class = NodeView;
         this.modelType = OutlineNodeModel;
-        NodeView.nodesById[this.id] = this;
         this.childViewTypes = {
             header: NodeHeaderView,
             children: OutlineListView
         };
+        NodeView.nodesById[this.id] = this;
     };
     NodeView.prototype.destroy = function (opts) {
         delete NodeView.nodesById[this.id];
@@ -75,12 +78,15 @@ var NodeView = (function (_super) {
         }
 
         if (this.isCollapsed) {
+            this.isLeaf = false;
             this.addClass('branch').removeClass('leaf').addClass('collapsed').removeClass('expanded');
         } else {
             if (this.children.elem.children.length > 0) {
                 // this is defined because rendering is bottom-up
+                this.isLeaf = false;
                 this.addClass('branch').removeClass('leaf').addClass('expanded').removeClass('collapsed');
             } else {
+                this.isLeaf = true;
                 this.addClass('leaf').removeClass('branch').addClass('expanded').removeClass('collapsed');
             }
         }
@@ -93,6 +99,9 @@ var NodeView = (function (_super) {
     };
 
     NodeView.prototype.setCollapsed = function (collapsed) {
+        if (this.isLeaf) {
+            collapsed = false;
+        }
         if (collapsed === this.isCollapsed) {
             return;
         }
@@ -102,7 +111,12 @@ var NodeView = (function (_super) {
             this.children.collapseList();
         } else {
             this.addClass('expanded').removeClass('collapsed');
-            this.children.expandList();
+            if (!this.isLeaf) {
+                this.children.expandList();
+
+                // todo: fix this hack
+                $(window).resize();
+            }
         }
     };
 

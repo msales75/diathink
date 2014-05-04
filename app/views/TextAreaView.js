@@ -69,9 +69,7 @@ var TextAreaView = (function (_super) {
             this.elem.setAttribute('disabled', 'disabled');
         }
 
-        // $(this.elem).trigger('keyup');
-        this.fixHeight(); // after dimensions are set
-
+        // this.fixHeight(); // after dimensions are set
         // todo: check if this is true/correct?
         /*
         if (this.elem && (typeof this.elem.autocorrect !== "undefined") &&
@@ -106,7 +104,7 @@ var TextAreaView = (function (_super) {
         var elem = this.elem;
 
         //   on startup before calling resize()
-        if (elem.style.visibility !== 'visible') {
+        if ($(elem).css('visibility') !== 'visible') {
             return;
         }
 
@@ -123,7 +121,7 @@ var TextAreaView = (function (_super) {
         if (!(currentWidth > 0)) {
             return;
         }
-        var currentFont = elem.style.fontSize;
+        var currentFont = $(elem).css('font-size');
         if ((this.lastWidth === currentWidth) && (this.lastFont === currentFont) && (this.lastValue === this.value)) {
             return;
         }
@@ -131,9 +129,9 @@ var TextAreaView = (function (_super) {
         assert(this.parentView instanceof ContainerView, "ERROR: textedit parentDiv not found in fixHeight");
         var parentdiv = this.parentView.elem;
         if (this.lastFont !== currentFont) {
-            this.lineHeight = Number(hiddendiv.style.lineHeight.replace(/px/, ''));
-            this.paddingY = Number(elem.style.paddingTop.replace(/px/, '')) + Number(elem.style.paddingBottom.replace(/px/, ''));
-            this.paddingX = Number(elem.style.paddingLeft.replace(/px/, '')) + Number(elem.style.paddingRight.replace(/px/, ''));
+            this.lineHeight = Number($(hiddendiv).css('line-height').replace(/px/, ''));
+            this.paddingY = Number($(elem).css('padding-top').replace(/px/, '')) + Number($(elem).css('padding-bottom').replace(/px/, ''));
+            this.paddingX = Number($(elem).css('padding-left').replace(/px/, '')) + Number($(elem).css('padding-right').replace(/px/, ''));
         }
         var lineHeight = this.lineHeight;
         var paddingX = this.paddingX;

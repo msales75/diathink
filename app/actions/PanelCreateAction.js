@@ -5,30 +5,55 @@ var __extends = this.__extends || function (d, b) {
     d.prototype = new __();
 };
 ///<reference path="Action.ts"/>
-m_require("app/actions/PanelAnimAction.js");
+m_require("app/actions/AnimatedAction.js");
 var PanelCreateAction = (function (_super) {
     __extends(PanelCreateAction, _super);
     function PanelCreateAction() {
         _super.apply(this, arguments);
         this.type = "PanelCreate";
-        this.prevPanel = null;
         this.newPanel = null;
     }
     // options:ActionOptions = {activeID: null, prevPanel: null, oldRoot: null, newRoot: 'new'};
+    PanelCreateAction.prototype.runinit2 = function () {
+        var o = this.options, r = this.runtime;
+        if (this.options.undo) {
+            this.usePostAnim = true;
+            this.dropSource = new PanelDropSource({
+                panelID: this.newPanel,
+                useFade: true
+            });
+        } else {
+            this.usePostAnim = false;
+            this.dropSource = new NodeDropSource({
+                activeID: this.options.activeID,
+                outlineID: this.options.oldRoot,
+                dockView: this.options.dockView,
+                useDock: true,
+                dockTextOnly: true,
+                usePlaceholder: false
+            });
+            this.dropTarget = new PanelDropTarget({
+                activeID: this.options.activeID,
+                panelID: View.currentPage.content.gridwrapper.grid.getInsertLocation(this.options.prevPanel),
+                prevPanel: this.options.prevPanel,
+                usePlaceholder: true
+            });
+        }
+    };
     PanelCreateAction.prototype.contextStep = function () {
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         this.leftPanel = panels.first();
-        this.nextPanel = panels.next[this.prevPanel];
+        this.nextPanel = panels.next[this.options.prevPanel];
     };
 
     PanelCreateAction.prototype.validateOldContext = function () {
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         if (!this.options.undo) {
             if (this.leftPanel !== panels.first()) {
                 console.log("ERROR: leftPanel is not what it should be before op");
                 debugger;
             }
-            if (panels.next[this.prevPanel] !== this.nextPanel) {
+            if (panels.next[this.options.prevPanel] !== this.nextPanel) {
                 console.log("ERROR: leftPanel is not before nextPanel before op");
                 debugger;
             }
@@ -45,7 +70,7 @@ var PanelCreateAction = (function (_super) {
     };
 
     PanelCreateAction.prototype.validateNewContext = function () {
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         if (!this.postLeftPanel) {
             this.postLeftPanel = panels.first();
         }
@@ -54,7 +79,7 @@ var PanelCreateAction = (function (_super) {
                 console.log("ERROR: leftPanel is not what it should be after undo");
                 debugger;
             }
-            if (panels.next[this.prevPanel] !== this.nextPanel) {
+            if (panels.next[this.options.prevPanel] !== this.nextPanel) {
                 console.log("ERROR: leftPanel is not before nextPanel after undo");
                 debugger;
             }
@@ -73,7 +98,7 @@ var PanelCreateAction = (function (_super) {
     PanelCreateAction.prototype.validateOptions = function () {
         // todo: fixup these validations
         var o = this.options;
-        var panels = View.getCurrentPage().content.grid.listItems;
+        var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         if (!o.redo && !o.undo) {
             this.leftPanel = panels.first();
         }
@@ -140,10 +165,10 @@ var PanelCreateAction = (function (_super) {
     }
     
     */
-    PanelCreateAction.prototype.execModel = function () {
+    PanelCreateAction.prototype.execUniqueView = function () {
         var that = this;
-        this.addQueue('newModelAdd', ['context'], function () {
-            var grid = View.getCurrentPage().content.grid;
+        this.addQueue(['uniqueView'], [['anim']], function () {
+            var grid = View.getCurrentPage().content.gridwrapper.grid;
             var o = that.options;
             var dir;
             if (o.undo) {
@@ -157,7 +182,7 @@ var PanelCreateAction = (function (_super) {
                 }
                 new PanelView({
                     id: that.newPanel,
-                    parentView: View.currentPage.content.grid,
+                    parentView: View.currentPage.content.gridwrapper.grid,
                     value: OutlineNodeModel.getById(that.options.activeID)
                 });
 
@@ -168,7 +193,7 @@ var PanelCreateAction = (function (_super) {
                 }
 
                 // View.get(that.newPanel).removeClass('drag-hidden');
-                dir = grid.insertAfter(View.get(that.options.prevPanel), View.get(that.newPanel));
+                dir = grid.insertAfter(View.get(that.options.prevPanel), View.get(that.newPanel), that.dropTarget.getPlaceholder(null));
                 // we only wanted newPanel for the PanelManager id, not the ViewManager.
             }
 
@@ -176,20 +201,14 @@ var PanelCreateAction = (function (_super) {
             // Define panelid's and rootid's for redraw
             // loop forwards or backwards - to avoid creating duplicate id's
             //  before we delete the original.
-            if (that.options.dockElem) {
+            if (that.options.dockView) {
                 $(document.body).removeClass('transition-mode');
-                that.options.dockElem.parentNode.removeChild(that.options.dockElem);
-                that.options.dockElem = undefined;
+                that.options.dockView.destroy();
+                that.options.dockView = undefined;
             }
-        });
-    };
-
-    PanelCreateAction.prototype.execView = function (outline) {
-        var that = this;
-        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd', 'anim'], function () {
-            var r = that.runtime;
+            $(window).resize(); // fix height of new panel, spacer; a bit hacky
         });
     };
     return PanelCreateAction;
-})(PanelAnimAction);
+})(AnimatedAction);
 //# sourceMappingURL=PanelCreateAction.js.map

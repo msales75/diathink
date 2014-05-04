@@ -7,6 +7,7 @@ class DeadOutlineRoot extends DeadView {
     constructor(outline:OutlineRootView) {
         super(outline);
         this.data= outline.data;
+        // set width equal to panel based on current screensize
     }
     getOptions() {
         return {
@@ -70,8 +71,8 @@ class OutlineRootView extends ListView {
     }
 
     getData(key) {
-        if (!this.data) {return null;}
-        else if (this.data[key] == null) {return null;}
+        if (!this.data) {return false;}
+        else if (this.data[key] == null) {return false;}
         else {return this.data[key];}
     }
     validate() {

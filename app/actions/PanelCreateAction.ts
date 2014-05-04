@@ -1,28 +1,54 @@
 ///<reference path="Action.ts"/>
-m_require("app/actions/PanelAnimAction.js");
-class PanelCreateAction extends PanelAnimAction {
+m_require("app/actions/AnimatedAction.js");
+class PanelCreateAction extends AnimatedAction {
     type = "PanelCreate";
-    prevPanel:string = null;
     newPanel:string = null;
     leftPanel:string;
     nextPanel:string;
     postLeftPanel:string;
     postRightPanel:string;
     // options:ActionOptions = {activeID: null, prevPanel: null, oldRoot: null, newRoot: 'new'};
+    runinit2() {
+        var o:ActionOptions = this.options,
+            r:RuntimeOptions = this.runtime;
+        if (this.options.undo) {
+            this.usePostAnim = true;
+            this.dropSource = new PanelDropSource({
+                panelID: this.newPanel,
+                useFade: true
+            });
+        } else {
+            this.usePostAnim = false;
+            this.dropSource = new NodeDropSource({
+                activeID: this.options.activeID,
+                outlineID: this.options.oldRoot,
+                dockView: this.options.dockView,
+                useDock: true,
+                dockTextOnly: true,
+                usePlaceholder: false
+            });
+            this.dropTarget = new PanelDropTarget({
+                activeID: this.options.activeID,
+                panelID: View.currentPage.content.gridwrapper.grid.getInsertLocation(this.options.prevPanel),
+                prevPanel: this.options.prevPanel,
+                usePlaceholder: true
+            });
+        }
+    }
     contextStep() { // save old context here
-        var panels:LinkedList<PanelView> = View.getCurrentPage().content.grid.listItems;
+        var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
         this.leftPanel = panels.first();
-        this.nextPanel = panels.next[this.prevPanel];
+        this.nextPanel = panels.next[this.options.prevPanel];
     }
 
     validateOldContext() {
-        var panels:LinkedList<PanelView> = View.getCurrentPage().content.grid.listItems;
+        var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
         if (!this.options.undo) {
             if (this.leftPanel !== panels.first()) {
                 console.log("ERROR: leftPanel is not what it should be before op");
                 debugger;
             }
-            if (panels.next[this.prevPanel] !== this.nextPanel) {
+            if (panels.next[this.options.prevPanel] !== this.nextPanel) {
                 console.log("ERROR: leftPanel is not before nextPanel before op");
                 debugger;
             }
@@ -39,14 +65,14 @@ class PanelCreateAction extends PanelAnimAction {
     }
 
     validateNewContext() {
-        var panels:LinkedList<PanelView> = View.getCurrentPage().content.grid.listItems;
+        var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
         if (!this.postLeftPanel) {this.postLeftPanel = panels.first();}
         if (this.options.undo) {
             if (this.leftPanel !== panels.first()) {
                 console.log("ERROR: leftPanel is not what it should be after undo");
                 debugger;
             }
-            if (panels.next[this.prevPanel] !== this.nextPanel) {
+            if (panels.next[this.options.prevPanel] !== this.nextPanel) {
                 console.log("ERROR: leftPanel is not before nextPanel after undo");
                 debugger;
             }
@@ -65,7 +91,7 @@ class PanelCreateAction extends PanelAnimAction {
     validateOptions() {
         // todo: fixup these validations
         var o:ActionOptions = this.options;
-        var panels:LinkedList<PanelView> = View.getCurrentPage().content.grid.listItems;
+        var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
         if (!o.redo && !o.undo) {
             this.leftPanel = panels.first();
         }
@@ -131,10 +157,10 @@ class PanelCreateAction extends PanelAnimAction {
      }
 
      */
-    execModel() {
+    execUniqueView() {
         var that = this;
-        this.addQueue('newModelAdd', ['context'], function() {
-            var grid:PanelGridView = View.getCurrentPage().content.grid;
+        this.addQueue(['uniqueView'], [['anim']], function() {
+            var grid:PanelGridView = View.getCurrentPage().content.gridwrapper.grid;
             var o:ActionOptions = that.options;
             var dir;
             if (o.undo) {
@@ -149,7 +175,7 @@ class PanelCreateAction extends PanelAnimAction {
                 }
                 new PanelView({
                         id: that.newPanel, // possibly a resurrected id
-                        parentView: View.currentPage.content.grid,
+                        parentView: View.currentPage.content.gridwrapper.grid,
                         value: OutlineNodeModel.getById(that.options.activeID)
                 });
 
@@ -160,25 +186,20 @@ class PanelCreateAction extends PanelAnimAction {
                 }
 
                 // View.get(that.newPanel).removeClass('drag-hidden');
-                dir = grid.insertAfter(<PanelView>View.get(that.options.prevPanel), <PanelView>View.get(that.newPanel));
+                dir = grid.insertAfter(<PanelView>View.get(that.options.prevPanel), <PanelView>View.get(that.newPanel),
+                    that.dropTarget.getPlaceholder(null));
                 // we only wanted newPanel for the PanelManager id, not the ViewManager.
             }
             // move this to grid.renderUpdate(); ??
             // Define panelid's and rootid's for redraw
             // loop forwards or backwards - to avoid creating duplicate id's
             //  before we delete the original.
-            if (that.options.dockElem) {
+            if (that.options.dockView) {
                 $(document.body).removeClass('transition-mode');
-                that.options.dockElem.parentNode.removeChild(that.options.dockElem);
-                that.options.dockElem = undefined;
+                that.options.dockView.destroy();
+                that.options.dockView = undefined;
             }
-        });
-    }
-
-    execView(outline) { // mutually exclusive with restoreViewContext
-        var that = this;
-        this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd', 'anim'], function() {
-            var r = that.runtime;
+            $(window).resize(); // fix height of new panel, spacer; a bit hacky
         });
     }
 }

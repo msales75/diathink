@@ -18,7 +18,7 @@ var PageContentView = (function (_super) {
         this.childViewTypes = {
             leftbutton: LeftSwipeButtonView,
             rightbutton: RightSwipeButtonView,
-            grid: PanelGridView
+            gridwrapper: GridContainerView
         };
     };
     return PageContentView;

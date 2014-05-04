@@ -3,7 +3,35 @@ m_require("app/actions/Action.js");
 class AnimatedAction extends Action {
     dropSource:DropSource; // defined by instantiation
     dropTarget:DropTarget;
+    useAnim:boolean = true;
+    usePostAnim:boolean = false;
 
+    runinit() {
+        super.runinit();
+        _.extend(this.runtime, {
+            oldLineContext: {},
+            status: {
+                context: 0,
+                log: 0,
+                undobuttons: 0,
+                oldModelCollection: 0,
+                oldModelRemove: 0,
+                modelCreate: 0,
+                newModelRank: 0,
+                newModelAdd: 0,
+                focus: 0,
+                end: 0,
+                createDockElem: 0,
+                dockAnim: 0,
+                anim: 0,
+                anim2: 0,
+                uniqueView: 0,
+                view: {},
+                oldLinePlace: {},
+                newLinePlace: {}
+            }
+        });
+    }
     animStepWrapper(f, duration, start, end) {
         var self:AnimatedAction = this;
         var frac = ((new Date()).getTime() - start) / duration;
@@ -26,8 +54,8 @@ class AnimatedAction extends Action {
         var outlines = OutlineRootView.outlinesById;
         var i:string;
         this.addQueue(['createDockElem'], [['context']], function() {
-            if (that.dropSource && !that.options.dockElem && that.runtime.rNewModelContext) {
-                that.options.dockElem = that.dropSource.createDockElem();
+            if (that.dropSource) {
+                that.options.dockView = that.dropSource.createDockElem();
             }
         });
         this.addQueue(['createUniqueSourcePlace'], [['createDockElem']], function() {
@@ -72,12 +100,12 @@ class AnimatedAction extends Action {
 
         this.addQueue('setupDockAnim', placeholders, function() {
             if (that.dropTarget) {
-                that.dropTarget.setupDockAnim(that.options.dockElem);
+                that.dropTarget.setupDockAnim(that.options.dockView);
             }
         });
 
         this.addAsync('anim', [['setupPlaceholderAnim'],['setupDockAnim']], function() {
-            if (true) {
+            if (that.useAnim) {
                 var time = 200; // todo: this should vary.
                 var start = (new Date()).getTime();
                 setTimeout(function() {
@@ -99,17 +127,38 @@ class AnimatedAction extends Action {
         var views = [];
         var o:string;
         var outlines = OutlineRootView.outlinesById;
+        views = [['uniqueView']];
         for (o in outlines) {
             views.push(['view', o]);
         }
-        this.addQueue('animCleanup', _.extend(['anim'],views), function() {
+        this.addAsync(['anim2'],  _.extend(['anim'],views), function() {
+            if (that.usePostAnim) {
+                var time = 200; // todo: this should vary.
+                var start = (new Date()).getTime();
+                setTimeout(function() {
+                    that.animStepWrapper(function(f) {
+                        that.anim2Step(f);
+                    }, time, start, function() {
+                        that.runtime.status.anim2 = 2;
+                        that.nextQueue();
+                    });
+                }, 0);
+            } else {
+                that.runtime.status.anim2 = 2;
+                that.nextQueue();
+            }
+        });
+        this.addQueue('animCleanup', ['anim2'], function() {
+            console.log("starting animCleanup**");
             if (that.dropSource) {
                 that.dropSource.cleanup();
+                that.dropSource = null;
             }
             if (that.dropTarget) {
                 that.dropTarget.cleanup();
+                that.dropTarget = null;
             }
-            that.options.dockElem = null;
+            that.options.dockView = null;
         });
     }
 
@@ -122,6 +171,14 @@ class AnimatedAction extends Action {
             this.dropTarget.placeholderAnimStep(frac);
             this.dropTarget.dockAnimStep(frac);
             this.dropTarget.fadeAnimStep(frac);
+        }
+    }
+    anim2Step(frac:number) {
+        if (this.dropSource) {
+            this.dropSource.postAnimStep(frac);
+        }
+        if (this.dropTarget) {
+            this.dropSource.postAnimStep(frac);
         }
     }
 
