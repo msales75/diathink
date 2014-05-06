@@ -5,7 +5,6 @@ class PanelGridView extends GridView {
     value:LinkedList<boolean>; // list of models for panels
     listItems:LinkedList<PanelView>; // list of rendered views based on models
     init() {
-        this.Class = PanelGridView;
         this.listItemTemplate = PanelView;
         this.numCols = 2;
         this.listItems = new LinkedList<PanelView>();

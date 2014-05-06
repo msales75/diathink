@@ -20,6 +20,8 @@
 ///<reference path="NodeTextView.ts"/>
 ///<reference path="NodeTextWrapperView.ts"/>
 ///<reference path="NodeView.ts"/>
+///<reference path="LinkListView.ts"/>
+///<reference path="NodeLinkView.ts"/>
 ///<reference path="OutlineListView.ts"/>
 ///<reference path="OutlineRootView.ts"/>
 ///<reference path="OutlineScrollView.ts"/>
@@ -323,6 +325,7 @@ class View {
     themeFirst(b:boolean) {} // only if can be in a list
     themeLast(b:boolean) {} // only if can be in a list
     onClick() {}
+    removeFromModel() {}
 
     onDoubleClick() {}
     detach(v:View, opts?:any) { // override in listviews to remove item from list
@@ -341,10 +344,8 @@ class View {
             this.parentView.detach(this, opts);
             this.elem = null;
         }
-        // detach from model
-        if (this.nodeRootView && this.value && this.value.clearView) {
-            this.value.clearView(this.nodeRootView); // remove view from model-outline
-        }
+        // remove any references from model to this view
+        this.removeFromModel();
         for (var v in this.childViewTypes) {
             if (this.childViewTypes.hasOwnProperty(v)) {
                 var child:View = this[v];
@@ -360,9 +361,10 @@ class View {
     }
 
     renderChildViews() {
-        for (var v in this.childViewTypes) {
+        var v:string, child:View;
+        for (v in this.childViewTypes) {
             if (this.childViewTypes.hasOwnProperty(v)) {
-                var child:View = this[v];
+                child = this[v];
                 assert(child != null,
                     'There is no child view \'' + v + '\' available for (' +
                         (this._name ? this._name + ', ' : '') + '#' + this.id +
@@ -589,11 +591,15 @@ class View {
                 assert(views[k].parentView === this,
                     "Parent list " + this.id + " has listItem " + k + " without matching parentView");
             }
-            assert(this.elem.children.length === this.listItems.count,
-                "Wrong number of DOM children for list " + this.id);
-            for (var n = 0, pname = this.listItems.first(); pname !== ''; pname = this.listItems.next[pname], ++n) {
-                assert(this.elem.children[n] === (<View>this.listItems.obj[pname]).elem,
-                    "DOM List child " + n + " does not match id=" + pname);
+            if (_.size(this.childViewTypes)===0) { // if there are no other elements in the list
+                assert(this.elem.children.length === this.listItems.count,
+                    "Wrong number of DOM children for list " + this.id);
+                for (var n = 0, pname = this.listItems.first(); pname !== ''; pname = this.listItems.next[pname], ++n) {
+                    assert(this.elem.children[n] === (<View>this.listItems.obj[pname]).elem,
+                        "DOM List child " + n + " does not match id=" + pname);
+                }
+            } else {
+                // todo: validate DOM when list mixed with regular children
             }
         }
         if (this !== View.currentPage) {

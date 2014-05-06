@@ -15,7 +15,6 @@ var LeftSwipeButtonView = (function (_super) {
         this.value = '<';
     }
     LeftSwipeButtonView.prototype.init = function () {
-        this.Class = LeftSwipeButtonView;
         this.isClickable = true;
     };
 

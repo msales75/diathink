@@ -36,7 +36,6 @@ class NodeView extends View {
     }
 
     init() {
-        this.Class = NodeView;
         this.modelType = OutlineNodeModel;
         this.childViewTypes = {
             header: NodeHeaderView,
@@ -47,6 +46,11 @@ class NodeView extends View {
     destroy(opts?) {
         delete NodeView.nodesById[this.id];
         super.destroy(opts);
+    }
+    removeFromModel() {
+        if (this.nodeRootView) { // won't be set for helper
+            this.value.clearView(this.nodeRootView); // remove view from model-outline
+        }
     }
 
     updateValue() {

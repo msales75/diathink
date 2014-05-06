@@ -2,7 +2,6 @@
 m_require("app/views/SpanView.js");
 class RightSwipeButtonView extends SpanView {
     init() {
-        this.Class = RightSwipeButtonView;
         this.isClickable = true;
     }
     cssClass = 'right-button';

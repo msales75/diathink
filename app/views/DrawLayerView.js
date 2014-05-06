@@ -14,9 +14,6 @@ var DrawLayerView = (function (_super) {
         this.cacheOffset = null;
         this.cssClass = 'drawlayer';
     }
-    DrawLayerView.prototype.init = function () {
-        this.Class = DrawLayerView;
-    };
     return DrawLayerView;
 })(ContainerView);
 //# sourceMappingURL=DrawLayerView.js.map

@@ -40,7 +40,6 @@ var OutlineRootView = (function (_super) {
     }
     OutlineRootView.prototype.init = function () {
         this.listItemTemplate = NodeView;
-        this.Class = OutlineRootView;
     };
 
     OutlineRootView.prototype.updateValue = function () {

@@ -15,7 +15,6 @@ var UndoButtonContainerView = (function (_super) {
         this.cssClass = 'undo-container';
     }
     UndoButtonContainerView.prototype.init = function () {
-        this.Class = UndoButtonContainerView;
         this.childViewTypes = {
             undobutton: UndoButtonView,
             redobutton: RedoButtonView

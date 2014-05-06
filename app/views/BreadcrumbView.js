@@ -12,7 +12,6 @@ var BreadcrumbView = (function (_super) {
         _super.apply(this, arguments);
     }
     BreadcrumbView.prototype.init = function () {
-        this.Class = BreadcrumbView;
         this.isClickable = true;
     };
 

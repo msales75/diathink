@@ -42,7 +42,6 @@ var OutlineScrollView = (function (_super) {
         _super.apply(this, arguments);
     }
     OutlineScrollView.prototype.init = function () {
-        this.Class = OutlineScrollView;
         this.childViewTypes = {
             alist: OutlineRootView,
             scrollSpacer: ScrollSpacerView,

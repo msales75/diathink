@@ -45,7 +45,6 @@ var PanelView = (function (_super) {
         this.animating = false;
     }
     PanelView.prototype.init = function () {
-        this.Class = PanelView;
         this.childViewTypes = {
             breadcrumbs: BreadcrumbView,
             outline: OutlineScrollView
@@ -64,10 +63,6 @@ var PanelView = (function (_super) {
             this.elem.children[0].appendChild((this[name]).elem);
         }
         return this.elem;
-    };
-    PanelView.prototype.freezeWidth = function () {
-        var width = this.elem.clientWidth;
-        $(this.elem).css('width', String(width) + 'px');
     };
 
     PanelView.prototype.cachePosition = function () {

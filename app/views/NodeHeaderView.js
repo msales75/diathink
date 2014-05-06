@@ -14,7 +14,6 @@ var NodeHeaderView = (function (_super) {
         this.cssClass = 'outline-header';
     }
     NodeHeaderView.prototype.init = function () {
-        this.Class = NodeHeaderView;
         this.childViewTypes = {
             handle: HandleImageView,
             name: NodeTextWrapperView

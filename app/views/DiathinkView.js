@@ -14,7 +14,6 @@ var DiathinkView = (function (_super) {
         this.cssClass = 'ui-page ui-body-c ui-page-header-fixed ui-page-active ui-sortable';
     }
     DiathinkView.prototype.init = function () {
-        this.Class = DiathinkView;
         this.childViewTypes = {
             hiddendiv: HiddenDivView,
             header: HeaderToolbarView,
@@ -36,12 +35,14 @@ var DiathinkView = (function (_super) {
                 withID = withID.parentNode;
             }
             if (withID.id) {
-                assert(views[withID.id] != null, "Unable to find view for html element ID=" + withID.id);
+                if (withID.id.substr(0, 4) !== 'tmp_') {
+                    assert(views[withID.id] != null, "Unable to find view for html element ID=" + withID.id);
+                }
             }
         });
         _super.prototype.validate.call(this);
         var v = this.id;
-        assert(this.Class === DiathinkView, "PageView " + v + " does not have class=diathinkview");
+        assert(this instanceof DiathinkView, "PageView " + v + " does not have class=diathinkview");
         assert(this.isFocusable === false, "PageView " + v + " does not have isFocuable===false");
         assert(this.isDragHandle === false, "PageView " + v + " does not have isFocuable===false");
         assert(this.isScrollable === false, "PageView " + v + " does not have isScrollable===false");

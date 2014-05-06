@@ -14,12 +14,9 @@ var NodeTextView = (function (_super) {
         this.cssClass = 'outline-content ui-input-text ui-body-c ui-corner-all ui-shadow-inset';
         this.hasMultipleLines = true;
     }
-    NodeTextView.prototype.init = function () {
-        this.valuePattern = '<%= text %>';
-        this.Class = NodeTextView;
-    };
     NodeTextView.prototype.updateValue = function () {
-        this.setValuePatterns(this.parentView.parentView.parentView.value);
+        // this.setValuePatterns(this.parentView.parentView.parentView.value);
+        this.value = this.nodeView.value.get('text');
     };
     return NodeTextView;
 })(TextAreaView);

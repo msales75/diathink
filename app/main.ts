@@ -27,15 +27,25 @@ OutlineNodeModel.root = new OutlineNodeModel();
 OutlineNodeModel.root.fromJSON({
     text: 'Home',
     children: [
-        {text: "Test 1",
+        {
+            text: "Test 1",
             children: [
-                {text: "Child 1 1",
+                {
+                    text: "Child 1 1",
                     children: [
-                        {text: "Child 1 1 - 1"}
+                        {
+                            text: "Child 1 1 - 1",
+                            links: ["m_6"]
+                        }
                     ]},
-                {text: "Child 1 2"}
+                {
+                    text: "Child 1 2"
+                }
             ]},
-        {text: "Test 2"}
+        {
+            text: "Test 2",
+            links: ["m_1","m_3"]
+        }
     ]
 });
 $(function() {

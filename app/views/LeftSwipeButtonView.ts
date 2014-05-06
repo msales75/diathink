@@ -3,7 +3,6 @@ m_require("app/views/SpanView.js");
 
 class LeftSwipeButtonView extends SpanView {
     init() {
-        this.Class = LeftSwipeButtonView;
         this.isClickable = true;
     }
     cssClass = 'left-button';

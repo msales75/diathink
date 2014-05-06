@@ -8,7 +8,6 @@ class UndoButtonContainerView extends ContainerView {
     redobutton:RedoButtonView;
 
     init() {
-        this.Class = UndoButtonContainerView;
         this.childViewTypes = {
             undobutton: UndoButtonView,
             redobutton: RedoButtonView

@@ -14,7 +14,6 @@ var RightSwipeButtonView = (function (_super) {
         this.value = '>';
     }
     RightSwipeButtonView.prototype.init = function () {
-        this.Class = RightSwipeButtonView;
         this.isClickable = true;
     };
 

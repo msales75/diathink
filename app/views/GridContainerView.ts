@@ -5,7 +5,6 @@ class GridContainerView extends ContainerView {
     grid: PanelGridView;
     cssClass= 'horizontal-grid-container';
     init() {
-        this.Class = GridContainerView;
         this.childViewTypes = {
             grid: PanelGridView
         };

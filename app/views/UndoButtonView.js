@@ -13,7 +13,6 @@ var UndoButtonView = (function (_super) {
         this.cssClass = 'undo-button';
     }
     UndoButtonView.prototype.init = function () {
-        this.Class = UndoButtonView;
         this.isClickable = true;
     };
     UndoButtonView.prototype.onClick = function () {

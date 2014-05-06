@@ -4,7 +4,6 @@ class BreadcrumbView extends View {
     parentView:PanelView;
 
     init() {
-        this.Class = BreadcrumbView;
         this.isClickable = true;
     }
 

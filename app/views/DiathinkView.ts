@@ -9,7 +9,6 @@ class DiathinkView extends PageView {
     public drawlayer:DrawLayerView;
 
     init() {
-        this.Class = DiathinkView;
         this.childViewTypes = {
             hiddendiv: HiddenDivView,
             header: HeaderToolbarView,
@@ -33,13 +32,15 @@ class DiathinkView extends PageView {
                 withID = <HTMLElement>withID.parentNode;
             }
             if (withID.id) {
-                assert(views[withID.id] != null,
-                    "Unable to find view for html element ID=" + withID.id);
+                if (withID.id.substr(0,4)!=='tmp_') {
+                    assert(views[withID.id] != null,
+                        "Unable to find view for html element ID=" + withID.id);
+                }
             }
         });
         super.validate();
         var v:string = this.id;
-        assert(this.Class === DiathinkView,
+        assert(this instanceof DiathinkView,
             "PageView " + v + " does not have class=diathinkview");
         assert(this.isFocusable === false,
             "PageView " + v + " does not have isFocuable===false");

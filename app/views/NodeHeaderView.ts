@@ -8,7 +8,6 @@ class NodeHeaderView extends ContainerView {
     name:NodeTextWrapperView;
 
     init() {
-        this.Class = NodeHeaderView;
         this.childViewTypes = {
             handle: HandleImageView,
             name: NodeTextWrapperView

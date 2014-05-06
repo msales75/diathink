@@ -27,16 +27,16 @@ class PanelDropTarget extends DropTarget {
     createUniquePlaceholder() {
         if (this.useFadeOut) { // a translucent screen over panel being replaced
             var fadeScreen:JQuery = $("<div></div>");
-            var elem:HTMLElement = (<PanelView>View.get(this.panelID)).outline.alist.elem;
+            var panel = (<PanelView>View.get(this.panelID))
+            var elem:HTMLElement = panel.outline.alist.elem;
             var offset= $(elem).offset();
-            var width:number = elem.clientWidth;
             var height:number = elem.clientHeight;
             fadeScreen.addClass('ui-corner-all');
             fadeScreen.css({
                 position: 'absolute',
                 opacity: 0,
                 'z-index': 1,
-                width: width,
+                width: panel.parentView.itemWidth+'px',
                 height: height,
                 top: offset.top,
                 left: offset.left,
@@ -70,14 +70,14 @@ class PanelDropTarget extends DropTarget {
         if (this.usePlaceholder) { // if creating panel, change width and grid-margin
             var p:string;
             for (p in PanelView.panelsById) {
-                PanelView.panelsById[p].freezeWidth();
+                // PanelView.panelsById[p].freezeWidth();
             }
             this.slideDirection = 'right';
             if (this.prevPanel === View.currentPage.content.gridwrapper.grid.listItems.last()) {
                 this.slideDirection = 'left';
             }
-            this.maxWidth = View.get(View.currentPage.content.gridwrapper.grid.listItems.first()).elem.clientWidth;
-            this.containerWidth = View.currentPage.content.gridwrapper.elem.clientWidth;
+            this.maxWidth = View.currentPage.content.gridwrapper.grid.itemWidth;
+            this.containerWidth = View.currentPage.content.gridwrapper.grid.numCols*this.maxWidth;
         }
     }
     placeholderAnimStep(frac:number) {

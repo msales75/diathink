@@ -20,6 +20,8 @@
 ///<reference path="NodeTextView.ts"/>
 ///<reference path="NodeTextWrapperView.ts"/>
 ///<reference path="NodeView.ts"/>
+///<reference path="LinkListView.ts"/>
+///<reference path="NodeLinkView.ts"/>
 ///<reference path="OutlineListView.ts"/>
 ///<reference path="OutlineRootView.ts"/>
 ///<reference path="OutlineScrollView.ts"/>
@@ -266,6 +268,8 @@ var View = (function () {
     };
     View.prototype.onClick = function () {
     };
+    View.prototype.removeFromModel = function () {
+    };
 
     View.prototype.onDoubleClick = function () {
     };
@@ -288,10 +292,8 @@ var View = (function () {
             this.elem = null;
         }
 
-        // detach from model
-        if (this.nodeRootView && this.value && this.value.clearView) {
-            this.value.clearView(this.nodeRootView); // remove view from model-outline
-        }
+        // remove any references from model to this view
+        this.removeFromModel();
         for (var v in this.childViewTypes) {
             if (this.childViewTypes.hasOwnProperty(v)) {
                 var child = this[v];
@@ -307,9 +309,10 @@ var View = (function () {
     };
 
     View.prototype.renderChildViews = function () {
-        for (var v in this.childViewTypes) {
+        var v, child;
+        for (v in this.childViewTypes) {
             if (this.childViewTypes.hasOwnProperty(v)) {
-                var child = this[v];
+                child = this[v];
                 assert(child != null, 'There is no child view \'' + v + '\' available for (' + (this._name ? this._name + ', ' : '') + '#' + this.id + ')! It will be excluded from the child views and won\'t be rendered.');
                 if (child) {
                     assert(child.elem === null, "Rendering item with elem not null");
@@ -515,9 +518,13 @@ var View = (function () {
                 assert(views[k] === this.listItems.obj[k], "View is not defined for child " + k + " of parent " + this.id);
                 assert(views[k].parentView === this, "Parent list " + this.id + " has listItem " + k + " without matching parentView");
             }
-            assert(this.elem.children.length === this.listItems.count, "Wrong number of DOM children for list " + this.id);
-            for (var n = 0, pname = this.listItems.first(); pname !== ''; pname = this.listItems.next[pname], ++n) {
-                assert(this.elem.children[n] === this.listItems.obj[pname].elem, "DOM List child " + n + " does not match id=" + pname);
+            if (_.size(this.childViewTypes) === 0) {
+                assert(this.elem.children.length === this.listItems.count, "Wrong number of DOM children for list " + this.id);
+                for (var n = 0, pname = this.listItems.first(); pname !== ''; pname = this.listItems.next[pname], ++n) {
+                    assert(this.elem.children[n] === this.listItems.obj[pname].elem, "DOM List child " + n + " does not match id=" + pname);
+                }
+            } else {
+                // todo: validate DOM when list mixed with regular children
             }
         }
         if (this !== View.currentPage) {

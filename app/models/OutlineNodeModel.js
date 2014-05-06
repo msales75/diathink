@@ -141,12 +141,42 @@ var OutlineNodeModel = (function (_super) {
         delete OutlineNodeModel.deletedById[this.cid];
         this.set('deleted', false);
     };
+    OutlineNodeModel.prototype.updateLinks = function () {
+        var i, o;
+        this.attributes.links = new OutlineNodeCollection;
+        if (this.importLinks && (this.importLinks.length > 0)) {
+            for (i = 0; i < this.importLinks.length; ++i) {
+                var ref = OutlineNodeModel.getById(this.importLinks[i]);
+                this.attributes.links.append(ref.cid, ref);
+                if (ref.attributes.backLinks == null) {
+                    ref.attributes.backLinks = new OutlineNodeCollection();
+                }
+                ref.attributes.backLinks.append(this.cid, this);
+            }
+            this.importLinks = undefined;
+        }
+
+        // recurse on children
+        if (this.attributes.children) {
+            for (o in this.attributes.children.obj) {
+                this.attributes.children.obj[o].updateLinks();
+            }
+        }
+    };
 
     OutlineNodeModel.prototype.fromJSON = function (n) {
+        this._fromJSON(n); // create models and lists with child/parent relations
+        this.updateLinks(); // update link-relationships
+        return this;
+    };
+
+    OutlineNodeModel.prototype._fromJSON = function (n) {
         var children;
+        var links;
         children = new OutlineNodeCollection();
-        children.fromJSON(n.children);
+        children._fromJSON(n.children);
         this.attributes.text = n.text;
+        this.importLinks = n.links;
         this.setChildren(children);
         return this;
     };
@@ -302,14 +332,14 @@ var OutlineNodeCollection = (function (_super) {
     // modelsById:{[i:string]:OutlineNodeModel} = {};
     // at(i:number):Action;
     // push(a:Action):void;
-    OutlineNodeCollection.prototype.fromJSON = function (input) {
+    OutlineNodeCollection.prototype._fromJSON = function (input) {
         var i;
         if (!input) {
             return;
         }
         for (i = 0; i < input.length; ++i) {
             var m = new OutlineNodeModel();
-            m.fromJSON(input[i]);
+            m._fromJSON(input[i]);
             this.append(m.cid, m);
         }
     };

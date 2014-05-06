@@ -16,7 +16,6 @@ var OutlineListView = (function (_super) {
     }
     OutlineListView.prototype.init = function () {
         this.listItemTemplate = NodeView;
-        this.Class = OutlineListView;
     };
     OutlineListView.prototype.updateValue = function () {
         this.value = this.parentView.value.attributes.children;

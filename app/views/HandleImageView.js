@@ -14,7 +14,6 @@ var HandleImageView = (function (_super) {
         this.cssClass = 'drag-handle disclose ui-disable-scroll';
     }
     HandleImageView.prototype.init = function () {
-        this.Class = HandleImageView;
         this.isClickable = true;
     };
 

@@ -15,7 +15,6 @@ var HeaderToolbarView = (function (_super) {
         this.cssClass = 'ui-header ui-bar-a ui-header-fixed slidedown';
     }
     HeaderToolbarView.prototype.init = function () {
-        this.Class = HeaderToolbarView;
         this.childViewTypes = {
             title: HeaderTitleView,
             undobuttons: UndoButtonContainerView

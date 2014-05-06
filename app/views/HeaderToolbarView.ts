@@ -8,7 +8,6 @@ class HeaderToolbarView extends ToolbarView {
     undobuttons:UndoButtonContainerView;
 
     init() {
-        this.Class = HeaderToolbarView;
         this.childViewTypes = {
             title: HeaderTitleView,
             undobuttons: UndoButtonContainerView

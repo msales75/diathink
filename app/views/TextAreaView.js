@@ -123,10 +123,11 @@ var TextAreaView = (function (_super) {
         }
         var currentFont = $(elem).css('font-size');
         if ((this.lastWidth === currentWidth) && (this.lastFont === currentFont) && (this.lastValue === this.value)) {
-            return;
+            // todo: check if links have changed, and provide escape here?
+            // return;
         }
         var hiddendiv = (View.currentPage).hiddendiv.elem;
-        assert(this.parentView instanceof ContainerView, "ERROR: textedit parentDiv not found in fixHeight");
+        assert(this.parentView instanceof View, "ERROR: textedit parentDiv not found in fixHeight");
         var parentdiv = this.parentView.elem;
         if (this.lastFont !== currentFont) {
             this.lineHeight = Number($(hiddendiv).css('line-height').replace(/px/, ''));
@@ -137,14 +138,48 @@ var TextAreaView = (function (_super) {
         var paddingX = this.paddingX;
         var paddingY = this.paddingY;
         hiddendiv.style.width = String(currentWidth - paddingX - 1) + 'px';
-        var lastchar = this.value.substr(this.value.length - 1, 1);
-        var rest = this.value.substr(0, this.value.length - 1);
-        hiddendiv.innerHTML = this.secure(rest) + '<span class="marker">' + this.secure(lastchar) + '</span>';
-        var nlines = Math.round(($(hiddendiv).children('span').position().top / lineHeight) - 0.4) + 1;
+
+        if (this.parentView && (this.parentView instanceof NodeTextWrapperView) && this.parentView.listItems && (this.parentView.listItems.count > 0)) {
+            var content = this.value;
+            var links = this.parentView.listItems;
+            var l;
+            for (l = links.first(); l !== ''; l = links.next[l]) {
+                var link = links.obj[l];
+                var linktext = link.value.get('text');
+                if (links.next[l] === '') {
+                    content += ' <span id="tmp_' + link.id + '" class="marker node-link">' + linktext + '</span>';
+                } else {
+                    content += ' <span id="tmp_' + link.id + '" class="node-link">' + linktext + '</span>';
+                }
+            }
+            hiddendiv.innerHTML = content;
+        } else {
+            var lastchar = this.value.substr(this.value.length - 1, 1);
+            var rest = this.value.substr(0, this.value.length - 1);
+            hiddendiv.innerHTML = this.secure(rest) + '<span class="marker">' + this.secure(lastchar) + '</span>';
+        }
+
+        var nlines = Math.round(($(hiddendiv).children('.marker').position().top / lineHeight) - 0.4) + 1;
         var height = nlines * lineHeight;
         if (Math.abs(parentdiv.clientHeight - height - paddingY) > 0.5) {
             parentdiv.style.height = String(height + paddingY) + 'px';
         }
+
+        if (this.parentView && (this.parentView instanceof NodeTextWrapperView) && this.parentView.listItems && (this.parentView.listItems.count > 0)) {
+            var children = hiddendiv.children;
+            var i;
+            if (children && (children.length > 0)) {
+                for (i = 0; i < children.length; ++i) {
+                    if (children[i].tagName.toLowerCase() === 'span') {
+                        var id = children[i].id;
+                        if (id && id.substr(0, 4) === 'tmp_') {
+                            View.get(id.substr(4)).setOffset($(children[i]).position());
+                        }
+                    }
+                }
+            }
+        }
+
         this.lastValue = this.value;
         this.lastWidth = currentWidth;
         this.lastFont = currentFont;

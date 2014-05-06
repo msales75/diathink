@@ -7,7 +7,6 @@ class OutlineListView extends ListView {
     parentView:NodeView;
     init() {
         this.listItemTemplate = NodeView;
-        this.Class = OutlineListView;
     }
     updateValue() {
         this.value = this.parentView.value.attributes.children;

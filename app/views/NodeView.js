@@ -35,7 +35,6 @@ var NodeView = (function (_super) {
     };
 
     NodeView.prototype.init = function () {
-        this.Class = NodeView;
         this.modelType = OutlineNodeModel;
         this.childViewTypes = {
             header: NodeHeaderView,
@@ -46,6 +45,11 @@ var NodeView = (function (_super) {
     NodeView.prototype.destroy = function (opts) {
         delete NodeView.nodesById[this.id];
         _super.prototype.destroy.call(this, opts);
+    };
+    NodeView.prototype.removeFromModel = function () {
+        if (this.nodeRootView) {
+            this.value.clearView(this.nodeRootView); // remove view from model-outline
+        }
     };
 
     NodeView.prototype.updateValue = function () {

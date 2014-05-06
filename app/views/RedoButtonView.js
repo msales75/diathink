@@ -13,7 +13,6 @@ var RedoButtonView = (function (_super) {
         this.cssClass = 'redo-button';
     }
     RedoButtonView.prototype.init = function () {
-        this.Class = RedoButtonView;
         this.isClickable = true;
     };
     RedoButtonView.prototype.onClick = function () {

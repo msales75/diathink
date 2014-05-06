@@ -19,7 +19,6 @@ class PanelDropSource extends DropSource {
             this.panelView = <PanelView>View.get(this.panelID);
             var pos = $(this.panelView.elem).position();
             var height = $(this.panelView.elem).height();
-            var width= $(this.panelView.elem).width();
             var el =$("<div></div>").css({
                 opacity: 0,
                 'z-index': 1,
@@ -27,16 +26,16 @@ class PanelDropSource extends DropSource {
                 position: 'absolute',
                 top: pos.top+'px',
                 left: pos.left+'px',
-                width: width+'px',
+                width: this.panelView.parentView.itemWidth+'px',
                 height: height+'px'
             });
             this.placeholderElem = el[0];
             this.panelView.elem.parentNode.appendChild(this.placeholderElem);
-            this.maxWidth = this.panelView.elem.clientWidth;
-            this.containerWidth = View.currentPage.content.gridwrapper.elem.clientWidth;
+            this.maxWidth = this.panelView.parentView.itemWidth;
+            this.containerWidth = this.panelView.parentView.itemWidth*this.panelView.parentView.numCols;
             var p:string;
             for (p in PanelView.panelsById) {
-                PanelView.panelsById[p].freezeWidth();
+                // PanelView.panelsById[p].freezeWidth();
             }
             if (View.currentPage.content.gridwrapper.grid.listItems.first()===View.currentPage.content.gridwrapper.grid.value.first()) {
                 this.slideDirection = 'left';
@@ -106,7 +105,10 @@ class PanelDropSource extends DropSource {
     }
     cleanup() {
         if (this.placeholderElem) {
-            $(View.currentPage.content.gridwrapper.grid.elem).css({width: '', 'margin-left': ''});
+            $(View.currentPage.content.gridwrapper.grid.elem).css({
+                width: this.containerWidth+'px',
+                'margin-left': '0'}
+            );
             if (this.placeholderElem.parentNode) {
                 this.placeholderElem.parentNode.removeChild(this.placeholderElem);
             }

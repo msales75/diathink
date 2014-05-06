@@ -2,7 +2,6 @@
 m_require("app/views/ButtonView.js");
 class UndoButtonView extends ButtonView {
     init() {
-        this.Class = UndoButtonView;
         this.isClickable = true;
     }
     onClick() {

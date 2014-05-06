@@ -34,7 +34,6 @@ class OutlineRootView extends ListView {
     data; // preserves collapse/expanded status within panel-outline
     init() {
         this.listItemTemplate = NodeView;
-        this.Class = OutlineRootView;
     }
     constructor(opts) {
         super(opts);

@@ -3,7 +3,6 @@ m_require("app/views/ImageView.js");
 class HandleImageView extends ImageView {
     parentView:NodeHeaderView;
     init() {
-        this.Class = HandleImageView;
         this.isClickable = true;
     }
     value = 'theme/images/drag_icon.png';

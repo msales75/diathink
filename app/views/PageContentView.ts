@@ -8,7 +8,6 @@ class PageContentView extends ContainerView {
     gridwrapper:GridContainerView;
 
     init() {
-        this.Class = PageContentView;
         this.childViewTypes = {
             leftbutton: LeftSwipeButtonView,
             rightbutton: RightSwipeButtonView,

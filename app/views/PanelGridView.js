@@ -13,7 +13,6 @@ var PanelGridView = (function (_super) {
         this.cssClass = "scroll-container horizontal-grid";
     }
     PanelGridView.prototype.init = function () {
-        this.Class = PanelGridView;
         this.listItemTemplate = PanelView;
         this.numCols = 2;
         this.listItems = new LinkedList();

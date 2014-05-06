@@ -36,6 +36,7 @@ class DeadPanel extends DeadView {
 
 class PanelView extends View {
     static panelsById:{[i:string]:PanelView} = {};
+    parentView:PanelGridView;
     breadcrumbs:BreadcrumbView;
     outline:OutlineScrollView;
     value:OutlineNodeModel;
@@ -48,7 +49,6 @@ class PanelView extends View {
     animating:boolean = false;
 
     init() {
-        this.Class = PanelView;
         this.childViewTypes = {
             breadcrumbs: BreadcrumbView,
             outline: OutlineScrollView
@@ -67,10 +67,6 @@ class PanelView extends View {
             this.elem.children[0].appendChild((<View>(this[name])).elem);
         }
         return this.elem;
-    }
-    freezeWidth() {
-        var width = this.elem.clientWidth;
-        $(this.elem).css('width', String(width)+'px');
     }
 
     cachePosition() {

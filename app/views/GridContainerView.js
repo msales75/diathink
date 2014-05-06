@@ -14,7 +14,6 @@ var GridContainerView = (function (_super) {
         this.cssClass = 'horizontal-grid-container';
     }
     GridContainerView.prototype.init = function () {
-        this.Class = GridContainerView;
         this.childViewTypes = {
             grid: PanelGridView
         };

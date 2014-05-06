@@ -8,7 +8,7 @@ class GridView extends View {
         if (this.elem) {
             if (this.elem.parentNode) {
                 var p:string;
-                this.itemWidth = Math.floor(this.parentView.elem.clientWidth / this.numCols);
+                this.itemWidth = Math.floor(Math.floor(this.parentView.elem.clientWidth-0.5) / this.numCols);
                 for (p in this.listItems.obj) {
                     $((<View>this.listItems.obj[p]).elem).css('width', String(this.itemWidth) + 'px');
                 }

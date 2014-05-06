@@ -10,6 +10,7 @@ class PModel {
 interface NodeOutlineJson {
     text: string;
     children?: NodeOutlineJson[];
+    links?: string[]
 }
 class Collection {
     length:number = 0;
@@ -70,10 +71,13 @@ class OutlineNodeModel extends PModel {
         children?:OutlineNodeCollection;
         parent?:OutlineNodeModel;
         text?:string;
+        links?: OutlineNodeCollection;
+        backLinks?: OutlineNodeCollection;
         collapsed?:boolean;
         deleted?:boolean;
     } = {};
     views:{[i:string]:NodeView} = {};
+    importLinks; // temporary
 
     constructor(options?:ModelOptions) {
         super();
@@ -144,14 +148,42 @@ class OutlineNodeModel extends PModel {
         delete OutlineNodeModel.deletedById[this.cid];
         this.set('deleted', false);
     }
-
+    updateLinks() {
+        var i:number, o:string;
+        this.attributes.links = new OutlineNodeCollection;
+        if (this.importLinks && (this.importLinks.length>0)) {
+            for (i=0; i<this.importLinks.length; ++i) {
+                var ref:OutlineNodeModel = OutlineNodeModel.getById(this.importLinks[i]);
+                this.attributes.links.append(ref.cid, ref);
+                if (ref.attributes.backLinks==null) {
+                    ref.attributes.backLinks = new OutlineNodeCollection();
+                }
+                ref.attributes.backLinks.append(this.cid, this);
+            }
+            this.importLinks = undefined;
+        }
+        // recurse on children
+        if (this.attributes.children) {
+            for (o in this.attributes.children.obj) {
+                (<OutlineNodeModel>this.attributes.children.obj[o]).updateLinks();
+            }
+        }
+    }
 
 
     fromJSON(n:NodeOutlineJson):OutlineNodeModel {
+        this._fromJSON(n); // create models and lists with child/parent relations
+        this.updateLinks(); // update link-relationships
+        return this;
+    }
+
+    _fromJSON(n:NodeOutlineJson):OutlineNodeModel {
         var children:OutlineNodeCollection;
+        var links:OutlineNodeCollection;
         children = new OutlineNodeCollection();
-        children.fromJSON(n.children);
+        children._fromJSON(n.children);
         this.attributes.text = n.text;
+        this.importLinks = n.links;
         this.setChildren(children);
         return this;
     }
@@ -322,12 +354,13 @@ class OutlineNodeCollection extends LinkedList<OutlineNodeModel> {
     // modelsById:{[i:string]:OutlineNodeModel} = {};
     // at(i:number):Action;
     // push(a:Action):void;
-    fromJSON(input:NodeOutlineJson[]) {
+
+    _fromJSON(input:NodeOutlineJson[]) {
         var i:number;
         if (!input) {return;}
         for (i = 0; i < input.length; ++i) {
             var m:OutlineNodeModel = new OutlineNodeModel();
-            m.fromJSON(input[i]);
+            m._fromJSON(input[i]);
             this.append(m.cid, m);
         }
     }

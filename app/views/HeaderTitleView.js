@@ -13,9 +13,6 @@ var HeaderTitleView = (function (_super) {
         this.anchorLocation = M.LEFT;
         this.value = "";
     }
-    HeaderTitleView.prototype.init = function () {
-        this.Class = HeaderTitleView;
-    };
     return HeaderTitleView;
 })(SpanView);
 //# sourceMappingURL=HeaderTitleView.js.map

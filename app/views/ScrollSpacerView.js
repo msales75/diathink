@@ -12,9 +12,6 @@ var ScrollSpacerView = (function (_super) {
         _super.apply(this, arguments);
         this.cssClass = 'scroll-spacer';
     }
-    ScrollSpacerView.prototype.init = function () {
-        this.Class = ScrollSpacerView;
-    };
     return ScrollSpacerView;
 })(ContainerView);
 //# sourceMappingURL=ScrollSpacerView.js.map

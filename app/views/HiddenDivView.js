@@ -13,9 +13,6 @@ var HiddenDivView = (function (_super) {
         _super.apply(this, arguments);
         this.cssClass = 'hiddendiv';
     }
-    HiddenDivView.prototype.init = function () {
-        this.Class = HiddenDivView;
-    };
     return HiddenDivView;
 })(ContainerView);
 //# sourceMappingURL=HiddenDivView.js.map

@@ -14,7 +14,6 @@ var PageContentView = (function (_super) {
         this.cssClass = "grid-wrapper";
     }
     PageContentView.prototype.init = function () {
-        this.Class = PageContentView;
         this.childViewTypes = {
             leftbutton: LeftSwipeButtonView,
             rightbutton: RightSwipeButtonView,
