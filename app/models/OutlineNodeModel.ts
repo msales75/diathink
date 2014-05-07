@@ -319,6 +319,31 @@ class OutlineNodeModel extends PModel {
                     "Model " + m + " is not in the child-list of parent-model " + pt);
             }
 
+            // check links and back-links for consistency
+            var links = this.attributes.links;
+            var l:string;
+            if (links != null) {
+                assert(links instanceof OutlineNodeCollection, "");
+                links.validate();
+                for (l in links.obj) {
+                    assert(l!==this.cid, "");
+                    assert(links.obj[l] instanceof OutlineNodeModel, "");
+                    assert((<OutlineNodeModel>links.obj[l]).attributes.backLinks.obj[this.cid] === this,
+                        "");
+                }
+            }
+            var backlinks = this.attributes.backLinks;
+            if (backlinks != null) {
+                backlinks.validate();
+                for (l in backlinks.obj) {
+                    assert(l!==this.cid, "");
+                    assert(backlinks.obj[l] instanceof OutlineNodeModel, "");
+                    assert((<OutlineNodeModel>backlinks.obj[l]).attributes.links.obj[this.cid] === this,
+                        "");
+                }
+            }
+
+
             assert(this.views !== undefined,
                 "The model " + m + " does not have a views array defined.");
             assert(typeof this.views === 'object',
@@ -344,6 +369,10 @@ class OutlineNodeModel extends PModel {
                 "Deleted model " + m + " has children not empty");
             assert(this.views === null,
                 "Deleted model " + m + " has views not null");
+            assert(this.attributes.links === null,
+                "Deleted model " + m + " has links not null");
+            assert(this.attributes.backLinks === null,
+                "Deleted model " + m + " has backLinks not null");
         }
     }
 }

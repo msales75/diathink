@@ -301,6 +301,28 @@ var OutlineNodeModel = (function (_super) {
                 assert(foundit, "Model " + m + " is not in the child-list of parent-model " + pt);
             }
 
+            // check links and back-links for consistency
+            var links = this.attributes.links;
+            var l;
+            if (links != null) {
+                assert(links instanceof OutlineNodeCollection, "");
+                links.validate();
+                for (l in links.obj) {
+                    assert(l !== this.cid, "");
+                    assert(links.obj[l] instanceof OutlineNodeModel, "");
+                    assert(links.obj[l].attributes.backLinks.obj[this.cid] === this, "");
+                }
+            }
+            var backlinks = this.attributes.backLinks;
+            if (backlinks != null) {
+                backlinks.validate();
+                for (l in backlinks.obj) {
+                    assert(l !== this.cid, "");
+                    assert(backlinks.obj[l] instanceof OutlineNodeModel, "");
+                    assert(backlinks.obj[l].attributes.links.obj[this.cid] === this, "");
+                }
+            }
+
             assert(this.views !== undefined, "The model " + m + " does not have a views array defined.");
             assert(typeof this.views === 'object', "The model " + m + " does not have a views-object");
             for (k in this.views) {
@@ -315,6 +337,8 @@ var OutlineNodeModel = (function (_super) {
             assert(this.attributes.parent === null, "Deleted model " + m + " has a parent not null");
             assert(this.attributes.children.count === 0, "Deleted model " + m + " has children not empty");
             assert(this.views === null, "Deleted model " + m + " has views not null");
+            assert(this.attributes.links === null, "Deleted model " + m + " has links not null");
+            assert(this.attributes.backLinks === null, "Deleted model " + m + " has backLinks not null");
         }
     };
     OutlineNodeModel.modelsById = {};

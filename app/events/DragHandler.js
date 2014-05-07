@@ -51,7 +51,7 @@ var DragHandler = (function () {
         this.helper.addClass("ui-sortable-helper");
         this.dragMove(options); //Execute the drag once - this causes the helper not to be visible before getting its correct position
         DropBox.renderAll(this);
-        // DropBox.previewDropBoxes();
+        DropBox.previewDropBoxes();
     };
 
     DragHandler.prototype.dragMove = function (options) {

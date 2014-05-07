@@ -190,6 +190,22 @@ li.ui-li > div.ui-li.ui-btn-inner {
     opacity: 1;
 }
 
+.drop-mode .droplayer > .droplink {
+    position: absolute;
+    border:  dashed #BBB 1px;
+    border-radius: 0.74em;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url(images/indent-arrow.png);
+    opacity: 0.3;
+    height: 1.48em;
+    width: 1.48em;
+}
+.drop-mode .droplayer > .droplink.active {
+    opacity: 1;
+}
+
+
 /* .drop-mode .drag-hover {
     z-index: 10;
     overflow: visible;

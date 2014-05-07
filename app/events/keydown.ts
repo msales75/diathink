@@ -4,11 +4,11 @@ m_require("app/views/View.js");
 function scheduleKey(simulated, id, opts) {
     var schedule;
     if (simulated) {
-        ActionManager.subschedule(function () {
+        ActionManager.subschedule(function() {
             return Action.checkTextChange(id)
         }, opts);
     } else {
-        ActionManager.schedule(function () {
+        ActionManager.schedule(function() {
             return Action.checkTextChange(id)
         }, opts);
     }
@@ -20,7 +20,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
     if (e.which === 9) { // tab
         collection = liView.parentView.value;
         // validate not first in list
-        if (collection.prev[liView.value.cid]!=='') { // indent the line
+        if (collection.prev[liView.value.cid] !== '') { // indent the line
             // make it the last child of its previous sibling
             scheduleKey(e.simulated, id, function():SubAction {
                 return {
@@ -43,7 +43,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
             collection = liView.parentView.value;
             // if it is the last item in its collection
             if ((liView.parentView.nodeView instanceof NodeView) &&
-                (collection.next[liView.value.cid]==='')) {
+                (collection.next[liView.value.cid] === '')) {
                 // make it the next child of its parent
                 scheduleKey(e.simulated, id, function():SubAction {
                     return {
@@ -61,18 +61,21 @@ $D.handleKeydown = function(view:TextAreaView, e) {
             } else { // delete or merge-lines?
                 if ($('#' + id).val() === "") {
                     if (liView.value.get('children').count === 0) {
-                        scheduleKey(e.simulated, id, function():SubAction {
-                            return {
-                                actionType: DeleteAction,
-                                anim: 'delete',
-                                activeID: liView.value.cid,
-                                oldRoot: liView.nodeRootView.id,
-                                newRoot: liView.nodeRootView.id,
-                                focus: true
-                            };
-                        });
-                        e.preventDefault();
-                        return;
+                        if (((liView.value.attributes.links == null) || (liView.value.attributes.links.count === 0)) &&
+                            ((liView.value.attributes.backLinks == null) || (liView.value.attributes.backLinks.count === 0))) {
+                            scheduleKey(e.simulated, id, function():SubAction {
+                                return {
+                                    actionType: DeleteAction,
+                                    anim: 'delete',
+                                    activeID: liView.value.cid,
+                                    oldRoot: liView.nodeRootView.id,
+                                    newRoot: liView.nodeRootView.id,
+                                    focus: true
+                                };
+                            });
+                            e.preventDefault();
+                            return;
+                        }
                     }
                 }
             }

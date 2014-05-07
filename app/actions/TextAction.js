@@ -52,6 +52,18 @@ var TextAction = (function (_super) {
                 $('#' + activeLineView.header.name.text.id).val(text).text(text);
                 activeLineView.header.name.text.fixHeight();
             }
+
+            // Check this outline for links connected to this item
+            var links = OutlineNodeModel.getById(that.options.activeID).attributes.backLinks;
+            var l;
+            if (links != null) {
+                for (l = links.first(); l !== ''; l = links.next[l]) {
+                    var model = links.obj[l];
+                    if (model.views && model.views[outline.id]) {
+                        model.views[outline.id].header.name.redrawLinks();
+                    }
+                }
+            }
             // satisfy additional dependencies that are never used in this actiontype
             // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });

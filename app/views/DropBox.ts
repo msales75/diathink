@@ -85,6 +85,7 @@ class DropBox {
                 node.dropboxes.push(new DropBoxTop(node));
                 node.dropboxes.push(new DropBoxBottom(node));
                 node.dropboxes.push(new DropBoxHandle(node));
+                node.dropboxes.push(new DropBoxLink(node));
                 for (i = 0; i < node.dropboxes.length; ++i) {
                     node.dropboxes[i].render();
                 }
@@ -219,6 +220,13 @@ class DropBox {
         if (model != null) { // it is a child of itself
             return false;
         }
+        if (type==='link') { // check if its already in the list
+            if (targetNode.value.attributes.links.obj[activeNode.value.cid]!=null) {
+                return false;
+            } else {
+                return true;
+            }
+        }
 
         // cannot drop current-item adjacent to itself
         if (activeModel.get('parent') === itemModel.get('parent')) {
@@ -265,14 +273,14 @@ class DropBoxTop extends DropBox {
             top: node.position.top - this.canvas.cacheOffset.top,
             left: node.position.left - this.canvas.cacheOffset.left + $D.lineHeight,
             height: 0,
-            width: node.dimensions.width - 1.5 * $D.lineHeight,
+            width: node.dimensions.width - 2.5 * $D.lineHeight, /* was 1.5 */
             class: 'dropborder'
         };
         this.hover = {
             top: node.position.top - $D.lineHeight / 2,
             left: node.position.left + $D.lineHeight,
             bottom: node.position.top + ($D.lineHeight / 2),
-            right: node.position.left + node.dimensions.width - $D.lineHeight / 2
+            right: node.position.left + node.dimensions.width - 1.5 * $D.lineHeight /* was 0.5 */
         };
     }
     handleDrop(node:NodeView, helper:View) {
@@ -307,14 +315,14 @@ class DropBoxBottom extends DropBox {
             top: node.position.top + node.dimensions.height - this.canvas.cacheOffset.top - 1,
             left: node.position.left - this.canvas.cacheOffset.left + $D.lineHeight,
             height: 0,
-            width: node.dimensions.width - 1.5 * $D.lineHeight,
+            width: node.dimensions.width - 2.5 * $D.lineHeight, /* was 1.5 */
             class: 'dropborder'
         };
         this.hover = {
             top: node.position.top + node.dimensions.height - $D.lineHeight / 2,
             left: node.position.left + $D.lineHeight,
             bottom: node.position.top + node.dimensions.height + ($D.lineHeight / 2),
-            right: node.position.left + node.dimensions.width - $D.lineHeight / 2
+            right: node.position.left + node.dimensions.width - 1.5 * $D.lineHeight /* was 0.5 */
         };
     }
     handleDrop(node:NodeView, helper:View) {
@@ -376,6 +384,49 @@ class DropBoxHandle extends DropBox {
         return this.validateNodeBox(activeNode, 'handle');
     }
 }
+
+class DropBoxLink extends DropBox {
+    view:NodeView;
+    canvas:DropLayerView;
+
+    constructor(node:NodeView) {
+        super(node);
+        this.canvas = node.panelView.outline.droplayer;
+        this.box = {
+            top: node.position.top - this.canvas.cacheOffset.top - 1,
+            left: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left - $D.lineHeight - 1,
+            width: $D.lineHeight,
+            height: $D.lineHeight,
+            class: 'droplink'
+        };
+        this.hover = {
+            top: node.position.top - this.canvas.cacheOffset.top - 1,
+            left: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left - $D.lineHeight - 1,
+            bottom: node.position.top + $D.lineHeight,
+            right: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left
+        };
+    }
+    handleDrop(node:NodeView, helper:View) {
+        var that = this;
+        ActionManager.simpleSchedule(View.focusedView,
+            function():SubAction {
+                return {
+                    actionType: AddLinkAction,
+                    referenceID: that.view.value.cid,
+                    activeID: node.value.cid,
+                    oldRoot: node.nodeRootView.id,
+                    newRoot: that.view.nodeRootView.id,
+                    anim: 'dock',
+                    dockView: helper,
+                    focus: false
+                };
+            });
+    }
+    validateDrop(activeNode:NodeView) {
+        return this.validateNodeBox(activeNode, 'link');
+    }
+}
+
 class DropBoxLeft extends DropBox {
     view:PanelView;
     canvas:DrawLayerView;

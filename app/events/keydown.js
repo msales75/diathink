@@ -64,18 +64,20 @@ $D.handleKeydown = function (view, e) {
             } else {
                 if ($('#' + id).val() === "") {
                     if (liView.value.get('children').count === 0) {
-                        scheduleKey(e.simulated, id, function () {
-                            return {
-                                actionType: DeleteAction,
-                                anim: 'delete',
-                                activeID: liView.value.cid,
-                                oldRoot: liView.nodeRootView.id,
-                                newRoot: liView.nodeRootView.id,
-                                focus: true
-                            };
-                        });
-                        e.preventDefault();
-                        return;
+                        if (((liView.value.attributes.links == null) || (liView.value.attributes.links.count === 0)) && ((liView.value.attributes.backLinks == null) || (liView.value.attributes.backLinks.count === 0))) {
+                            scheduleKey(e.simulated, id, function () {
+                                return {
+                                    actionType: DeleteAction,
+                                    anim: 'delete',
+                                    activeID: liView.value.cid,
+                                    oldRoot: liView.nodeRootView.id,
+                                    newRoot: liView.nodeRootView.id,
+                                    focus: true
+                                };
+                            });
+                            e.preventDefault();
+                            return;
+                        }
                     }
                 }
             }

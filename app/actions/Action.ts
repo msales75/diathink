@@ -17,6 +17,7 @@
 ///<reference path="PlaceholderAnimAction.ts"/>
 ///<reference path="SlidePanelsAction.ts"/>
 ///<reference path="TextAction.ts"/>
+///<reference path="AddLinkAction.ts"/>
 ///<reference path="../NodeDropSource.ts"/>
 ///<reference path="../NodeDropTarget.ts"/>
 ///<reference path="../PanelDropSource.ts"/>

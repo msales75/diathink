@@ -273,8 +273,10 @@ class View {
 
     createListItems() {
         // check they shouldn't already exist
-        assert((!this.elem) || (this.elem.children.length === 0),
-            "createListItems has children when creating more");
+        if (_.size(this.childViewTypes)===0) {
+            assert((!this.elem) || (this.elem.children.length === 0),
+                "createListItems has children when creating more");
+        }
         if (this.value instanceof LinkedList) {
             this.listItems.reset();
             if (!this.hideList) { // collapsed list
