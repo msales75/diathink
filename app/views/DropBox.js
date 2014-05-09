@@ -205,6 +205,9 @@ var DropBox = (function () {
             return false;
         }
         if (type === 'link') {
+            if (targetNode.value.attributes.links == null) {
+                return true;
+            }
             if (targetNode.value.attributes.links.obj[activeNode.value.cid] != null) {
                 return false;
             } else {

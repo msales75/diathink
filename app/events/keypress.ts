@@ -65,6 +65,11 @@ $(function() {
                 } else {
                     console.log('Lost keypress with nothing focused')
                 }
+                ActionManager.schedule(
+                    function() {
+                        if (!View.focusedView) {return null;}
+                        return Action.checkTextChange(View.focusedView.header.name.text.id);
+                    });
                 return null;
             });
             e.preventDefault();

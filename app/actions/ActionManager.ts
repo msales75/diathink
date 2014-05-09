@@ -86,6 +86,10 @@ class ActionManager {
             var options = f();
             if (options==null) { // abort action without history
                 this.queueComplete(f, null);
+                if (this.queue.length===0) {
+                    // console.log("Validating after null action");
+                    // validate();
+                }
                 return;
             }
             // delete options['action'];

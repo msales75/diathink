@@ -88,7 +88,8 @@ var NodeDropTarget = (function (_super) {
                 var activeView = this.getNodeView(this.activeID, o);
                 if (activeView != null) {
                     this.activeLineHeight[o] = Math.round(activeView.elem.clientHeight);
-                    console.log("Target: For view " + activeView.id + " got height " + this.activeLineHeight[o]);
+
+                    // console.log("Target: For view "+activeView.id+" got height "+this.activeLineHeight[o]);
                     if ((o === this.outlineID) && (o === this.oldOutlineID)) {
                         this.offsetUnderTop = $(activeView.elem).offset().top;
                     }
@@ -165,7 +166,8 @@ var NodeDropTarget = (function (_super) {
                 if (!endNewHeight) {
                     endNewHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
                 }
-                console.log("TargetePlaceholder outline " + o + " height " + endNewHeight);
+
+                // console.log("TargetePlaceholder outline "+o+" height "+endNewHeight);
                 if (this.animOptions.view === undefined) {
                     this.animOptions.view = {};
                 }
@@ -187,8 +189,8 @@ var NodeDropTarget = (function (_super) {
             if (o != null) {
                 var maxHeight = o.endNewHeight;
                 $(this.rNewLinePlaceholder[i]).css('height', String(maxHeight - Math.round(maxHeight * (1 - frac))) + 'px');
-                console.log("Target going to " + maxHeight + " with fraction " + frac);
-                console.log(String(maxHeight - Math.round(maxHeight * (1 - frac))) + 'px');
+                // console.log("Target going to "+maxHeight+" with fraction "+frac);
+                // console.log(String(maxHeight - Math.round(maxHeight * (1 - frac))) + 'px');
             }
         }
     };

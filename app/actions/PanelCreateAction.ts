@@ -167,15 +167,20 @@ class PanelCreateAction extends AnimatedAction {
                 dir = View.get(that.newPanel).destroy();
                 grid.value.remove(that.newPanel);
                 grid.slideFill('left');
-
                 // do we need to slide the list here?
             } else {
                 if (!that.newPanel) { // if id isn't chosen yet
                     that.newPanel = View.getNextId();
                 }
+                var parentPanel:PanelView = null;
+                if (o.isSubpanel) {
+                    parentPanel = <PanelView>View.get(o.prevPanel);
+                    console.log("Setting parentPanel: "+parentPanel.id)
+                }
                 new PanelView({
                         id: that.newPanel, // possibly a resurrected id
                         parentView: View.currentPage.content.gridwrapper.grid,
+                        parentPanel: parentPanel,
                         value: OutlineNodeModel.getById(that.options.activeID)
                 });
 

@@ -1,6 +1,12 @@
 ///<reference path="actions/Action.ts"/>
 ///<reference path="models/OutlineNodeModel.ts"/>
 function validate() {
+
+    if ($('body').hasClass('drop-mode') || $('body').hasClass('transition-mode')) {
+        console.log('Skipping validation because in drag mode');
+        return;
+    }
+
     var models:{[i:string]:OutlineNodeModel} = OutlineNodeModel.modelsById;
     var views:{[i:string]:View} = View.viewList;
     var panels:{[i:string]:PanelView} = PanelView.panelsById;

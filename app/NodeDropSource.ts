@@ -75,10 +75,10 @@ class NodeDropSource extends DropSource {
         var activeLineHeight = Math.round(activeLineView.elem.clientHeight);
         activeLineView.addClass('drag-hidden');
         this.activeLineHeight[outline.id] = activeLineHeight;
-        console.log("Source: for view "+activeLineView.id+" got height "+this.activeLineHeight[outline.id]);
+        // console.log("Source: for view "+activeLineView.id+" got height "+this.activeLineHeight[outline.id]);
         var activeObj:JQuery = $(activeLineView.elem);
 
-        console.log("Creating placeholder with css-height=" + activeLineHeight);
+        // console.log("Creating placeholder with css-height=" + activeLineHeight);
         var rOldLinePlaceholder = $('<li></li>').addClass('li-placeholder').css('height', String(activeLineHeight) + 'px');
         if (activeObj.hasClass('ui-first-child')) {
             rOldLinePlaceholder.addClass('ui-first-child');
@@ -100,7 +100,7 @@ class NodeDropSource extends DropSource {
             var placeholder:HTMLElement = this.rOldLinePlaceholder[o];
             if (placeholder) {
                 startOldHeight = Math.round(this.activeLineHeight[o]);
-                console.log("SourcePlaceholder outline "+o+" height "+startOldHeight);
+                // console.log("SourcePlaceholder outline "+o+" height "+startOldHeight);
                 if (this.animOptions.view === undefined) {
                     this.animOptions.view = {};
                 }
@@ -121,8 +121,8 @@ class NodeDropSource extends DropSource {
                 var startOldHeight = o.startOldHeight;
                 $(this.rOldLinePlaceholder[i]).css('height',
                     String(Math.round(startOldHeight * (1 - frac))) + 'px');
-                console.log("Source starting from "+startOldHeight+" with fraction "+frac);
-                console.log(String(Math.round(startOldHeight * (1 - frac))) + 'px');
+                // console.log("Source starting from "+startOldHeight+" with fraction "+frac);
+                // console.log(String(Math.round(startOldHeight * (1 - frac))) + 'px');
             }
         }
     }

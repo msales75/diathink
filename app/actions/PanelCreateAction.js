@@ -180,9 +180,15 @@ var PanelCreateAction = (function (_super) {
                 if (!that.newPanel) {
                     that.newPanel = View.getNextId();
                 }
+                var parentPanel = null;
+                if (o.isSubpanel) {
+                    parentPanel = View.get(o.prevPanel);
+                    console.log("Setting parentPanel: " + parentPanel.id);
+                }
                 new PanelView({
                     id: that.newPanel,
                     parentView: View.currentPage.content.gridwrapper.grid,
+                    parentPanel: parentPanel,
                     value: OutlineNodeModel.getById(that.options.activeID)
                 });
 

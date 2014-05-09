@@ -257,13 +257,15 @@ class DragHandler {
         var links1 = this.currentItem.header.name.listItems;
         var links2 = newNode.header.name.listItems;
         var l1:string, l2:string;
-        for (l1=links1.first(), l2=links2.first();
-            (l1!=='')&&(l2!=='');
-            l1=links1.next[l1], l2=links2.next[l2]) {
-            (<NodeLinkView>links2.obj[l2]).setOffset({
-                top: (<NodeLinkView>links1.obj[l1]).top,
-                left:(<NodeLinkView>links1.obj[l1]).left
-            });
+        if (links1 != null) {
+            for (l1=links1.first(), l2=links2.first();
+                (l1!=='')&&(l2!=='');
+                l1=links1.next[l1], l2=links2.next[l2]) {
+                (<NodeLinkView>links2.obj[l2]).setOffset({
+                    top: (<NodeLinkView>links1.obj[l1]).top,
+                    left:(<NodeLinkView>links1.obj[l1]).left
+                });
+            }
         }
         // todo: fix link-offsets for nodes inside main node
         // (<NodeLinkView>View.get(id.substr(4))).setOffset($(children[i]).position());

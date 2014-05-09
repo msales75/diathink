@@ -68,7 +68,7 @@ $(function() {
     $D.keyboard = new keyboardSetup();
     $D.keyboard.init({});
     setTimeout(function() {
-        validate();
+        // validate();
     }, 0);
 });
 

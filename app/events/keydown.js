@@ -6,11 +6,11 @@ function scheduleKey(simulated, id, opts) {
     var schedule;
     if (simulated) {
         ActionManager.subschedule(function () {
-            return Action.checkTextChange(id);
+            return Action.checkTextChange(View.focusedView.header.name.text.id);
         }, opts);
     } else {
         ActionManager.schedule(function () {
-            return Action.checkTextChange(id);
+            return Action.checkTextChange(View.focusedView.header.name.text.id);
         }, opts);
     }
 }
@@ -148,6 +148,12 @@ $(function () {
                 } else {
                     console.log('Missed delayed keydown, nothing focused');
                 }
+                ActionManager.schedule(function () {
+                    if (!View.focusedView) {
+                        return null;
+                    }
+                    return Action.checkTextChange(View.focusedView.header.name.text.id);
+                });
                 return null;
             });
             e.preventDefault();

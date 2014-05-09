@@ -52,11 +52,21 @@ var PanelView = (function (_super) {
         assert(PanelView.panelsById[this.id] === undefined, "Multiple panels with same ID");
         PanelView.panelsById[this.id] = this;
     };
+    PanelView.prototype.updateValue = function () {
+        if (this.parentPanel != null) {
+            assert(this.parentPanel instanceof PanelView, "");
+            this.parentPanel.childPanel = this;
+        }
+    };
     PanelView.prototype.render = function () {
+        var subpanel = '';
+        if (this.parentPanel != null) {
+            subpanel = '<div class="subpanel"></div>';
+        }
         this._create({
             type: 'div',
             classes: this.cssClass,
-            html: '<div class="inner-panel"></div>'
+            html: '<div class="inner-panel"></div>' + subpanel
         });
         this.renderChildViews();
         for (var name in this.childViewTypes) {
@@ -78,6 +88,10 @@ var PanelView = (function (_super) {
     PanelView.prototype.destroy = function () {
         delete PanelView.panelsById[this.id];
         new DeadPanel(this);
+        if (this.parentPanel != null) {
+            assert(this.parentPanel.childPanel === this, "");
+            this.parentPanel.childPanel = null;
+        }
         _super.prototype.destroy.call(this);
     };
 

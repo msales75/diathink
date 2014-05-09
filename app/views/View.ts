@@ -171,6 +171,7 @@ class View {
     }
 
     public static setFocus(view:View) {
+        console.log("Inside setFocus with view "+view.id);
         var nView:NodeView = null;
         if (view) {
             nView = view.nodeView;
@@ -182,6 +183,7 @@ class View {
         }
         if (nView && (nView !== View.focusedView)) {
             View.focusedView = nView;
+            console.log("Setting focus to node "+nView.id);
             nView.header.name.text.focus();
         } else if (!nView) {
             View.focusedView = null;
@@ -199,7 +201,7 @@ class View {
     public parentView:View = null;
     public cssClass:string = null;
     public elem:HTMLElement = null;
-    public isClickable = false;
+    public isClickable:boolean = false;
     public lastClicked:number; // for clickable items
     public isFocusable = false; // todo: node vs. textarea
     public isDragHandle:boolean = false;
@@ -219,7 +221,7 @@ class View {
     public items:string = 'models'; // eliminate
     // droppable is defined in view.dropboxes
     public dropboxes:DropBox[] = []; // places to drop objects in drag-mode
-    constructor(opts:{id?:string;parentView?:View; value?:any; hideList?:boolean; mesg?; childOpts?:{}}) {
+    constructor(opts:{id?:string;parentView?:View; value?:any; hideList?:boolean; mesg?; childOpts?:{};parentPanel?:PanelView}) {
         if ((opts == null) || (opts.id == null)) {
             this.id = View.getNextId();
             delete opts['id'];

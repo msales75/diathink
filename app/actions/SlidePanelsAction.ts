@@ -86,6 +86,7 @@ class SlidePanelsAction extends AnimatedAction {
             } else if (dir === 'left') {
                 grid.slideLeft();
             }
+            $(window).resize(); // fix links in panel; a bit hacky
         });
     }
 

@@ -221,6 +221,9 @@ class DropBox {
             return false;
         }
         if (type==='link') { // check if its already in the list
+            if (targetNode.value.attributes.links==null) {
+                return true;
+            }
             if (targetNode.value.attributes.links.obj[activeNode.value.cid]!=null) {
                 return false;
             } else {

@@ -40,12 +40,13 @@ class PanelView extends View {
     breadcrumbs:BreadcrumbView;
     outline:OutlineScrollView;
     value:OutlineNodeModel;
+    parentPanel:PanelView;
+    childPanel:PanelView;
     top:number;
     left:number;
     width:number;
     height:number;
     Class:any;
-    widthFrac:string;
     animating:boolean = false;
 
     init() {
@@ -56,11 +57,21 @@ class PanelView extends View {
         assert(PanelView.panelsById[this.id]===undefined, "Multiple panels with same ID");
         PanelView.panelsById[this.id] = this;
     }
+    updateValue() {
+        if (this.parentPanel!=null) {
+            assert(this.parentPanel instanceof PanelView, "");
+            this.parentPanel.childPanel = this;
+        }
+    }
     render() {
+        var subpanel:string = '';
+        if (this.parentPanel!=null) {
+            subpanel = '<div class="subpanel"></div>';
+        }
         this._create({
             type: 'div',
             classes: this.cssClass,
-            html: '<div class="inner-panel"></div>'
+            html: '<div class="inner-panel"></div>'+subpanel
         });
         this.renderChildViews();
         for (var name in this.childViewTypes) {
@@ -82,6 +93,10 @@ class PanelView extends View {
     destroy() {
         delete PanelView.panelsById[this.id];
         new DeadPanel(this);
+        if (this.parentPanel!=null) {
+            assert(this.parentPanel.childPanel===this, "");
+            this.parentPanel.childPanel = null;
+        }
         super.destroy();
     }
 

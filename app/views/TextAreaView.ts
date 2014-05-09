@@ -137,7 +137,7 @@ class TextAreaView extends View {
             var l:string;
             for (l=links.first(); l!==''; l=links.next[l]) {
                 var link:NodeLinkView = <NodeLinkView>links.obj[l];
-                var linktext:string = link.value.get('text');
+                var linktext:string = link.getText();
                 if (links.next[l]==='') { // last one gets marker class
                     content += ' <span id="tmp_'+link.id+'" class="marker node-link">'+linktext+'</span>';
                 } else {

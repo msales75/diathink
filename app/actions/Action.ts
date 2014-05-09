@@ -23,9 +23,6 @@
 ///<reference path="../PanelDropSource.ts"/>
 ///<reference path="../PanelDropTarget.ts"/>
 
-
-
-
 // todo: get the information we need early on from action,
 //  to know what the oldType, newType and contexts are.
 
@@ -57,6 +54,7 @@ interface ActionOptions {
     direction?: string;
     transition?:boolean;
     prevPanel?:string;
+    isSubpanel?:boolean;
     collapsed?:boolean;
 }
 
@@ -415,15 +413,23 @@ class Action extends PModel {
                     })(sub);
                 }
             }
-            var done = that.options.done;
-            delete that.options['done'];
-            done();
-            if (_.size(ActionManager.queue) === 0) {
-                console.log("Validating after action");
-                validate();
+            if (_.size(ActionManager.queue) === 1) {
+                if (! (this instanceof TextAction)) {
+                    console.log("Checking text-change after action");
+                    ActionManager.subschedule(
+                        function() {
+                            if (!View.focusedView) {
+                                return null;
+                            }
+                            return Action.checkTextChange(View.focusedView.header.name.text.id);
+                        });
+                }
             } else {
                 console.log("Not validating after subaction");
             }
+            var done = that.options.done;
+            delete that.options['done'];
+            done();
         });
         this.nextQueue();
     }
@@ -480,6 +486,7 @@ class Action extends PModel {
     }
     static checkTextChange(id):SubAction {
         // console.log("Checking text change for id="+id);
+        id = View.focusedView.header.name.text.id;
         var value = $('#'+id).val();
         console.log('checkTextChange: id = '+id);
         if (!View.get(id)) {
@@ -499,6 +506,7 @@ class Action extends PModel {
                     focus: false
                 }
         }
+        console.log("Validating without text change");
         return null;
     }
     validate() {

@@ -193,6 +193,7 @@ var View = (function () {
     };
 
     View.setFocus = function (view) {
+        console.log("Inside setFocus with view " + view.id);
         var nView = null;
         if (view) {
             nView = view.nodeView;
@@ -204,6 +205,7 @@ var View = (function () {
         }
         if (nView && (nView !== View.focusedView)) {
             View.focusedView = nView;
+            console.log("Setting focus to node " + nView.id);
             nView.header.name.text.focus();
         } else if (!nView) {
             View.focusedView = null;

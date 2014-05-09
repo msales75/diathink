@@ -145,7 +145,7 @@ var TextAreaView = (function (_super) {
             var l;
             for (l = links.first(); l !== ''; l = links.next[l]) {
                 var link = links.obj[l];
-                var linktext = link.value.get('text');
+                var linktext = link.getText();
                 if (links.next[l] === '') {
                     content += ' <span id="tmp_' + link.id + '" class="marker node-link">' + linktext + '</span>';
                 } else {
