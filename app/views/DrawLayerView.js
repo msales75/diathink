@@ -14,6 +14,15 @@ var DrawLayerView = (function (_super) {
         this.cacheOffset = null;
         this.cssClass = 'drawlayer';
     }
+    DrawLayerView.prototype.layoutDown = function () {
+        var p = this.parentView.layout;
+        this.layout = {
+            top: p.top,
+            left: p.left,
+            width: p.width,
+            height: p.height
+        };
+    };
     return DrawLayerView;
 })(ContainerView);
 //# sourceMappingURL=DrawLayerView.js.map

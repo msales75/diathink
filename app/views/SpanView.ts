@@ -7,6 +7,7 @@ class SpanView extends View {
             classes: this.cssClass,
             html: (this.value ? this.value : '')
         });
+        this.setPosition();
         return this.elem;
     }
 }

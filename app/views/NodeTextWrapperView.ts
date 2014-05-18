@@ -19,6 +19,21 @@ class NodeTextWrapperView extends View {
     updateValue() {
         this.value = this.nodeView.value.attributes.links;
     }
+    layoutDown() {
+        if (!this.layout) {this.layout = {};}
+        var w = Math.round(1.4*View.fontSize);
+        this.layout.top = 0;
+        this.layout.left = w;
+        this.layout.width = this.parentView.layout.width-w;
+    }
+    positionChildren(v:View) {
+        var l:Layout = this.text.saveLayout();
+        this.text.fixHeight();
+        this.text.updateDiffs(l);
+    }
+    layoutUp() {
+        this.layout.height = this.text.layout.height;
+    }
     render() {
         this._create({
             type: 'div',
@@ -28,21 +43,24 @@ class NodeTextWrapperView extends View {
         for (var name in this.childViewTypes) {
             this.elem.appendChild((<View>(this[name])).elem);
         }
-        this.insertListItems();
+        if (this.listItems && this.listItems.count) {
+            this.insertListItems();
+        } else {
+            this.positionChildren(null); // need to fix height, even if there's no child-links
+        }
+        this.setPosition();
         return this.elem;
     }
     redrawLinks() {
         this.removeListItems();
         this.createListItems();
         this.insertListItems();
-        this.text.fixHeight();
+        this.text.resizeUp();
     }
-    resize() {
+    updateTextOffset() {
         this.textOffset = {
-            top: Number($(this.elem).css('padding-top').replace(/px/,'')) +
-                Number($(this.text.elem).css('padding-top').replace(/px/,'')),
-            left: Number($(this.elem).css('padding-left').replace(/px/,'')) +
-                Number($(this.text.elem).css('padding-left').replace(/px/,''))
+            left: Math.round(.18*View.fontSize),
+            top: Math.round(.15*View.fontSize)
         };
     }
     validate() {

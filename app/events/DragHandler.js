@@ -33,7 +33,7 @@ var DragHandler = (function () {
         this._cacheHelperProportions();
 
         //The element's absolute position on the page
-        var itemOffset = $(this.currentItem.elem).offset();
+        var itemOffset = this.currentItem.getOffset();
         this.helperOffset = {
             left: this.mousePosition.left - itemOffset.left,
             top: this.mousePosition.top - itemOffset.top
@@ -51,7 +51,7 @@ var DragHandler = (function () {
         this.helper.addClass("ui-sortable-helper");
         this.dragMove(options); //Execute the drag once - this causes the helper not to be visible before getting its correct position
         DropBox.renderAll(this);
-        DropBox.previewDropBoxes();
+        // DropBox.previewDropBoxes();
     };
 
     DragHandler.prototype.dragMove = function (options) {
@@ -72,7 +72,7 @@ var DragHandler = (function () {
             this.helper.elem.style.top = helperPosition.top + "px";
         }
         if (this.scrollPanel) {
-            var left = $(this.scrollPanel.elem).offset().left;
+            var left = this.scrollPanel.getOffset().left;
             var right = left + $(this.scrollPanel.elem).width();
             if (!(this.mousePosition.left >= left && this.mousePosition.left <= right)) {
                 this.scrollPanel = null;
@@ -83,8 +83,8 @@ var DragHandler = (function () {
             var pid;
             for (pid in PanelView.panelsById) {
                 var panel = PanelView.panelsById[pid];
-                var left = $(panel.elem).offset().left;
-                var right = left + $(panel.elem).width();
+                var left = panel.getOffset().left;
+                var right = left + panel.layout.width;
                 if (self.mousePosition.left >= left && self.mousePosition.left <= right) {
                     self.scrollPanel = panel;
                     console.log("Changing scrollPanel to " + pid);
@@ -103,7 +103,7 @@ var DragHandler = (function () {
 
             // todo: add constraint?: for later panels, could scroll-position be different than the
             // scroll-position at mouse-start, which is where items are last updated?
-            this.scrollPanel.outline.scrollHandler.scrollWhileDragging(this.mousePosition.top - $(this.scrollPanel.elem).offset().top);
+            this.scrollPanel.outline.scrollHandler.scrollWhileDragging(this.mousePosition.top - this.scrollPanel.getOffset().top);
         }
         var box = DropBox.getHoverBox(this.mousePosition, this.panelScrollStart);
 
@@ -208,7 +208,7 @@ var DragHandler = (function () {
             return true;
         } else {
             var that = this;
-            var cur = $(this.currentItem.elem).offset();
+            var cur = this.currentItem.getOffset();
             this.reverting = true;
             $(this.helper.elem).animate({
                 left: cur.left,
@@ -236,9 +236,9 @@ var DragHandler = (function () {
         newNode.themeLast(true);
         $(newNode.elem).css({
             position: 'absolute',
-            left: $(this.currentItem.elem).offset().left + 'px',
-            top: $(this.currentItem.elem).offset().top + 'px',
-            width: this.currentItem.elem.clientWidth
+            left: this.currentItem.getOffset().left + 'px',
+            top: this.currentItem.getOffset().top + 'px',
+            width: this.currentItem.layout.width
         });
 
         // fix link offsets
@@ -248,8 +248,8 @@ var DragHandler = (function () {
         if (links1 != null) {
             for (l1 = links1.first(), l2 = links2.first(); (l1 !== '') && (l2 !== ''); l1 = links1.next[l1], l2 = links2.next[l2]) {
                 links2.obj[l2].setOffset({
-                    top: links1.obj[l1].top,
-                    left: links1.obj[l1].left
+                    top: links1.obj[l1].layout.top,
+                    left: links1.obj[l1].layout.left
                 });
             }
         }

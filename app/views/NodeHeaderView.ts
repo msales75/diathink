@@ -13,4 +13,13 @@ class NodeHeaderView extends ContainerView {
             name: NodeTextWrapperView
         };
     }
+    layoutDown() {
+        if (!this.layout) {this.layout = {};}
+        this.layout.top = 0;
+        this.layout.left = 0;
+        this.layout.width = this.parentView.layout.width;
+    }
+    layoutUp() {
+        this.layout.height = this.name.layout.height;
+    }
 }

@@ -11,25 +11,6 @@ var GridView = (function (_super) {
     function GridView() {
         _super.apply(this, arguments);
     }
-    GridView.prototype.resize = function () {
-        if (this.elem) {
-            if (this.elem.parentNode) {
-                var p;
-                this.itemWidth = Math.floor(Math.floor(this.parentView.elem.clientWidth - 0.5) / this.numCols);
-                for (p in this.listItems.obj) {
-                    $(this.listItems.obj[p].elem).css('width', String(this.itemWidth) + 'px');
-                }
-            } else {
-                var p;
-                var relativeWidth = String(Math.round(100000.0 / this.numCols) / 1000) + '%';
-                for (p in this.listItems.obj) {
-                    0;
-                    $(this.listItems.obj[p].elem).css('width', relativeWidth);
-                }
-            }
-        }
-    };
-
     GridView.prototype.render = function () {
         this._create({
             type: 'div',
@@ -37,12 +18,31 @@ var GridView = (function (_super) {
             html: ''
         });
         this.insertListItems();
+        this.setPosition();
         return this.elem;
     };
 
-    GridView.prototype.renderListItems = function () {
-        _super.prototype.renderListItems.call(this);
-        this.resize();
+    GridView.prototype.positionChildren = function (v) {
+        this.itemWidth = Math.floor(this.parentView.layout.width / this.numCols);
+        var c = this.listItems.first();
+        var w = 0;
+        if (v != null) {
+            w = v.layout.left + v.layout.width;
+            c = this.listItems.next[v.id];
+        }
+        for (; c !== ''; c = this.listItems.next[c]) {
+            var child = this.listItems.obj[c];
+            if (!child.layout) {
+                child.layout = {};
+            }
+            if (child.layout.left !== w) {
+                child.layout.left = w;
+                if (child.elem) {
+                    $(child.elem).css('left', w + 'px');
+                }
+            }
+            w += child.layout.width;
+        }
     };
     return GridView;
 })(View);

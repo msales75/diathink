@@ -42,6 +42,8 @@ class PanelView extends View {
     value:OutlineNodeModel;
     parentPanel:PanelView;
     childPanel:PanelView;
+    cssClass = 'panel';
+    listRank:number;
     top:number;
     left:number;
     width:number;
@@ -63,6 +65,23 @@ class PanelView extends View {
             this.parentPanel.childPanel = this;
         }
     }
+    layoutDown() {
+        var p = this.parentView.parentView.layout;
+        var w = Math.floor(Math.floor(p.width)/this.parentView.numCols);
+        this.layout = {
+            top: 0,
+            width: w,
+            height: p.height
+        };
+    }
+    positionChildren(v:View) {
+        if (!v || (v===this.breadcrumbs)) {
+            var l = this.outline.saveLayout();
+            this.outline.layoutDown();
+            this.outline.updateDiffs(l);
+        }
+    }
+
     render() {
         var subpanel:string = '';
         if (this.parentPanel!=null) {
@@ -71,23 +90,24 @@ class PanelView extends View {
         this._create({
             type: 'div',
             classes: this.cssClass,
-            html: '<div class="inner-panel"></div>'+subpanel
+            html: '<div class="panel-border"></div>'+subpanel
         });
         this.renderChildViews();
+        this.positionChildren(null);
+        this.setPosition();
         for (var name in this.childViewTypes) {
-            this.elem.children[0].appendChild((<View>(this[name])).elem);
+            this.elem.appendChild((<View>(this[name])).elem);
         }
         return this.elem;
     }
 
     cachePosition() {
         // todo: cache top/left/height/width
-        var el = $(this.elem);
-        var offset = el.offset();
+        var offset = this.getOffset();
         this.top = offset.top;
         this.left = offset.left;
-        this.height = this.elem.clientHeight;
-        this.width = this.elem.clientWidth;
+        this.height = this.layout.height;
+        this.width = this.layout.width;
     }
 
     destroy() {
@@ -120,7 +140,7 @@ class PanelView extends View {
         this.cachePosition();
         NodeView.refreshPositions();
 
-        $(window).resize(); // fix height of new panel, spacer; a bit hacky
+        // $(window).resize(); // fix height of new panel, spacer; a bit hacky
         return newlist.id;
     }
     validate() {
@@ -172,8 +192,6 @@ class PanelView extends View {
 
         assert(this.outline.value === null,
             "Panel " + v + " outline-value is not null");
-
-
     }
 }
 

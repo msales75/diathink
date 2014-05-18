@@ -1,7 +1,9 @@
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
 class BreadcrumbView extends View {
+    isAbsolute = false;
     parentView:PanelView;
+    dirtyHeight:boolean = true;
 
     init() {
         this.isClickable = true;
@@ -18,6 +20,7 @@ class BreadcrumbView extends View {
                     crumb = crumb.get('parent');
                 }
             }
+            this.dirtyHeight = true;
         }
     }
 
@@ -35,7 +38,48 @@ class BreadcrumbView extends View {
 
     render() {
         this._create({type: 'div', classes: 'ui-breadcrumb', html: this.getInnerHTML()});
+        this.positionChildren(null);
+        this.setPosition();
         return this.elem;
+    }
+    fixHeight() {
+        var currentWidth = this.layout.width; // elem.clientWidth;
+        var currentFont = View.fontSize; // $(elem).css('font-size');
+        var hiddendiv = (<DiathinkView>(View.currentPage)).hiddendiv.elem;
+        assert(hiddendiv!=null, "fixHeight called before defined hiddendiv");
+        assert(this.parentView instanceof View, "ERROR: textedit parentDiv not found in fixHeight");
+        var lineHeight = Math.round(1.25*View.fontSize);
+        var paddingX = 2*Math.round(.15*View.fontSize);
+        var paddingY = 2*Math.round(.18*View.fontSize);
+        hiddendiv.style.width = String(currentWidth - paddingX - 1) + 'px';
+        // console.log("Defined hiddendiv width = "+hiddendiv.style.width);
+        hiddendiv.innerHTML = this.getInnerHTML();
+        var nlines = Math.round(($(hiddendiv).children('.panel-name').next().position().top / lineHeight) - 0.4) + 1;
+        var height = nlines * lineHeight;
+        // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
+        this.layout.height = height+paddingY;
+    }
+
+    layoutDown() {
+        var p:Layout = this.parentView.layout;
+        if (this.layout==null) {this.layout = {};}
+        if (p.width!==this.layout.width) {
+            this.dirtyHeight = true;
+        }
+        this.layout.top = 0;
+        this.layout.left = Math.round(View.fontSize);
+        this.layout.width = p.width-Math.round(View.fontSize);
+    }
+    layoutUp() {
+        /*
+        if (this.dirtyHeight) {
+            this.layout.height = Number(this.elem.style.height.replace(/px/,''));
+            this.dirtyHeight = false;
+        }
+        */
+    }
+    positionChildren(v:View) {
+        this.fixHeight();
     }
 
     renderUpdate() {

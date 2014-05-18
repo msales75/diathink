@@ -2,6 +2,7 @@
 m_require("app/views/SpanView.js");
 
 class LeftSwipeButtonView extends SpanView {
+    parentView:PageContentView;
     init() {
         this.isClickable = true;
     }
@@ -23,5 +24,13 @@ class LeftSwipeButtonView extends SpanView {
                     focus: false
                 };
             });
+    }
+    layoutDown() {
+        var p:Layout = this.parentView.layout;
+        this.layout = {
+            top: 1.5*View.fontSize,
+            left: 0,
+            width: Math.round(.05* p.width)
+        };
     }
 }

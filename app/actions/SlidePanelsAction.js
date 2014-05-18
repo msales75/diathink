@@ -54,17 +54,19 @@ var SlidePanelsAction = (function (_super) {
         ], function () {
             var grid = View.getCurrentPage().content.gridwrapper.grid;
             if (that.getDirection() === 'right') {
-                $(grid.elem).css({
-                    width: String(grid.itemWidth * (grid.numCols + 1)) + 'px',
-                    'margin-left': '-' + String(grid.itemWidth) + 'px'
-                });
+                grid.layout.width = grid.itemWidth * (grid.numCols + 1);
+                grid.layout.left = -grid.itemWidth;
+                grid.setPosition();
+                var firstPanel = View.get(grid.listItems.first());
+                firstPanel.layout.left = grid.itemWidth;
+                firstPanel.setPosition();
+                grid.positionChildren(firstPanel);
 
                 // protect right panel from deletion
                 grid.listItems.obj[grid.listItems.last()].animating = true;
             } else {
-                $(grid.elem).css({
-                    width: String(grid.itemWidth * (grid.numCols + 1)) + 'px'
-                });
+                grid.layout.width = grid.itemWidth * (grid.numCols + 1);
+                grid.setPosition();
                 grid.listItems.obj[grid.listItems.first()].animating = true;
             }
         });
@@ -93,38 +95,35 @@ var SlidePanelsAction = (function (_super) {
                 }
             }
             if (dir === 'right') {
-                grid.slideRight();
+                grid.slideRight(); // adds panel to left
             } else if (dir === 'left') {
                 grid.slideLeft();
             }
-            $(window).resize(); // fix links in panel; a bit hacky
         });
     };
 
     SlidePanelsAction.prototype.anim2Step = function (frac) {
         var grid = View.getCurrentPage().content.gridwrapper.grid;
         if (this.getDirection() === 'right') {
-            var w = Math.round((1 - frac) * grid.itemWidth);
+            var w = grid.itemWidth - Math.round(frac * grid.itemWidth);
+            grid.layout.left = -w;
             $(grid.elem).css({
-                'margin-left': '-' + String(w) + 'px'
+                left: '-' + String(w) + 'px'
             });
             if (frac === 1) {
                 assert(grid.listItems.obj[grid.listItems.last()].animating, "");
-                $(grid.elem).css({ 'margin-left': '', width: '' });
-                grid.listItems.obj[grid.listItems.last()].elem.style.display = 'none';
-                grid.listItems.obj[grid.listItems.last()].destroy();
+                grid.clip('right');
                 grid.updatePanelButtons();
             }
         } else {
             var w = Math.round(frac * grid.itemWidth);
+            grid.layout.left = -w;
             $(grid.elem).css({
-                'margin-left': '-' + String(w) + 'px'
+                left: '-' + String(w) + 'px'
             });
             if (frac === 1) {
                 assert(grid.listItems.obj[grid.listItems.first()].animating, "");
-                $(grid.elem).css({ 'margin-left': '', width: '' });
-                grid.listItems.obj[grid.listItems.first()].elem.style.display = 'none';
-                grid.listItems.obj[grid.listItems.first()].destroy();
+                grid.clip('left');
                 grid.updatePanelButtons();
             }
         }

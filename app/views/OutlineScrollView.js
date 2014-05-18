@@ -44,13 +44,29 @@ var OutlineScrollView = (function (_super) {
     OutlineScrollView.prototype.init = function () {
         this.childViewTypes = {
             alist: OutlineRootView,
-            scrollSpacer: ScrollSpacerView,
+            // scrollSpacer: ScrollSpacerView,
             droplayer: DropLayerView
         };
     };
     OutlineScrollView.prototype.destroy = function () {
         new DeadOutlineScroll(this);
         _super.prototype.destroy.call(this);
+    };
+    OutlineScrollView.prototype.layoutDown = function () {
+        var p = this.parentView.layout;
+        if (this.parentView && this.parentView.breadcrumbs && this.parentView.breadcrumbs.layout) {
+            if (!this.layout) {
+                this.layout = {};
+            }
+            this.layout.top = this.parentView.breadcrumbs.layout.height;
+            this.layout.left = Math.round(View.fontSize);
+            this.layout.width = p.width - Math.round(View.fontSize);
+        }
+    };
+    OutlineScrollView.prototype.layoutUp = function () {
+        var p = this.parentView.layout;
+        this.layout.height = p.height - this.parentView.breadcrumbs.layout.height;
+        // todo: inner-scroll height needs to be reset in layoutUp
     };
 
     OutlineScrollView.prototype.validate = function () {

@@ -36,6 +36,7 @@ var OutlineRootView = (function (_super) {
     __extends(OutlineRootView, _super);
     function OutlineRootView(opts) {
         _super.call(this, opts);
+        this.isAbsolute = false;
         OutlineRootView.outlinesById[this.id] = this;
     }
     OutlineRootView.prototype.init = function () {
@@ -47,6 +48,18 @@ var OutlineRootView = (function (_super) {
             assert(this.parentView.parentView instanceof PanelView, "Invalid location for root list");
             this.value = this.panelView.value.get('children');
         }
+    };
+    OutlineRootView.prototype.layoutDown = function () {
+        if (this.layout == null) {
+            this.layout = {};
+        }
+        this.layout.top = 0;
+        this.layout.left = 0;
+        this.layout.width = this.parentView.layout.width;
+    };
+    OutlineRootView.prototype.layoutUp = function () {
+        _super.prototype.layoutUp.call(this);
+        // todo: special hack for fixing scroll-canvas?
     };
 
     OutlineRootView.prototype.destroy = function () {

@@ -10,6 +10,8 @@ var BreadcrumbView = (function (_super) {
     __extends(BreadcrumbView, _super);
     function BreadcrumbView() {
         _super.apply(this, arguments);
+        this.isAbsolute = false;
+        this.dirtyHeight = true;
     }
     BreadcrumbView.prototype.init = function () {
         this.isClickable = true;
@@ -26,6 +28,7 @@ var BreadcrumbView = (function (_super) {
                     crumb = crumb.get('parent');
                 }
             }
+            this.dirtyHeight = true;
         }
     };
 
@@ -43,7 +46,52 @@ var BreadcrumbView = (function (_super) {
 
     BreadcrumbView.prototype.render = function () {
         this._create({ type: 'div', classes: 'ui-breadcrumb', html: this.getInnerHTML() });
+        this.positionChildren(null);
+        this.setPosition();
         return this.elem;
+    };
+    BreadcrumbView.prototype.fixHeight = function () {
+        var currentWidth = this.layout.width;
+        var currentFont = View.fontSize;
+        var hiddendiv = (View.currentPage).hiddendiv.elem;
+        assert(hiddendiv != null, "fixHeight called before defined hiddendiv");
+        assert(this.parentView instanceof View, "ERROR: textedit parentDiv not found in fixHeight");
+        var lineHeight = Math.round(1.25 * View.fontSize);
+        var paddingX = 2 * Math.round(.15 * View.fontSize);
+        var paddingY = 2 * Math.round(.18 * View.fontSize);
+        hiddendiv.style.width = String(currentWidth - paddingX - 1) + 'px';
+
+        // console.log("Defined hiddendiv width = "+hiddendiv.style.width);
+        hiddendiv.innerHTML = this.getInnerHTML();
+        var nlines = Math.round(($(hiddendiv).children('.panel-name').next().position().top / lineHeight) - 0.4) + 1;
+        var height = nlines * lineHeight;
+
+        // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
+        this.layout.height = height + paddingY;
+    };
+
+    BreadcrumbView.prototype.layoutDown = function () {
+        var p = this.parentView.layout;
+        if (this.layout == null) {
+            this.layout = {};
+        }
+        if (p.width !== this.layout.width) {
+            this.dirtyHeight = true;
+        }
+        this.layout.top = 0;
+        this.layout.left = Math.round(View.fontSize);
+        this.layout.width = p.width - Math.round(View.fontSize);
+    };
+    BreadcrumbView.prototype.layoutUp = function () {
+        /*
+        if (this.dirtyHeight) {
+        this.layout.height = Number(this.elem.style.height.replace(/px/,''));
+        this.dirtyHeight = false;
+        }
+        */
+    };
+    BreadcrumbView.prototype.positionChildren = function (v) {
+        this.fixHeight();
     };
 
     BreadcrumbView.prototype.renderUpdate = function () {

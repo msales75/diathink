@@ -25,6 +25,17 @@ var OutlineListView = (function (_super) {
         _super.prototype.validate.call(this);
         assert(this.nodeRootView != null, "TextAreaView cannot have null nodeRootView");
     };
+    OutlineListView.prototype.layoutDown = function () {
+        var offset = Math.round(0.8 * View.fontSize);
+        if (!this.layout) {
+            this.layout = {};
+        }
+        this.layout.left = offset;
+        this.layout.width = this.parentView.layout.width - offset;
+        if (this.parentView && this.parentView.header.layout) {
+            this.layout.top = this.parentView.header.layout.height;
+        }
+    };
     return OutlineListView;
 })(ListView);
 //# sourceMappingURL=OutlineListView.js.map

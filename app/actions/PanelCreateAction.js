@@ -172,10 +172,20 @@ var PanelCreateAction = (function (_super) {
             var o = that.options;
             var dir;
             if (o.undo) {
-                dir = View.get(that.newPanel).destroy();
+                grid.slideFill('left'); // appends incoming panel from the right
+
+                // give insertion location to dropSource for animation
+                if (that.dropSource) {
+                    var nextLeft = null;
+                    var nextView = View.get(View.currentPage.content.gridwrapper.grid.listItems.next[that.newPanel]);
+                    if (nextView != null) {
+                        nextLeft = nextView.layout.left;
+                    }
+                    that.dropSource.nextView = nextView;
+                    that.dropSource.nextLeft = nextLeft;
+                }
+                dir = View.get(that.newPanel).destroy(); // removes panel, without changing positions
                 grid.value.remove(that.newPanel);
-                grid.slideFill('left');
-                // do we need to slide the list here?
             } else {
                 if (!that.newPanel) {
                     that.newPanel = View.getNextId();
@@ -198,8 +208,11 @@ var PanelCreateAction = (function (_super) {
                     node.removeClass('drag-hidden');
                 }
 
+                // if the inserted node is right after the previous panel
                 // View.get(that.newPanel).removeClass('drag-hidden');
-                dir = grid.insertAfter(View.get(that.options.prevPanel), View.get(that.newPanel), that.dropTarget.getPlaceholder(null));
+                dir = grid.insertAfter(View.get(that.options.prevPanel), View.get(that.newPanel), 0);
+                grid.clip(dir); // remove extra panels
+                grid.updatePanelButtons();
                 // we only wanted newPanel for the PanelManager id, not the ViewManager.
             }
 
@@ -212,7 +225,7 @@ var PanelCreateAction = (function (_super) {
                 that.options.dockView.destroy();
                 that.options.dockView = undefined;
             }
-            $(window).resize(); // fix height of new panel, spacer; a bit hacky
+            // $(window).resize(); // fix height of new panel, spacer; a bit hacky
         });
     };
     return PanelCreateAction;

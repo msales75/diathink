@@ -7,11 +7,13 @@ class PanelDropTarget extends DropTarget {
     useFadeOut:boolean;
     fadeScreen:HTMLElement;
     usePlaceholder:boolean=false;
-    placeholderElem:HTMLElement = null;
+    //placeholderElem:HTMLElement = null;
     prevPanel:string;
     maxWidth:number;
     containerWidth:number;
     slideDirection: string;
+    nextView:PanelView;
+    nextLeft:number;
 
     constructor(opts) {
         super(opts);
@@ -21,63 +23,60 @@ class PanelDropTarget extends DropTarget {
         this.prevPanel = opts.prevPanel;
         this.usePlaceholder = opts.usePlaceholder;
     }
-    getPlaceholder() {
-        return this.placeholderElem;
-    }
+    //getPlaceholder() {
+    //    return this.nextLeft;
+    //}
     createUniquePlaceholder() {
         if (this.useFadeOut) { // a translucent screen over panel being replaced
-            var fadeScreen:JQuery = $("<div></div>");
-            var panel = (<PanelView>View.get(this.panelID))
-            var elem:HTMLElement = panel.outline.alist.elem;
-            var offset= $(elem).offset();
-            var height:number = elem.clientHeight;
-            fadeScreen.addClass('ui-corner-all');
-            fadeScreen.css({
+            var layout = (<PanelView>View.get(this.panelID)).outline.alist.layout;
+            var fadeScreen = $('<div></div>').css({
                 position: 'absolute',
                 opacity: 0,
                 'z-index': 1,
-                width: panel.parentView.itemWidth+'px',
-                height: height,
-                top: offset.top,
-                left: offset.left,
-                'background-color': '#CCC'
-            }).appendTo(View.currentPage.content.gridwrapper.grid.elem);
+                width: layout.width+'px',
+                height: layout.height+'px',
+                top: layout.top+'px',
+                left: layout.left+'px',
+                'background-color': '#FFF'
+            }).addClass('ui-corner-all').
+                appendTo(View.currentPage.content.gridwrapper.grid.elem);
             this.fadeScreen = fadeScreen[0];
         }
 
         if (this.usePlaceholder) { // for inserted panel
 
             var grid = View.currentPage.content.gridwrapper.grid;
-            var el = $("<div></div>").css({
-                width: '0px',
-                height: '100%'
-            });
-            this.placeholderElem = el[0];
+            //var el = $("<div></div>").css({
+            //    width: '0px',
+            //    height: grid.layout.height
+            //});
+            //this.placeholderElem = el[0];
             if (this.prevPanel) {
                 if (grid.listItems.next[this.prevPanel]==='') { // last in list
-                    grid.elem.appendChild(this.placeholderElem);
+                    this.nextView = null;
+                    this.nextLeft = null;
+                    // grid.elem.appendChild(this.placeholderElem);
                 } else {
-                    grid.elem.insertBefore(this.placeholderElem, View.get(grid.listItems.next[this.prevPanel]).elem);
+                    this.nextView = <PanelView>View.get(grid.listItems.next[this.prevPanel]);
+                    // grid.elem.insertBefore(this.placeholderElem, this.nextView.elem);
+                    this.nextLeft = this.nextView.layout.left;
                 }
             } else { // insert at far left
-                grid.elem.insertBefore(this.placeholderElem, View.get(grid.listItems.first()).elem);
+                this.nextView = <PanelView>View.get(grid.listItems.first());
+                this.nextLeft = this.nextView.layout.left;
+                // grid.elem.insertBefore(this.placeholderElem, this.nextView.elem);
             }
         }
     }
     setupPlaceholderAnim() {
-        // freeze width of all panel elements
-
+        var grid = View.currentPage.content.gridwrapper.grid;
         if (this.usePlaceholder) { // if creating panel, change width and grid-margin
-            var p:string;
-            for (p in PanelView.panelsById) {
-                // PanelView.panelsById[p].freezeWidth();
-            }
             this.slideDirection = 'right';
-            if (this.prevPanel === View.currentPage.content.gridwrapper.grid.listItems.last()) {
+            if (this.prevPanel === grid.listItems.last()) {
                 this.slideDirection = 'left';
             }
-            this.maxWidth = View.currentPage.content.gridwrapper.grid.itemWidth;
-            this.containerWidth = View.currentPage.content.gridwrapper.grid.numCols*this.maxWidth;
+            this.maxWidth = grid.itemWidth;
+            this.containerWidth = grid.numCols*this.maxWidth;
         }
     }
     placeholderAnimStep(frac:number) {
@@ -87,15 +86,21 @@ class PanelDropTarget extends DropTarget {
             });
         }
         if (this.usePlaceholder) {
+            var grid=View.currentPage.content.gridwrapper.grid;
             var w:number = Math.round(frac*this.maxWidth);
-            $(this.placeholderElem).css('width',String(w)+'px');
+            // $(this.placeholderElem).css('width',String(w)+'px');
             if (this.slideDirection==='left') {
-                $(this.placeholderElem.parentNode).css({
-                    width: String(this.containerWidth+w)+'px',
-                    'margin-left': '-'+w+'px'
-                });
+                grid.layout.width = this.containerWidth+w;
+                grid.layout.left = -w;
             } else {
-                $(this.placeholderElem.parentNode).css('width', String(this.containerWidth+w)+'px');
+                grid.layout.width=this.containerWidth+w;
+            }
+            grid.setPosition();
+            // adjust 'left' of panels to the right of insertion
+            if (this.nextView!=null) {
+                this.nextView.layout.left = this.nextLeft+Math.round(this.maxWidth*frac);
+                $(this.nextView.elem).css('left', this.nextView.layout.left+'px');
+                grid.positionChildren(this.nextView);
             }
         }
     }
@@ -128,7 +133,7 @@ class PanelDropTarget extends DropTarget {
             'z-index': 1,
             left: bpos.left,
             top: bpos.top,
-            width: ((<HTMLElement>oldBreadcrumbs.elem.parentNode).clientWidth)+'px'
+            width: (oldBreadcrumbs.parentView.layout.width)+'px'
         }).insertAfter(oldBreadcrumbs.elem);
         panel.value = oldValue;
         // NOTE TO SELF: make sure lastElem is just one <a> and not the whole breadcrumb area,
@@ -172,16 +177,20 @@ class PanelDropTarget extends DropTarget {
     }
     cleanup() {
 
+        var grid = View.currentPage.content.gridwrapper.grid;
         if (this.useFadeOut) {
             this.fadeScreen.parentNode.removeChild(this.fadeScreen);
         }
         if (this.usePlaceholder) {
             // normalize grid
-            $(View.currentPage.content.gridwrapper.grid.elem).css({width: '', 'margin-left': ''});
-            if (this.placeholderElem.parentNode) {
-                this.placeholderElem.parentNode.removeChild(this.placeholderElem);
-            }
-            this.placeholderElem = null;
+            $(View.currentPage.content.gridwrapper.grid.elem).css({
+                left: 0,
+                width: String(grid.itemWidth*grid.numCols)+'px'
+            });
+            //if (this.placeholderElem.parentNode) {
+                //this.placeholderElem.parentNode.removeChild(this.placeholderElem);
+            //}
+            //this.placeholderElem = null;
         }
         if (this.dockView) {
             $(document.body).removeClass('transition-mode');

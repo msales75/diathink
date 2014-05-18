@@ -35,19 +35,33 @@ class DeadOutlineScroll extends DeadView {
 class OutlineScrollView extends ScrollView {
     parentView:PanelView;
     alist:OutlineRootView;
-    scrollSpacer:ScrollSpacerView;
+    // scrollSpacer:ScrollSpacerView;
     droplayer:DropLayerView;
     scrollY:number; // for use in draghandler
     init() {
         this.childViewTypes = {
             alist: OutlineRootView,
-            scrollSpacer: ScrollSpacerView,
+            // scrollSpacer: ScrollSpacerView,
             droplayer: DropLayerView
         };
     }
     destroy() {
         new DeadOutlineScroll(this);
         super.destroy();
+    }
+    layoutDown() {
+        var p:Layout = this.parentView.layout;
+        if (this.parentView && this.parentView.breadcrumbs && this.parentView.breadcrumbs.layout) {
+            if (!this.layout) {this.layout = {};}
+            this.layout.top= this.parentView.breadcrumbs.layout.height;
+            this.layout.left = Math.round(View.fontSize);
+            this.layout.width = p.width-Math.round(View.fontSize);
+        }
+    }
+    layoutUp() {
+        var p:Layout = this.parentView.layout;
+        this.layout.height = p.height-this.parentView.breadcrumbs.layout.height;
+        // todo: inner-scroll height needs to be reset in layoutUp
     }
 
     validate() {

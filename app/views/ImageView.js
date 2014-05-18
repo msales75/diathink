@@ -18,6 +18,7 @@ var ImageView = (function (_super) {
             classes: this.cssClass
         });
         this.elem.src = (this.value && typeof (this.value) === 'string' ? this.value : '');
+        this.setPosition();
         return this.elem;
     };
 

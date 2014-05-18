@@ -4,24 +4,6 @@ class GridView extends View {
     numCols:number;
     itemWidth:number;
 
-    resize() {
-        if (this.elem) {
-            if (this.elem.parentNode) {
-                var p:string;
-                this.itemWidth = Math.floor(Math.floor(this.parentView.elem.clientWidth-0.5) / this.numCols);
-                for (p in this.listItems.obj) {
-                    $((<View>this.listItems.obj[p]).elem).css('width', String(this.itemWidth) + 'px');
-                }
-            } else {
-                var p:string;
-                var relativeWidth = String(Math.round(100000.0 / this.numCols)/1000)+'%';
-                for (p in this.listItems.obj) {0
-                    $((<View>this.listItems.obj[p]).elem).css('width', relativeWidth);
-                }
-            }
-        }
-    }
-
     render() {
         this._create({
             type: 'div',
@@ -29,11 +11,29 @@ class GridView extends View {
             html: ''
         });
         this.insertListItems();
+        this.setPosition();
         return this.elem;
     }
 
-    renderListItems() {
-        super.renderListItems();
-        this.resize();
+    positionChildren(v:View) {
+        this.itemWidth = Math.floor(this.parentView.layout.width/this.numCols);
+        var c:string = this.listItems.first();
+        var w = 0;
+        if (v!=null) {
+            w = v.layout.left + v.layout.width;
+            c = this.listItems.next[v.id];
+        }
+        for ( ; c!==''; c = this.listItems.next[c]) {
+            var child:PanelView = <PanelView>this.listItems.obj[c];
+            if (!child.layout) {child.layout= {};}
+            if (child.layout.left!==w) {
+                child.layout.left = w;
+                if (child.elem) {
+                    $(child.elem).css('left', w+'px');
+                }
+            }
+            w += child.layout.width;
+        }
     }
+
 }

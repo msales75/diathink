@@ -28,7 +28,6 @@
         "<link rel=\"shortcut icon\" href=\"theme/images/favicon.ico\" type=\"image/x-icon\">",
         "<meta name=\"viewport\" content=\"initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,width=device-width\">",
         "<title>Diathink Demo</title>",
-        "<link type=\"text/css\" href=\"theme/jquery.mobile-1.3.0.min.css\" rel=\"stylesheet\">",
         "<link type=\"text/css\" href=\"theme/style.css\" rel=\"stylesheet\">",
         "<script type=\"application/javascript\">var $D = $D || {};</script>"
     ],

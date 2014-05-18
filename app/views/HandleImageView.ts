@@ -5,8 +5,29 @@ class HandleImageView extends ImageView {
     init() {
         this.isClickable = true;
     }
-    value = 'theme/images/drag_icon.png';
+    value:string = 'theme/images/circle.png';
     cssClass = 'drag-handle disclose ui-disable-scroll';
+    renderUpdate() {
+        var node:NodeView = this.nodeView;
+        if (node.isLeaf) {
+            this.value = 'theme/images/circle.png';
+        } else {
+            if (node.isCollapsed) {
+                this.value = 'theme/images/plus.png';
+            } else {
+                this.value = 'theme/images/minus.png';
+            }
+        }
+        super.renderUpdate();
+    }
+    layoutDown() {
+        this.layout = {
+            top: Math.round(.18*View.fontSize),
+            left: Math.round(.15*View.fontSize),
+            width: Math.round(1.2*View.fontSize),
+            height: Math.round(1.2*View.fontSize)
+        };
+    }
     onClick() {
         var li:NodeView = this.nodeView;
         var liElem = $(li.elem);

@@ -5,7 +5,7 @@ $(function () {
     $(document.body).on('keyup change input paste', 'textarea', function (e) {
         var view = View.get($(this).attr('id'));
         view.setValueFromDOM();
-        view.fixHeight();
+        view.resizeUp();
     });
 });
 //# sourceMappingURL=keyup.js.map

@@ -23,4 +23,12 @@ class RightSwipeButtonView extends SpanView {
                 };
             });
     }
+    layoutDown() {
+        var p:Layout = this.parentView.layout;
+        this.layout = {
+            top: 1.5*View.fontSize,
+            left: p.width - Math.round(.05* p.width),
+            width: Math.round(.05* p.width)
+        };
+    }
 }

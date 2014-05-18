@@ -31,6 +31,7 @@ class OutlineRootView extends ListView {
     static outlinesById:{[id:string]:OutlineRootView} = {};
     parentView:OutlineScrollView;
     value:OutlineNodeCollection;
+    isAbsolute = false;
     data; // preserves collapse/expanded status within panel-outline
     init() {
         this.listItemTemplate = NodeView;
@@ -45,6 +46,16 @@ class OutlineRootView extends ListView {
                 "Invalid location for root list");
             this.value = this.panelView.value.get('children');
         }
+    }
+    layoutDown() {
+        if (this.layout==null) {this.layout = {};}
+        this.layout.top = 0;
+        this.layout.left = 0;
+        this.layout.width = this.parentView.layout.width;
+    }
+    layoutUp() {
+        super.layoutUp();
+        // todo: special hack for fixing scroll-canvas?
     }
 
     destroy() { // move to graveyard, never(?) completely destroy this view

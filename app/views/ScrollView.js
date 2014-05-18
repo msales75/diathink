@@ -20,6 +20,7 @@ var ScrollView = (function (_super) {
         });
         this.elem.setAttribute('data-role', 'content');
         this.renderChildViews();
+        this.setPosition();
         for (var name in this.childViewTypes) {
             this.elem.appendChild((this[name]).elem);
         }

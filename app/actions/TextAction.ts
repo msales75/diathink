@@ -42,7 +42,7 @@ class TextAction extends Action {
                 activeLineView.header.name.text.value = text;
                 // console.log("Updating view "+activeLineView.header.name.text.id+" to value "+this.options.text);
                 $('#'+activeLineView.header.name.text.id).val(text).text(text);
-                activeLineView.header.name.text.fixHeight();
+                activeLineView.header.name.text.resizeUp();
             }
 
             // Check this outline for links connected to this item

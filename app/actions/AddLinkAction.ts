@@ -170,6 +170,8 @@ class AddLinkAction extends AnimatedAction {
                     assert(linkid!=null, "Could not found link to remove");
                     refLineView.header.name.listItems.remove(linkid);
                     View.get(linkid).destroy();
+                    // refLineView.header.name.text.fixHeight();
+                    refLineView.header.name.text.resizeUp();
                 } else {
                     var linkview = new NodeLinkView({
                         parentView: refLineView.header.name,
@@ -179,7 +181,8 @@ class AddLinkAction extends AnimatedAction {
                     linkview.render();
                     refLineView.header.name.listItems.append(linkview.id, linkview);
                     refLineView.header.name.elem.appendChild(linkview.elem);
-                    refLineView.header.name.text.fixHeight();
+                    // refLineView.header.name.text.fixHeight();
+                    refLineView.header.name.text.resizeUp();
                 }
             }
             // remove helper-stuff when done, since we're not using animator

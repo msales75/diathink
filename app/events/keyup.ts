@@ -5,6 +5,6 @@ $(function() {
     $(document.body).on('keyup change input paste', 'textarea', function (e) {
         var view:TextAreaView = <TextAreaView>View.get($(this).attr('id'));
         view.setValueFromDOM();
-        view.fixHeight();
+        view.resizeUp();
     });
 });

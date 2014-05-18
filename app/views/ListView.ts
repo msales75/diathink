@@ -14,20 +14,72 @@ class ListView extends View {
             classes: classes
         });
         this.insertListItems();
+        this.setPosition();
         return this.elem;
+    }
+    positionChildren(v:View, v2?:string) {
+        var c:string = this.listItems.first();
+        var end:string;
+        var h = 0;
+        if (v!=null) {
+            h = v.layout.top + v.layout.height;
+            c = this.listItems.next[v.id];
+            //console.log('positionChildren 1');
+        } else {
+            //console.log('positionChildren 2');
+        }
+        if (v2!=null) {
+            end = this.listItems.next[v2];
+            assert(end !== undefined, "Invalid v2 to positionChildren");
+            //console.log('positionChildren 3');
+        } else {
+            end = '';
+            //console.log('positionChildren 4');
+        }
+        for ( ; c!==end; c = this.listItems.next[c]) {
+            var child:NodeView = <NodeView>this.listItems.obj[c];
+            if (!child.layout) {
+                //console.log('positionChildren 5'); // todo: never tested
+                child.layout= {};
+            }
+            var oldTop = child.layout.top;
+            if (oldTop!==h) {
+                child.layout.top = h;
+                if (child.elem) {
+                    $(child.elem).css('top', h+'px');
+                    //console.log('positionChildren 6');
+                } else {
+                    //console.log('positionChildren 7'); // todo: never tested without rendered
+                }
+            } else {
+                //console.log('positionChildren 8');
+            }
+            h += child.layout.height;
+        }
+    }
+    layoutUp() {
+        var i:string;
+        var h=0;
+        for (i in this.listItems.obj) {
+            h += this.listItems.obj[i].layout.height;
+        }
+        this.layout.height = h;
     }
 
     collapseList() {
         this.hideList = true;
         this.removeListItems();
+        this.resizeUp();
     }
 
     expandList() {
         this.hideList = false;
         this.createListItems();
         this.insertListItems();
+        this.resizeUp();
     }
-    insertAfter(prevNode:NodeView, node, replaceElem?:HTMLElement) {
+
+    insertAfter(prevNode:NodeView, node) {
         var previd:string;
         assert(node !== null, "No panel given to insert");
         assert(this.listItems.next[node.id] === undefined, "node is already in view-list");
@@ -45,28 +97,13 @@ class ListView extends View {
         this.listItems.insertAfter(node.id, node, previd);
         if (this.elem) { // render panels if the list is currently rendered
             var nextNode = this.listItems.next[node.id];
-            if (!node.elem) {node.render();}
-            if (replaceElem) {
-                assert(replaceElem.parentNode === this.elem,
-                    "replaceElem does not have the right parent list");
-            }
+            if (!node.elem) {node.render();} else {node.setPosition();}
             if (nextNode === '') {
-                if (replaceElem) {
-                    assert(replaceElem.nextSibling==null,
-                        "replaceElem is not at the right spot");
-                    replaceElem.parentNode.replaceChild(node.elem, replaceElem);
-                } else {
                     this.elem.appendChild(node.elem);
-                }
             } else {
-                if (replaceElem) {
-                    assert(replaceElem.nextSibling==this.listItems.obj[nextNode].elem,
-                        "replaceElem is not at the right spot");
-                    replaceElem.parentNode.replaceChild(node.elem, replaceElem);
-                } else {
                     this.elem.insertBefore(node.elem, this.listItems.obj[nextNode].elem);
-                }
             }
+            node.resizeUp();
         }
         // fix up the classes
         var isFirst = (this.listItems.prev[node.id]==='');
@@ -111,6 +148,7 @@ class ListView extends View {
             node.elem.parentNode.removeChild(node.elem);
         }
         if (!opts || !opts.destroyList) { // don't fix theme if we're going to destroy whole list
+            this.resizeUp();
             if ((previd==='')&&(nextid!=='')) {
                 this.listItems.obj[nextid].themeFirst(true);
             } else if ((nextid==='')&&(previd!=='')) {

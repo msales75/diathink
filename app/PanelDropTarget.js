@@ -12,68 +12,66 @@ var PanelDropTarget = (function (_super) {
     function PanelDropTarget(opts) {
         _super.call(this, opts);
         this.usePlaceholder = false;
-        this.placeholderElem = null;
         this.useFadeOut = opts.useFadeOut;
         this.activeID = opts.activeID;
         this.panelID = opts.panelID;
         this.prevPanel = opts.prevPanel;
         this.usePlaceholder = opts.usePlaceholder;
     }
-    PanelDropTarget.prototype.getPlaceholder = function () {
-        return this.placeholderElem;
-    };
+    //getPlaceholder() {
+    //    return this.nextLeft;
+    //}
     PanelDropTarget.prototype.createUniquePlaceholder = function () {
         if (this.useFadeOut) {
-            var fadeScreen = $("<div></div>");
-            var panel = View.get(this.panelID);
-            var elem = panel.outline.alist.elem;
-            var offset = $(elem).offset();
-            var height = elem.clientHeight;
-            fadeScreen.addClass('ui-corner-all');
-            fadeScreen.css({
+            var layout = View.get(this.panelID).outline.alist.layout;
+            var fadeScreen = $('<div></div>').css({
                 position: 'absolute',
                 opacity: 0,
                 'z-index': 1,
-                width: panel.parentView.itemWidth + 'px',
-                height: height,
-                top: offset.top,
-                left: offset.left,
-                'background-color': '#CCC'
-            }).appendTo(View.currentPage.content.gridwrapper.grid.elem);
+                width: layout.width + 'px',
+                height: layout.height + 'px',
+                top: layout.top + 'px',
+                left: layout.left + 'px',
+                'background-color': '#FFF'
+            }).addClass('ui-corner-all').appendTo(View.currentPage.content.gridwrapper.grid.elem);
             this.fadeScreen = fadeScreen[0];
         }
 
         if (this.usePlaceholder) {
             var grid = View.currentPage.content.gridwrapper.grid;
-            var el = $("<div></div>").css({
-                width: '0px',
-                height: '100%'
-            });
-            this.placeholderElem = el[0];
+
+            //var el = $("<div></div>").css({
+            //    width: '0px',
+            //    height: grid.layout.height
+            //});
+            //this.placeholderElem = el[0];
             if (this.prevPanel) {
                 if (grid.listItems.next[this.prevPanel] === '') {
-                    grid.elem.appendChild(this.placeholderElem);
+                    this.nextView = null;
+                    this.nextLeft = null;
+                    // grid.elem.appendChild(this.placeholderElem);
                 } else {
-                    grid.elem.insertBefore(this.placeholderElem, View.get(grid.listItems.next[this.prevPanel]).elem);
+                    this.nextView = View.get(grid.listItems.next[this.prevPanel]);
+
+                    // grid.elem.insertBefore(this.placeholderElem, this.nextView.elem);
+                    this.nextLeft = this.nextView.layout.left;
                 }
             } else {
-                grid.elem.insertBefore(this.placeholderElem, View.get(grid.listItems.first()).elem);
+                this.nextView = View.get(grid.listItems.first());
+                this.nextLeft = this.nextView.layout.left;
+                // grid.elem.insertBefore(this.placeholderElem, this.nextView.elem);
             }
         }
     };
     PanelDropTarget.prototype.setupPlaceholderAnim = function () {
-        // freeze width of all panel elements
+        var grid = View.currentPage.content.gridwrapper.grid;
         if (this.usePlaceholder) {
-            var p;
-            for (p in PanelView.panelsById) {
-                // PanelView.panelsById[p].freezeWidth();
-            }
             this.slideDirection = 'right';
-            if (this.prevPanel === View.currentPage.content.gridwrapper.grid.listItems.last()) {
+            if (this.prevPanel === grid.listItems.last()) {
                 this.slideDirection = 'left';
             }
-            this.maxWidth = View.currentPage.content.gridwrapper.grid.itemWidth;
-            this.containerWidth = View.currentPage.content.gridwrapper.grid.numCols * this.maxWidth;
+            this.maxWidth = grid.itemWidth;
+            this.containerWidth = grid.numCols * this.maxWidth;
         }
     };
     PanelDropTarget.prototype.placeholderAnimStep = function (frac) {
@@ -83,15 +81,23 @@ var PanelDropTarget = (function (_super) {
             });
         }
         if (this.usePlaceholder) {
+            var grid = View.currentPage.content.gridwrapper.grid;
             var w = Math.round(frac * this.maxWidth);
-            $(this.placeholderElem).css('width', String(w) + 'px');
+
+            // $(this.placeholderElem).css('width',String(w)+'px');
             if (this.slideDirection === 'left') {
-                $(this.placeholderElem.parentNode).css({
-                    width: String(this.containerWidth + w) + 'px',
-                    'margin-left': '-' + w + 'px'
-                });
+                grid.layout.width = this.containerWidth + w;
+                grid.layout.left = -w;
             } else {
-                $(this.placeholderElem.parentNode).css('width', String(this.containerWidth + w) + 'px');
+                grid.layout.width = this.containerWidth + w;
+            }
+            grid.setPosition();
+
+            // adjust 'left' of panels to the right of insertion
+            if (this.nextView != null) {
+                this.nextView.layout.left = this.nextLeft + Math.round(this.maxWidth * frac);
+                $(this.nextView.elem).css('left', this.nextView.layout.left + 'px');
+                grid.positionChildren(this.nextView);
             }
         }
     };
@@ -126,7 +132,7 @@ var PanelDropTarget = (function (_super) {
             'z-index': 1,
             left: bpos.left,
             top: bpos.top,
-            width: (oldBreadcrumbs.elem.parentNode.clientWidth) + 'px'
+            width: (oldBreadcrumbs.parentView.layout.width) + 'px'
         }).insertAfter(oldBreadcrumbs.elem);
         panel.value = oldValue;
 
@@ -166,16 +172,20 @@ var PanelDropTarget = (function (_super) {
     PanelDropTarget.prototype.fadeAnimStep = function (frac) {
     };
     PanelDropTarget.prototype.cleanup = function () {
+        var grid = View.currentPage.content.gridwrapper.grid;
         if (this.useFadeOut) {
             this.fadeScreen.parentNode.removeChild(this.fadeScreen);
         }
         if (this.usePlaceholder) {
             // normalize grid
-            $(View.currentPage.content.gridwrapper.grid.elem).css({ width: '', 'margin-left': '' });
-            if (this.placeholderElem.parentNode) {
-                this.placeholderElem.parentNode.removeChild(this.placeholderElem);
-            }
-            this.placeholderElem = null;
+            $(View.currentPage.content.gridwrapper.grid.elem).css({
+                left: 0,
+                width: String(grid.itemWidth * grid.numCols) + 'px'
+            });
+            //if (this.placeholderElem.parentNode) {
+            //this.placeholderElem.parentNode.removeChild(this.placeholderElem);
+            //}
+            //this.placeholderElem = null;
         }
         if (this.dockView) {
             $(document.body).removeClass('transition-mode');

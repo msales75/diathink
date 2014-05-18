@@ -33,14 +33,14 @@ var NodeLinkView = (function (_super) {
         return this.elem;
     };
     NodeLinkView.prototype.setOffset = function (offset) {
-        this.top = offset.top;
-        this.left = offset.left;
-        if (this.parentView.textOffset.left === undefined) {
-            this.parentView.resize();
+        if (!this.layout) {
+            this.layout = {};
         }
+        this.layout.top = offset.top + Math.round(.15 * View.fontSize);
+        this.layout.left = offset.left + Math.round(.18 * View.fontSize);
         $(this.elem).css({
-            top: String(this.top + this.parentView.textOffset.top) + 'px',
-            left: String(this.left + this.parentView.textOffset.left) + 'px'
+            top: String(this.layout.top) + 'px',
+            left: String(this.layout.left) + 'px'
         });
     };
     NodeLinkView.prototype.onClick = function () {

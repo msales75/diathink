@@ -164,10 +164,19 @@ class PanelCreateAction extends AnimatedAction {
             var o:ActionOptions = that.options;
             var dir;
             if (o.undo) {
-                dir = View.get(that.newPanel).destroy();
+                grid.slideFill('left'); // appends incoming panel from the right
+                // give insertion location to dropSource for animation
+                if (that.dropSource) {
+                    var nextLeft:number=null;
+                    var nextView = <PanelView>View.get(View.currentPage.content.gridwrapper.grid.listItems.next[that.newPanel]);
+                    if (nextView!=null) {
+                        nextLeft = nextView.layout.left;
+                    }
+                    (<PanelDropSource>that.dropSource).nextView = nextView;
+                    (<PanelDropSource>that.dropSource).nextLeft = nextLeft;
+                }
+                dir = View.get(that.newPanel).destroy(); // removes panel, without changing positions
                 grid.value.remove(that.newPanel);
-                grid.slideFill('left');
-                // do we need to slide the list here?
             } else {
                 if (!that.newPanel) { // if id isn't chosen yet
                     that.newPanel = View.getNextId();
@@ -189,10 +198,12 @@ class PanelCreateAction extends AnimatedAction {
                 if (node) {
                     node.removeClass('drag-hidden');
                 }
+                // if the inserted node is right after the previous panel
 
                 // View.get(that.newPanel).removeClass('drag-hidden');
-                dir = grid.insertAfter(<PanelView>View.get(that.options.prevPanel), <PanelView>View.get(that.newPanel),
-                    that.dropTarget.getPlaceholder(null));
+                dir = grid.insertAfter(<PanelView>View.get(that.options.prevPanel), <PanelView>View.get(that.newPanel),0);
+                grid.clip(dir); // remove extra panels
+                grid.updatePanelButtons();
                 // we only wanted newPanel for the PanelManager id, not the ViewManager.
             }
             // move this to grid.renderUpdate(); ??
@@ -204,7 +215,7 @@ class PanelCreateAction extends AnimatedAction {
                 that.options.dockView.destroy();
                 that.options.dockView = undefined;
             }
-            $(window).resize(); // fix height of new panel, spacer; a bit hacky
+            // $(window).resize(); // fix height of new panel, spacer; a bit hacky
         });
     }
 }

@@ -13,6 +13,12 @@ var HiddenDivView = (function (_super) {
         _super.apply(this, arguments);
         this.cssClass = 'hiddendiv';
     }
+    HiddenDivView.prototype.layoutDown = function () {
+        this.layout = {
+            top: 10,
+            left: 10
+        };
+    };
     return HiddenDivView;
 })(ContainerView);
 //# sourceMappingURL=HiddenDivView.js.map

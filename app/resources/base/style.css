@@ -1,4 +1,10 @@
 
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Open Sans'), local('OpenSans'), url(http://themes.googleusercontent.com/static/fonts/opensans/v8/cJZKeOuBrn4kERxqtaUH3T8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
+}
 
 body, div, span, a, img, h1, h2, h3, h4, h5, ul, li {
  -webkit-touch-callout: none;
@@ -8,6 +14,11 @@ body, div, span, a, img, h1, h2, h3, h4, h5, ul, li {
  -ms-user-select: none;
  user-select: none;
 }
+body, div, span, a, img, h1, h2, h3, h4, h5, ul, li {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
 
 html, body { overflow: hidden; height: 100% }
 body { margin:0; padding:0; }
@@ -15,8 +26,50 @@ body {
     font-size: 16px;
 }
 
+.ui-body-c, .ui-body-c input, .ui-body-c select, .ui-body-c textarea, .ui-body-c button {
+    font-family: 'Open Sans';
+}
 .ui-mobile .ui-page-active {
     overflow: hidden;
+}
+
+
+.ui-mobile-viewport{
+    margin:0;
+    overflow-x:visible;
+    -webkit-text-size-adjust:100%;
+    -ms-text-size-adjust:none;
+    -webkit-tap-highlight-color:rgba(0,0,0,0)
+}
+
+body.ui-mobile-viewport,div.ui-mobile-viewport{
+    overflow-x:hidden
+}
+
+.ui-mobile [data-role=page],.ui-mobile [data-role=dialog],.ui-page{
+    top:0;
+    left:0;
+    width:100%;
+    min-height:100%;
+    position:absolute;
+    display:none;
+    border:0
+}
+
+.ui-mobile .ui-page-active{
+    display:block;
+    overflow:visible
+}
+.ui-page{outline:none}
+@media screen and (orientation:portrait){
+    .ui-mobile,.ui-mobile .ui-page{
+        min-height:420px
+    }
+}
+@media screen and (orientation:landscape){
+    .ui-mobile,.ui-mobile .ui-page{
+        min-height:300px
+    }
 }
 
 ul.ui-listview {
@@ -30,21 +83,22 @@ ul.ui-listview {
 /* Image-handle for drag/drop */
 li.ui-li > div > .drag-handle {
     position: absolute;
+    /*
     top: 0.09em;
     left: 0.09em;
-    height: 1.3em; /* 24px */
-    width: 1.3em;
+    height: 1.3em;
+    width: 1.3em; */
     background-color: transparent;
-    opacity: 0.1;
+    opacity: 0.08;
     cursor: pointer;
-    border: solid 1px black;
-    border-radius: 0.675em; /* Used to be 0.675em */
+    border: none;
+    /* border-radius: 0.675em; */ /* Used to be 0.675em */
     margin: 0px;
 }
 
-li.ui-li.ui-focus > div > .drag-handle,
-li.ui-li.ui-btn-hover-c > div > .drag-handle {
-    opacity: 0.45;
+/* li.ui-li.ui-btn-hover-c > div > .drag-handle, */
+li.ui-li.ui-focus > div > .drag-handle {
+    opacity: 0.2;
 }
 
 .drop-mode .drag-handle {
@@ -56,7 +110,7 @@ li.ui-li.ui-btn-hover-c > div > .drag-handle {
 
 /* Handle transformation when open or closed */
 li.collapsed.branch > div > .disclose {
-    background-color: #CCC; /* Used to be 888 */
+    /* background-color: #CCC; *//* Used to be 888 */
 }
 
 li.collapsed > ul {
@@ -80,25 +134,30 @@ li.collapsed > ul {
 }
 
 ul.ui-listview > li.ui-li {
+    /*
     position: relative;
+    */
     border: none;
 }
 /* around list-element */
 .ui-btn-up-c, .ui-btn-up-c:hover, .ui-btn-hover-c, .ui-btn-hover-c:hover {
     border: none;
-    text-shadow: 1px 1px 0 #ccc;
+    text-shadow: none;
     background-image: none;
 }
 
 li.ui-li > div.ui-li.ui-btn-inner {
     border: none;
 }
-
+li {
+    list-style-type: none;
+}
 /* Style draggable helper in drop-mode */
 .drop-mode li.ui-li.ui-sortable-helper {
     opacity: 0.9;
     border: solid 1px #CCC; /* Used to be 888 */
     border-radius: 0.25em; /* Used to be 0.675em */
+
 }
 
 /* Remove extra padding around ui-link-inherit */
@@ -107,7 +166,7 @@ li.ui-li > div.ui-li.ui-btn-inner {
     padding: 0 0 0 0.8em;
 } */
 .ui-li .ui-btn-inner {
-    padding: 0 0 0 0.8em;
+    /* padding: 0 0 0 0.8em; */
 }
 
 /* Remove shadows from many ui-shadow elements */
@@ -120,9 +179,30 @@ li.ui-li > div.ui-li.ui-btn-inner {
 /* Set page background */
 .ui-page,  .ui-body-c {
     background-image: none;
-    background-color: #CCC; /* Used to be 888 */
+    background-color: #FFF; /* Used to be 888 */
 }
 
+.panel {
+    /*
+    position: relative;
+    margin: 10px 0;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    */
+    border: none;
+}
+.panel-border {
+    position: absolute;
+    left: 0;
+    z-index: 10;
+    top: 3%;
+    height: 94%;
+    width: 1px;
+    margin: 0;
+    padding: 0;
+    background-color: #CCC;
+}
 /* Remove border around body and text-area*/
 .ui-body-c {
     border: none;
@@ -143,7 +223,7 @@ li.ui-li > div.ui-li.ui-btn-inner {
     background-image: none;
     font-weight: bold;
     color: #333;
-    text-shadow: 1px 1px 0 #ccc;
+    text-shadow: none;
 }
 
 /* drop-layer fills the page when active */
@@ -178,12 +258,24 @@ li.ui-li > div.ui-li.ui-btn-inner {
 
 .drop-mode .droplayer > .droparrow {
     position: absolute;
+/*    border:  dashed #BBB 1px;
+    border-radius: 0.74em;
+    */
+    /*
     background-repeat: no-repeat;
     background-position: center;
     background-image: url(images/indent-arrow.png);
-    opacity: 0.3;
+    */
+    opacity: 0.4;
     height: 1.48em;
     width: 1.48em;
+}
+.drop-mode .droplayer > .droparrow > img,
+.drop-mode .droplayer > .droplink > img {
+    opacity: 0.3;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 .drop-mode .droplayer > .droparrow.active {
@@ -192,11 +284,15 @@ li.ui-li > div.ui-li.ui-btn-inner {
 
 .drop-mode .droplayer > .droplink {
     position: absolute;
+    /*
     border:  dashed #BBB 1px;
     border-radius: 0.74em;
+    */
+    /*
     background-repeat: no-repeat;
     background-position: center;
     background-image: url(images/indent-arrow.png);
+    */
     opacity: 0.3;
     height: 1.48em;
     width: 1.48em;
@@ -213,10 +309,10 @@ li.ui-li > div.ui-li.ui-btn-inner {
 */
 .ui-scrollview-clip {
     overflow: hidden;
-    height: 100%;
+    /* height: 100%; */
 }
 .ui-scrollview-clip > .ui-scrollview-view {
-    padding-bottom: 2px;
+    /* padding-bottom: 2px; */
 }
 
 .drop-mode .drag-hover.ui-scrollview-clip, .drop-mode .drag-hover.ui-scrollview-view {
@@ -225,28 +321,57 @@ li.ui-li > div.ui-li.ui-btn-inner {
 }
 
 .ui-header {
+/*    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; */
     background-color: #FFF;
-    /* Used to be #EEE */
     background-image: none;
-    height: 42px;
+    /* height: 42px; */
+
 }
 
 
 .undo-container, .zoom-container {
+    /*
     width: 100px;
     height: 36px;
+    */
+}
+.button {
+    /*float: left;
+    width: 36px;
+    height: 36px;
+    padding: 0 4px; */
+    opacity: 0.3;
+    cursor: pointer;
+}
+.button:hover {
+    opacity: 0.4;
+}
+.button.disabled {
+    opacity: 0.1;
+}
+.button > img {
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 .undo-container > a.undo-button, .undo-container > a.redo-button,
 .zoom-container > a {
-    float: left;
-    padding: 2px;
-    margin: 3px;
+/*
+float: left;
+padding: 2px;
+margin: 3px;
+ */
 }
 
 .ui-header span.ui-btn-inner {
-    display: block;
-    background-repeat: no-repeat;
-    background-position: center;
+display: block;
+background-repeat: no-repeat;
+background-position: center;
 }
 
 /* Undo-button particulars */
@@ -284,22 +409,22 @@ a:active, a:focus {
 
 /* Margins around page */
 .horizontal-grid-container {
-    margin: 0px 0px;
-    width: 90%;
-    float: left;
+    margin: 0;
+    /* width: 90%;
+    float: left; */
     overflow: hidden;
 }
 .horizontal-grid > div {
-    float: left;
+    /* float: left; */
 }
 
 .ui-grid-a > div, .ui-grid-a > div > div {
-    height: 100%;
+    /* height: 100%; */
 }
 .ui-grid-a > div > div {
-    width: 94%;
-    position: relative;
-    left: 3%;
+    /* position: relative; */
+    /* width: 94%; */
+    /* left: 3%; */
 }
 
 li.ui-li.ui-focus, li.ui-li.ui-focus:hover {
@@ -358,13 +483,14 @@ li.ui-li-static.ui-li {
 
 li.ui-li > ul.ui-listview {
     padding: 0;
-    margin: 0 0 0 0.8em;
+    margin: 0;
+    /* margin: 0 0 0 0.8em; */
 }
 
 li.ui-li .outline-header > div.outline-content_container {
-    padding: 1px 2px 1px 1.65em;
+    /* padding: 1px 2px 1px 1.65em; */
     margin: 0;
-    height: 1.55em;
+    /* height: 1.55em; */
 /*    -webkit-transition: height 80ms linear;
     -moz-transition: height 80ms linear;
     -o-transition: height 80ms linear;
@@ -384,13 +510,16 @@ li.ui-li .outline-header > div > textarea.outline-content.ui-input-text {
     line-height: 1.25em; /* 22px; */
     border-radius: 0.25em; /* 8px; */ /* Used to be 0.675em */
     outline: none;
-    text-shadow: 1px 1px 0 #ccc;
+    text-shadow: none;
     background-color: transparent;
     background-image: none;
     overflow: hidden;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
     border: none;
-    width: 100%;
-    height: 100%;
+    /* width: 100%;
+    height: 100%; */
     -moz-transition: none;
     -webkit-transition: none;
     -o-transition: height 0 ease-in;
@@ -409,8 +538,8 @@ div.hiddendiv {
     font-size: 1em; /* 18px; */
     line-height: 1.25em; /* 22px; */
     font-weight: normal;
-    left: 10px;
-    top: 10px;
+   /* left: 10px;
+    top: 10px; */
     z-index: -1500;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -448,12 +577,12 @@ div.hiddeninput {
 .ui-body-c .panel-name {
     color: #222;
     font-weight: bold;
-    text-shadow: 1px 1px 0 #AAA;
+    text-shadow: none;
 }
 .ui-body-c .ui-link {
     color: #DDD;
     font-weight: bold;
-    text-shadow: 1px 1px 0 #333;
+    text-shadow: none;
 }
 .ui-body-c .ui-link:hover {
     /* Used to be #EEE */
@@ -540,20 +669,20 @@ li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
 }
 
 .grid-wrapper > .left-button {
-    float: left;
+    /* float: left; */
     text-align: center;
     display: block;
-    margin-top: 1.5em;
-    width: 5%;
+    /* margin-top: 1.5em; */
+    /* width: 5%; */
     font-size: 2.5em;
     cursor: pointer;
 }
 .grid-wrapper > .right-button {
-    float: right;
+/*    float: right; */
     text-align: center;
     display: block;
-    margin-top: 1.5em;
-    width: 5%;
+/*    margin-top: 1.5em; */
+/*    width: 5%; */
     font-size: 2.5em;
     cursor: pointer;
 }
@@ -571,7 +700,7 @@ li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
 .link-list > .node-link {
     position: absolute;
     color: #AAA;
-    text-decoration: underline;
+    text-decoration: none;
     font-size: 1em; /* 18px; */
     line-height: 1.25em; /* 22px; */
     font-weight: normal;

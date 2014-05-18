@@ -17,6 +17,7 @@ var SpanView = (function (_super) {
             classes: this.cssClass,
             html: (this.value ? this.value : '')
         });
+        this.setPosition();
         return this.elem;
     };
     return SpanView;

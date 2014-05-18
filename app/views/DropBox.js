@@ -46,13 +46,13 @@ var DropBox = (function () {
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
         var panelParent = (View.getCurrentPage()).content.gridwrapper.grid;
         var canvas0 = View.getCurrentPage().drawlayer;
-        canvas0.cacheOffset = $(canvas0.elem).offset();
+        canvas0.cacheOffset = canvas0.getOffset();
 
         var m;
         var panels = panelParent.listItems;
         for (m = panels.first(); m !== ''; m = panels.next[m]) {
             var canvas1 = panels.obj[m].outline.droplayer;
-            canvas1.cacheOffset = $(canvas1.elem).offset();
+            canvas1.cacheOffset = canvas1.getOffset();
         }
 
         var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
@@ -135,8 +135,8 @@ var DropBox = (function () {
         for (pid = panels.first(); pid !== ''; pid = panels.next[pid]) {
             var panel = View.get(pid);
             var canvas = $('#' + View.getCurrentPage().drawlayer.id);
-            var ctop = canvas.offset().top;
-            var cleft = canvas.offset().left;
+            var ctop = View.currentPage.drawlayer.getOffset().top;
+            var cleft = View.currentPage.drawlayer.getOffset().left;
             if (!panel.dropboxes) {
                 console.log("ERROR: Item " + i + " does not have dropboxes?");
                 continue;
@@ -157,8 +157,8 @@ var DropBox = (function () {
             }
             var view = node.panelView.outline;
             var canvas = $('#' + view.droplayer.id);
-            var ctop = canvas.offset().top;
-            var cleft = canvas.offset().left;
+            var ctop = view.droplayer.getOffset().top;
+            var cleft = view.droplayer.getOffset().left;
             if (!node.dropboxes) {
                 console.log("ERROR: Item " + i + " does not have dropboxes?");
                 continue;
@@ -183,6 +183,9 @@ var DropBox = (function () {
             return;
         }
         this.elem = $('<div></div>').addClass(this.box.class).css('top', this.box.top + 'px').css('left', this.box.left + 'px').css('height', this.box.height + 'px').css('width', this.box.width + 'px').get(0);
+        if (this.box.image) {
+            this.elem.innerHTML = '<img src="' + this.box.image + '" alt="' + this.box.image + '"/>';
+        }
         $(this.elem).appendTo(this.canvas.elem);
     };
 
@@ -342,7 +345,8 @@ var DropBoxHandle = (function (_super) {
         this.box = {
             top: node.position.top - this.canvas.cacheOffset.top - 1,
             left: node.position.left - this.canvas.cacheOffset.left - 1,
-            class: 'droparrow'
+            class: 'droparrow',
+            image: 'theme/images/into.png'
         };
         this.hover = {
             top: node.position.top,
@@ -382,7 +386,8 @@ var DropBoxLink = (function (_super) {
             left: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left - $D.lineHeight - 1,
             width: $D.lineHeight,
             height: $D.lineHeight,
-            class: 'droplink'
+            class: 'droplink',
+            image: 'theme/images/plus.png'
         };
         this.hover = {
             top: node.position.top - this.canvas.cacheOffset.top - 1,

@@ -42,6 +42,7 @@ var PanelView = (function (_super) {
     __extends(PanelView, _super);
     function PanelView() {
         _super.apply(this, arguments);
+        this.cssClass = 'panel';
         this.animating = false;
     }
     PanelView.prototype.init = function () {
@@ -58,6 +59,23 @@ var PanelView = (function (_super) {
             this.parentPanel.childPanel = this;
         }
     };
+    PanelView.prototype.layoutDown = function () {
+        var p = this.parentView.parentView.layout;
+        var w = Math.floor(Math.floor(p.width) / this.parentView.numCols);
+        this.layout = {
+            top: 0,
+            width: w,
+            height: p.height
+        };
+    };
+    PanelView.prototype.positionChildren = function (v) {
+        if (!v || (v === this.breadcrumbs)) {
+            var l = this.outline.saveLayout();
+            this.outline.layoutDown();
+            this.outline.updateDiffs(l);
+        }
+    };
+
     PanelView.prototype.render = function () {
         var subpanel = '';
         if (this.parentPanel != null) {
@@ -66,23 +84,24 @@ var PanelView = (function (_super) {
         this._create({
             type: 'div',
             classes: this.cssClass,
-            html: '<div class="inner-panel"></div>' + subpanel
+            html: '<div class="panel-border"></div>' + subpanel
         });
         this.renderChildViews();
+        this.positionChildren(null);
+        this.setPosition();
         for (var name in this.childViewTypes) {
-            this.elem.children[0].appendChild((this[name]).elem);
+            this.elem.appendChild((this[name]).elem);
         }
         return this.elem;
     };
 
     PanelView.prototype.cachePosition = function () {
         // todo: cache top/left/height/width
-        var el = $(this.elem);
-        var offset = el.offset();
+        var offset = this.getOffset();
         this.top = offset.top;
         this.left = offset.left;
-        this.height = this.elem.clientHeight;
-        this.width = this.elem.clientWidth;
+        this.height = this.layout.height;
+        this.width = this.layout.width;
     };
 
     PanelView.prototype.destroy = function () {
@@ -116,7 +135,7 @@ var PanelView = (function (_super) {
         this.cachePosition();
         NodeView.refreshPositions();
 
-        $(window).resize(); // fix height of new panel, spacer; a bit hacky
+        // $(window).resize(); // fix height of new panel, spacer; a bit hacky
         return newlist.id;
     };
     PanelView.prototype.validate = function () {

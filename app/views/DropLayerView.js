@@ -13,6 +13,15 @@ var DropLayerView = (function (_super) {
         this.cacheOffset = null;
         this.cssClass = 'droplayer';
     }
+    DropLayerView.prototype.layoutDown = function () {
+        var p = this.parentView.layout;
+        this.layout = {
+            top: 0,
+            left: 0,
+            width: p.width,
+            height: p.height
+        };
+    };
     return DropLayerView;
 })(ContainerView);
 //# sourceMappingURL=DropLayerView.js.map

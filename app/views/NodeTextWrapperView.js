@@ -23,6 +23,23 @@ var NodeTextWrapperView = (function (_super) {
     NodeTextWrapperView.prototype.updateValue = function () {
         this.value = this.nodeView.value.attributes.links;
     };
+    NodeTextWrapperView.prototype.layoutDown = function () {
+        if (!this.layout) {
+            this.layout = {};
+        }
+        var w = Math.round(1.4 * View.fontSize);
+        this.layout.top = 0;
+        this.layout.left = w;
+        this.layout.width = this.parentView.layout.width - w;
+    };
+    NodeTextWrapperView.prototype.positionChildren = function (v) {
+        var l = this.text.saveLayout();
+        this.text.fixHeight();
+        this.text.updateDiffs(l);
+    };
+    NodeTextWrapperView.prototype.layoutUp = function () {
+        this.layout.height = this.text.layout.height;
+    };
     NodeTextWrapperView.prototype.render = function () {
         this._create({
             type: 'div',
@@ -32,19 +49,24 @@ var NodeTextWrapperView = (function (_super) {
         for (var name in this.childViewTypes) {
             this.elem.appendChild((this[name]).elem);
         }
-        this.insertListItems();
+        if (this.listItems && this.listItems.count) {
+            this.insertListItems();
+        } else {
+            this.positionChildren(null); // need to fix height, even if there's no child-links
+        }
+        this.setPosition();
         return this.elem;
     };
     NodeTextWrapperView.prototype.redrawLinks = function () {
         this.removeListItems();
         this.createListItems();
         this.insertListItems();
-        this.text.fixHeight();
+        this.text.resizeUp();
     };
-    NodeTextWrapperView.prototype.resize = function () {
+    NodeTextWrapperView.prototype.updateTextOffset = function () {
         this.textOffset = {
-            top: Number($(this.elem).css('padding-top').replace(/px/, '')) + Number($(this.text.elem).css('padding-top').replace(/px/, '')),
-            left: Number($(this.elem).css('padding-left').replace(/px/, '')) + Number($(this.text.elem).css('padding-left').replace(/px/, ''))
+            left: Math.round(.18 * View.fontSize),
+            top: Math.round(.15 * View.fontSize)
         };
     };
     NodeTextWrapperView.prototype.validate = function () {

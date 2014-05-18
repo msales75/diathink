@@ -169,6 +169,9 @@ var AddLinkAction = (function (_super) {
                     assert(linkid != null, "Could not found link to remove");
                     refLineView.header.name.listItems.remove(linkid);
                     View.get(linkid).destroy();
+
+                    // refLineView.header.name.text.fixHeight();
+                    refLineView.header.name.text.resizeUp();
                 } else {
                     var linkview = new NodeLinkView({
                         parentView: refLineView.header.name,
@@ -179,7 +182,9 @@ var AddLinkAction = (function (_super) {
                     linkview.render();
                     refLineView.header.name.listItems.append(linkview.id, linkview);
                     refLineView.header.name.elem.appendChild(linkview.elem);
-                    refLineView.header.name.text.fixHeight();
+
+                    // refLineView.header.name.text.fixHeight();
+                    refLineView.header.name.text.resizeUp();
                 }
             }
 

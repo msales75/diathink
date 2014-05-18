@@ -32,6 +32,14 @@ var RightSwipeButtonView = (function (_super) {
             };
         });
     };
+    RightSwipeButtonView.prototype.layoutDown = function () {
+        var p = this.parentView.layout;
+        this.layout = {
+            top: 1.5 * View.fontSize,
+            left: p.width - Math.round(.05 * p.width),
+            width: Math.round(.05 * p.width)
+        };
+    };
     return RightSwipeButtonView;
 })(SpanView);
 //# sourceMappingURL=RightSwipeButtonView.js.map

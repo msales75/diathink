@@ -26,7 +26,7 @@ class NodeView extends View {
                 width: $(header.elem).outerWidth(),
                 height: $(header.elem).outerHeight()
             };
-            var p = $(header.elem).offset();
+            var p = header.getOffset();
             item.position = {
                 left: p.left,
                 top: p.top
@@ -77,6 +77,8 @@ class NodeView extends View {
 
         // todo: make list-children rendering contingent on collapsed-value
         this.renderChildViews();
+        this.positionChildren(null);
+        this.setPosition();
         for (var name in this.childViewTypes) {
             this.elem.appendChild((<View>(this[name])).elem);
         }
@@ -97,12 +99,31 @@ class NodeView extends View {
                     addClass('expanded').removeClass('collapsed');
             }
         }
+        this.header.handle.renderUpdate();
 
+        /*
         if (this.header.name.text.value.length > 3) {
             this.header.name.text.fixHeight();
         }
+        */
+        this.layoutUp(); // don't call setPosition for nodes, they are set by list-parent
 
         return this.elem;
+    }
+    layoutDown() {
+        if (!this.layout) {this.layout = {};}
+        this.layout.width = this.parentView.layout.width;
+        this.layout.left = 0;
+    }
+    layoutUp() {
+        this.layout.height = this.header.layout.height + this.children.layout.height;
+    }
+    positionChildren(v:View) {
+        if (!v || (v===this.header)) {
+            var l:Layout = this.children.saveLayout();
+            this.children.layoutDown();
+            this.children.updateDiffs(l);
+        }
     }
 
     setCollapsed(collapsed:boolean) {
@@ -116,14 +137,11 @@ class NodeView extends View {
             this.addClass('expanded').removeClass('collapsed');
             if (! this.isLeaf) {
                 this.children.expandList();
-                // todo: fix this hack
-                $(window).resize();
             }
         }
+        this.header.handle.renderUpdate();
     }
 
-
-    // todo: manual list-checking shouldn't be necessary for first/last
     themeFirst(first) {
         if (first === this.isFirst) {return;}
         this.isFirst = first;
@@ -151,6 +169,7 @@ class NodeView extends View {
         } else {
             this.addClass('branch').removeClass('leaf');
         }
+        this.header.handle.renderUpdate();
     }
     validate() {
         super.validate();

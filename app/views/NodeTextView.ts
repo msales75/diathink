@@ -8,6 +8,5 @@ class NodeTextView extends TextAreaView {
         this.value = this.nodeView.value.get('text');
     }
     cssClass = 'outline-content ui-input-text ui-body-c ui-corner-all ui-shadow-inset';
-    hasMultipleLines = true;
 }
 

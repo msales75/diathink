@@ -10,13 +10,34 @@ var HandleImageView = (function (_super) {
     __extends(HandleImageView, _super);
     function HandleImageView() {
         _super.apply(this, arguments);
-        this.value = 'theme/images/drag_icon.png';
+        this.value = 'theme/images/circle.png';
         this.cssClass = 'drag-handle disclose ui-disable-scroll';
     }
     HandleImageView.prototype.init = function () {
         this.isClickable = true;
     };
 
+    HandleImageView.prototype.renderUpdate = function () {
+        var node = this.nodeView;
+        if (node.isLeaf) {
+            this.value = 'theme/images/circle.png';
+        } else {
+            if (node.isCollapsed) {
+                this.value = 'theme/images/plus.png';
+            } else {
+                this.value = 'theme/images/minus.png';
+            }
+        }
+        _super.prototype.renderUpdate.call(this);
+    };
+    HandleImageView.prototype.layoutDown = function () {
+        this.layout = {
+            top: Math.round(.18 * View.fontSize),
+            left: Math.round(.15 * View.fontSize),
+            width: Math.round(1.2 * View.fontSize),
+            height: Math.round(1.2 * View.fontSize)
+        };
+    };
     HandleImageView.prototype.onClick = function () {
         var li = this.nodeView;
         var liElem = $(li.elem);

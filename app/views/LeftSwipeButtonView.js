@@ -33,6 +33,14 @@ var LeftSwipeButtonView = (function (_super) {
             };
         });
     };
+    LeftSwipeButtonView.prototype.layoutDown = function () {
+        var p = this.parentView.layout;
+        this.layout = {
+            top: 1.5 * View.fontSize,
+            left: 0,
+            width: Math.round(.05 * p.width)
+        };
+    };
     return LeftSwipeButtonView;
 })(SpanView);
 //# sourceMappingURL=LeftSwipeButtonView.js.map

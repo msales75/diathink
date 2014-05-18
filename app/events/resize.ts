@@ -30,6 +30,8 @@ $(window).resize(function() {
     // get scroll-container
     var page = View.getCurrentPage();
     if (!page) {return;}
+    page.resize();
+    /*
     var scrollContainer = $('#'+page.content.gridwrapper.grid.id);
     if (scrollContainer.length===0) {return;}
     var panels = page.content.gridwrapper.grid.listItems;
@@ -71,6 +73,7 @@ $(window).resize(function() {
             });
         })();
    // }
+     */
 
     $D.lastHeight = newHeight;
     $D.lastWidth = newWidth;

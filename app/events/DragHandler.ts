@@ -56,7 +56,7 @@ class DragHandler {
         this._cacheHelperProportions();
 
         //The element's absolute position on the page
-        var itemOffset = $(this.currentItem.elem).offset(); // assume zero margins
+        var itemOffset = this.currentItem.getOffset(); // assume zero margins
         this.helperOffset = {
                 left: this.mousePosition.left - itemOffset.left,
                 top: this.mousePosition.top - itemOffset.top
@@ -73,7 +73,7 @@ class DragHandler {
         this.helper.addClass("ui-sortable-helper");
         this.dragMove(options); //Execute the drag once - this causes the helper not to be visible before getting its correct position
         DropBox.renderAll(this);
-        DropBox.previewDropBoxes();
+        // DropBox.previewDropBoxes();
     }
 
     public dragMove(options:DragStartI) {
@@ -95,7 +95,7 @@ class DragHandler {
             this.helper.elem.style.top = helperPosition.top + "px";
         }
         if (this.scrollPanel) {
-            var left = $(this.scrollPanel.elem).offset().left;
+            var left = this.scrollPanel.getOffset().left;
             var right = left + $(this.scrollPanel.elem).width();
             if (!(this.mousePosition.left >= left && this.mousePosition.left <= right)) {
                 this.scrollPanel = null;
@@ -106,8 +106,8 @@ class DragHandler {
             var pid:string;
             for (pid in PanelView.panelsById) {
                 var panel = PanelView.panelsById[pid];
-                var left = $(panel.elem).offset().left;
-                var right = left + $(panel.elem).width();
+                var left = panel.getOffset().left;
+                var right = left + panel.layout.width;
                 if (self.mousePosition.left >= left && self.mousePosition.left <= right) {
                     self.scrollPanel = panel;
                     console.log("Changing scrollPanel to " + pid);
@@ -125,7 +125,7 @@ class DragHandler {
             // todo: add constraint?: for later panels, could scroll-position be different than the
             // scroll-position at mouse-start, which is where items are last updated?
             this.scrollPanel.outline.scrollHandler.scrollWhileDragging(
-                this.mousePosition.top - $(this.scrollPanel.elem).offset().top);
+                this.mousePosition.top - this.scrollPanel.getOffset().top);
         }
         var box:DropBox = DropBox.getHoverBox(this.mousePosition, this.panelScrollStart);
 
@@ -221,7 +221,7 @@ class DragHandler {
             return true;
         } else { // cancel action
             var that = this;
-            var cur = $(this.currentItem.elem).offset();
+            var cur = this.currentItem.getOffset();
             this.reverting = true;
             $(this.helper.elem).animate({
                 left: cur.left,
@@ -249,9 +249,9 @@ class DragHandler {
         newNode.themeLast(true);
         $(newNode.elem).css({
             position: 'absolute',
-            left: $(this.currentItem.elem).offset().left + 'px',
-            top: $(this.currentItem.elem).offset().top + 'px',
-            width: this.currentItem.elem.clientWidth
+            left: this.currentItem.getOffset().left + 'px',
+            top: this.currentItem.getOffset().top + 'px',
+            width: this.currentItem.layout.width
         });
         // fix link offsets
         var links1 = this.currentItem.header.name.listItems;
@@ -262,8 +262,8 @@ class DragHandler {
                 (l1!=='')&&(l2!=='');
                 l1=links1.next[l1], l2=links2.next[l2]) {
                 (<NodeLinkView>links2.obj[l2]).setOffset({
-                    top: (<NodeLinkView>links1.obj[l1]).top,
-                    left:(<NodeLinkView>links1.obj[l1]).left
+                    top: (<NodeLinkView>links1.obj[l1]).layout.top,
+                    left:(<NodeLinkView>links1.obj[l1]).layout.left
                 });
             }
         }

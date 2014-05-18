@@ -20,6 +20,16 @@ var PageContentView = (function (_super) {
             gridwrapper: GridContainerView
         };
     };
+    PageContentView.prototype.layoutDown = function () {
+        var p = this.parentView.layout;
+        var s = this.parentView.header.layout;
+        this.layout = {
+            top: s.height,
+            left: 0,
+            width: p.width,
+            height: p.height - s.height
+        };
+    };
     return PageContentView;
 })(ContainerView);
 //# sourceMappingURL=PageContentView.js.map

@@ -72,6 +72,7 @@ var DeadView = (function () {
 var View = (function () {
     function View(opts) {
         this.value = null;
+        this.isAbsolute = true;
         this.childOpts = {};
         this.childViewTypes = {};
         this.parentView = null;
@@ -124,6 +125,7 @@ var View = (function () {
             this.registerParent(opts.parentView);
         }
         this.updateValue();
+        this.layoutDown();
         if (this.value instanceof LinkedList) {
             this.listItems = new LinkedList();
         }
@@ -212,6 +214,29 @@ var View = (function () {
         }
     };
 
+    View.prototype.setPosition = function () {
+        this.layoutUp();
+        if (this.elem && this.layout) {
+            if (this.isAbsolute) {
+                $(this.elem).css('position', 'absolute');
+            } else {
+                $(this.elem).css('position', 'relative');
+            }
+            if (this.layout.left != null) {
+                $(this.elem).css('left', this.layout.left + 'px');
+            }
+            if (this.layout.top != null) {
+                $(this.elem).css('top', this.layout.top + 'px');
+            }
+            if (this.layout.width != null) {
+                $(this.elem).css('width', this.layout.width + 'px');
+            }
+            if (this.layout.height != null) {
+                $(this.elem).css('height', this.layout.height + 'px');
+            }
+        }
+    };
+
     View.prototype.createListItems = function () {
         // check they shouldn't already exist
         if (_.size(this.childViewTypes) === 0) {
@@ -272,11 +297,13 @@ var View = (function () {
     };
     View.prototype.onClick = function () {
     };
+
     View.prototype.removeFromModel = function () {
     };
 
     View.prototype.onDoubleClick = function () {
     };
+
     View.prototype.detach = function (v, opts) {
         if ((v.parentView === this) && v.elem && v.elem.parentNode) {
             v.elem.parentNode.removeChild(v.elem);
@@ -338,6 +365,7 @@ var View = (function () {
             li.themeFirst(items.prev[m] === '');
             li.themeLast(items.next[m] === '');
         }
+        this.positionChildren(null);
     };
 
     View.prototype.insertListItems = function () {
@@ -484,6 +512,99 @@ var View = (function () {
         }
     };
 
+    View.prototype.saveLayout = function () {
+        var k;
+        var temp = {};
+        if (!this.layout) {
+            return temp;
+        }
+        for (k in this.layout) {
+            temp[k] = this.layout[k];
+        }
+        return temp;
+    };
+
+    View.prototype.updateDiffs = function (l1) {
+        if (!l1 || !this.layout || !this.elem) {
+            return;
+        }
+        var diffs = {};
+        var k;
+        for (k in this.layout) {
+            if (this.layout[k] !== l1[k]) {
+                $(this.elem).css(k, String(this.layout[k]) + 'px');
+            }
+        }
+    };
+
+    View.prototype.getOffset = function () {
+        if (!this.parentView) {
+            return { top: this.layout.top, left: this.layout.left };
+        }
+        var pos = this.parentView.getOffset();
+        return {
+            top: pos.top + this.layout.top,
+            left: pos.left + this.layout.left
+        };
+    };
+
+    View.prototype.layoutDown = function () {
+    };
+
+    View.prototype.layoutUp = function () {
+    };
+
+    View.prototype.positionChildren = function (v, v2) {
+    };
+
+    View.prototype.resize = function () {
+        var tempLayout = this.saveLayout();
+        this.layoutDown();
+        var c;
+        for (c in this.childViewTypes) {
+            this[c].resize();
+        }
+        if (this.listItems) {
+            var l;
+            var list = this.listItems;
+            for (l = list.first(); l !== ''; l = list.next[l]) {
+                list.obj[l].resize();
+            }
+        }
+        this.positionChildren(null);
+        this.layoutUp();
+        this.updateDiffs(tempLayout);
+    };
+
+    View.prototype.resizeUp = function (opts) {
+        // todo: incorporate case where opts.top is the panel-root, and this is the scrollview
+        var topView;
+
+        // check if this is the list containing opts.top, which halts recursion
+        assert(!opts || this.nodeRootView, "Cannot call resizeUP with options outside outline");
+        if (opts && opts.top && this.nodeRootView && (OutlineNodeModel.getById(opts.top).views[this.nodeRootView.id].parentView === this)) {
+            if (opts.end != null) {
+                topView = OutlineNodeModel.getById(opts.top).views[this.nodeRootView.id];
+                this.positionChildren(topView, OutlineNodeModel.getById(opts.end).views[this.nodeRootView.id].id);
+                //console.log('resizeUp 1');
+            } else {
+                //console.log('resizeUp 2');
+            }
+        } else {
+            //console.log('resizeUp 3');
+            this.positionChildren(null); // todo: could just position later ones
+            var tempLayout = this.saveLayout();
+            this.layoutUp();
+            if (this.parentView) {
+                //console.log('resizeUp 4');
+                this.parentView.resizeUp(opts);
+            } else {
+                //console.log('resizeUp 5');
+            }
+            this.updateDiffs(tempLayout);
+        }
+    };
+
     View.prototype.validate = function () {
         // validate that its registered with the corresponding view-list
         var views = View.viewList;
@@ -595,6 +716,22 @@ var View = (function () {
         assert(this.elem instanceof HTMLElement, "View " + v + " has no valid element");
         assert(this.id === this.elem.id, "Element for view " + v + " has wrong id");
         assert($('#' + this.elem.id).length === 1, "Element for views " + v + " not found in DOM");
+        if ($(this.elem).css('display') !== 'none') {
+            var offset = $(this.elem).offset();
+            var offset2 = this.getOffset();
+            assert(Math.abs(offset.top - offset2.top) <= 1, "Offset tops don't match for view " + this.id);
+            assert(Math.abs(offset.left - offset2.left) <= 1, "Offset lefts don't match for view " + this.id);
+            if (this.layout.width != null) {
+                assert(Math.abs(this.layout.width - this.elem.clientWidth) <= 1, "Widths don't match for " + this.id);
+            } else {
+                console.log("Notice: missing width for view " + this.id);
+            }
+            if (this.layout.height != null) {
+                assert(Math.abs(this.layout.height - this.elem.clientHeight) <= 1, "Heights don't match for " + this.id);
+            } else {
+                console.log("Notice: missing height for view " + this.id);
+            }
+        }
     };
     View.nextId = 0;
     View.viewList = {};
@@ -602,6 +739,7 @@ var View = (function () {
     View.currentPage = null;
     View.focusedView = null;
     View.hoveringView = null;
+    View.fontSize = 16;
     return View;
 })();
 //# sourceMappingURL=View.js.map

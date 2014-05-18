@@ -1,6 +1,7 @@
 ///<reference path="View.ts"/>
 m_require("app/views/GridView.js");
 class PanelGridView extends GridView {
+    parentView:GridContainerView;
     cssClass = "scroll-container horizontal-grid";
     value:LinkedList<boolean>; // list of models for panels
     listItems:LinkedList<PanelView>; // list of rendered views based on models
@@ -14,7 +15,16 @@ class PanelGridView extends GridView {
 
     updateValue() {
     }
-
+    layoutDown() {
+        var p:Layout = this.parentView.layout;
+        // when not expanded for more hidden panels
+        this.layout = {
+            top: 0,
+            height:p.height,
+            left: 0, // not always
+            width: p.width // not always
+        };
+    }
     getInsertLocation(prevPanel:string):string {
         if (this.listItems.next[prevPanel]==='') {
             return prevPanel;
@@ -22,8 +32,23 @@ class PanelGridView extends GridView {
             return this.listItems.next[prevPanel];
         }
     }
+    clip(dir:string) {
+        if (this.listItems.count > this.numCols) {
+            if (dir==='left') {
+                var firstPanel:PanelView = <PanelView>this.listItems.obj[this.listItems.first()];
+                    firstPanel.destroy();
+            } else if (dir==='right') {
+                var lastPanel:PanelView = <PanelView>this.listItems.obj[this.listItems.last()];
+                    lastPanel.destroy();
+            }
+        }
+        this.layout.left = 0;
+        this.layout.width = this.numCols * this.itemWidth;
+        this.positionChildren(null);
+        this.setPosition();
+    }
 
-    insertViewAfter(prevPanel:PanelView, panel:PanelView, placeholder?:HTMLElement) {
+    insertViewAfter(prevPanel:PanelView, panel:PanelView, leftPosition?:number):string {
         var id:string, previd:string; // viewid's
         // update the view-list
         id = panel.id;
@@ -39,47 +64,35 @@ class PanelGridView extends GridView {
         // update value to include reference based on view (hmm this seems sloppy)
         // update DOM
         if (this.elem) { // render panels if the grid is currently rendered
-            if (!panel.elem) {panel.render();}
-            $(panel.elem).css('width', String(this.itemWidth)+'px');
-            if (placeholder) {
-                assert(placeholder.parentNode === this.elem, "Placeholder is not a child of of grid");
-                this.elem.replaceChild(panel.elem, placeholder);
-            } else {
+            if (!panel.elem) {
+                if (previd==='') {// insert to far left
+                    panel.layout.left = 0;
+                } else {
+                    var prevLayout:Layout = View.get(previd).layout;
+                    panel.layout.left = prevLayout.left+prevLayout.width;
+                }
+                if (leftPosition) {
+                    panel.layout.left += leftPosition
+                }
+                panel.render();
+                this.positionChildren(panel); // a hidden panel can preserve a gap
+            }
                 var nextPanel = this.listItems.next[id];
                 if (nextPanel === '') {
                     this.elem.appendChild(panel.elem);
                 } else {
                     this.elem.insertBefore(panel.elem, this.listItems.obj[nextPanel].elem);
                 }
-            }
-            // fix width based on gridwrapper/numcols
         }
         var dir:string = 'right';   // Default slide right
-        // Remove clipped panel and indicate animation-direction
-        // decide whether we push-right or push-left
-        // MUST slide right if there is no rightPanel
-        // SHOULD slide left if it's put after last panel
-
-        // don't remove extra-panel if its being animated.
-        if (this.listItems.count > this.numCols) {
-            if (id === this.listItems.last()) {
-                dir = 'left';
-                var firstPanel:PanelView = <PanelView>this.listItems.obj[this.listItems.first()];
-                if (!firstPanel.animating) {
-                    firstPanel.destroy();
-                }
-            } else {
-                var lastPanel:PanelView = <PanelView>this.listItems.obj[this.listItems.last()];
-                if (!lastPanel.animating) {
-                    lastPanel.destroy();
-                }
-            }
+        if (id === this.listItems.last()) {
+            dir = 'left';
         }
         this.updatePanelButtons();
         return dir;
     }
 
-    insertAfter(prevPanel:PanelView, panel:PanelView, placeholder?:HTMLElement) {
+    insertAfter(prevPanel:PanelView, panel:PanelView, leftPosition?:number):string {
         var id:string, previd:string;
         assert(panel !== null, "No panel given to insert");
         id = panel.id;
@@ -97,14 +110,14 @@ class PanelGridView extends GridView {
                 "insertAfter has unknown previous id");
         }
         this.value.insertAfter(panel.id, true, previd);
-        return this.insertViewAfter(prevPanel, panel, placeholder);
+        return this.insertViewAfter(prevPanel, panel, leftPosition);
     }
 
-    append(panel:PanelView) {
+    append(panel:PanelView):string {
         return this.insertAfter(this.listItems.obj[this.listItems.last()], panel);
     }
 
-    prepend(panel:PanelView) {
+    prepend(panel:PanelView):string {
         return this.insertAfter(null, panel);
     }
     getSlideDirection(slide?:string):string {
@@ -144,13 +157,6 @@ class PanelGridView extends GridView {
         if (panel.elem && panel.elem.parentNode) {
             panel.elem.parentNode.removeChild(panel.elem);
         }
-        /*
-        if (direction==='right') {
-            this.slideRight();
-        } else if (direction==='left') {
-            this.slideLeft();
-        }
-        */
     }
 
     slideRight() {
@@ -166,7 +172,7 @@ class PanelGridView extends GridView {
         }
     }
 
-    slideLeft() {
+    slideLeft(leftPosition?:number) {
         var rightPanel = this.listItems.obj[this.listItems.last()];
         var next = this.value.next[rightPanel.id];
         if (next === '') {
@@ -175,7 +181,7 @@ class PanelGridView extends GridView {
             var deadPanel:DeadPanel = <DeadPanel>DeadView.viewList[next];
             assert(deadPanel instanceof DeadPanel, "Cannot find panel in graveyard");
             var newPanel:PanelView = deadPanel.resurrect();
-            this.insertViewAfter(rightPanel, newPanel);
+            this.insertViewAfter(rightPanel, newPanel, leftPosition);
         }
     }
 
@@ -225,72 +231,5 @@ class PanelGridView extends GridView {
             }
         }
     }
-
-    /*
-     redrawPanels(dir:string) {
-     var p, n:number;
-     var m:string;
-     var children = this.listItems;
-     if (dir === 'right') {
-     for (m = children.first(); children.next[m] !== ''; m = children.next[m]) {
-     this.redrawPanel(m, false);
-     }
-     }
-     if (dir === 'left') {
-     for (m = children.prev['']; children.prev[m] !== ''; m = children.prev[m]) {
-     this.redrawPanel(m, false);
-     }
-     }
-     }
-     */
-    /*
-     redrawPanel(p, firsttime) {
-     // should changeRoot it instead?
-     var c; // save old panel context for undo
-     if (p!=null) {
-     c = this.listItems.obj[p].destroy();
-     } else {
-     c = {
-     prev: null,
-     next: null,
-     parent: this.elem
-     };
-     }
-     // create a new panel with right id, but wrong alist & breadcrumbs.
-     var panel = new PanelView({
-     id: p,
-     parentView: this,
-     rootModel: null
-     });
-     this.listItems.obj[p] = panel;
-     panel.renderAt(c);
-     }
-     */
-    /*
-     moveAfter(id, previousid) { // currently unused
-     if ((this.nextpanel[id] === undefined) || (this.prevpanel[id] === undefined) || (id === '')) {
-     console.log('Error moving panel');
-     debugger;
-     return;
-     }
-     if ((this.nextpanel[previousid] === undefined) ||
-     (this.prevpanel[previousid] === undefined)) {
-     console.log('Error moving panel after previous-id'); // error
-     debugger;
-     return;
-     }
-     // remove id
-     var next = this.nextpanel[id];
-     var prev = this.prevpanel[id];
-     this.nextpanel[prev] = next;
-     this.prevpanel[next] = prev;
-     // add-in after previousid
-     var oldnext = this.nextpanel[previousid];
-     this.nextpanel[previousid] = id;
-     this.prevpanel[id] = previousid;
-     this.nextpanel[id] = oldnext;
-     this.prevpanel[oldnext] = id;
-     }
-     */
 }
 

@@ -11,13 +11,21 @@ var HeaderToolbarView = (function (_super) {
     __extends(HeaderToolbarView, _super);
     function HeaderToolbarView() {
         _super.apply(this, arguments);
-        this.anchorLocation = M.TOP;
+        // anchorLocation:any = M.TOP;
         this.cssClass = 'ui-header ui-bar-a ui-header-fixed slidedown';
     }
     HeaderToolbarView.prototype.init = function () {
         this.childViewTypes = {
             title: HeaderTitleView,
             undobuttons: UndoButtonContainerView
+        };
+    };
+    HeaderToolbarView.prototype.layoutDown = function () {
+        this.layout = {
+            top: 0,
+            left: 0,
+            width: this.parentView.layout.width,
+            height: 42
         };
     };
     return HeaderToolbarView;

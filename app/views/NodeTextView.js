@@ -12,7 +12,6 @@ var NodeTextView = (function (_super) {
     function NodeTextView() {
         _super.apply(this, arguments);
         this.cssClass = 'outline-content ui-input-text ui-body-c ui-corner-all ui-shadow-inset';
-        this.hasMultipleLines = true;
     }
     NodeTextView.prototype.updateValue = function () {
         // this.setValuePatterns(this.parentView.parentView.parentView.value);

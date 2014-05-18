@@ -10,6 +10,7 @@ var UndoButtonView = (function (_super) {
     __extends(UndoButtonView, _super);
     function UndoButtonView() {
         _super.apply(this, arguments);
+        this.value = 'theme/images/undo.png';
         this.cssClass = 'undo-button';
     }
     UndoButtonView.prototype.init = function () {
@@ -17,6 +18,14 @@ var UndoButtonView = (function (_super) {
     };
     UndoButtonView.prototype.onClick = function () {
         ActionManager.undo();
+    };
+    UndoButtonView.prototype.layoutDown = function () {
+        this.layout = {
+            top: 0,
+            left: 4,
+            width: 36,
+            height: 36
+        };
     };
     return UndoButtonView;
 })(ButtonView);

@@ -7,6 +7,7 @@ class ContainerView extends View {
             classes: this.cssClass
         });
         this.renderChildViews();
+        this.setPosition();
         for (var name in this.childViewTypes) {
             this.elem.appendChild((<View>(this[name])).elem);
         }

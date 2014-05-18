@@ -44,27 +44,31 @@ OutlineNodeModel.root.fromJSON({
         }
     ]
 });
-$(function () {
+$(window).bind('load', function () {
     $D.router = new Router(document.body);
     new DiathinkView({});
     var grid = View.currentPage.content.gridwrapper.grid;
     grid.numCols = 2;
     grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
     grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
-    View.currentPage.render();
-    var panels = grid.listItems;
-    var p;
-    for (p = panels.first(); p !== ''; p = panels.next[p]) {
-        View.get(p).cachePosition();
-    }
-    fixFontSize();
-    ActionManager.refreshButtons();
-    grid.updatePanelButtons();
-    grid.resize();
-    $D.keyboard = new keyboardSetup();
-    $D.keyboard.init({});
+    View.currentPage.prerender();
     setTimeout(function () {
-        // validate();
-    }, 0);
+        View.currentPage.render();
+        var panels = grid.listItems;
+        var p;
+        for (p = panels.first(); p !== ''; p = panels.next[p]) {
+            View.get(p).cachePosition();
+        }
+        fixFontSize();
+        ActionManager.refreshButtons();
+        grid.updatePanelButtons();
+
+        // grid.resize();
+        $D.keyboard = new keyboardSetup();
+        $D.keyboard.init({});
+        setTimeout(function () {
+            // validate();
+        }, 0);
+    }, 50); // todo: don't hard-code 50ms load time for font
 });
 //# sourceMappingURL=main.js.map

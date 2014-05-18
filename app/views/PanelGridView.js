@@ -22,7 +22,17 @@ var PanelGridView = (function (_super) {
 
     PanelGridView.prototype.updateValue = function () {
     };
+    PanelGridView.prototype.layoutDown = function () {
+        var p = this.parentView.layout;
 
+        // when not expanded for more hidden panels
+        this.layout = {
+            top: 0,
+            height: p.height,
+            left: 0,
+            width: p.width
+        };
+    };
     PanelGridView.prototype.getInsertLocation = function (prevPanel) {
         if (this.listItems.next[prevPanel] === '') {
             return prevPanel;
@@ -30,8 +40,23 @@ var PanelGridView = (function (_super) {
             return this.listItems.next[prevPanel];
         }
     };
+    PanelGridView.prototype.clip = function (dir) {
+        if (this.listItems.count > this.numCols) {
+            if (dir === 'left') {
+                var firstPanel = this.listItems.obj[this.listItems.first()];
+                firstPanel.destroy();
+            } else if (dir === 'right') {
+                var lastPanel = this.listItems.obj[this.listItems.last()];
+                lastPanel.destroy();
+            }
+        }
+        this.layout.left = 0;
+        this.layout.width = this.numCols * this.itemWidth;
+        this.positionChildren(null);
+        this.setPosition();
+    };
 
-    PanelGridView.prototype.insertViewAfter = function (prevPanel, panel, placeholder) {
+    PanelGridView.prototype.insertViewAfter = function (prevPanel, panel, leftPosition) {
         var id, previd;
 
         // update the view-list
@@ -49,48 +74,34 @@ var PanelGridView = (function (_super) {
         // update DOM
         if (this.elem) {
             if (!panel.elem) {
-                panel.render();
-            }
-            $(panel.elem).css('width', String(this.itemWidth) + 'px');
-            if (placeholder) {
-                assert(placeholder.parentNode === this.elem, "Placeholder is not a child of of grid");
-                this.elem.replaceChild(panel.elem, placeholder);
-            } else {
-                var nextPanel = this.listItems.next[id];
-                if (nextPanel === '') {
-                    this.elem.appendChild(panel.elem);
+                if (previd === '') {
+                    panel.layout.left = 0;
                 } else {
-                    this.elem.insertBefore(panel.elem, this.listItems.obj[nextPanel].elem);
+                    var prevLayout = View.get(previd).layout;
+                    panel.layout.left = prevLayout.left + prevLayout.width;
                 }
+                if (leftPosition) {
+                    panel.layout.left += leftPosition;
+                }
+                panel.render();
+                this.positionChildren(panel); // a hidden panel can preserve a gap
             }
-            // fix width based on gridwrapper/numcols
+            var nextPanel = this.listItems.next[id];
+            if (nextPanel === '') {
+                this.elem.appendChild(panel.elem);
+            } else {
+                this.elem.insertBefore(panel.elem, this.listItems.obj[nextPanel].elem);
+            }
         }
         var dir = 'right';
-
-        // Remove clipped panel and indicate animation-direction
-        // decide whether we push-right or push-left
-        // MUST slide right if there is no rightPanel
-        // SHOULD slide left if it's put after last panel
-        // don't remove extra-panel if its being animated.
-        if (this.listItems.count > this.numCols) {
-            if (id === this.listItems.last()) {
-                dir = 'left';
-                var firstPanel = this.listItems.obj[this.listItems.first()];
-                if (!firstPanel.animating) {
-                    firstPanel.destroy();
-                }
-            } else {
-                var lastPanel = this.listItems.obj[this.listItems.last()];
-                if (!lastPanel.animating) {
-                    lastPanel.destroy();
-                }
-            }
+        if (id === this.listItems.last()) {
+            dir = 'left';
         }
         this.updatePanelButtons();
         return dir;
     };
 
-    PanelGridView.prototype.insertAfter = function (prevPanel, panel, placeholder) {
+    PanelGridView.prototype.insertAfter = function (prevPanel, panel, leftPosition) {
         var id, previd;
         assert(panel !== null, "No panel given to insert");
         id = panel.id;
@@ -107,7 +118,7 @@ var PanelGridView = (function (_super) {
             assert(this.value.obj[previd] === true, "insertAfter has unknown previous id");
         }
         this.value.insertAfter(panel.id, true, previd);
-        return this.insertViewAfter(prevPanel, panel, placeholder);
+        return this.insertViewAfter(prevPanel, panel, leftPosition);
     };
 
     PanelGridView.prototype.append = function (panel) {
@@ -155,13 +166,6 @@ var PanelGridView = (function (_super) {
         if (panel.elem && panel.elem.parentNode) {
             panel.elem.parentNode.removeChild(panel.elem);
         }
-        /*
-        if (direction==='right') {
-        this.slideRight();
-        } else if (direction==='left') {
-        this.slideLeft();
-        }
-        */
     };
 
     PanelGridView.prototype.slideRight = function () {
@@ -177,7 +181,7 @@ var PanelGridView = (function (_super) {
         }
     };
 
-    PanelGridView.prototype.slideLeft = function () {
+    PanelGridView.prototype.slideLeft = function (leftPosition) {
         var rightPanel = this.listItems.obj[this.listItems.last()];
         var next = this.value.next[rightPanel.id];
         if (next === '') {
@@ -186,7 +190,7 @@ var PanelGridView = (function (_super) {
             var deadPanel = DeadView.viewList[next];
             assert(deadPanel instanceof DeadPanel, "Cannot find panel in graveyard");
             var newPanel = deadPanel.resurrect();
-            this.insertViewAfter(rightPanel, newPanel);
+            this.insertViewAfter(rightPanel, newPanel, leftPosition);
         }
     };
 

@@ -3,7 +3,6 @@ m_require("app/views/PageView.js");
 m_require("app/views/PageView.js");
 class DiathinkView extends PageView {
     cssClass = 'ui-page ui-body-c ui-page-header-fixed ui-page-active ui-sortable';
-    public hiddendiv:HiddenDivView;
     public header:HeaderToolbarView;
     public content:PageContentView;
     public drawlayer:DrawLayerView;
@@ -18,6 +17,14 @@ class DiathinkView extends PageView {
         assert(View.currentPage == null,
             "Page assigned more than once");
         View.currentPage = this;
+    }
+    layoutDown() {
+        this.layout = {
+            top: 0,
+            left: 0,
+            width: $(window.document.documentElement).width(),
+            height: $(window.document.documentElement).height()
+        };
     }
     validate() {
         var views:{[k:string]:View} = View.viewList;

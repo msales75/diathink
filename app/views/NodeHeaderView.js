@@ -19,6 +19,17 @@ var NodeHeaderView = (function (_super) {
             name: NodeTextWrapperView
         };
     };
+    NodeHeaderView.prototype.layoutDown = function () {
+        if (!this.layout) {
+            this.layout = {};
+        }
+        this.layout.top = 0;
+        this.layout.left = 0;
+        this.layout.width = this.parentView.layout.width;
+    };
+    NodeHeaderView.prototype.layoutUp = function () {
+        this.layout.height = this.name.layout.height;
+    };
     return NodeHeaderView;
 })(ContainerView);
 //# sourceMappingURL=NodeHeaderView.js.map

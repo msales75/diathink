@@ -13,6 +13,13 @@ var HeaderTitleView = (function (_super) {
         this.anchorLocation = M.LEFT;
         this.value = "";
     }
+    HeaderTitleView.prototype.layoutDown = function () {
+        this.layout = {
+            top: 2,
+            left: 0,
+            height: this.parentView.layout.height - 4
+        };
+    };
     return HeaderTitleView;
 })(SpanView);
 //# sourceMappingURL=HeaderTitleView.js.map

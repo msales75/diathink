@@ -15,13 +15,18 @@ class DropTarget {
         startWidth?: number;
         view?:{[i:string]:{
             endNewHeight:number;
+            nextView?:View;
+            parentView?:View;
+            parentHeight?:number;
+            nextTop?:number;
         }
         }
     } = {};
     constructor(opts) {}
 
     createUniquePlaceholder() {}
-    getPlaceholder(i:string):HTMLElement {return null;}
+    getPlaceholder(i:string):Layout {return null;}
+    getOffset():number {return null;}
 
     createViewPlaceholder(outline) {}
 
@@ -62,6 +67,7 @@ class DropTarget {
         }
         $(this.dockView.elem).css(css);
     }
+    postAnimSetup() {}
     postAnimStep(frac:number) {}
 
     setupDockFade() {}
@@ -78,7 +84,9 @@ class NodeDropTarget extends DropTarget {
     activeID:string;
     offsetUnderTop:number; // check for moving underneath existing element
     activeLineHeight:{[i:string]:number} = {}; // how much we are moving underneath
-    rNewLinePlaceholder:{[i:string]:HTMLElement} = {};
+    rNewLinePlaceholder:{[i:string]:Layout} = {};
+    stopAt:{top?:string;end?:string;plusone?:boolean} = null;
+    reversed:boolean;
 
     constructor(opts) {
         super(opts);
@@ -92,14 +100,16 @@ class NodeDropTarget extends DropTarget {
             for (o in outlines) {
                 var activeView:NodeView = this.getNodeView(this.activeID, o);
                 if (activeView!=null) {
-                    this.activeLineHeight[o] = Math.round(activeView.elem.clientHeight);
+                    this.activeLineHeight[o] = activeView.layout.height;
                     // console.log("Target: For view "+activeView.id+" got height "+this.activeLineHeight[o]);
                     if ((o === this.outlineID)&&(o === this.oldOutlineID)) {
-                        this.offsetUnderTop = $(activeView.elem).offset().top;
+                        this.offsetUnderTop = activeView.getOffset().top;
                     }
                 }
             }
         }
+        this.stopAt = opts.stopAt;
+        this.reversed = opts.reversed;
     }
 
     getNodeView(id, rootid):NodeView {
@@ -137,9 +147,39 @@ class NodeDropTarget extends DropTarget {
         var newModelContext = this.rNewModelContext;
         var parentView:ListView = this.contextParentVisible(newModelContext, outline);
         if (!parentView || parentView.hideList) {
+            // console.log('NodeDropTarget 1');
             return;
         }
-        var place = $('<li></li>').addClass('li-placeholder').css('height', 0);
+        var layout:Layout = {};
+        if (newModelContext.next) {
+            var view:NodeView = this.getNodeView(newModelContext.next, outline.id);
+            layout = view.getOffset();
+            //console.log('NodeDropTarget 2');
+        } else {
+            layout = parentView.getOffset();
+            layout.top += parentView.layout.height;
+            //console.log('NodeDropTarget 3');
+        }
+        if (this.offsetUnderTop != null) {
+            if (layout.top > this.offsetUnderTop) {
+                layout.top -= this.activeLineHeight[outline.id];
+                //console.log('NodeDropTarget 4');
+            } else {
+                //console.log('NodeDropTarget 5');
+            }
+        } else {
+            //console.log('NodeDropTarget 6'); // todo: never tested (creation/deletion?)
+        }
+        layout.height = this.activeLineHeight[outline.id];
+        this.rNewLinePlaceholder[outline.id] = layout;
+        /*
+        var place = $('<li></li>').addClass('li-placeholder').css({
+            position: 'absolute',
+            top: layout.top+'px',
+            left: layout.left+'px',
+            height: '0px',
+            width: layout.width+'px'
+        });
         this.rNewLinePlaceholder[outline.id] = place.get(0);
         if (!newModelContext.prev) {
             place.addClass('ui-first-child');
@@ -154,6 +194,7 @@ class NodeDropTarget extends DropTarget {
         } else if (newModelContext.parent) {
             place.appendTo('#' + parentView.id);
         }
+        */
     }
 
     setupPlaceholderAnim() {
@@ -162,16 +203,35 @@ class NodeDropTarget extends DropTarget {
         var outlines = OutlineRootView.outlinesById;
         for (o in outlines) {
                 if (this.rNewLinePlaceholder[o]) {
-                    endNewHeight = this.activeLineHeight[o];
+                    endNewHeight = this.rNewLinePlaceholder[o].height;
                     if (!endNewHeight) {
                         endNewHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
+                        //console.log('NodeDropTarget 7');
+                    } else {
+                        //console.log('NodeDropTarget 8');
                     }
                     // console.log("TargetePlaceholder outline "+o+" height "+endNewHeight);
                     if (this.animOptions.view === undefined) {
                         this.animOptions.view = {};
+                        //console.log('NodeDropTarget 9');
                     }
+                    var newModelContext = this.rNewModelContext;
+                    var parentView:ListView = this.contextParentVisible(newModelContext, outlines[o]);
+                    var parentHeight = parentView.layout.height;
+                    if (newModelContext.next) {
+                        var nextView = this.getNodeView(newModelContext.next, o);
+                        var nextTop = nextView.layout.top;
+                        //console.log('NodeDropTarget 10');
+                    } else {
+                        //console.log('NodeDropTarget 11');
+                    }
+
                     this.animOptions.view[o] = {
-                        endNewHeight: endNewHeight
+                        endNewHeight: endNewHeight,
+                        nextView: nextView,
+                        nextTop: nextTop,
+                        parentView: parentView,
+                        parentHeight: parentHeight
                     };
                 }
         }
@@ -180,15 +240,61 @@ class NodeDropTarget extends DropTarget {
     placeholderAnimStep(frac) {
         var outlines = OutlineRootView.outlinesById;
         var i:string;
-        if (this.animOptions.view==null) {return;}
+        if (this.animOptions.view==null) {
+            //console.log('NodeDropTarget 12'); // never tested (ok)
+            return;
+        }
         for (i in outlines) {
             var o = this.animOptions.view[i];
             if (o != null) {
                 var maxHeight = o.endNewHeight;
-                $(this.rNewLinePlaceholder[i]).css('height',
-                    String(maxHeight - Math.round(maxHeight * (1 - frac))) + 'px');
+                //$(this.rNewLinePlaceholder[i]).css('height',
+                //    String(Math.round(maxHeight * frac)) + 'px');
+
+                // could top==end if it's not activeID?
+                // top=end means that the target is top-level, hene =activeID
+
+                if ((this.stopAt!=null)&&(this.stopAt.top === this.activeID)) { // at top level
+                    if ((this.stopAt.end != null) && (o.nextView != null)) {
+                        assert(this.reversed===true, "Wrong value for reversed");
+                        o.nextView.layout.top = o.nextTop + o.endNewHeight*frac;
+                        $(o.nextView.elem).css('top', o.nextView.layout.top + 'px');
+                        if (this.stopAt.top !== this.stopAt.end) {
+                            var end = OutlineNodeModel.getById(this.stopAt.end).views[i];
+                            assert(end != null, "End-view should be visible");
+                            o.parentView.positionChildren(o.nextView, end.id);
+                            //console.log('NodeDropTarget 13');
+                        } else {
+                            //console.log('NodeDropTarget 14');
+                        }
+                    } else {
+                        //console.log('NodeDropTarget 15');
+                    }
+                } else { // target is not at top level
+                    if (o.nextView!=null) {
+                        o.nextView.layout.top = o.nextTop + o.endNewHeight*frac;
+                        $(o.nextView.elem).css('top', o.nextView.layout.top+'px');
+                        // console.log("Target: Setting "+ o.nextView.id+" top to "+ o.nextView.layout.top);
+                        o.parentView.positionChildren(o.nextView);
+                        //console.log('NodeDropTarget 16');
+                    } else {
+                        //console.log('NodeDropTarget 17');
+                    }
+                    // propagate upwards
+                    o.parentView.layout.height = o.parentHeight + o.endNewHeight*frac;
+                    $(o.parentView.elem).css('height', o.parentView.layout.height+'px');
+                    // console.log("Target: Setting "+ o.parentView.id+" height to "+ o.parentView.layout.height);
+                    if (o.parentView.parentView instanceof NodeView) {
+                        o.parentView.parentView.resizeUp(this.stopAt); // updates parents based on height
+                        //console.log('NodeDropTarget 18');
+                    } else {
+                        //console.log('NodeDropTarget 19'); // todo: never tested (ok)
+                    }
+                }
                 // console.log("Target going to "+maxHeight+" with fraction "+frac);
                 // console.log(String(maxHeight - Math.round(maxHeight * (1 - frac))) + 'px');
+            } else {
+                //console.log('NodeDropTarget 20');
             }
         }
     }
@@ -206,12 +312,6 @@ class NodeDropTarget extends DropTarget {
             // console.log('Missing rNewLinePlaceholder in dockAnim');
             return;
         }
-        var destination:{top:number;left:number} = $(this.rNewLinePlaceholder[this.outlineID]).offset();
-        if (this.offsetUnderTop != null) {
-            if (destination.top > this.offsetUnderTop) {
-                destination.top -= this.activeLineHeight[this.outlineID];
-            }
-        }
         var startX = this.dockView.elem.offsetLeft;
         var startY = this.dockView.elem.offsetTop;
         var startWidth = this.dockView.elem.clientWidth;
@@ -220,8 +320,8 @@ class NodeDropTarget extends DropTarget {
         _.extend(this.animOptions, {
             startX: startX,
             startY: startY,
-            endX: destination.left,
-            endY: destination.top,
+            endX: this.rNewLinePlaceholder[this.outlineID].left,
+            endY: this.rNewLinePlaceholder[this.outlineID].top,
             startWidth: startWidth
         });
     }
@@ -237,18 +337,19 @@ class NodeDropTarget extends DropTarget {
         var o:string;
         var outlines = OutlineRootView.outlinesById;
         for (o in outlines) {
+            /*
             if (this.rNewLinePlaceholder[o]!=null) {
                 if (this.rNewLinePlaceholder[o].parentNode) {
                     this.rNewLinePlaceholder[o].parentNode.removeChild(this.rNewLinePlaceholder[o]);
                 }
                 delete this.rNewLinePlaceholder[o];
                 delete this.activeLineHeight[o];
-            }
+            } */
             // restore height if it was lost
             if (this.activeID) {
                 var activeView:NodeView = this.getNodeView(this.activeID, o);
                 if (activeView && activeView.elem) {
-                    $(activeView.elem).css('height','').removeClass('drag-hidden');
+                    $(activeView.elem).css('height',activeView.layout.height+'px').removeClass('drag-hidden');
                 }
             }
         }

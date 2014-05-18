@@ -17,9 +17,8 @@ class TextAreaView extends View {
     initialText = '';
     isGrouped = NO;
     isEnabled = true;
-    hasMultipleLines = NO;
     lastWidth:number = null;
-    lastFont:string = null;
+    lastFont:number = null;
     hiddenDiv:JQuery = null;
     parentDiv:JQuery = null;
     lineHeight:number = null;
@@ -61,7 +60,10 @@ class TextAreaView extends View {
         if (!this.isEnabled) {
             this.elem.setAttribute('disabled', 'disabled');
         }
-        // this.fixHeight(); // after dimensions are set
+        // divide setPosition into two pieces while fixing height
+        this.positionChildren(null); // after dimensions are set
+        this.setPosition();
+
         // todo: check if this is true/correct?
         /*
          if (this.elem && (typeof this.elem.autocorrect !== "undefined") &&
@@ -71,6 +73,12 @@ class TextAreaView extends View {
          }
          */
         return this.elem;
+    }
+    layoutDown() {
+        if (!this.layout) {this.layout= {};}
+        this.layout.top = 0;
+        this.layout.left = 0;
+        this.layout.width = this.parentView.layout.width;
     }
     getValue() {
         this.value = this.elem.value;
@@ -88,14 +96,14 @@ class TextAreaView extends View {
         this.value = this.elem.value;
     }
 
+
     // trigger-events:
     //   keyup change input paste
     //   mobile.document pagechange, mobile.window load
     fixHeight() {
         // don't execute before element is visible, e.g.
-        var elem = this.elem;
         //   on startup before calling resize()
-        if ($(elem).css('visibility') !== 'visible') {return;}
+        // if ($(elem).css('visibility') !== 'visible') {return;}
         /*
          if (this.value.length<4) {
          // todo: could optimize without looking at width here.
@@ -105,29 +113,34 @@ class TextAreaView extends View {
          this.parentDiv.height(this.lineHeight + this.padding);
          return;
          } */
-        var currentWidth = elem.clientWidth;
-        if (!(currentWidth > 0)) {
-            return;
-        }
-        var currentFont = $(elem).css('font-size');
-        if ((this.lastWidth === currentWidth) && (this.lastFont === currentFont) && (this.lastValue === this.value)) {
+        var currentWidth = this.layout.width; // elem.clientWidth;
+        //if (!(currentWidth > 0)) {
+       //     return;
+        //}
+        var currentFont = View.fontSize; // $(elem).css('font-size');
+       // if ((this.lastWidth === currentWidth) &&
+          //  (this.lastFont === currentFont) &&
+          //  (this.lastValue === this.value)) {
             // todo: check if links have changed, and provide escape here?
             // return;
-        }
+        //}
         var hiddendiv = (<DiathinkView>(View.currentPage)).hiddendiv.elem;
-        assert(this.parentView instanceof View, "ERROR: textedit parentDiv not found in fixHeight");
-        var parentdiv = this.parentView.elem;
-        if (this.lastFont !== currentFont) {
-            this.lineHeight = Number($(hiddendiv).css('line-height').replace(/px/, ''));
-            this.paddingY = Number($(elem).css('padding-top').replace(/px/, '')) +
-                Number($(elem).css('padding-bottom').replace(/px/, ''));
-            this.paddingX = Number($(elem).css('padding-left').replace(/px/, '')) +
-                Number($(elem).css('padding-right').replace(/px/, ''));
+        if (!hiddendiv) {
+            console.log("Calling fixHeight before defining hiddendiv!!");
+            return;
         }
+        assert(this.parentView instanceof View, "ERROR: textedit parentDiv not found in fixHeight");
+       // var parentdiv = this.parentView.elem;
+        //if (this.lastFont !== currentFont) {
+            this.lineHeight = Math.round(1.25*View.fontSize);
+            this.paddingX = 2*Math.round(.18*View.fontSize);
+            this.paddingY = 2*Math.round(.15*View.fontSize);
+        //}
         var lineHeight = this.lineHeight;
         var paddingX = this.paddingX;
         var paddingY = this.paddingY;
         hiddendiv.style.width = String(currentWidth - paddingX - 1) + 'px';
+        // console.log("Defined hiddendiv width = "+hiddendiv.style.width);
 
         if (this.parentView && (this.parentView instanceof NodeTextWrapperView) &&
             (<NodeTextWrapperView>this.parentView).listItems &&
@@ -154,10 +167,12 @@ class TextAreaView extends View {
 
 
         var nlines = Math.round(($(hiddendiv).children('.marker').position().top / lineHeight) - 0.4) + 1;
+
         var height = nlines * lineHeight;
-        if (Math.abs(parentdiv.clientHeight - height - paddingY) > 0.5) {
-            parentdiv.style.height = String(height + paddingY) + 'px';
-        }
+        // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
+        // if (Math.abs(parentdiv.clientHeight - height - paddingY) > 0.5) {
+            this.layout.height = height + paddingY;
+        // }
 
         if (this.parentView && (this.parentView instanceof NodeTextWrapperView) &&
             (<NodeTextWrapperView>this.parentView).listItems &&
@@ -169,7 +184,10 @@ class TextAreaView extends View {
                     if (children[i].tagName.toLowerCase()==='span') {
                         var id:string = (<HTMLElement>children[i]).id;
                         if (id && id.substr(0,4)==='tmp_') {
-                            (<NodeLinkView>View.get(id.substr(4))).setOffset($(children[i]).position());
+                            var pos = $(children[i]).position();
+                            pos.left = Math.round(pos.left);
+                            pos.top = Math.round(pos.top);
+                            (<NodeLinkView>View.get(id.substr(4))).setOffset(pos);
                         }
                     }
                 }
@@ -183,14 +201,14 @@ class TextAreaView extends View {
 
     focus() {
         this.addClass('ui-focus');
-        this.parentView.parentView.parentView.addClass('ui-focus');
+        this.nodeView.addClass('ui-focus');
         return this;
     }
 
     blur() {
         var that:TextAreaView = this;
         this.removeClass('ui-focus');
-        this.parentView.parentView.parentView.removeClass('ui-focus');
+        this.nodeView.removeClass('ui-focus');
         this.setValueFromDOM();
         ActionManager.schedule(function() {
             return Action.checkTextChange(that.id);

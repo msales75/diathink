@@ -2,6 +2,7 @@
 m_require("app/views/ContainerView.js");
 
 class UndoButtonContainerView extends ContainerView {
+    parentView:HeaderToolbarView;
     anchorLocation:any = M.RIGHT; // for placement within toolbar (todo: phase this out)
     cssClass = 'undo-container';
     undobutton:UndoButtonView;
@@ -12,6 +13,15 @@ class UndoButtonContainerView extends ContainerView {
             undobutton: UndoButtonView,
             redobutton: RedoButtonView
         };
+    }
+    layoutDown() {
+        var p:Layout = this.parentView.layout;
+        this.layout = {
+            top: 4,
+            left: p.width-100-5,
+            width: 100,
+            height: 36
+        }
     }
     validate() {
         super.validate();
@@ -25,16 +35,10 @@ class UndoButtonContainerView extends ContainerView {
         assert($('#' + b.redobutton.id).length === 1,
             "Cannot find redo button element");
         assert(
-            ((ActionManager.nextUndo() === -1) &&
-                ($('#' + b.undobutton.id).children('div.ui-disabled').length === 1)) ||
-                ((ActionManager.nextUndo() !== -1) &&
-                    ($('#' + b.undobutton.id).children('div.ui-disabled').length === 0)),
+            (ActionManager.nextUndo() !== -1) === (b.undobutton.isEnabled),
             "Undo button does not match nextUndo()");
         assert(
-            ((ActionManager.nextRedo() === -1) &&
-                ($('#' + b.redobutton.id).children('div.ui-disabled').length === 1)) ||
-                ((ActionManager.nextRedo() !== -1) &&
-                    ($('#' + b.redobutton.id).children('div.ui-disabled').length === 0)),
-            "Redo button does not match nextRedo()");
+            (ActionManager.nextRedo() !== -1) === (b.redobutton.isEnabled),
+            "Redo button does not match nextUndo()");
     }
 }

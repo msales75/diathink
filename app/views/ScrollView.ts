@@ -8,9 +8,10 @@ class ScrollView extends View {
         this._create({
             type: 'div',
             classes: this.cssClass
-        })
+        });
         this.elem.setAttribute('data-role', 'content');
         this.renderChildViews();
+        this.setPosition();
         for (var name in this.childViewTypes) {
             this.elem.appendChild((<View>(this[name])).elem);
         }

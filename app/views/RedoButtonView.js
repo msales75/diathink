@@ -10,6 +10,7 @@ var RedoButtonView = (function (_super) {
     __extends(RedoButtonView, _super);
     function RedoButtonView() {
         _super.apply(this, arguments);
+        this.value = 'theme/images/redo.png';
         this.cssClass = 'redo-button';
     }
     RedoButtonView.prototype.init = function () {
@@ -17,6 +18,14 @@ var RedoButtonView = (function (_super) {
     };
     RedoButtonView.prototype.onClick = function () {
         ActionManager.redo();
+    };
+    RedoButtonView.prototype.layoutDown = function () {
+        this.layout = {
+            top: 0,
+            left: 44,
+            width: 36,
+            height: 36
+        };
     };
     return RedoButtonView;
 })(ButtonView);

@@ -23,6 +23,14 @@ var DiathinkView = (function (_super) {
         assert(View.currentPage == null, "Page assigned more than once");
         View.currentPage = this;
     };
+    DiathinkView.prototype.layoutDown = function () {
+        this.layout = {
+            top: 0,
+            left: 0,
+            width: $(window.document.documentElement).width(),
+            height: $(window.document.documentElement).height()
+        };
+    };
     DiathinkView.prototype.validate = function () {
         var views = View.viewList;
         assert(this === View.currentPage, "Page is not currentPage");

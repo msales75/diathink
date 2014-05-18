@@ -33,50 +33,51 @@ $(window).resize(function () {
     if (!page) {
         return;
     }
-    var scrollContainer = $('#' + page.content.gridwrapper.grid.id);
-    if (scrollContainer.length === 0) {
-        return;
-    }
+    page.resize();
+
+    /*
+    var scrollContainer = $('#'+page.content.gridwrapper.grid.id);
+    if (scrollContainer.length===0) {return;}
     var panels = page.content.gridwrapper.grid.listItems;
-    var m;
-    var scrollviews = [];
-    var scrollspacers = [];
-    for (m = panels.first(); m !== ''; m = panels.next[m]) {
-        scrollviews.push(panels.obj[m].outline.elem);
-        scrollspacers.push(panels.obj[m].outline.scrollSpacer.elem);
+    var m:string;
+    var scrollviews=[];
+    var scrollspacers=[];
+    for (m=panels.first();m!=='';m=panels.next[m]) {
+    scrollviews.push(panels.obj[m].outline.elem);
+    scrollspacers.push(panels.obj[m].outline.scrollSpacer.elem);
     }
     var scrollViews = $(scrollviews);
     var scrollSpacer = $(scrollspacers);
-    var header = $('#' + page.header.id);
-
+    var header = $('#'+page.header.id);
     // might header-height have changed?
+    
     var headerHeight, height, mtop, mbottom;
-
-    (function () {
-        headerHeight = header.height();
-        height = Math.round(newHeight - headerHeight);
-        mtop = Number(scrollContainer.css('margin-top').replace(/px/, ''));
-        mbottom = Number(scrollContainer.css('margin-bottom').replace(/px/, ''));
+    
+    (function() {
+    headerHeight = header.height();
+    height = Math.round(newHeight - headerHeight);
+    mtop = Number(scrollContainer.css('margin-top').replace(/px/,''));
+    mbottom = Number(scrollContainer.css('margin-bottom').replace(/px/,''));
     })();
-
+    
     if (changeHeight || changeFont) {
-        scrollContainer.height(height - mtop - mbottom);
+    scrollContainer.height(height-mtop-mbottom);
     }
-
+    
     View.currentPage.content.gridwrapper.grid.resize();
-
+    
     var scrollViewOffset = scrollViews.offset().top - headerHeight;
-    scrollViews.height(height - mtop - mbottom - scrollViewOffset);
-    scrollSpacer.height(Math.round(height * 0.8));
-
+    scrollViews.height(height-mtop-mbottom-scrollViewOffset);
+    scrollSpacer.height(Math.round(height*0.8));
+    
     //if (changeWidth || changeFont) {
-    (function () {
-        $('textarea').each(function () {
-            View.get($(this).attr('id')).fixHeight();
-        });
+    (function() {
+    $('textarea').each(function() {
+    (<TextAreaView>View.get($(this).attr('id'))).fixHeight();
+    });
     })();
-
     // }
+    */
     $D.lastHeight = newHeight;
     $D.lastWidth = newWidth;
     $D.lastFont = newFont;

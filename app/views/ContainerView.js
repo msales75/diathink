@@ -17,6 +17,7 @@ var ContainerView = (function (_super) {
             classes: this.cssClass
         });
         this.renderChildViews();
+        this.setPosition();
         for (var name in this.childViewTypes) {
             this.elem.appendChild((this[name]).elem);
         }
