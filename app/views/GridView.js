@@ -11,39 +11,6 @@ var GridView = (function (_super) {
     function GridView() {
         _super.apply(this, arguments);
     }
-    GridView.prototype.render = function () {
-        this._create({
-            type: 'div',
-            classes: this.cssClass,
-            html: ''
-        });
-        this.insertListItems();
-        this.setPosition();
-        return this.elem;
-    };
-
-    GridView.prototype.positionChildren = function (v) {
-        this.itemWidth = Math.floor(this.parentView.layout.width / this.numCols);
-        var c = this.listItems.first();
-        var w = 0;
-        if (v != null) {
-            w = v.layout.left + v.layout.width;
-            c = this.listItems.next[v.id];
-        }
-        for (; c !== ''; c = this.listItems.next[c]) {
-            var child = this.listItems.obj[c];
-            if (!child.layout) {
-                child.layout = {};
-            }
-            if (child.layout.left !== w) {
-                child.layout.left = w;
-                if (child.elem) {
-                    $(child.elem).css('left', w + 'px');
-                }
-            }
-            w += child.layout.width;
-        }
-    };
     return GridView;
 })(View);
 //# sourceMappingURL=GridView.js.map

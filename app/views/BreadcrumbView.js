@@ -57,9 +57,10 @@ var BreadcrumbView = (function (_super) {
         assert(hiddendiv != null, "fixHeight called before defined hiddendiv");
         assert(this.parentView instanceof View, "ERROR: textedit parentDiv not found in fixHeight");
         var lineHeight = Math.round(1.25 * View.fontSize);
-        var paddingX = 2 * Math.round(.15 * View.fontSize);
-        var paddingY = 2 * Math.round(.18 * View.fontSize);
-        hiddendiv.style.width = String(currentWidth - paddingX - 1) + 'px';
+
+        // var paddingX = 0; // 2*Math.round(.15*View.fontSize);
+        //  var paddingY = 0; // 2*Math.round(.18*View.fontSize);
+        hiddendiv.style.width = String(currentWidth - 1) + 'px';
 
         // console.log("Defined hiddendiv width = "+hiddendiv.style.width);
         hiddendiv.innerHTML = this.getInnerHTML();
@@ -67,7 +68,7 @@ var BreadcrumbView = (function (_super) {
         var height = nlines * lineHeight;
 
         // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
-        this.layout.height = height + paddingY;
+        this.layout.height = height;
     };
 
     BreadcrumbView.prototype.layoutDown = function () {
@@ -96,9 +97,30 @@ var BreadcrumbView = (function (_super) {
 
     BreadcrumbView.prototype.renderUpdate = function () {
         this.elem.innerHTML = this.getInnerHTML();
+        this.resizeUp();
     };
 
-    BreadcrumbView.prototype.onClick = function () {
+    BreadcrumbView.prototype.onClick = function (params) {
+        var elem = $(params.elem);
+        if (!elem.hasClass('ui-breadcrumb-link')) {
+            return;
+        }
+        var modelid = elem.attr('data-href');
+        var panelview = this.panelView;
+        ActionManager.schedule(function () {
+            if (!View.focusedView) {
+                return null;
+            }
+            return Action.checkTextChange(View.focusedView.header.name.text.id);
+        }, function () {
+            return {
+                actionType: PanelRootAction,
+                activeID: modelid,
+                oldRoot: panelview.outline.alist.nodeRootView.id,
+                newRoot: 'new',
+                anim: 'none'
+            };
+        });
     };
     BreadcrumbView.prototype.validate = function () {
         _super.prototype.validate.call(this);

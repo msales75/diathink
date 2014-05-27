@@ -39,9 +39,8 @@ class TextAction extends Action {
             }
             var activeLineView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
             if (activeLineView != null) {
-                activeLineView.header.name.text.value = text;
+                activeLineView.header.name.text.setValue(text);
                 // console.log("Updating view "+activeLineView.header.name.text.id+" to value "+this.options.text);
-                $('#'+activeLineView.header.name.text.id).val(text).text(text);
                 activeLineView.header.name.text.resizeUp();
             }
 

@@ -39,8 +39,8 @@ var DropBox = (function () {
     DropBox.renderAll = function (dragger) {
         DropBox.dragger = dragger;
         var i, p, n, panel, node, nid;
-
-        DropBox.removeAll();
+        console.log("Rendering all drop boxes now");
+        DropBox.removeAll(); // todo: we need not remove/insert them every time
         $(document.body).addClass('drop-mode');
 
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
@@ -182,11 +182,17 @@ var DropBox = (function () {
         if (!this.valid) {
             return;
         }
-        this.elem = $('<div></div>').addClass(this.box.class).css('top', this.box.top + 'px').css('left', this.box.left + 'px').css('height', this.box.height + 'px').css('width', this.box.width + 'px').get(0);
+        var div = document.createElement('div');
+        div.className = this.box.class;
+        div.style.top = this.box.top + 'px';
+        div.style.left = this.box.left + 'px';
+        div.style.height = this.box.height + 'px';
+        div.style.width = this.box.width + 'px';
+        this.elem = div;
         if (this.box.image) {
             this.elem.innerHTML = '<img src="' + this.box.image + '" alt="' + this.box.image + '"/>';
         }
-        $(this.elem).appendTo(this.canvas.elem);
+        this.canvas.elem.insertBefore(this.elem, null);
     };
 
     DropBox.prototype.validateNodeBox = function (activeNode, type) {
@@ -390,10 +396,10 @@ var DropBoxLink = (function (_super) {
             image: 'theme/images/plus.png'
         };
         this.hover = {
-            top: node.position.top - this.canvas.cacheOffset.top - 1,
-            left: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left - $D.lineHeight - 1,
+            top: node.position.top,
+            left: node.position.left + node.dimensions.width - $D.lineHeight,
             bottom: node.position.top + $D.lineHeight,
-            right: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left
+            right: node.position.left + node.dimensions.width
         };
     }
     DropBoxLink.prototype.handleDrop = function (node, helper) {

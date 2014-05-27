@@ -43,7 +43,7 @@ var NodeLinkView = (function (_super) {
             left: String(this.layout.left) + 'px'
         });
     };
-    NodeLinkView.prototype.onClick = function () {
+    NodeLinkView.prototype.onClick = function (params) {
         var that = this;
         if (this.panelView.childPanel != null) {
             // change-root child panel

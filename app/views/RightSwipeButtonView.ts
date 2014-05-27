@@ -6,7 +6,7 @@ class RightSwipeButtonView extends SpanView {
     }
     cssClass = 'right-button';
     value = '>';
-    onClick() {
+    onClick(params:DragStartI) {
         ActionManager.schedule(
             function():SubAction {
                 if (View.focusedView) {

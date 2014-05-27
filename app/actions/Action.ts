@@ -22,23 +22,17 @@
 ///<reference path="../NodeDropTarget.ts"/>
 ///<reference path="../PanelDropSource.ts"/>
 ///<reference path="../PanelDropTarget.ts"/>
-
 // todo: get the information we need early on from action,
 //  to know what the oldType, newType and contexts are.
-
 // types: line, panel, link, breadcrumb, dockedlink
 // for each type, must have location, box-dims, text-size,
-
-
 // todo: Put text and collapsed into oldModelContext/newModelContext
 // todo: Put old-focus & view-collapsed into ?
 // todo: Put panel into new/oldPanelContext
-
 // Flag for scroll
 // todo: action stores oldFocus and newFocus ? (maybe not)
 // todo: handle focusID in context, and validate it.
 // todo: undo-scroll (maybe focus)
-
 interface ActionOptions {
     undo?:boolean;
     redo?:boolean;
@@ -57,14 +51,11 @@ interface ActionOptions {
     isSubpanel?:boolean;
     collapsed?:boolean;
 }
-
 interface SubAction extends ActionOptions {
     actionType: any;
     action?: Action;
 }
-
-interface AnonFunction{():SubAction;}
-
+interface AnonFunction {():SubAction;}
 interface ViewNumbers {
     [i:string]:number;
 }
@@ -122,36 +113,36 @@ interface RuntimeOptions {
     oldLineContext?:{[i:string]:{ type: string; obj: any; }};
     rOldModelContext?:ModelContext;
     rNewModelContext?:ModelContext;
+    cursorstart?:boolean; // whether cursor should be set to start
 }
-
 class Action extends PModel {
-    type:string ="Action";
+    type:string = "Action";
     historyRank:number;
     options:ActionOptions;
-    indentSpeed= 80;
-    createSpeed= 80;
-    deleteSpeed= 80;
+    indentSpeed = 80;
+    createSpeed = 80;
+    deleteSpeed = 80;
     undone:boolean;
     parentAction:Action;
     subactions:SubAction[];
-    placeholderSpeed= 160;
+    placeholderSpeed = 160;
     timestamp:number;
     lost:boolean;
-
     runtime:RuntimeOptions;
+    dockSpeed = 160;
+    oldType:string = 'line'; // only used for docking?
+    newType:string = 'line';
+    useOldLinePlaceholder = true;
+    useNewLinePlaceholder = true;
+    focusFirst:boolean = false;
 
-    dockSpeed= 160;
-    oldType:string= 'line'; // only used for docking?
-    newType:string= 'line';
-
-    useOldLinePlaceholder= true;
-    useNewLinePlaceholder= true;
     constructor(options) {
         super();
         this.options = _.extend({}, this.options, options);
         this.init();
         return this;
     }
+
     init() {
         _.extend(this, {
             instance: 0,
@@ -159,10 +150,10 @@ class Action extends PModel {
             timestamp: null,
             undone: false,
             lost: false,
-            oldModelContext:null,
-            newModelContext:null,
-            oldPanelContext:null,
-            newPanelContext:null,
+            oldModelContext: null,
+            newModelContext: null,
+            oldPanelContext: null,
+            newPanelContext: null,
             subactions: [],
             oldViewCollapsed: {},
             // options: {},
@@ -170,6 +161,7 @@ class Action extends PModel {
         });
         this.runinit();
     }
+
     runinit() {
         this.runtime = {
             nextQueueScheduled: null,
@@ -187,7 +179,7 @@ class Action extends PModel {
         if (o.undo || o.redo) {
             r.firsttime = false;
         } else {
-            r.firsttime= false;
+            r.firsttime = false;
         }
         if (o.undo) {
             r.rOldType = this.newType;
@@ -197,66 +189,75 @@ class Action extends PModel {
             r.rNewType = this.newType;
         }
     }
+
     addAsync(self, deps, f) {
         this.addQueue(self, deps, f, true);
     }
+
     addQueue(self, deps, f, async?) {
-        if (!async) {async=false;}
-        if ((self instanceof Array)&&(self.length===1)) {self = self[0];}
+        if (!async) {async = false;}
+        if ((self instanceof Array) && (self.length === 1)) {self = self[0];}
         if (typeof self === 'object') {
-            if (this.runtime.queue[self[0]+':'+self[1]]!==undefined) {alert("Queued twice: "+self[0]+':'+self[1]); return;}
-            this.runtime.queue[self[0]+':'+self[1]] = [self, deps, f, async];
+            if (this.runtime.queue[self[0] + ':' + self[1]] !== undefined) {
+                alert("Queued twice: " + self[0] + ':' + self[1]);
+                return;
+            }
+            this.runtime.queue[self[0] + ':' + self[1]] = [self, deps, f, async];
         } else {
-            if (this.runtime.queue[self]!==undefined) {alert("Queued twice: "+self); return;}
+            if (this.runtime.queue[self] !== undefined) {
+                alert("Queued twice: " + self);
+                return;
+            }
             this.runtime.queue[self] = [self, deps, f, async];
         }
     }
+
     nextQueue() {
         // console.log("Running nextQueue");
         if (this.runtime.nextQueueScheduled) {
             clearTimeout(this.runtime.nextQueueScheduled);
         }
         // loop over the queue and start all items which can be started
-        var i, j, deps, depj, self, self0, f, ready, n= 0, queue=this.runtime.queue;
+        // loop over the queue and start all items which can be started
+        var i, j, deps, depj, self, self0, f, ready, n = 0, queue = this.runtime.queue;
         var that = this;
         for (i in queue) {
-
-            if (this.runtime.queue[i]===undefined) {continue;}
-
+            if (this.runtime.queue[i] === undefined) {continue;}
             // never start the same job twice
             self = queue[i][0];
-            if ((self instanceof Array) &&(self.length===1)) {self = self[0];}
+            if ((self instanceof Array) && (self.length === 1)) {self = self[0];}
             if (typeof self === 'object') { // array
                 self0 = this.runtime.status[self[0]];
                 // console.log("Considering queue item "+i+" type="+self[0]+":"+self[1]);
-                if (self0 && self0[self[1]]>0) {
+                if (self0 && self0[self[1]] > 0) {
                     // console.log("Aborting queue item "+i+" because already begun");
                     continue;
                 }
             } else {
                 // console.log("Considering queue item "+i+" type="+self);
-                if (this.runtime.status[self]>0) {
+                if (this.runtime.status[self] > 0) {
                     // console.log("Aborting queue item "+i+" because already begun");
                     continue;
                 }
             }
-
             deps = queue[i][1];
             f = queue[i][2];
-            ready=1;
+            ready = 1;
             // console.log("Checking dependencies for "+i+": "+deps.join(','));
-            for (j=0; j<deps.length; ++j) {
-                if ((deps[j] instanceof Array) &&(deps[j].length===1)) {deps[j] = deps[j][0];}
+            for (j = 0; j < deps.length; ++j) {
+                if ((deps[j] instanceof Array) && (deps[j].length === 1)) {deps[j] = deps[j][0];}
                 if (typeof deps[j] === 'object') { // a dependency-array
                     depj = this.runtime.status[deps[j][0]];
-                    if (!(depj && (depj[deps[j][1]]===2))) {
+                    if (!(depj && (depj[deps[j][1]] === 2))) {
                         // console.log("Postponing "+i+" because haven't met: "+deps[j][0]+":"+deps[j][1]);
-                        ready=0; break;
+                        ready = 0;
+                        break;
                     }
                 } else { // a simple/string dependency
-                    if (!(this.runtime.status[deps[j]]===2)) {
+                    if (!(this.runtime.status[deps[j]] === 2)) {
                         // console.log("Postponing "+i+" because haven't met: "+deps[j]);
-                        ready=0; break;
+                        ready = 0;
+                        break;
                     }
                 }
             }
@@ -266,17 +267,18 @@ class Action extends PModel {
                 this.execQueue(i);
             }
         }
-        if (n>0) {
+        if (n > 0) {
             this.runtime.nextQueueScheduled = setTimeout(function() {
                 that.nextQueue();
             }, 0);
         }
     }
+
     execQueue(i) {
         var q, that:Action = this;
         q = this.runtime.queue[i];
         // console.log("Scheduling "+i);
-        if ((q[0] instanceof Array) &&(q[0].length===1)) {q[0] = q[0][0];}
+        if ((q[0] instanceof Array) && (q[0].length === 1)) {q[0] = q[0][0];}
         if (typeof q[0] === 'object') {
             that.runtime.status[q[0][0]][q[0][1]] = 1;
         } else {
@@ -288,8 +290,11 @@ class Action extends PModel {
         }, 0);
         setTimeout(function() {
             // console.log("Updating status of item "+i+"before execution");
-            console.log("Executing "+i);
+            // console.log("Executing "+i);
             (q[2])();
+            if (q[0] === 'end') {
+                // console.log("Just finished processing end, about to set status=2");
+            }
             if (!q[3]) { // unless it ends asynchronously like an animation
                 // console.log("Updating status after finishing non-async item "+i);
                 if (typeof q[0] === 'object') {
@@ -305,17 +310,16 @@ class Action extends PModel {
     exec(options) {
         var i, rank, nsub;
         if (!options) {options = {};}
-        console.log("Starting action "+this.type+" with undo="+options.undo+"; redo="+options.redo);
+        // console.log("Starting action "+this.type+" with undo="+options.undo+"; redo="+options.redo);
         if (options.redo) {options.undo = false;}
-        if (!options.undo) {this.undone=false;}
+        if (!options.undo) {this.undone = false;}
         if (options.parentAction) {
             this.parentAction = options.parentAction;
         }
-
         // if this is undo/redo op, and there are subactions, queue those immediately.
-        if (options.redo && (this.subactions.length>0)) {
+        if (options.redo && (this.subactions.length > 0)) {
             nsub = this.subactions.length;
-            for (i=0; i<nsub; ++i) {
+            for (i = 0; i < nsub; ++i) {
                 rank = ActionManager.nextRedo();
                 if (ActionManager.actions.at(rank) !== this.subactions[i].action) {
                     console.log("ERROR: Redoing wrong subaction");
@@ -325,19 +329,19 @@ class Action extends PModel {
             }
         } else if (options.undo && (this.parentAction != null)) {
             nsub = this.parentAction.subactions.length;
-            if (this !== this.parentAction.subactions[nsub-1].action) {
+            if (this !== this.parentAction.subactions[nsub - 1].action) {
                 console.log("ERROR: Last subaction in chain was not called first!");
                 debugger;
             }
-            for (i=0; i<nsub; ++i) {
+            for (i = 0; i < nsub; ++i) {
                 rank = ActionManager.nextUndo();
-                if (i===0) {
+                if (i === 0) {
                     if (ActionManager.actions.at(rank) !== this.parentAction) {
                         console.log("ERROR: Undoing something else when should be parentAction");
                         debugger;
                     }
                 } else {
-                    if (ActionManager.actions.at(rank) !== this.subactions[nsub-1-i].action) {
+                    if (ActionManager.actions.at(rank) !== this.subactions[nsub - 1 - i].action) {
                         console.log("ERROR: Undoing wrong subaction");
                         debugger;
                     }
@@ -345,12 +349,9 @@ class Action extends PModel {
                 ActionManager.subUndo();
             }
         }
-
         this._exec(options);
-
         // todo: test if lastAction is where it should be
         // todo: test if undo/redo/undone parameters match up
-
     }
 
     _exec(options) {
@@ -360,7 +361,6 @@ class Action extends PModel {
         this.validateOptions();
         o = this.options;
         r = this.runtime;
-
         // before changing model, start preview animation
         this.addQueue('context', [], function() {
             that.timestamp = (new Date()).getTime();
@@ -371,42 +371,41 @@ class Action extends PModel {
             that.validateOldContext();
             that.runinit2();
         });
-
         this.animSetup();
-
         // todo: assumptions and issue-handling
-        this.execModel();
-        this.execUniqueView();
-
         var outlines = OutlineRootView.outlinesById;
-        var focusDeps = [['uniqueView']];
-        for (i in outlines) {
-           this.execView(outlines[i]);
-           focusDeps.push(['view', outlines[i].nodeRootView.id]);
-        }
-
-        this.animCleanup();
-
-        this.addQueue('focus', focusDeps, function() {
-            if (that.options.focus) {
+        this.addQueue('focusFirst', [['context']], function() {
+            if (that.options.focus && that.focusFirst) {
                 that.focus();
             }
         });
-
+        this.execModel();
+        this.execUniqueView();
+        var focusDeps = [['uniqueView']];
+        for (i in outlines) {
+            this.execView(outlines[i]);
+            focusDeps.push(['view', outlines[i].nodeRootView.id]);
+        }
+        this.animCleanup();
+        this.addQueue('focus', focusDeps, function() {
+            if (that.options.focus && !that.focusFirst) {
+                that.focus();
+            }
+        });
         // todo: increase undo-dependencies
         this.addQueue('undobuttons', ['newModelAdd'],
             function() {ActionManager.refreshButtons();});
-
-        this.addQueue('end',['focus', 'undobuttons', 'anim', 'animCleanup'], function() {
+        this.addQueue('end', ['focus', 'undobuttons', 'anim', 'animCleanup'], function() {
             var i, sub;
             that.validateNewContext();
             if (!that.options.undo && !that.options.redo) {
-                for (i=that.subactions.length-1; i>=0; --i) {
+                for (i = that.subactions.length - 1; i >= 0; --i) {
                     sub = that.subactions[i];
                     sub.undo = false;
                     sub.redo = false;
                     sub.parentAction = that;
                     (function(o) {
+                        // console.log("Subscheduling an action immediately after action");
                         ActionManager.subschedule(function() {
                             return o;
                         });
@@ -414,8 +413,8 @@ class Action extends PModel {
                 }
             }
             if (_.size(ActionManager.queue) === 1) {
-                if (! (this instanceof TextAction)) {
-                    console.log("Checking text-change after action");
+                if (!(this instanceof TextAction)) {
+                    // console.log("Subscheduling text-check after last non-text action");
                     ActionManager.subschedule(
                         function() {
                             if (!View.focusedView) {
@@ -425,17 +424,20 @@ class Action extends PModel {
                         });
                 }
             } else {
-                console.log("Not validating after subaction");
+                // console.log("Not validating after subaction");
             }
             var done = that.options.done;
             delete that.options['done'];
+            // console.log("Calling done from action-end")
             done();
         });
         this.nextQueue();
     }
+
     getModel(id):OutlineNodeModel {
         return OutlineNodeModel.getById(id);
     }
+
     getNodeView(id, rootid):NodeView {
         var model = this.getModel(id);
         if (!model) {
@@ -444,6 +446,7 @@ class Action extends PModel {
         if (model.views == null) {return null;}
         return model.views[rootid];
     }
+
     undo(options) {
         if (!options) {options = {};}
         options.undo = true;
@@ -452,7 +455,9 @@ class Action extends PModel {
         return this.exec(options);
         // $D.validateMVC();
     }
-    focus() {
+
+
+    getFocusNode() {
         // by default, focus on activeID in newRoot
         var newRoot;
         if (this.options.undo) {
@@ -460,23 +465,40 @@ class Action extends PModel {
         } else {
             newRoot = this.options.newRoot;
         }
-        var nodeView:NodeView = this.getNodeView(this.options.activeID, newRoot);
-        if (!nodeView) { return; }
-        View.setFocus(nodeView);
-        var id = nodeView.header.name.text.id;
-        $('#'+id).focus();
+        return this.getNodeView(this.options.activeID, newRoot);
+    }
+
+    focus() {
+        var n:NodeView = this.getFocusNode();
+        if (!n) { return; }
+        View.setFocus(n);
+        var text:TextAreaView = n.header.name.text;
+        console.log('Setting DOM focus in Action to ' + text.id);
+        text.elem.focus();
+        this.placeCursor(text);
     }
 
     // To override **
+    placeCursor(text:TextAreaView) {}
+
     runinit2() {}
+
     validateOptions() {}
+
     validateOldContext() {}
+
     validateNewContext() {}
+
     contextStep() {}
+
     animSetup() { this.runtime.status.anim = 2; }
+
     animCleanup() { this.runtime.status.animCleanup = 2;}
+
     execModel() { this.runtime.status.newModelAdd = 2;}
+
     execView(outline) {this.runtime.status.view[outline.id] = 2;}
+
     execUniqueView() {this.runtime.status.uniqueView = 2;}
 
     static createAndExec(options):Action { // create a new action object
@@ -484,42 +506,44 @@ class Action extends PModel {
         action.exec(options);
         return action;
     }
+
     static checkTextChange(id):SubAction {
         // console.log("Checking text change for id="+id);
-        id = View.focusedView.header.name.text.id;
-        var value = $('#'+id).val();
-        console.log('checkTextChange: id = '+id);
-        if (!View.get(id)) {
+        if (!View.focusedView) {
             return null; // view was deleted since being edited
         }
-        var view = View.get(id).parentView.parentView.parentView;
+        var view:NodeView = View.focusedView;
+        id = view.header.name.text.id;
+        var value = view.header.name.text.value;
+        // console.log('checkTextChange: id = '+id);
         var model = view.value;
         if (model.get('text') !== value) {
             //console.log("TextAction for id="+id+"; model="+
-              //  model.cid+" with value="+$('#'+id).val());
-                return {
-                    actionType: TextAction,
-                    activeID: model.cid,
-                    text: value,
-                    oldRoot: view.nodeRootView.id,
-                    newRoot: view.nodeRootView.id,
-                    focus: false
-                }
+            //  model.cid+" with value="+$('#'+id).val());
+            // console.log("checkTextChange returning with TextAction");
+            return {
+                actionType: TextAction,
+                activeID: model.cid,
+                text: value,
+                oldRoot: view.nodeRootView.id,
+                newRoot: view.nodeRootView.id,
+                focus: false
+            }
         }
-        console.log("Validating without text change");
+        // console.log("checkTextChange returning with null");
+        // console.log("Validating without text change");
         return null;
     }
+
     validate() {
         var actions = ActionManager.actions;
         var lastaction:number = ActionManager.lastAction;
         var foundit:boolean;
         var i = this.historyRank;
-
         if (i >= lastaction + 1) {
             assert((<Action>actions.at(i)).undone === true,
                 "Action at " + i + " is after last-action " + lastaction + ", but is not undone");
         }
-
         assert(_.size(this.runtime.queue) === 0,
             "Action at " + i + " has non-empty runtime queue");
         if (this.parentAction) {
@@ -548,12 +572,10 @@ class Action extends PModel {
         }
     }
 }
-
 // outline-move op, animation-type,
 // commuting operations don't have to be undone/redone - optimization
-
-class ActionCollection  extends Collection {
-    model= typeof Action;
+class ActionCollection extends Collection {
+    model = typeof Action;
     // length:number;
     // at(k:number):Action;
     // push(a:Action):void;

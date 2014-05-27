@@ -18,7 +18,7 @@ var LeftSwipeButtonView = (function (_super) {
         this.isClickable = true;
     };
 
-    LeftSwipeButtonView.prototype.onClick = function () {
+    LeftSwipeButtonView.prototype.onClick = function (params) {
         ActionManager.schedule(function () {
             if (View.focusedView) {
                 return Action.checkTextChange(View.focusedView.header.name.text.id);

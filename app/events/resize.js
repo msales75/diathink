@@ -1,11 +1,17 @@
 ///<reference path="../views/View.ts"/>
 // correct height of scrollview on resize
+window.addEventListener("orientationchange", function () {
+    // Announce the new orientation number
+    $(window).resize();
+}, false);
+
 $(window).resize(function () {
     // avoid class-based jQuery selections
     // only call fixHeight if scroll-container width or font-size has changed
     // only update margins if font-size has changed
     // only update scroll-heights if height has changed
     var newHeight, newWidth, newFont, changeHeight, changeWidth, changeFont;
+    console.log("Processing resize event");
 
     (function () {
         newHeight = $(document.body).height();
@@ -34,6 +40,7 @@ $(window).resize(function () {
         return;
     }
     page.resize();
+    View.currentPage.content.gridwrapper.grid.updateCols();
 
     /*
     var scrollContainer = $('#'+page.content.gridwrapper.grid.id);

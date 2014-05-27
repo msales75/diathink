@@ -11,6 +11,7 @@ var Router = (function () {
         this.hoverTimer = null;
         var is_touch_device = 'ontouchstart' in document.documentElement;
         var press = is_touch_device ? 'touchstart' : 'mousedown';
+        console.log("Using press = " + press);
         var self = this;
         this.dragger = new DragHandler();
         Router.bind(rootElement, press, function (e) {
@@ -20,73 +21,101 @@ var Router = (function () {
             self.scrollMode = 0;
             self.dragMode = 0;
             if (view.handleView != null) {
+                console.log("Processing touch as handle");
+                if (View.focusedView !== view.nodeView) {
+                    View.setFocus(view);
+                    View.focusedView.header.name.text.addClass('hide-selection').selectAllText().focus();
+                }
                 self.dragMode = 1;
             } else if (view.scrollView != null) {
                 if (!View.focusedView || (view.nodeView !== View.focusedView)) {
                     // only enable scrolling if drag doesn't start from an already-focused-node
                     //   (this is important for text-selection)
+                    console.log("Processing touch as scroll of unfocused field");
                     self.scrollMode = 1;
                 }
                 if (view.nodeView != null) {
-                    View.setFocus(view);
+                    console.log("Processing touch as virtual-focus event");
+                    View.setFocus(view); // this should trigger checkTextChange- but not on handle change?
                     if (view instanceof TextAreaView) {
+                        console.log("Permitting default inside textarea");
+
                         // need native event to capture cursor position, even if we're not focusing
                         preventDefault = false;
 
                         // self.hidingFocus = view; // todo: make sure we don't need earlier delayed-focus list?
                         view.removeClass('hide-selection');
                     } else {
+                        console.log("In node but not handle or textarea, so focusing entire node");
                         View.focusedView.header.name.text.addClass('hide-selection').selectAllText().focus();
                     }
                 }
             }
             if (preventDefault) {
+                console.log("In touchstart preventing default");
                 e.preventDefault();
             }
         });
         var move = is_touch_device ? 'touchmove' : 'mousemove';
+        console.log("Using move = " + move);
         Router.bind(rootElement, move, function (e) {
+            // console.log('Event type '+e.type);
             if (!self.dragMode && !self.scrollMode) {
                 return;
             }
             var params = Router.getEventParams(e);
             if (self.dragMode === 2) {
+                // console.log("Processing touchmove as dragMove");
                 self.dragger.dragMove(params);
                 return;
             } else if (self.scrollMode === 2) {
+                // console.log("Processing touchmove as scrollMove");
                 self.dragStart.view.scrollView.scrollHandler.scrollMove(params);
                 return;
             }
             if (self.dragMode === 1) {
+                console.log("Processing touchmove as testDragStart");
                 if (self.testDragStart(params)) {
+                    console.log("Passed test to start dragging");
                     self.dragMode = 2; // we are definitely dragging
                     self.dragger.dragStart(self.dragStart);
+                } else {
+                    console.log("Distance not great enough to start dragging");
                 }
             } else if (self.scrollMode === 1) {
+                console.log("Processing touchmove as testScrollStart");
                 if (self.testScrollStart(params)) {
+                    console.log("Passed test to start scrolling");
                     self.scrollMode = 2;
                     self.dragStart.view.scrollView.scrollHandler.scrollStart(params);
+                } else {
+                    console.log("Distance not great enough to start scrolling");
                 }
             }
+            e.preventDefault();
         });
         var release = is_touch_device ? 'touchend' : 'mouseup';
+        console.log("Using release = " + release);
         Router.bind(rootElement, release, function (e) {
+            console.log("Processing touch release");
             var params = Router.getEventParams(e);
             var view = params.view;
 
             // handle click, double-click
             if ((self.scrollMode !== 2) && (self.dragMode !== 2) && view.clickView) {
+                // console.log("Testing touch for click");
                 if (self.testClick(params)) {
+                    // console.log("Processing click");
                     var clickView = view.clickView;
                     var now = params.time;
                     if (self.lastClicked && (self.lastClicked > now - 500) && !self.doubleClickFlag) {
                         self.lastClicked = self.dragStart.time;
                         self.doubleClickFlag = true;
-                        clickView.onDoubleClick();
+                        clickView.onDoubleClick(params);
                     } else {
                         self.lastClicked = self.dragStart.time;
                         self.doubleClickFlag = false;
-                        clickView.onClick();
+                        clickView.onClick(params);
                     }
                 }
             }
@@ -152,7 +181,12 @@ var Router = (function () {
         var p;
 
         // Calculate pageX/Y if missing and clientX/Y available
-        if (e.pageX != null) {
+        if ((e.changedTouches != null) && (e.changedTouches.length > 0)) {
+            p = {
+                left: e.changedTouches[0].pageX,
+                top: e.changedTouches[0].pageY
+            };
+        } else if (e.pageX != null) {
             p = {
                 left: e.pageX,
                 top: e.pageY

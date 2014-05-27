@@ -1,3 +1,9 @@
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 ///<reference path="../views/View.ts"/>
 ///<reference path="../validate.ts"/>
 ///<reference path="ActionManager.ts"/>
@@ -22,12 +28,6 @@
 ///<reference path="../NodeDropTarget.ts"/>
 ///<reference path="../PanelDropSource.ts"/>
 ///<reference path="../PanelDropTarget.ts"/>
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 
 var Action = (function (_super) {
     __extends(Action, _super);
@@ -43,6 +43,7 @@ var Action = (function (_super) {
         this.newType = 'line';
         this.useOldLinePlaceholder = true;
         this.useNewLinePlaceholder = true;
+        this.focusFirst = false;
         this.options = _.extend({}, this.options, options);
         this.init();
         return this;
@@ -65,6 +66,7 @@ var Action = (function (_super) {
         });
         this.runinit();
     };
+
     Action.prototype.runinit = function () {
         this.runtime = {
             nextQueueScheduled: null,
@@ -92,9 +94,11 @@ var Action = (function (_super) {
             r.rNewType = this.newType;
         }
     };
+
     Action.prototype.addAsync = function (self, deps, f) {
         this.addQueue(self, deps, f, true);
     };
+
     Action.prototype.addQueue = function (self, deps, f, async) {
         if (!async) {
             async = false;
@@ -116,12 +120,14 @@ var Action = (function (_super) {
             this.runtime.queue[self] = [self, deps, f, async];
         }
     };
+
     Action.prototype.nextQueue = function () {
         // console.log("Running nextQueue");
         if (this.runtime.nextQueueScheduled) {
             clearTimeout(this.runtime.nextQueueScheduled);
         }
 
+        // loop over the queue and start all items which can be started
         // loop over the queue and start all items which can be started
         var i, j, deps, depj, self, self0, f, ready, n = 0, queue = this.runtime.queue;
         var that = this;
@@ -148,7 +154,6 @@ var Action = (function (_super) {
                     continue;
                 }
             }
-
             deps = queue[i][1];
             f = queue[i][2];
             ready = 1;
@@ -185,6 +190,7 @@ var Action = (function (_super) {
             }, 0);
         }
     };
+
     Action.prototype.execQueue = function (i) {
         var q, that = this;
         q = this.runtime.queue[i];
@@ -204,8 +210,11 @@ var Action = (function (_super) {
         }, 0);
         setTimeout(function () {
             // console.log("Updating status of item "+i+"before execution");
-            console.log("Executing " + i);
+            // console.log("Executing "+i);
             (q[2])();
+            if (q[0] === 'end') {
+                // console.log("Just finished processing end, about to set status=2");
+            }
             if (!q[3]) {
                 // console.log("Updating status after finishing non-async item "+i);
                 if (typeof q[0] === 'object') {
@@ -223,7 +232,8 @@ var Action = (function (_super) {
         if (!options) {
             options = {};
         }
-        console.log("Starting action " + this.type + " with undo=" + options.undo + "; redo=" + options.redo);
+
+        // console.log("Starting action "+this.type+" with undo="+options.undo+"; redo="+options.redo);
         if (options.redo) {
             options.undo = false;
         }
@@ -267,7 +277,6 @@ var Action = (function (_super) {
                 ActionManager.subUndo();
             }
         }
-
         this._exec(options);
         // todo: test if lastAction is where it should be
         // todo: test if undo/redo/undone parameters match up
@@ -292,24 +301,25 @@ var Action = (function (_super) {
             that.validateOldContext();
             that.runinit2();
         });
-
         this.animSetup();
 
         // todo: assumptions and issue-handling
+        var outlines = OutlineRootView.outlinesById;
+        this.addQueue('focusFirst', [['context']], function () {
+            if (that.options.focus && that.focusFirst) {
+                that.focus();
+            }
+        });
         this.execModel();
         this.execUniqueView();
-
-        var outlines = OutlineRootView.outlinesById;
         var focusDeps = [['uniqueView']];
         for (i in outlines) {
             this.execView(outlines[i]);
             focusDeps.push(['view', outlines[i].nodeRootView.id]);
         }
-
         this.animCleanup();
-
         this.addQueue('focus', focusDeps, function () {
-            if (that.options.focus) {
+            if (that.options.focus && !that.focusFirst) {
                 that.focus();
             }
         });
@@ -318,7 +328,6 @@ var Action = (function (_super) {
         this.addQueue('undobuttons', ['newModelAdd'], function () {
             ActionManager.refreshButtons();
         });
-
         this.addQueue('end', ['focus', 'undobuttons', 'anim', 'animCleanup'], function () {
             var i, sub;
             that.validateNewContext();
@@ -329,6 +338,7 @@ var Action = (function (_super) {
                     sub.redo = false;
                     sub.parentAction = that;
                     (function (o) {
+                        // console.log("Subscheduling an action immediately after action");
                         ActionManager.subschedule(function () {
                             return o;
                         });
@@ -337,7 +347,7 @@ var Action = (function (_super) {
             }
             if (_.size(ActionManager.queue) === 1) {
                 if (!(this instanceof TextAction)) {
-                    console.log("Checking text-change after action");
+                    // console.log("Subscheduling text-check after last non-text action");
                     ActionManager.subschedule(function () {
                         if (!View.focusedView) {
                             return null;
@@ -346,17 +356,21 @@ var Action = (function (_super) {
                     });
                 }
             } else {
-                console.log("Not validating after subaction");
+                // console.log("Not validating after subaction");
             }
             var done = that.options.done;
             delete that.options['done'];
+
+            // console.log("Calling done from action-end")
             done();
         });
         this.nextQueue();
     };
+
     Action.prototype.getModel = function (id) {
         return OutlineNodeModel.getById(id);
     };
+
     Action.prototype.getNodeView = function (id, rootid) {
         var model = this.getModel(id);
         if (!model) {
@@ -367,6 +381,7 @@ var Action = (function (_super) {
         }
         return model.views[rootid];
     };
+
     Action.prototype.undo = function (options) {
         if (!options) {
             options = {};
@@ -377,7 +392,8 @@ var Action = (function (_super) {
         return this.exec(options);
         // $D.validateMVC();
     };
-    Action.prototype.focus = function () {
+
+    Action.prototype.getFocusNode = function () {
         // by default, focus on activeID in newRoot
         var newRoot;
         if (this.options.undo) {
@@ -385,38 +401,56 @@ var Action = (function (_super) {
         } else {
             newRoot = this.options.newRoot;
         }
-        var nodeView = this.getNodeView(this.options.activeID, newRoot);
-        if (!nodeView) {
+        return this.getNodeView(this.options.activeID, newRoot);
+    };
+
+    Action.prototype.focus = function () {
+        var n = this.getFocusNode();
+        if (!n) {
             return;
         }
-        View.setFocus(nodeView);
-        var id = nodeView.header.name.text.id;
-        $('#' + id).focus();
+        View.setFocus(n);
+        var text = n.header.name.text;
+        console.log('Setting DOM focus in Action to ' + text.id);
+        text.elem.focus();
+        this.placeCursor(text);
     };
 
     // To override **
+    Action.prototype.placeCursor = function (text) {
+    };
+
     Action.prototype.runinit2 = function () {
     };
+
     Action.prototype.validateOptions = function () {
     };
+
     Action.prototype.validateOldContext = function () {
     };
+
     Action.prototype.validateNewContext = function () {
     };
+
     Action.prototype.contextStep = function () {
     };
+
     Action.prototype.animSetup = function () {
         this.runtime.status.anim = 2;
     };
+
     Action.prototype.animCleanup = function () {
         this.runtime.status.animCleanup = 2;
     };
+
     Action.prototype.execModel = function () {
         this.runtime.status.newModelAdd = 2;
     };
+
     Action.prototype.execView = function (outline) {
         this.runtime.status.view[outline.id] = 2;
     };
+
     Action.prototype.execUniqueView = function () {
         this.runtime.status.uniqueView = 2;
     };
@@ -426,19 +460,22 @@ var Action = (function (_super) {
         action.exec(options);
         return action;
     };
+
     Action.checkTextChange = function (id) {
         // console.log("Checking text change for id="+id);
-        id = View.focusedView.header.name.text.id;
-        var value = $('#' + id).val();
-        console.log('checkTextChange: id = ' + id);
-        if (!View.get(id)) {
+        if (!View.focusedView) {
             return null;
         }
-        var view = View.get(id).parentView.parentView.parentView;
+        var view = View.focusedView;
+        id = view.header.name.text.id;
+        var value = view.header.name.text.value;
+
+        // console.log('checkTextChange: id = '+id);
         var model = view.value;
         if (model.get('text') !== value) {
             //console.log("TextAction for id="+id+"; model="+
             //  model.cid+" with value="+$('#'+id).val());
+            // console.log("checkTextChange returning with TextAction");
             return {
                 actionType: TextAction,
                 activeID: model.cid,
@@ -448,19 +485,20 @@ var Action = (function (_super) {
                 focus: false
             };
         }
-        console.log("Validating without text change");
+
+        // console.log("checkTextChange returning with null");
+        // console.log("Validating without text change");
         return null;
     };
+
     Action.prototype.validate = function () {
         var actions = ActionManager.actions;
         var lastaction = ActionManager.lastAction;
         var foundit;
         var i = this.historyRank;
-
         if (i >= lastaction + 1) {
             assert(actions.at(i).undone === true, "Action at " + i + " is after last-action " + lastaction + ", but is not undone");
         }
-
         assert(_.size(this.runtime.queue) === 0, "Action at " + i + " has non-empty runtime queue");
         if (this.parentAction) {
             assert(this.parentAction.subactions.length > 0, "Parent action of " + i + " has no subactions");

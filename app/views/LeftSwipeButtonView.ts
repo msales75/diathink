@@ -8,7 +8,7 @@ class LeftSwipeButtonView extends SpanView {
     }
     cssClass = 'left-button';
     value = '<';
-    onClick() {
+    onClick(params:DragStartI) {
         ActionManager.schedule(
             function():SubAction {
                 if (View.focusedView) {

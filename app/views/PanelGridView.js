@@ -19,6 +19,37 @@ var PanelGridView = (function (_super) {
         this.value = new LinkedList();
         this.hideList = false;
     };
+    PanelGridView.prototype.render = function () {
+        this._create({
+            type: 'div',
+            classes: this.cssClass,
+            html: ''
+        });
+        this.insertListItems();
+        this.setPosition();
+        return this.elem;
+    };
+    PanelGridView.prototype.updateCols = function () {
+        var width = View.currentPage.layout.width;
+        var oldNumCols = this.numCols;
+        var id;
+        if (width < 250) {
+            this.numCols = 1;
+        } else if (width < 1300) {
+            this.numCols = 2;
+        } else {
+            this.numCols = 3;
+        }
+        if (oldNumCols !== this.numCols) {
+            if (this.value && (this.value.count > 0)) {
+                if (oldNumCols > this.numCols) {
+                    this.clip('right');
+                } else if (oldNumCols < this.numCols) {
+                    this.slideFill('left');
+                }
+            }
+        }
+    };
 
     PanelGridView.prototype.updateValue = function () {
     };
@@ -217,6 +248,28 @@ var PanelGridView = (function (_super) {
             r.css('visibility', 'hidden');
         }
     };
+    PanelGridView.prototype.positionChildren = function (v) {
+        this.itemWidth = Math.floor(this.parentView.layout.width / this.numCols);
+        var c = this.listItems.first();
+        var w = 0;
+        if (v != null) {
+            w = v.layout.left + v.layout.width;
+            c = this.listItems.next[v.id];
+        }
+        for (; c !== ''; c = this.listItems.next[c]) {
+            var child = this.listItems.obj[c];
+            if (!child.layout) {
+                child.layout = {};
+            }
+            if (child.layout.left !== w) {
+                child.layout.left = w;
+                if (child.elem) {
+                    $(child.elem).css('left', w + 'px');
+                }
+            }
+            w += child.layout.width;
+        }
+    };
 
     PanelGridView.prototype.validate = function () {
         var p;
@@ -236,5 +289,5 @@ var PanelGridView = (function (_super) {
         }
     };
     return PanelGridView;
-})(GridView);
+})(View);
 //# sourceMappingURL=PanelGridView.js.map

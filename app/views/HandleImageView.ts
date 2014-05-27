@@ -28,7 +28,7 @@ class HandleImageView extends ImageView {
             height: Math.round(1.2*View.fontSize)
         };
     }
-    onClick() {
+    onClick(params:DragStartI) {
         var li:NodeView = this.nodeView;
         var liElem = $(li.elem);
         ActionManager.schedule(
@@ -50,7 +50,7 @@ class HandleImageView extends ImageView {
                 };
             });
     }
-    onDoubleClick() {
+    onDoubleClick(params:DragStartI) {
         var li:NodeView = this.nodeView;
         ActionManager.schedule(
             function():SubAction {

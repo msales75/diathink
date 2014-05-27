@@ -53,10 +53,14 @@ var TextAreaView = (function (_super) {
     }
     TextAreaView.prototype.render = function () {
         var html = '';
+        html = this.secure(this.value ? this.value : '');
+        if ($D.is_android) {
+            html = ' ' + html;
+        }
         this._create({
             type: 'textarea',
             classes: this.cssClass,
-            html: this.secure(this.value ? this.value : '')
+            html: html
         });
         this.elem.setAttribute('cols', '40');
         this.elem.setAttribute('rows', '1');
@@ -91,19 +95,27 @@ var TextAreaView = (function (_super) {
         this.layout.width = this.parentView.layout.width;
     };
     TextAreaView.prototype.getValue = function () {
-        this.value = this.elem.value;
+        if ($D.is_android) {
+            this.value = this.elem.value.substr(1);
+        } else {
+            this.value = this.elem.value;
+        }
         return this.value;
     };
 
     TextAreaView.prototype.setValue = function (val) {
         this.value = val;
-        var htmlval = View.escapeHtml(val);
-        this.elem.value = val;
+        var htmlval = View.escapeHtml(' ' + val);
+        this.elem.value = ' ' + val;
         this.elem.innerHTML = htmlval;
         return this;
     };
     TextAreaView.prototype.setValueFromDOM = function () {
-        this.value = this.elem.value;
+        if ($D.is_android) {
+            this.value = this.elem.value.substr(1);
+        } else {
+            this.value = this.elem.value;
+        }
     };
 
     // trigger-events:
@@ -122,11 +134,14 @@ var TextAreaView = (function (_super) {
         this.parentDiv.height(this.lineHeight + this.padding);
         return;
         } */
+        if (this.value.length < 5) {
+            if (!this.parentView.listItems || (this.parentView.listItems.count === 0)) {
+                this.layout.height = Math.round(1.25 * View.fontSize) + 2 * Math.round(.15 * View.fontSize);
+                console.log("Quickly handling short line");
+                return;
+            }
+        }
         var currentWidth = this.layout.width;
-
-        //if (!(currentWidth > 0)) {
-        //     return;
-        //}
         var currentFont = View.fontSize;
 
         // if ((this.lastWidth === currentWidth) &&
@@ -157,6 +172,9 @@ var TextAreaView = (function (_super) {
         // console.log("Defined hiddendiv width = "+hiddendiv.style.width);
         if (this.parentView && (this.parentView instanceof NodeTextWrapperView) && this.parentView.listItems && (this.parentView.listItems.count > 0)) {
             var content = this.value;
+            if ($D.is_android) {
+                content = ' ' + content;
+            }
             var links = this.parentView.listItems;
             var l;
             for (l = links.first(); l !== ''; l = links.next[l]) {
@@ -172,6 +190,9 @@ var TextAreaView = (function (_super) {
         } else {
             var lastchar = this.value.substr(this.value.length - 1, 1);
             var rest = this.value.substr(0, this.value.length - 1);
+            if ($D.is_android) {
+                rest = ' ' + rest;
+            }
             hiddendiv.innerHTML = this.secure(rest) + '<span class="marker">' + this.secure(lastchar) + '</span>';
         }
 
@@ -225,13 +246,18 @@ var TextAreaView = (function (_super) {
     };
 
     TextAreaView.prototype.selectAllText = function () {
+        console.log("Selecting all text");
         var range, selection, element = this.elem;
         if (window.getSelection) {
             selection = window.getSelection();
-            range = document.createRange();
+            if (selection.rangeCount > 0) {
+                range = selection.getRangeAt(0);
+            } else {
+                range = document.createRange();
+            }
             range.selectNodeContents(element);
-            selection.removeAllRanges();
-            selection.addRange(range);
+            // selection.removeAllRanges();
+            // selection.addRange(range);
         }
         return this;
     };
@@ -252,6 +278,7 @@ var TextAreaView = (function (_super) {
     };
 
     TextAreaView.prototype.setCursor = function (pos) {
+        console.log("Setting cursor/text-selection and focusing on " + this.id);
         this.setSelection(pos, pos);
         return this;
     };

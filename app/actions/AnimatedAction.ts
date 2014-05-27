@@ -1,6 +1,7 @@
 ///<reference path="Action.ts"/>
 m_require("app/actions/Action.js");
 class AnimatedAction extends Action {
+    disableAnimation:boolean = false;
     dropSource:DropSource; // defined by instantiation
     dropTarget:DropTarget;
     useAnim:boolean = true;
@@ -51,6 +52,10 @@ class AnimatedAction extends Action {
     }
 
     animSetup() {
+        if (this.disableAnimation) {
+            this.runtime.status.anim = 2;
+            return;
+        }
         var that = this;
         var r:RuntimeOptions = this.runtime;
         var outlines = OutlineRootView.outlinesById;
@@ -125,6 +130,10 @@ class AnimatedAction extends Action {
         });
     }
     animCleanup() {
+        if (this.disableAnimation) {
+            this.runtime.status.animCleanup = 2;
+            return;
+        }
         var that = this;
         var views = [];
         var o:string;
@@ -152,7 +161,7 @@ class AnimatedAction extends Action {
             }
         });
         this.addQueue('animCleanup', ['anim2'], function() {
-            console.log("starting animCleanup**");
+            // console.log("starting animCleanup**");
             if (that.dropSource) {
                 that.dropSource.cleanup();
                 that.dropSource = null;

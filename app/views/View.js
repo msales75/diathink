@@ -92,53 +92,62 @@ var View = (function () {
         this.items = 'models';
         // droppable is defined in view.dropboxes
         this.dropboxes = [];
-        if ((opts == null) || (opts.id == null)) {
-            this.id = View.getNextId();
-            delete opts['id'];
-        } else {
-            assert(View.get(opts.id) == null, "Duplicate id specified in view constructor");
+        var that = this;
+        (function defineThisID() {
+            if ((opts == null) || (opts.id == null)) {
+                that.id = View.getNextId();
+                delete opts['id'];
+            } else {
+                assert(View.get(opts.id) == null, "Duplicate id specified in view constructor");
 
-            // check if we should use a resurrected view instead
-            if (DeadView.viewList[opts.id] !== undefined) {
-                if (opts.parentView !== undefined) {
-                    assert(opts.parentView.id === DeadView.viewList[opts.id].parent, "Resurrection of " + opts.id + " doesn't match parent");
+                // check if we should use a resurrected view instead
+                if (DeadView.viewList[opts.id] !== undefined) {
+                    if (opts.parentView !== undefined) {
+                        assert(opts.parentView.id === DeadView.viewList[opts.id].parent, "Resurrection of " + opts.id + " doesn't match parent");
+                    }
+                    if (opts.value !== undefined) {
+                        assert(opts.value === DeadView.viewList[opts.id].value, "Resurrection of " + opts.id + " doesn't match value");
+                    }
+                    assert(opts.childOpts === undefined, "Cannot use childOpts on a resurrected view " + opts.id);
+                    _.extend(opts, DeadView.viewList[opts.id].getOptions());
+                    delete DeadView.viewList[opts.id];
                 }
-                if (opts.value !== undefined) {
-                    assert(opts.value === DeadView.viewList[opts.id].value, "Resurrection of " + opts.id + " doesn't match value");
-                }
-                assert(opts.childOpts === undefined, "Cannot use childOpts on a resurrected view " + opts.id);
-                _.extend(opts, DeadView.viewList[opts.id].getOptions());
-                delete DeadView.viewList[opts.id];
+                that.id = opts.id;
             }
-            this.id = opts.id;
-        }
+        })();
         this.init();
-        _.extend(this, opts);
-        View.register(this);
-        if (!(this instanceof PageView)) {
-            assert(this.parentView instanceof View, "Cannot instantiate object " + this.id + " without parentView");
-        }
+        (function extendAndRegister() {
+            _.extend(that, opts);
+            View.register(that);
+            if (!(that instanceof PageView)) {
+                assert(that.parentView instanceof View, "Cannot instantiate object " + that.id + " without parentView");
+            }
+            if (opts.parentView !== undefined) {
+                that.registerParent(opts.parentView);
+            }
+        })();
 
         // initial parentView is used for calculating value.
         // Value updates from parent-changes have to be propagated manually.
-        if (opts.parentView !== undefined) {
-            this.registerParent(opts.parentView);
-        }
         this.updateValue();
         this.layoutDown();
-        if (this.value instanceof LinkedList) {
-            this.listItems = new LinkedList();
-        }
-        this.createListItems();
-        for (var v in this.childViewTypes) {
-            if (this.childViewTypes.hasOwnProperty(v)) {
-                var childOpts = { _name: v, parentView: this };
-                if (this.childOpts && this.childOpts[v]) {
-                    _.extend(childOpts, this.childOpts[v]);
-                }
-                this[v] = new this.childViewTypes[v](childOpts);
+        (function creatingListItems() {
+            if (that.value instanceof LinkedList) {
+                that.listItems = new LinkedList();
             }
-        }
+            that.createListItems();
+        })();
+        (function createChildren() {
+            for (var v in that.childViewTypes) {
+                if (that.childViewTypes.hasOwnProperty(v)) {
+                    var childOpts = { _name: v, parentView: that };
+                    if (that.childOpts && that.childOpts[v]) {
+                        _.extend(childOpts, that.childOpts[v]);
+                    }
+                    that[v] = new that.childViewTypes[v](childOpts);
+                }
+            }
+        })();
         return this;
     }
     View.escapeHtml = function (text) {
@@ -195,7 +204,7 @@ var View = (function () {
     };
 
     View.setFocus = function (view) {
-        console.log("Inside setFocus with view " + view.id);
+        // console.log("Inside setFocus with view " + view.id);
         var nView = null;
         if (view) {
             nView = view.nodeView;
@@ -207,7 +216,8 @@ var View = (function () {
         }
         if (nView && (nView !== View.focusedView)) {
             View.focusedView = nView;
-            console.log("Setting focus to node " + nView.id);
+
+            // console.log("Setting focus to node " + nView.id);
             nView.header.name.text.focus();
         } else if (!nView) {
             View.focusedView = null;
@@ -217,7 +227,9 @@ var View = (function () {
     View.prototype.setPosition = function () {
         this.layoutUp();
         if (this.elem && this.layout) {
-            if (this.isAbsolute) {
+            if (this instanceof PageView) {
+                $(this.elem).css('position', 'fixed');
+            } else if (this.isAbsolute) {
                 $(this.elem).css('position', 'absolute');
             } else {
                 $(this.elem).css('position', 'relative');
@@ -295,13 +307,13 @@ var View = (function () {
     };
     View.prototype.themeLast = function (b) {
     };
-    View.prototype.onClick = function () {
+    View.prototype.onClick = function (params) {
     };
 
     View.prototype.removeFromModel = function () {
     };
 
-    View.prototype.onDoubleClick = function () {
+    View.prototype.onDoubleClick = function (params) {
     };
 
     View.prototype.detach = function (v, opts) {
@@ -577,32 +589,54 @@ var View = (function () {
     };
 
     View.prototype.resizeUp = function (opts) {
-        // todo: incorporate case where opts.top is the panel-root, and this is the scrollview
+        if (this instanceof NodeTextView) {
+            if (!$D.resizeCount) {
+                $D.resizeCount = 0;
+            }
+            ++$D.resizeCount;
+            if ($D.resizeCount % 2 == 0) {
+                console.log("Even count");
+            } else {
+                console.log("Odd count");
+            }
+            console.log("calling resizeUp for view " + this.id);
+        }
         var topView;
 
         // check if this is the list containing opts.top, which halts recursion
-        assert(!opts || this.nodeRootView, "Cannot call resizeUP with options outside outline");
-        if (opts && opts.top && this.nodeRootView && (OutlineNodeModel.getById(opts.top).views[this.nodeRootView.id].parentView === this)) {
-            if (opts.end != null) {
-                topView = OutlineNodeModel.getById(opts.top).views[this.nodeRootView.id];
-                this.positionChildren(topView, OutlineNodeModel.getById(opts.end).views[this.nodeRootView.id].id);
-                //console.log('resizeUp 1');
-            } else {
-                //console.log('resizeUp 2');
+        if (opts && opts.top && (this.nodeRootView != null)) {
+            // assert(this.nodeRootView != null, "Cannot call resizeUP with options outside outline");
+            var topView = OutlineNodeModel.getById(opts.top).views[this.nodeRootView.id];
+
+            // topView can be null if one panel is using top/end and another has them out of scope
+            if ((topView != null) && (topView.parentView === this)) {
+                if (opts.end != null) {
+                    var endView = OutlineNodeModel.getById(opts.end).views[this.nodeRootView.id];
+                    this.positionChildren(topView, endView.id);
+                    //console.log('resizeUp 1');
+                } else {
+                    //console.log('resizeUp 2');
+                }
+                return;
             }
-        } else {
-            //console.log('resizeUp 3');
-            this.positionChildren(null); // todo: could just position later ones
-            var tempLayout = this.saveLayout();
-            this.layoutUp();
-            if (this.parentView) {
-                //console.log('resizeUp 4');
-                this.parentView.resizeUp(opts);
-            } else {
-                //console.log('resizeUp 5');
-            }
-            this.updateDiffs(tempLayout);
         }
+
+        //console.log('resizeUp 3');
+        var tempLayout = this.saveLayout();
+        this.positionChildren(null); // todo: could just position later ones
+        this.layoutUp();
+        if (this.parentView) {
+            //console.log('resizeUp 4');
+            var tl = this.layout;
+
+            //if ((tl.height!==tempLayout.height)||(tl.width!==tempLayout.width)||
+            //    (tl.top!==tempLayout.top)||(tl.left!==tempLayout.left)) {
+            this.parentView.resizeUp(opts);
+            //}
+        } else {
+            //console.log('resizeUp 5');
+        }
+        this.updateDiffs(tempLayout);
     };
 
     View.prototype.validate = function () {
@@ -739,7 +773,7 @@ var View = (function () {
     View.currentPage = null;
     View.focusedView = null;
     View.hoveringView = null;
-    View.fontSize = 16;
+    View.fontSize = 24;
     return View;
 })();
 //# sourceMappingURL=View.js.map

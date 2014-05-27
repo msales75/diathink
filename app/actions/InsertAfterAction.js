@@ -12,6 +12,7 @@ var InsertAfterAction = (function (_super) {
     function InsertAfterAction() {
         _super.apply(this, arguments);
         this.type = "InsertAfterAction";
+        this.disableAnimation = true;
         // options:ActionOptions= {activeID: null, referenceID: null, text: ""};
         this._validateOptions = {
             requireActive: false,

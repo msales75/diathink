@@ -111,6 +111,14 @@ var PanelView = (function (_super) {
             assert(this.parentPanel.childPanel === this, "");
             this.parentPanel.childPanel = null;
         }
+        var i;
+        var boxes = this.dropboxes;
+        if (boxes && boxes.length) {
+            for (i = 0; i < boxes.length; ++i) {
+                boxes[i].remove();
+            }
+        }
+        this.dropboxes = [];
         _super.prototype.destroy.call(this);
     };
 

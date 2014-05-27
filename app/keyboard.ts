@@ -1,4 +1,5 @@
 ///<reference path="../frameworks/m.ts"/>
+/*
 
 declare var $D;
 
@@ -29,10 +30,11 @@ class keyboardSetup {
         if ($D.is_touch_device) {
 // for touch devices, don't let mousedown propogate to window,
 //   to prevent unintended focus/blurs that change keyboard
+
             document['ontouchmove'] = function (e) {
                 if ($('#debuglog').css('display') === 'none') {
-                    e.preventDefault(); // helps prevent scrolling
-                }
+                   e.preventDefault(); // helps prevent scrolling
+               }
             }
 
             $(window).bind('click keydown', function (e:Event) {
@@ -45,7 +47,6 @@ class keyboardSetup {
                     }, 0);
                 }
             });
-
 
             if (!this.is_mobile_ios) {
 // for android devices, resize might be indicating a keyboard-change
@@ -79,9 +80,9 @@ class keyboardSetup {
                     }
                 });
             }
+
         }
     }
-
     _virtualKeyboardHeight()
     {
         var sx = document.body.scrollLeft, sy = document.body.scrollTop;
@@ -159,4 +160,5 @@ class keyboardSetup {
         // override
     }
 }
+             */
 

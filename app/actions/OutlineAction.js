@@ -62,6 +62,9 @@ var OutlineAction = (function (_super) {
             r.rNewRoot = o.newRoot;
             r.rOldRoot = o.oldRoot;
         }
+        if (o.anim === 'indent') {
+            this.disableAnimation = true;
+        }
     };
 
     OutlineAction.prototype.getAncestorList = function (m, l) {
@@ -104,9 +107,8 @@ var OutlineAction = (function (_super) {
                 reversed: !isPrev
             };
         } else {
-            console.log('findCommonAncestor 5');
+            // console.log('findCommonAncestor 5');
         }
-
         var c1 = a1[i].cid;
         var c2 = a2[i].cid;
         var l = a1[i - 1].get('children');
@@ -153,123 +155,133 @@ var OutlineAction = (function (_super) {
             r.rOldModelContext = this.oldModelContext;
             r.rNewModelContext = this.newModelContext;
         }
-        var stop1 = null, stop2 = null, reversed;
-        var isMove = false;
-        var moveOutline = {};
-        var that = this;
-        (function () {
-            if ((that.newModelContext != null) && (that.oldModelContext != null)) {
-                for (i in OutlineRootView.outlinesById) {
-                    // for each view, determine if start and stop destinations are visible.
-                    var p1 = that.contextParentVisible(r.rOldModelContext, OutlineRootView.outlinesById[i]);
-                    var p2 = that.contextParentVisible(r.rNewModelContext, OutlineRootView.outlinesById[i]);
-                    if ((p1 != null) && (p2 !== null)) {
-                        // and neither is collapsed
-                        if ((!p1.nodeView || !p1.nodeView.isCollapsed) && (!p2.nodeView || !p2.nodeView.isCollapsed)) {
-                            // we are moving within the same visible outline
-                            isMove = true;
-                            moveOutline[i] = true;
-                            //console.log("Outline-runinit 1");
-                        } else {
-                            //console.log("Outline-runinit 2");
-                        }
-                    } else {
-                        //console.log("Outline-runinit 3");
-                    }
-                }
-                if (isMove) {
-                    // special case for step-forward/step-back
-                    if (r.rNewModelContext.prev === o.activeID) {
-                        assert(false, "This should never be possible");
-                        // stop1 = {top: o.activeID};
-                        // stop2 = {top: o.activeID};
-                        // reversed = false;
-                    } else if (r.rNewModelContext.next === o.activeID) {
-                        assert(false, "This should never be possible");
-                        // stop1 = {top: o.activeID};
-                        // stop2 = {top: o.activeID};
-                        // reversed = true;
-                    } else {
-                        assert(o.activeID !== r.rNewModelContext.parent, "");
-                        if (r.rNewModelContext.prev) {
-                            ancestors = that.findCommonAncestor(OutlineNodeModel.getById(o.activeID), OutlineNodeModel.getById(r.rNewModelContext.prev), true);
-                            if (ancestors.child2.cid === r.rNewModelContext.prev) {
-                                ancestors.child2b = OutlineNodeModel.getById(o.activeID);
-                                //console.log("Outline-runinit 4");
+        if (r.rNewModelContext == null) {
+            this.focusFirst = true;
+        } else {
+            this.focusFirst = false;
+        }
+        if (this.options.anim === 'indent') {
+            this.disableAnimation = true;
+        }
+        if (!this.disableAnimation) {
+            var stop1 = null, stop2 = null, reversed;
+            var isMove = false;
+            var moveOutline = {};
+            var that = this;
+            (function () {
+                if ((that.newModelContext != null) && (that.oldModelContext != null)) {
+                    for (i in OutlineRootView.outlinesById) {
+                        // for each view, determine if start and stop destinations are visible.
+                        var p1 = that.contextParentVisible(r.rOldModelContext, OutlineRootView.outlinesById[i]);
+                        var p2 = that.contextParentVisible(r.rNewModelContext, OutlineRootView.outlinesById[i]);
+                        if ((p1 != null) && (p2 !== null)) {
+                            // and neither is collapsed
+                            if ((!p1.nodeView || !p1.nodeView.isCollapsed) && (!p2.nodeView || !p2.nodeView.isCollapsed)) {
+                                // we are moving within the same visible outline
+                                isMove = true;
+                                moveOutline[i] = true;
+                                //console.log("Outline-runinit 1");
                             } else {
-                                ancestors.child2b = ancestors.child2;
-                                //console.log("Outline-runinit 6");
-                            }
-                        } else if (r.rNewModelContext.next) {
-                            ancestors = that.findCommonAncestor(OutlineNodeModel.getById(o.activeID), OutlineNodeModel.getById(r.rNewModelContext.next), false);
-                            if (ancestors.child2.cid === r.rNewModelContext.next) {
-                                ancestors.child2b = OutlineNodeModel.getById(o.activeID);
-                                //console.log("Outline-runinit 5");
-                            } else {
-                                ancestors.child2b = ancestors.child2;
-                                //console.log("Outline-runinit 7");
+                                //console.log("Outline-runinit 2");
                             }
                         } else {
-                            ancestors = that.findCommonAncestor(OutlineNodeModel.getById(o.activeID), OutlineNodeModel.getById(r.rNewModelContext.parent), false);
-
-                            //console.log("Outline-runinit 8");
-                            ancestors.child2b = ancestors.child2;
+                            //console.log("Outline-runinit 3");
                         }
-                        reversed = ancestors.reversed;
-                        if (reversed) {
-                            stop1 = { top: ancestors.child1.cid };
-                            stop2 = { top: ancestors.child2b.cid, end: ancestors.child1.cid };
-                            //console.log("Outline-runinit 9");
+                    }
+                    if (isMove) {
+                        // special case for step-forward/step-back
+                        if (r.rNewModelContext.prev === o.activeID) {
+                            assert(false, "This should never be possible");
+                            // stop1 = {top: o.activeID};
+                            // stop2 = {top: o.activeID};
+                            // reversed = false;
+                        } else if (r.rNewModelContext.next === o.activeID) {
+                            assert(false, "This should never be possible");
+                            // stop1 = {top: o.activeID};
+                            // stop2 = {top: o.activeID};
+                            // reversed = true;
                         } else {
-                            stop1 = { top: ancestors.child1.cid, end: ancestors.child2.cid };
-                            stop2 = { top: ancestors.child2b.cid };
-                            //console.log("Outline-runinit 10");
+                            assert(o.activeID !== r.rNewModelContext.parent, "");
+                            if (r.rNewModelContext.prev) {
+                                ancestors = that.findCommonAncestor(OutlineNodeModel.getById(o.activeID), OutlineNodeModel.getById(r.rNewModelContext.prev), true);
+                                if (ancestors.child2.cid === r.rNewModelContext.prev) {
+                                    ancestors.child2b = OutlineNodeModel.getById(o.activeID);
+                                    //console.log("Outline-runinit 4");
+                                } else {
+                                    ancestors.child2b = ancestors.child2;
+                                    //console.log("Outline-runinit 6");
+                                }
+                            } else if (r.rNewModelContext.next) {
+                                ancestors = that.findCommonAncestor(OutlineNodeModel.getById(o.activeID), OutlineNodeModel.getById(r.rNewModelContext.next), false);
+                                if (ancestors.child2.cid === r.rNewModelContext.next) {
+                                    ancestors.child2b = OutlineNodeModel.getById(o.activeID);
+                                    //console.log("Outline-runinit 5");
+                                } else {
+                                    ancestors.child2b = ancestors.child2;
+                                    //console.log("Outline-runinit 7");
+                                }
+                            } else {
+                                ancestors = that.findCommonAncestor(OutlineNodeModel.getById(o.activeID), OutlineNodeModel.getById(r.rNewModelContext.parent), false);
+
+                                //console.log("Outline-runinit 8");
+                                ancestors.child2b = ancestors.child2;
+                            }
+                            reversed = ancestors.reversed;
+                            if (reversed) {
+                                stop1 = { top: ancestors.child1.cid };
+                                stop2 = { top: ancestors.child2b.cid, end: ancestors.child1.cid };
+                                //console.log("Outline-runinit 9");
+                            } else {
+                                stop1 = { top: ancestors.child1.cid, end: ancestors.child2.cid };
+                                stop2 = { top: ancestors.child2b.cid };
+                                //console.log("Outline-runinit 10");
+                            }
+                            // check if we need to adjust 'to' based on special cases.
+                            /*
+                            if (p2.nodeView.value === ancestors.parent) { // destination-parent is ancestor of origin
+                            if (reversed) { // moving up in outline
+                            // prev or next or parent should be harmless
+                            } else { // moving down in outline, parent should be harmless
+                            if (r.rNewModelContext.prev) {
+                            // need to go one step after this
+                            stop2.plusone = true;
+                            }
+                            else if (r.rNewModelContext.next) {
+                            assert(false, "This should not be possible");
+                            }
+                            }
+                            }
+                            */
                         }
-                        // check if we need to adjust 'to' based on special cases.
-                        /*
-                        if (p2.nodeView.value === ancestors.parent) { // destination-parent is ancestor of origin
-                        if (reversed) { // moving up in outline
-                        // prev or next or parent should be harmless
-                        } else { // moving down in outline, parent should be harmless
-                        if (r.rNewModelContext.prev) {
-                        // need to go one step after this
-                        stop2.plusone = true;
-                        }
-                        else if (r.rNewModelContext.next) {
-                        assert(false, "This should not be possible");
-                        }
-                        }
-                        }
-                        */
                     }
                 }
-            }
-        })();
+            })();
 
-        // new height pushes up, and reposition-children-after
-        // at top level do height and moving children only
-        this.dropSource = new NodeDropSource({
-            useDock: (r.rNewModelContext != null),
-            usePlaceholder: true,
-            activeID: this.options.activeID,
-            rNewModelContext: r.rNewModelContext,
-            outlineID: r.rOldRoot,
-            dockView: this.options.dockView,
-            stopOutlines: moveOutline,
-            stopAt: stop1,
-            reversed: reversed
-        });
+            // new height pushes up, and reposition-children-after
+            // at top level do height and moving children only
+            this.dropSource = new NodeDropSource({
+                useDock: (r.rNewModelContext != null),
+                usePlaceholder: true,
+                activeID: this.options.activeID,
+                rNewModelContext: r.rNewModelContext,
+                outlineID: r.rOldRoot,
+                dockView: this.options.dockView,
+                stopOutlines: moveOutline,
+                stopAt: stop1,
+                reversed: reversed
+            });
 
-        // Todo: If it's a different height than NodeDropSource, NodeDropTarget should modify post-child-offsets & height by diff
-        this.dropTarget = new NodeDropTarget({
-            rNewModelContext: r.rNewModelContext,
-            activeID: this.options.activeID,
-            outlineID: r.rNewRoot,
-            oldOutlineID: r.rOldRoot,
-            stopOutlines: moveOutline,
-            stopAt: stop2,
-            reversed: reversed
-        });
+            // Todo: If it's a different height than NodeDropSource, NodeDropTarget should modify post-child-offsets & height by diff
+            this.dropTarget = new NodeDropTarget({
+                rNewModelContext: r.rNewModelContext,
+                activeID: this.options.activeID,
+                outlineID: r.rNewRoot,
+                oldOutlineID: r.rOldRoot,
+                stopOutlines: moveOutline,
+                stopAt: stop2,
+                reversed: reversed
+            });
+        }
     };
 
     OutlineAction.prototype.validateOptions = function () {
@@ -447,6 +459,55 @@ var OutlineAction = (function (_super) {
         }
         */
     };
+    OutlineAction.prototype.getFocusNode = function () {
+        if (this.focusFirst) {
+            var newRoot, li, model, collection, rank, cursor;
+            this.runtime.cursorstart = false;
+            var context = this.runtime.rOldModelContext;
+            newRoot = this.runtime.rNewRoot;
+            if (context.prev == null) {
+                // check if parent is visible
+                li = null;
+                if (context.parent != null) {
+                    li = this.getNodeView(context.parent, newRoot);
+                }
+                if (!li) {
+                    if (context.next == null) {
+                        return;
+                    }
+                    li = this.getNodeView(context.next, newRoot);
+                    this.runtime.cursorstart = true;
+                }
+            } else {
+                li = this.getNodeView(context.prev, newRoot);
+                if (!li) {
+                    console.log('ERROR: Missing prior view for focus');
+                    debugger;
+                }
+            }
+            return li;
+        } else {
+            return _super.prototype.getFocusNode.call(this);
+        }
+    };
+    OutlineAction.prototype.placeCursor = function (text) {
+        if (this.focusFirst) {
+            var cursor = 0;
+            if (!this.runtime.cursorstart) {
+                cursor = text.getValue().length;
+            }
+            if ($D.is_android) {
+                cursor += 1;
+            }
+            text.setCursor(cursor);
+        } else {
+            if ($D.is_android) {
+                text.setCursor(1);
+            } else {
+                text.setCursor(0);
+            }
+        }
+    };
 
     OutlineAction.prototype.contextStep = function () {
         this.getOldContext();
@@ -574,7 +635,8 @@ var OutlineAction = (function (_super) {
     OutlineAction.prototype.restoreViewContext = function (outline) {
         var that = this;
         assert(outline.id === outline.nodeRootView.id, "Invalid outline in restoreViewContext");
-        this.addQueue(['view', outline.id], ['newModelAdd', 'anim'], function () {
+        var deps = ['newModelAdd', 'anim', 'focusFirst'];
+        this.addQueue(['view', outline.id], deps, function () {
             var r = that.runtime, newModelContext, elem, newListView, createActiveLineView = false;
             newModelContext = r.rNewModelContext;
 
@@ -583,6 +645,7 @@ var OutlineAction = (function (_super) {
 
             // get parent listview; unless newModelContext is not in this view, then null
             newListView = that.contextParentVisible(newModelContext, outline);
+            console.log('Restoring "view" for outline ' + outline.id);
             if (newListView && newListView.hideList) {
                 newListView = null;
             }

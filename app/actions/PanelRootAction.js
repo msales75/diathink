@@ -20,32 +20,42 @@ var PanelRootAction = (function (_super) {
             requireNew: false
         };
     }
+    PanelRootAction.prototype.runinit = function () {
+        _super.prototype.runinit.call(this);
+        if (this.options.anim === 'none') {
+            this.disableAnimation = true;
+        }
+    };
     PanelRootAction.prototype.runinit2 = function () {
         var o = this.options, r = this.runtime;
-        if (this.options.undo) {
-            this.dropSource = new PanelDropSource({
-                activeID: this.oldRootModel.cid,
-                panelID: View.get(this.options.newRoot).panelView.id
-            });
-            this.dropTarget = new NodeDropTarget({
-                activeID: this.options.activeID,
-                outlineID: this.options.newRoot
-            });
+        if (o.anim === 'none') {
+            this.disableAnimation = true;
         } else {
-            assert(this.options.dockView == null, "How did we get dockElem in PanelRoot?");
-            this.dropSource = new NodeDropSource({
-                activeID: this.options.activeID,
-                outlineID: this.options.oldRoot,
-                dockView: this.options.dockView,
-                useDock: true,
-                dockTextOnly: true,
-                usePlaceholder: false
-            });
-            this.dropTarget = new PanelDropTarget({
-                panelID: View.get(this.options.oldRoot).panelView.id,
-                activeID: this.options.activeID,
-                useFadeOut: true
-            });
+            if (this.options.undo) {
+                this.dropSource = new PanelDropSource({
+                    activeID: this.oldRootModel.cid,
+                    panelID: View.get(this.options.newRoot).panelView.id
+                });
+                this.dropTarget = new NodeDropTarget({
+                    activeID: this.options.activeID,
+                    outlineID: this.options.newRoot
+                });
+            } else {
+                assert(this.options.dockView == null, "How did we get dockElem in PanelRoot?");
+                this.dropSource = new NodeDropSource({
+                    activeID: this.options.activeID,
+                    outlineID: this.options.oldRoot,
+                    dockView: this.options.dockView,
+                    useDock: true,
+                    dockTextOnly: true,
+                    usePlaceholder: false
+                });
+                this.dropTarget = new PanelDropTarget({
+                    panelID: View.get(this.options.oldRoot).panelView.id,
+                    activeID: this.options.activeID,
+                    useFadeOut: true
+                });
+            }
         }
     };
     PanelRootAction.prototype.contextStep = function () {

@@ -186,7 +186,12 @@ class AddLinkAction extends AnimatedAction {
                 }
             }
             // remove helper-stuff when done, since we're not using animator
-            that.getNodeView(that.options.activeID, outline.nodeRootView.id).removeClass('drag-hidden');
+            if (that.options.activeID) {
+                var activeView:NodeView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
+                if (activeView && activeView.elem) {
+                    $(activeView.elem).removeClass('drag-hidden');
+                }
+            }
             if (that.options.dockView) {
                 $(document.body).removeClass('transition-mode');
                 that.options.dockView.destroy();

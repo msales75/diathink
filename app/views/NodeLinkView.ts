@@ -33,7 +33,7 @@ class NodeLinkView extends View {
             left: String(this.layout.left)+'px'
         });
     }
-    onClick() {
+    onClick(params:DragStartI) {
         var that = this;
         if (this.panelView.childPanel!=null) {
             // change-root child panel

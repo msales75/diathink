@@ -18,7 +18,7 @@ if (nav.userAgent.match(/iPhone/i) || nav.userAgent.match(/iPad/i) || nav.userAg
         // show message & abort application.
     }
 }
-$D.is_touch_device = 'ontouchstart' in document.documentElement;
+
 OutlineNodeModel.root = new OutlineNodeModel();
 OutlineNodeModel.root.fromJSON({
     text: 'Home',
@@ -44,11 +44,18 @@ OutlineNodeModel.root.fromJSON({
         }
     ]
 });
+
+$D.is_touch_device = 'ontouchstart' in document.documentElement;
+var is_mobile_ios = (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i));
+is_mobile_ios != null ? this.is_mobile_ios = true : this.is_mobile_ios = false;
+$D.is_android = $D.is_touch_device && (!is_mobile_ios); // good enough for now...
+$D.is_android = true; // for debugging
+
 $(window).bind('load', function () {
     $D.router = new Router(document.body);
     new DiathinkView({});
     var grid = View.currentPage.content.gridwrapper.grid;
-    grid.numCols = 2;
+    grid.updateCols();
     grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
     grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
     View.currentPage.prerender();
@@ -64,8 +71,8 @@ $(window).bind('load', function () {
         grid.updatePanelButtons();
 
         // grid.resize();
-        $D.keyboard = new keyboardSetup();
-        $D.keyboard.init({});
+        // $D.keyboard = new keyboardSetup();
+        // $D.keyboard.init({});
         setTimeout(function () {
             // validate();
         }, 0);

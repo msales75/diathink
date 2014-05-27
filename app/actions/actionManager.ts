@@ -64,6 +64,7 @@ class ActionManager {
             this.queue.push(f2);
         }
         if (this.queue.length === newlength) {
+            // console.log("In schedule(), starting queue-processing because none are currently running");
             this.next();
         }
     }
@@ -85,6 +86,7 @@ class ActionManager {
             var f:{()} = this.queue[0];
             var options = f();
             if (options==null) { // abort action without history
+                // console.log("In next, calling queueComplete from empty action");
                 this.queueComplete(f, null);
                 if (this.queue.length===0) {
                     // console.log("Validating after null action");
@@ -94,13 +96,18 @@ class ActionManager {
             }
             // delete options['action'];
             options.done = function() {
-                that.queueComplete(f, options.action);
+                setTimeout(function() { // wait for action to wrapup before starting next one
+                    that.queueComplete(f, options.action);
+                }, 0);
             };
             if (options.undo) {
+                // console.log("In next(), undoing action of type "+options.actionType.name);
                 options.action.undo(options);
             } else if (options.redo) {
+                // console.log("In next(), redoing action of type "+options.actionType.name);
                 options.action.exec(options);
             } else {
+                // console.log("In next(), executing action of type "+options.actionType.name);
                 options.action = options.actionType.createAndExec(options);
             }
             ActionManager.log(options.action);
@@ -113,11 +120,13 @@ class ActionManager {
             debugger;
         }
         var lastQueue = this.queue.shift();
+        // console.log("Removed item from queue");
         if (f !== lastQueue) {
             console.log('ERROR: QueueComplete called with wrong code');
             debugger;
         }
         if (this.queue.length > 0) {
+            // console.log("Calling next from queueComplete, since queue-length="+this.queue.length);
             this.next();
         }
         // ensure the completed action has no remaining queue items
@@ -143,11 +152,11 @@ class ActionManager {
 
     static log(action:Action) {
         if (action.options.undo) {
-            console.log("Done undoing action " + action.historyRank + ': ' + action.type);
+            // console.log("Done undoing action " + action.historyRank + ': ' + action.type);
         } else if (action.options.redo) {
-            console.log("Done redoing action " + action.historyRank + ': ' + action.type);
+            // console.log("Done redoing action " + action.historyRank + ': ' + action.type);
         } else {
-            console.log("Done executing action " + this.actions.length + ': ' + action.type);
+            // console.log("Done executing action " + this.actions.length + ': ' + action.type);
         }
         // note: log for original could be called after undo is requested,
         //   but then options.undo would not have been set yet, so its ok
@@ -189,6 +198,10 @@ class ActionManager {
 
     static undo() {
         this.schedule(function():SubAction {
+                if (!View.focusedView) {return null;}
+                return Action.checkTextChange(View.focusedView.header.name.text.id);
+        });
+        this.schedule(function():SubAction {
             var rank:number = ActionManager.nextUndo();
             if (rank === -1) {return null;}
             ActionManager.lastAction = rank;
@@ -201,6 +214,10 @@ class ActionManager {
     }
 
     static redo() {
+        this.schedule(function():SubAction {
+            if (!View.focusedView) {return null;}
+            return Action.checkTextChange(View.focusedView.header.name.text.id);
+        });
         this.schedule(function():SubAction {
             var rank = ActionManager.nextRedo();
             if (rank === -1) {return null;}

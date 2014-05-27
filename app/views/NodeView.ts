@@ -45,6 +45,15 @@ class NodeView extends View {
     }
     destroy(opts?) {
         delete NodeView.nodesById[this.id];
+        var boxes:DropBox[] = this.dropboxes;
+        var i:number;
+        if (boxes && boxes.length) {
+            for (i=0; i<boxes.length; ++i) {
+                boxes[i].remove();
+            }
+        }
+        this.dropboxes = [];
+
         super.destroy(opts);
     }
     removeFromModel() {

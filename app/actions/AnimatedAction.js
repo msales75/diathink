@@ -10,6 +10,7 @@ var AnimatedAction = (function (_super) {
     __extends(AnimatedAction, _super);
     function AnimatedAction() {
         _super.apply(this, arguments);
+        this.disableAnimation = false;
         this.useAnim = true;
         this.usePostAnim = false;
     }
@@ -62,6 +63,10 @@ var AnimatedAction = (function (_super) {
     };
 
     AnimatedAction.prototype.animSetup = function () {
+        if (this.disableAnimation) {
+            this.runtime.status.anim = 2;
+            return;
+        }
         var that = this;
         var r = this.runtime;
         var outlines = OutlineRootView.outlinesById;
@@ -133,6 +138,10 @@ var AnimatedAction = (function (_super) {
         });
     };
     AnimatedAction.prototype.animCleanup = function () {
+        if (this.disableAnimation) {
+            this.runtime.status.animCleanup = 2;
+            return;
+        }
         var that = this;
         var views = [];
         var o;
@@ -160,7 +169,7 @@ var AnimatedAction = (function (_super) {
             }
         });
         this.addQueue('animCleanup', ['anim2'], function () {
-            console.log("starting animCleanup**");
+            // console.log("starting animCleanup**");
             if (that.dropSource) {
                 that.dropSource.cleanup();
                 that.dropSource = null;

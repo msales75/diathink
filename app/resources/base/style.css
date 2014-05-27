@@ -1,10 +1,12 @@
 
+/*
 @font-face {
     font-family: 'Open Sans';
     font-style: normal;
     font-weight: 400;
     src: local('Open Sans'), local('OpenSans'), url(http://themes.googleusercontent.com/static/fonts/opensans/v8/cJZKeOuBrn4kERxqtaUH3T8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
 }
+*/
 
 body, div, span, a, img, h1, h2, h3, h4, h5, ul, li {
  -webkit-touch-callout: none;
@@ -14,53 +16,48 @@ body, div, span, a, img, h1, h2, h3, h4, h5, ul, li {
  -ms-user-select: none;
  user-select: none;
 }
-body, div, span, a, img, h1, h2, h3, h4, h5, ul, li {
+body, div, span, a, img, h1, h2, h3, h4, h5, ul, li, textarea {
     margin: 0;
     padding: 0;
-    border: 0;
-}
-
-html, body { overflow: hidden; height: 100% }
-body { margin:0; padding:0; }
-body {
-    font-size: 16px;
-}
-
-.ui-body-c, .ui-body-c input, .ui-body-c select, .ui-body-c textarea, .ui-body-c button {
-    font-family: 'Open Sans';
-}
-.ui-mobile .ui-page-active {
+    border: none;
+    outline: none;
     overflow: hidden;
 }
 
+html, body { overflow: hidden; height: 100% }
+body {
+    font-size: 24px;
+}
 
+.ui-body-c, .ui-body-c input, .ui-body-c select, .ui-body-c textarea, .ui-body-c button {
+    /* font-family: 'Open Sans', arial, sans-serif; */
+    font-family: arial, sans-serif;
+}
+
+/*
 .ui-mobile-viewport{
-    margin:0;
-    overflow-x:visible;
-    -webkit-text-size-adjust:100%;
-    -ms-text-size-adjust:none;
-    -webkit-tap-highlight-color:rgba(0,0,0,0)
+   -webkit-text-size-adjust:100%;
+   -ms-text-size-adjust:none;
+   -webkit-tap-highlight-color:rgba(0,0,0,0)
 }
+*/
 
-body.ui-mobile-viewport,div.ui-mobile-viewport{
-    overflow-x:hidden
-}
-
+/*
 .ui-mobile [data-role=page],.ui-mobile [data-role=dialog],.ui-page{
-    top:0;
-    left:0;
-    width:100%;
-    min-height:100%;
-    position:absolute;
-    display:none;
-    border:0
+   top:0;
+   left:0;
+   width:100%;
+   min-height:100%;
+   position:absolute;
+   display:none;
+   border:0
 }
-
+*/
 .ui-mobile .ui-page-active{
     display:block;
-    overflow:visible
 }
-.ui-page{outline:none}
+/*
+
 @media screen and (orientation:portrait){
     .ui-mobile,.ui-mobile .ui-page{
         min-height:420px
@@ -71,32 +68,19 @@ body.ui-mobile-viewport,div.ui-mobile-viewport{
         min-height:300px
     }
 }
+*/
 
 ul.ui-listview {
-    overflow: hidden;
-    /* Used to be #EEE */
     background-color: #FFF;
 }
-.ui-btn-inner {
-    font-size: 1em; /* Override 16px default */
-}
+
 /* Image-handle for drag/drop */
 li.ui-li > div > .drag-handle {
-    position: absolute;
-    /*
-    top: 0.09em;
-    left: 0.09em;
-    height: 1.3em;
-    width: 1.3em; */
     background-color: transparent;
     opacity: 0.08;
     cursor: pointer;
-    border: none;
-    /* border-radius: 0.675em; */ /* Used to be 0.675em */
-    margin: 0px;
 }
 
-/* li.ui-li.ui-btn-hover-c > div > .drag-handle, */
 li.ui-li.ui-focus > div > .drag-handle {
     opacity: 0.2;
 }
@@ -108,19 +92,8 @@ li.ui-li.ui-focus > div > .drag-handle {
     visibility: visible;
 }
 
-/* Handle transformation when open or closed */
-li.collapsed.branch > div > .disclose {
-    /* background-color: #CCC; *//* Used to be 888 */
-}
-
 li.collapsed > ul {
     display: none;
-}
-
-/* Override 15px padding around each panel,
-   since it messes up column spacing */
-.ui-content {
-    padding: 0;
 }
 
 .ui-corner-all {
@@ -128,27 +101,12 @@ li.collapsed > ul {
   border-radius: .2em;
 }
 
-/* Fix line-spacing for inset-list */
-.ui-content .ui-listview-inset, .ui-panel-inner .ui-listview-inset {
-    margin: 0;
-}
-
-ul.ui-listview > li.ui-li {
-    /*
-    position: relative;
-    */
-    border: none;
-}
 /* around list-element */
 .ui-btn-up-c, .ui-btn-up-c:hover, .ui-btn-hover-c, .ui-btn-hover-c:hover {
-    border: none;
     text-shadow: none;
     background-image: none;
 }
 
-li.ui-li > div.ui-li.ui-btn-inner {
-    border: none;
-}
 li {
     list-style-type: none;
 }
@@ -160,38 +118,12 @@ li {
 
 }
 
-/* Remove extra padding around ui-link-inherit */
-/* Need to re-add this padding somewhere */
-/* .ui-li .ui-btn-inner a.ui-link-inherit {
-    padding: 0 0 0 0.8em;
-} */
-.ui-li .ui-btn-inner {
-    /* padding: 0 0 0 0.8em; */
-}
-
-/* Remove shadows from many ui-shadow elements */
-.ui-shadow, .ui-shadow:hover {
-    -moz-box-shadow: none;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-}
-
 /* Set page background */
 .ui-page,  .ui-body-c {
     background-image: none;
     background-color: #FFF; /* Used to be 888 */
 }
 
-.panel {
-    /*
-    position: relative;
-    margin: 10px 0;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    */
-    border: none;
-}
 .panel-border {
     position: absolute;
     left: 0;
@@ -203,22 +135,11 @@ li {
     padding: 0;
     background-color: #CCC;
 }
-/* Remove border around body and text-area*/
-.ui-body-c {
-    border: none;
-}
 
-/* Only show box-shadow on hover or when in drop-mode */
-.ui-shadow-inset, .drop-mode .ui-shadow-inset:hover {
-    -moz-box-shadow:none;
-    -webkit-box-shadow:none;
-    box-shadow:none;
-}
 
 /* Mask other hover-effects when in drop-mode */
 .drop-mode .ui-btn-hover-c {
     border-color: transparent;
-    /* Used to be #eee */
     background-color: #fff;
     background-image: none;
     font-weight: bold;
@@ -258,14 +179,6 @@ li {
 
 .drop-mode .droplayer > .droparrow {
     position: absolute;
-/*    border:  dashed #BBB 1px;
-    border-radius: 0.74em;
-    */
-    /*
-    background-repeat: no-repeat;
-    background-position: center;
-    background-image: url(images/indent-arrow.png);
-    */
     opacity: 0.4;
     height: 1.48em;
     width: 1.48em;
@@ -275,7 +188,6 @@ li {
     opacity: 0.3;
     width: 100%;
     height: 100%;
-    border: none;
 }
 
 .drop-mode .droplayer > .droparrow.active {
@@ -284,15 +196,6 @@ li {
 
 .drop-mode .droplayer > .droplink {
     position: absolute;
-    /*
-    border:  dashed #BBB 1px;
-    border-radius: 0.74em;
-    */
-    /*
-    background-repeat: no-repeat;
-    background-position: center;
-    background-image: url(images/indent-arrow.png);
-    */
     opacity: 0.3;
     height: 1.48em;
     width: 1.48em;
@@ -301,48 +204,20 @@ li {
     opacity: 1;
 }
 
-
-/* .drop-mode .drag-hover {
-    z-index: 10;
-    overflow: visible;
-}
-*/
 .ui-scrollview-clip {
     overflow: hidden;
-    /* height: 100%; */
 }
-.ui-scrollview-clip > .ui-scrollview-view {
-    /* padding-bottom: 2px; */
-}
-
 .drop-mode .drag-hover.ui-scrollview-clip, .drop-mode .drag-hover.ui-scrollview-view {
-    /* overflow-x: visible; */
     overflow: hidden;
 }
 
 .ui-header {
-/*    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%; */
     background-color: #FFF;
     background-image: none;
-    /* height: 42px; */
-
 }
 
 
-.undo-container, .zoom-container {
-    /*
-    width: 100px;
-    height: 36px;
-    */
-}
 .button {
-    /*float: left;
-    width: 36px;
-    height: 36px;
-    padding: 0 4px; */
     opacity: 0.3;
     cursor: pointer;
 }
@@ -359,22 +234,18 @@ li {
     padding: 0;
     margin: 0;
 }
-.undo-container > a.undo-button, .undo-container > a.redo-button,
-.zoom-container > a {
 /*
-float: left;
-padding: 2px;
-margin: 3px;
- */
-}
+
+.undo-container > a.undo-button, .undo-container > a.redo-button,
 
 .ui-header span.ui-btn-inner {
 display: block;
 background-repeat: no-repeat;
 background-position: center;
 }
-
+*/
 /* Undo-button particulars */
+/*
 .undo-button span.ui-btn-inner {
     display: block;
     background-image: url(images/undo.png);
@@ -388,51 +259,33 @@ background-position: center;
     background-repeat: no-repeat;
     background-position: center;
 }
-
+*/
+/*
 .undo-button > div.ui-disabled,
 .redo-button > div.ui-disabled  {
     height: 100%;
     border-radius: inherit;
     -webkit-border-radius: inherit;
 }
+*/
 /** End undo-button details */
 
 .ui-breadcrumb > a.ui-breadcrumb-link {
     cursor: pointer;
 }
 
-/* Attempt to Eliminate pixel-jitter when selecting? */
+/* Attempt to Eliminate pixel-jitter when selecting?
 a:active, a:focus {
     outline-style: none;
     -moz-outline-style:none;
-}
+}  */
 
-/* Margins around page */
-.horizontal-grid-container {
-    margin: 0;
-    /* width: 90%;
-    float: left; */
-    overflow: hidden;
-}
-.horizontal-grid > div {
-    /* float: left; */
-}
-
-.ui-grid-a > div, .ui-grid-a > div > div {
-    /* height: 100%; */
-}
-.ui-grid-a > div > div {
-    /* position: relative; */
-    /* width: 94%; */
-    /* left: 3%; */
-}
 
 li.ui-li.ui-focus, li.ui-li.ui-focus:hover {
     background-color: #FFF;
 }
 
 li.ui-li.ui-last-child {
-    /* Used to be 0.6em */
     -webkit-border-bottom-left-radius:0.2em;
     border-bottom-left-radius:0.2em;
     -webkit-border-bottom-right-radius:0.2em;
@@ -447,27 +300,7 @@ li.ui-li.ui-first-child {
 }
 
 li.ui-li {
-    /* Used to be #EEE */
     background-color: #FFF;
-}
-
-li.ui-li.drag-hidden {
-/*    -webkit-transition: height 80ms linear;
-    -moz-transition: height 80ms linear;
-    -o-transition: height 80ms linear;
-    transition: height 80ms linear;
-*/
-}
-
-li.li-placeholder, div.li-placeholder {
-    height: 0;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    /* Used to be #EEE */
-    background-color: #FFF;
-    overflow: hidden;
 }
 
 li.ui-li.drag-hidden > div, li.ui-li.drag-hidden > ul {
@@ -477,26 +310,7 @@ li.ui-li.drag-hidden > div, li.ui-li.drag-hidden > ul {
 li.ui-li.ui-btn-hover-c {
     background-color: #FFF;
 }
-li.ui-li-static.ui-li {
-    padding: 0;
-}
 
-li.ui-li > ul.ui-listview {
-    padding: 0;
-    margin: 0;
-    /* margin: 0 0 0 0.8em; */
-}
-
-li.ui-li .outline-header > div.outline-content_container {
-    /* padding: 1px 2px 1px 1.65em; */
-    margin: 0;
-    /* height: 1.55em; */
-/*    -webkit-transition: height 80ms linear;
-    -moz-transition: height 80ms linear;
-    -o-transition: height 80ms linear;
-    transition: height 80ms linear;
-    */
-}
 
 li.ui-li .outline-header > div > textarea.outline-content.ui-input-text {
     resize: none;
@@ -538,8 +352,6 @@ div.hiddendiv {
     font-size: 1em; /* 18px; */
     line-height: 1.25em; /* 22px; */
     font-weight: normal;
-   /* left: 10px;
-    top: 10px; */
     z-index: -1500;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -558,37 +370,24 @@ div.hiddendiv {
     word-wrap: break-word;
 }
 
-/*
-div.hiddeninput {
-    display: block;
-    position: absolute;
-    z-index: -1;
-    margin: 0;
-    height: 1.25em;
-    width: 50px;
-    padding: 0;
-    border: none;
-    top: 0;
-    left: 0;
-    opacity: 0;
-}
-*/
-
 .ui-body-c .panel-name {
     color: #222;
     font-weight: bold;
-    text-shadow: none;
+    /* text-shadow: none; */
 }
 .ui-body-c .ui-link {
-    color: #DDD;
+    color: #AAA;
     font-weight: bold;
-    text-shadow: none;
+    /* text-shadow: none; */
 }
 .ui-body-c .ui-link:hover {
-    /* Used to be #EEE */
-    color: #FFF;
+    color: #CCC;
+}
+textarea.hide-selection::selection {
+    background: transparent;
 }
 
+/*
 .ui-btn:focus,.ui-link-inherit:focus,
 .ui-mobile-nosupport-boxshadow .ui-focus,
 .ui-mobile-nosupport-boxshadow .ui-btn:focus,
@@ -603,25 +402,56 @@ div.hiddeninput {
     -webkit-box-shadow:none;
     box-shadow:none;
 }
-
-textarea.hide-selection::selection {
-    background: transparent;
-}
-/*
-li.ui-li > div > div > textarea.ui-input-text.outline-content:focus {
-    color: transparent;
-    -webkit-text-fill-color: #333;
-}
-li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
-    color: #333;
-}
 */
 
+/*
 .scroll-spacer {
     display: block;
     width: 100%;
     height: 80%;
     background: transparent;
+}
+*/
+
+
+.grid-wrapper {
+    background: #FFF; /* covers hiddendiv */
+}
+.grid-wrapper > .left-button {
+    text-align: center;
+    display: block;
+    font-size: 2.5em;
+    cursor: pointer;
+}
+.grid-wrapper > .right-button {
+    text-align: center;
+    display: block;
+    font-size: 2.5em;
+    cursor: pointer;
+}
+.grid-wrapper > .left-button:hover,
+.grid-wrapper > .right-button:hover {
+    color: #DDD;
+}
+
+.link-list > .node-link {
+    position: absolute;
+    color: #AAA;
+    text-decoration: none;
+    font-size: 1em; /* 18px; */
+    line-height: 1.25em; /* 22px; */
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    white-space: nowrap;
+    word-wrap: break-word;
+    cursor: pointer;
+}
+div.hiddendiv > span.node-link {
+    color: #AAA;
+    text-decoration: underline;
 }
 
 /* Debug style */
@@ -644,9 +474,9 @@ li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
     background-color: transparent;
 }
 #debuglog ul {
-  display: block;
-  margin: 0; padding: 0; border: 0;
-  margin-left: 20px;
+    display: block;
+    margin: 0; padding: 0; border: 0;
+    margin-left: 20px;
 }
 
 #debuglog .kill {
@@ -666,54 +496,5 @@ li.ui-li.ui-focus > div > div > textarea.ui-input-text.outline-content:focus {
     width: 40px;
     height: 40px;
     background-color: #FF0;
-}
-
-.grid-wrapper > .left-button {
-    /* float: left; */
-    text-align: center;
-    display: block;
-    /* margin-top: 1.5em; */
-    /* width: 5%; */
-    font-size: 2.5em;
-    cursor: pointer;
-}
-.grid-wrapper > .right-button {
-/*    float: right; */
-    text-align: center;
-    display: block;
-/*    margin-top: 1.5em; */
-/*    width: 5%; */
-    font-size: 2.5em;
-    cursor: pointer;
-}
-.grid-wrapper > .left-button:hover,
-.grid-wrapper > .right-button:hover {
-    /* Used to be #EEE */
-    color: #FFF;
-}
-
-.inner-panel {
-    margin: 0 auto;
-    width: 95%;
-}
-
-.link-list > .node-link {
-    position: absolute;
-    color: #AAA;
-    text-decoration: none;
-    font-size: 1em; /* 18px; */
-    line-height: 1.25em; /* 22px; */
-    font-weight: normal;
-    margin: 0;
-    padding: 0;
-    border: none;
-    outline: none;
-    white-space: nowrap;
-    word-wrap: break-word;
-    cursor: pointer;
-}
-div.hiddendiv > span.node-link {
-    color: #AAA;
-    text-decoration: underline;
 }
 /* End of debug */

@@ -28,11 +28,11 @@ class DragHandler {
     reverting:boolean; // ideally don't call dragStart at all
     constructor(options?) {
         this.options = {};
-        if ($D.keyboard) {
+        // if ($D.keyboard) { // currently unused
             // override open/close keyboard methods
-            $D.keyboard.softKeyboardOpen = this.softKeyboardOpen;
-            $D.keyboard.softKeyboardClose = this.softKeyboardClose;
-        }
+            // $D.keyboard.softKeyboardOpen = this.softKeyboardOpen;
+            // $D.keyboard.softKeyboardClose = this.softKeyboardClose;
+        // }
         // todo: connect to panel-manager
         NodeView.refreshPositions();
     }
@@ -42,6 +42,7 @@ class DragHandler {
         var currentView:NodeView = options.view.nodeView;
         this.currentItem = currentView;
         var that = this;
+        console.log("In dragStart with item "+this.currentItem.id);
         this.panelScrollStart = {};
         // Correct the active textbox in case it doesn't match value.
         // $('#' + textid).text($('#' + textid).val());
@@ -95,11 +96,11 @@ class DragHandler {
             this.helper.elem.style.top = helperPosition.top + "px";
         }
         if (this.scrollPanel) {
-            var left = this.scrollPanel.getOffset().left;
-            var right = left + $(this.scrollPanel.elem).width();
+            var left = this.scrollPanel.layout.left;
+            var right = left + this.scrollPanel.layout.width;
             if (!(this.mousePosition.left >= left && this.mousePosition.left <= right)) {
                 this.scrollPanel = null;
-                console.log("Clearing scrollPanel");
+                // console.log("Clearing scrollPanel");
             }
         }
         if (!this.scrollPanel) {
@@ -110,7 +111,7 @@ class DragHandler {
                 var right = left + panel.layout.width;
                 if (self.mousePosition.left >= left && self.mousePosition.left <= right) {
                     self.scrollPanel = panel;
-                    console.log("Changing scrollPanel to " + pid);
+                    // console.log("Changing scrollPanel to " + pid);
                     // console.log(self.scrollPanel);
                 }
             }
@@ -125,7 +126,7 @@ class DragHandler {
             // todo: add constraint?: for later panels, could scroll-position be different than the
             // scroll-position at mouse-start, which is where items are last updated?
             this.scrollPanel.outline.scrollHandler.scrollWhileDragging(
-                this.mousePosition.top - this.scrollPanel.getOffset().top);
+                this.mousePosition.top - this.scrollPanel.layout.top);
         }
         var box:DropBox = DropBox.getHoverBox(this.mousePosition, this.panelScrollStart);
 
@@ -137,19 +138,21 @@ class DragHandler {
             if (box.view) {
                 if (box.view instanceof NodeView) {
                     if (box.view !== $D.hoverItem) {
-                        $D.hoverItem.removeClass('ui-btn-hover-c');
+                        if ($D.hoverItem && $D.hoverItem.elem) {
+                            $D.hoverItem.removeClass('ui-btn-hover-c');
+                        }
                     }
                     box.view.addClass('ui-btn-hover-c');
                     $D.hoverItem = box.view;
                 } else {
-                    if ($D.hoverItem) {
+                    if ($D.hoverItem && $D.hoverItem.elem) {
                         $D.hoverItem.removeClass('ui-btn-hover-c');
                     }
                 }
             }
             // $D.log(['debug', 'drag'], "Defined drop box of type" + box.type);
         } else { // virtual blur
-            if ($D.hoverItem) {
+            if ($D.hoverItem && $D.hoverItem.elem) {
                 $D.hoverItem.removeClass('ui-btn-hover-c');
             }
         }
@@ -211,10 +214,10 @@ class DragHandler {
             // todo: must set top/left/width/height in each panel-view
             var targetview:NodeView = this.currentItem;
             if (!(refview instanceof NodeView)) {
-                console.log("refview is of the wrong type with id=" + refview.id);
+                //console.log("refview is of the wrong type with id=" + refview.id);
             }
             if (!(targetview instanceof NodeView)) {
-                console.log("targetview is of the wrong type with id=" + targetview.id);
+                //console.log("targetview is of the wrong type with id=" + targetview.id);
             }
             this.activeBox.handleDrop(this.currentItem, this.helper);
             this.activeBox = null;
@@ -242,9 +245,22 @@ class DragHandler {
         newNode = new NodeView({
             parentView:View.currentPage.drawlayer,
             value: this.currentItem.value,
-            isCollapsed: this.currentItem.isCollapsed
+            isCollapsed: true
         });
+        // include any unfinished changes in text
+        var text1 = newNode.value.get('text');
+        var text2 = this.currentItem.header.name.text.elem.value;
+        if ($D.is_android) {
+            text2 = text2.substr(1);
+        }
         newNode.renderAt({parent: View.currentPage.drawlayer.elem});
+        if (text1 !== text2) {
+            if ($D.is_android) {
+                newNode.header.name.text.elem.value = ' '+text2;
+            } else {
+                newNode.header.name.text.elem.value = text2;
+            }
+        } // todo: should we do the same update for children?
         newNode.themeFirst(true);
         newNode.themeLast(true);
         $(newNode.elem).css({

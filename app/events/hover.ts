@@ -5,9 +5,12 @@ $(function() {
 // handle hovering-class, also retain class for 500ms in case it's followed by focus class
     $D.hoverItem = null, $D.hoverTimer = null;
     if (!$D.is_touch_device) {
+        console.log("This should not happen on mobile");
         $(document.body).on('mouseover mouseout', function (e) {
             // find the closest li to the target
-            var li:NodeView = View.getFromElement(<HTMLElement>e.target).nodeView;
+            var tView = View.getFromElement(<HTMLElement>e.target);
+            if (!tView) {return;}
+            var li:NodeView = tView.nodeView;
             if (!li) {
                 return;
             }

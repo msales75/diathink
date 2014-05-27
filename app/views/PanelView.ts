@@ -117,6 +117,14 @@ class PanelView extends View {
             assert(this.parentPanel.childPanel===this, "");
             this.parentPanel.childPanel = null;
         }
+        var i:number;
+        var boxes:DropBox[] = this.dropboxes;
+        if (boxes && boxes.length) {
+            for (i=0; i<boxes.length; ++i) {
+                boxes[i].remove();
+            }
+        }
+        this.dropboxes = [];
         super.destroy();
     }
 

@@ -49,6 +49,12 @@ class OutlineScrollView extends ScrollView {
         new DeadOutlineScroll(this);
         super.destroy();
     }
+    getOffset() {
+        var scroll:number;
+        var pos = super.getOffset();
+        pos.top -= this.scrollHandler.getScrollPosition().y;
+        return pos;
+    }
     layoutDown() {
         var p:Layout = this.parentView.layout;
         if (this.parentView && this.parentView.breadcrumbs && this.parentView.breadcrumbs.layout) {

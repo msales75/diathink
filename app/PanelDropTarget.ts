@@ -118,7 +118,7 @@ class PanelDropTarget extends DropTarget {
         }
         var panel:PanelView = <PanelView>View.get(this.panelID);
         var oldBreadcrumbs = panel.breadcrumbs;
-        var bpos = $(oldBreadcrumbs.elem).position();
+        var bpos = oldBreadcrumbs.layout;
 
         // change value of panel temporarily to render correct breadcrumbs
         var oldValue = panel.value;

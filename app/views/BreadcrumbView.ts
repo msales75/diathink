@@ -49,15 +49,15 @@ class BreadcrumbView extends View {
         assert(hiddendiv!=null, "fixHeight called before defined hiddendiv");
         assert(this.parentView instanceof View, "ERROR: textedit parentDiv not found in fixHeight");
         var lineHeight = Math.round(1.25*View.fontSize);
-        var paddingX = 2*Math.round(.15*View.fontSize);
-        var paddingY = 2*Math.round(.18*View.fontSize);
-        hiddendiv.style.width = String(currentWidth - paddingX - 1) + 'px';
+        // var paddingX = 0; // 2*Math.round(.15*View.fontSize);
+       //  var paddingY = 0; // 2*Math.round(.18*View.fontSize);
+        hiddendiv.style.width = String(currentWidth - 1) + 'px';
         // console.log("Defined hiddendiv width = "+hiddendiv.style.width);
         hiddendiv.innerHTML = this.getInnerHTML();
         var nlines = Math.round(($(hiddendiv).children('.panel-name').next().position().top / lineHeight) - 0.4) + 1;
         var height = nlines * lineHeight;
         // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
-        this.layout.height = height+paddingY;
+        this.layout.height = height;
     }
 
     layoutDown() {
@@ -84,9 +84,28 @@ class BreadcrumbView extends View {
 
     renderUpdate() {
         this.elem.innerHTML = this.getInnerHTML();
+        this.resizeUp();
     }
 
-    onClick() {
+    onClick(params:DragStartI) {
+        var elem = $(params.elem);
+        if (! elem.hasClass('ui-breadcrumb-link')) {return;}
+        var modelid = elem.attr('data-href');
+        var panelview:PanelView = this.panelView;
+        ActionManager.schedule(
+            function():SubAction {
+                if (!View.focusedView) {return null;}
+                return Action.checkTextChange(View.focusedView.header.name.text.id);
+            },
+            function():SubAction {
+                return {
+                    actionType: PanelRootAction,
+                    activeID: modelid,
+                    oldRoot: panelview.outline.alist.nodeRootView.id,
+                    newRoot: 'new',
+                    anim: 'none'
+                };
+            });
     }
     validate() {
         super.validate();

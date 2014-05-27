@@ -44,6 +44,15 @@ var NodeView = (function (_super) {
     };
     NodeView.prototype.destroy = function (opts) {
         delete NodeView.nodesById[this.id];
+        var boxes = this.dropboxes;
+        var i;
+        if (boxes && boxes.length) {
+            for (i = 0; i < boxes.length; ++i) {
+                boxes[i].remove();
+            }
+        }
+        this.dropboxes = [];
+
         _super.prototype.destroy.call(this, opts);
     };
     NodeView.prototype.removeFromModel = function () {

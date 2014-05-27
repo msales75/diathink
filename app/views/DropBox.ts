@@ -50,8 +50,8 @@ class DropBox {
     static renderAll(dragger:DragHandler) {
         DropBox.dragger = dragger;
         var i:number, p:string, n:number, panel:PanelView, node:NodeView, nid:string;
-
-        DropBox.removeAll();
+        console.log("Rendering all drop boxes now");
+        DropBox.removeAll(); // todo: we need not remove/insert them every time
         $(document.body).addClass('drop-mode');
 
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
@@ -196,16 +196,17 @@ class DropBox {
     }
     render() {
         if (!this.valid) {return;}
-        this.elem = $('<div></div>')
-            .addClass(this.box.class)
-            .css('top', this.box.top + 'px')
-            .css('left', this.box.left + 'px')
-            .css('height', this.box.height + 'px')
-            .css('width', this.box.width + 'px').get(0);
+        var div = document.createElement('div');
+        div.className = this.box.class;
+        div.style.top = this.box.top+'px';
+        div.style.left = this.box.left+'px';
+        div.style.height = this.box.height+'px';
+        div.style.width = this.box.width+'px';
+        this.elem = div;
         if (this.box.image) {
             this.elem.innerHTML = '<img src="'+this.box.image+'" alt="'+this.box.image+'"/>';
         }
-        $(this.elem).appendTo(this.canvas.elem);
+        this.canvas.elem.insertBefore(this.elem, null);
     }
 
     validateNodeBox(activeNode:NodeView, type:string) {
@@ -409,10 +410,10 @@ class DropBoxLink extends DropBox {
             image: 'theme/images/plus.png'
         };
         this.hover = {
-            top: node.position.top - this.canvas.cacheOffset.top - 1,
-            left: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left - $D.lineHeight - 1,
+            top: node.position.top,
+            left: node.position.left + node.dimensions.width - $D.lineHeight,
             bottom: node.position.top + $D.lineHeight,
-            right: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left
+            right: node.position.left + node.dimensions.width
         };
     }
     handleDrop(node:NodeView, helper:View) {

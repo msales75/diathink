@@ -52,6 +52,12 @@ var OutlineScrollView = (function (_super) {
         new DeadOutlineScroll(this);
         _super.prototype.destroy.call(this);
     };
+    OutlineScrollView.prototype.getOffset = function () {
+        var scroll;
+        var pos = _super.prototype.getOffset.call(this);
+        pos.top -= this.scrollHandler.getScrollPosition().y;
+        return pos;
+    };
     OutlineScrollView.prototype.layoutDown = function () {
         var p = this.parentView.layout;
         if (this.parentView && this.parentView.breadcrumbs && this.parentView.breadcrumbs.layout) {

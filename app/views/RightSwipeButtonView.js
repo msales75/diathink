@@ -17,7 +17,7 @@ var RightSwipeButtonView = (function (_super) {
         this.isClickable = true;
     };
 
-    RightSwipeButtonView.prototype.onClick = function () {
+    RightSwipeButtonView.prototype.onClick = function (params) {
         ActionManager.schedule(function () {
             if (View.focusedView) {
                 return Action.checkTextChange(View.focusedView.header.name.text.id);

@@ -36,6 +36,7 @@ $D.handleKeypress = function (view:TextAreaView, e) {
         // console.log("simulate keypress = "+key);
         // todo: manually draw char and move cursor
         if (sel) {
+            console.log("Simulating keypress, setting cursor on textarea "+view.id);
             var start = sel[0];
             var end = sel[1];
             var value = view.getValue();
@@ -45,35 +46,46 @@ $D.handleKeypress = function (view:TextAreaView, e) {
     }
 };
 $(function() {
-    $(window).on('keypress', function (e:JQueryEventObjectD) {
-        console.log('Acknowledging keypress, char="' + String.fromCharCode(e.charCode) + '"');
-        if (ActionManager.queue.length === 0) {
-            // retain browser-default behavior
-            if (View.focusedView) {
-                $D.handleKeypress(View.focusedView.header.name.text, e);
-                console.log('Handled keypress, char=' + String.fromCharCode(e.charCode));
-            } else {
-                console.log('Lost keypress with nothing focused')
-            }
-        } else {
-            console.log("Delaying keypress, char=" + String.fromCharCode(e.charCode));
-            ActionManager.schedule(function () {
+    if (!$D.is_android) { // android does not support keypress
+        console.log("Defining keypresses for non-android");
+        $(window).on('keypress', function (e:JQueryEventObjectD) {
+            //console.log('Acknowledging keypress, char="' + String.fromCharCode(e.charCode) + '"');
+            if (ActionManager.queue.length === 0) {
+                // retain browser-default behavior
                 if (View.focusedView) {
-                    e.simulated = true;
                     $D.handleKeypress(View.focusedView.header.name.text, e);
-                    console.log('Handled delayed keypress, char=' + String.fromCharCode(e.charCode));
+                    //console.log('Handled keypress, char=' + String.fromCharCode(e.charCode));
                 } else {
-                    console.log('Lost keypress with nothing focused')
+                    // console.log('Lost keypress with nothing focused')
                 }
-                ActionManager.schedule(
-                    function() {
-                        if (!View.focusedView) {return null;}
-                        return Action.checkTextChange(View.focusedView.header.name.text.id);
-                    });
-                return null;
-            });
-            e.preventDefault();
-        }
-        e.stopPropagation();
-    });
+            } else {
+                //console.log("Delaying keypress, char=" + String.fromCharCode(e.charCode));
+                ActionManager.schedule(function () {
+                    if (View.focusedView) {
+                        e.simulated = true;
+                        console.log('Keypress 1, char="' + String.fromCharCode(e.charCode)+'"');
+                        $D.handleKeypress(View.focusedView.header.name.text, e);
+                    } else {
+                        console.log('Keypress 2 delayed keypress with nothing focused')
+                    }
+                    ActionManager.schedule(
+                        function() {
+                            if (!View.focusedView) {
+                                console.log('Keypress 3, nothing focused for text change');
+                                return null;
+                            }
+                            if (View.focusedView.value.get('text') !== View.focusedView.header.name.text.value) {
+                                console.log('Keypress 4, text change being processed');
+                            } else {
+                                console.log('Keypress 5, no text change found');
+                            }
+                            return Action.checkTextChange(View.focusedView.header.name.text.id);
+                        });
+                    return null;
+                });
+                e.preventDefault();
+            }
+            e.stopPropagation();
+        });
+    }
 });

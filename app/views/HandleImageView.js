@@ -38,7 +38,7 @@ var HandleImageView = (function (_super) {
             height: Math.round(1.2 * View.fontSize)
         };
     };
-    HandleImageView.prototype.onClick = function () {
+    HandleImageView.prototype.onClick = function (params) {
         var li = this.nodeView;
         var liElem = $(li.elem);
         ActionManager.schedule(function () {
@@ -60,7 +60,7 @@ var HandleImageView = (function (_super) {
             };
         });
     };
-    HandleImageView.prototype.onDoubleClick = function () {
+    HandleImageView.prototype.onDoubleClick = function (params) {
         var li = this.nodeView;
         ActionManager.schedule(function () {
             if (!View.focusedView) {

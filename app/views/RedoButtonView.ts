@@ -7,7 +7,7 @@ class RedoButtonView extends ButtonView {
     init() {
         this.isClickable = true;
     }
-    onClick(){
+    onClick(params:DragStartI) {
         ActionManager.redo()
     }
     layoutDown() {

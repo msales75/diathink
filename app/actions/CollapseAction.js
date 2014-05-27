@@ -61,8 +61,9 @@ var CollapseAction = (function (_super) {
             var activeModel = that.getModel(that.options.activeID);
             var activeLineView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
             if (!activeLineView) {
-                console.log("Action collapse=" + collapsed + " has no activeLineView, with activeID=" + that.options.activeID + "; oldRoot=" + outline.nodeRootView.id + "; undo=" + that.options.undo);
-
+                //console.log("Action collapse="+collapsed+" has no activeLineView, with activeID="+
+                //    that.options.activeID+"; oldRoot="+outline.nodeRootView.id+
+                //    "; undo="+that.options.undo);
                 // Action collapse=false has no activeLineView, with activeID=c14; oldRoot=m_16; undo=false
                 // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
                 return;

@@ -46,10 +46,14 @@ class TextAreaView extends View {
 
     render() {
         var html = '';
+        html = this.secure(this.value ? this.value: '');
+        if ($D.is_android) {
+            html = ' '+html;
+        }
         this._create({
             type: 'textarea',
             classes: this.cssClass,
-            html: this.secure(this.value ? this.value : '')
+            html: html
         });
         this.elem.setAttribute('cols', '40');
         this.elem.setAttribute('rows', '1');
@@ -81,19 +85,27 @@ class TextAreaView extends View {
         this.layout.width = this.parentView.layout.width;
     }
     getValue() {
-        this.value = this.elem.value;
+        if ($D.is_android) {
+            this.value = this.elem.value.substr(1);
+        } else {
+            this.value = this.elem.value;
+        }
         return this.value;
     }
 
     setValue(val) {
         this.value = val;
-        var htmlval = View.escapeHtml(val);
-        this.elem.value = val;
+        var htmlval = View.escapeHtml(' '+val);
+        this.elem.value = ' '+val;
         this.elem.innerHTML = htmlval;
         return this;
     }
     setValueFromDOM() {
-        this.value = this.elem.value;
+        if ($D.is_android) {
+            this.value = this.elem.value.substr(1);
+        } else {
+            this.value = this.elem.value;
+        }
     }
 
 
@@ -113,10 +125,17 @@ class TextAreaView extends View {
          this.parentDiv.height(this.lineHeight + this.padding);
          return;
          } */
+
+        if (this.value.length<5) { // quickly handle short lines
+            if (!(<NodeTextWrapperView>this.parentView).listItems ||
+                ((<NodeTextWrapperView>this.parentView).listItems.count===0)) {
+                this.layout.height = Math.round(1.25*View.fontSize) +
+                     2*Math.round(.15*View.fontSize);
+                console.log("Quickly handling short line");
+                return;
+            }
+        }
         var currentWidth = this.layout.width; // elem.clientWidth;
-        //if (!(currentWidth > 0)) {
-       //     return;
-        //}
         var currentFont = View.fontSize; // $(elem).css('font-size');
        // if ((this.lastWidth === currentWidth) &&
           //  (this.lastFont === currentFont) &&
@@ -146,6 +165,9 @@ class TextAreaView extends View {
             (<NodeTextWrapperView>this.parentView).listItems &&
             ((<NodeTextWrapperView>this.parentView).listItems.count>0)) {
             var content:string = this.value;
+            if ($D.is_android) {
+                content = ' '+content;
+            }
             var links:LinkedList<NodeLinkView> = <LinkedList<NodeLinkView>>(<NodeTextWrapperView>this.parentView).listItems;
             var l:string;
             for (l=links.first(); l!==''; l=links.next[l]) {
@@ -161,6 +183,9 @@ class TextAreaView extends View {
         } else {
             var lastchar = this.value.substr(this.value.length - 1, 1);
             var rest = this.value.substr(0, this.value.length - 1);
+            if ($D.is_android) {
+                rest = ' '+rest;
+            }
             hiddendiv.innerHTML = this.secure(rest) + '<span class="marker">' +
                 this.secure(lastchar) + '</span>';
         }
@@ -217,13 +242,18 @@ class TextAreaView extends View {
     }
 
     selectAllText() {
+        console.log("Selecting all text");
         var range, selection, element = this.elem;
         if (window.getSelection) {
             selection = window.getSelection();
-            range = document.createRange();
+            if (selection.rangeCount>0) {
+                range = selection.getRangeAt(0);
+            } else {
+                range = document.createRange();
+            }
             range.selectNodeContents(element);
-            selection.removeAllRanges();
-            selection.addRange(range);
+            // selection.removeAllRanges();
+            // selection.addRange(range);
         }
         return this;
     }
@@ -244,7 +274,8 @@ class TextAreaView extends View {
         return this;
     }
 
-    setCursor(pos) {
+    setCursor(pos:number) {
+        console.log("Setting cursor/text-selection and focusing on "+this.id);
         this.setSelection(pos, pos);
         return this;
     }
