@@ -25,7 +25,8 @@ $D.handleKeypress = function (view, e) {
                         referenceID: collection.prev[liView.value.cid],
                         oldRoot: liView.nodeRootView.id,
                         newRoot: liView.nodeRootView.id,
-                        focus: true
+                        focus: true,
+                        cursor: sel
                     };
                 });
                 e.preventDefault();

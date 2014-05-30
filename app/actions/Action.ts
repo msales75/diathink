@@ -6,6 +6,7 @@
 ///<reference path="DeleteAction.ts"/>
 ///<reference path="DockAnimAction.ts"/>
 ///<reference path="InsertAfterAction.ts"/>
+///<reference path="InsertIntoAction.ts"/>
 ///<reference path="MoveAfterAction.ts"/>
 ///<reference path="MoveBeforeAction.ts"/>
 ///<reference path="MoveIntoAction.ts"/>
@@ -50,6 +51,10 @@ interface ActionOptions {
     prevPanel?:string;
     isSubpanel?:boolean;
     collapsed?:boolean;
+    cursor?:number[];
+    speed?:number;
+    delete?:boolean;
+    panelID?:string;
 }
 interface SubAction extends ActionOptions {
     actionType: any;
@@ -320,33 +325,36 @@ class Action extends PModel {
         if (options.redo && (this.subactions.length > 0)) {
             nsub = this.subactions.length;
             for (i = 0; i < nsub; ++i) {
+                /*
                 rank = ActionManager.nextRedo();
                 if (ActionManager.actions.at(rank) !== this.subactions[i].action) {
                     console.log("ERROR: Redoing wrong subaction");
                     debugger;
                 }
+                */
                 ActionManager.subRedo();
             }
         } else if (options.undo && (this.parentAction != null)) {
             nsub = this.parentAction.subactions.length;
-            if (this !== this.parentAction.subactions[nsub - 1].action) {
-                console.log("ERROR: Last subaction in chain was not called first!");
-                debugger;
-            }
-            for (i = 0; i < nsub; ++i) {
-                rank = ActionManager.nextUndo();
-                if (i === 0) {
-                    if (ActionManager.actions.at(rank) !== this.parentAction) {
-                        console.log("ERROR: Undoing something else when should be parentAction");
-                        debugger;
+            if (this === this.parentAction.subactions[nsub - 1].action) {
+                console.log("Last subaction in chain is calling the rest for undo");
+                for (i = nsub-2; i >= -1; --i) {
+                    /*
+                    rank = ActionManager.nextUndo();
+                    if (i === -1) {
+                        if (ActionManager.actions.at(rank) !== this.parentAction) {
+                            console.log("ERROR: Undoing something else when should be parentAction");
+                            debugger;
+                        }
+                    } else {
+                        if (ActionManager.actions.at(rank) !== this.parentAction.subactions[i].action) {
+                            console.log("ERROR: Undoing wrong subaction");
+                            debugger;
+                        }
                     }
-                } else {
-                    if (ActionManager.actions.at(rank) !== this.subactions[nsub - 1 - i].action) {
-                        console.log("ERROR: Undoing wrong subaction");
-                        debugger;
-                    }
+                    */
+                    ActionManager.subUndo(); // schedule them in reverse order to when we do them
                 }
-                ActionManager.subUndo();
             }
         }
         this._exec(options);
@@ -374,14 +382,18 @@ class Action extends PModel {
         this.animSetup();
         // todo: assumptions and issue-handling
         var outlines = OutlineRootView.outlinesById;
-        this.addQueue('focusFirst', [['context']], function() {
+        this.addQueue('focusFirst', [
+            ['context']
+        ], function() {
             if (that.options.focus && that.focusFirst) {
                 that.focus();
             }
         });
         this.execModel();
         this.execUniqueView();
-        var focusDeps = [['uniqueView']];
+        var focusDeps = [
+            ['uniqueView']
+        ];
         for (i in outlines) {
             this.execView(outlines[i]);
             focusDeps.push(['view', outlines[i].nodeRootView.id]);
@@ -456,8 +468,7 @@ class Action extends PModel {
         // $D.validateMVC();
     }
 
-
-    getFocusNode() {
+    getFocusNode():NodeView {
         // by default, focus on activeID in newRoot
         var newRoot;
         if (this.options.undo) {
@@ -469,11 +480,12 @@ class Action extends PModel {
     }
 
     focus() {
+        this.handleLineSplits();
         var n:NodeView = this.getFocusNode();
         if (!n) { return; }
         View.setFocus(n);
         var text:TextAreaView = n.header.name.text;
-        console.log('Setting DOM focus in Action to ' + text.id);
+        // console.log('Setting DOM focus in Action to ' + text.id);
         text.elem.focus();
         this.placeCursor(text);
     }
@@ -490,6 +502,8 @@ class Action extends PModel {
     validateNewContext() {}
 
     contextStep() {}
+
+    handleLineSplits() {}
 
     animSetup() { this.runtime.status.anim = 2; }
 

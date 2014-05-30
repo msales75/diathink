@@ -22,7 +22,18 @@ var InsertAfterAction = (function (_super) {
         };
     }
     InsertAfterAction.prototype.getNewContext = function () {
-        this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
+        // Handle cursor splitting/merging in OutlineAction
+        // test if children are visible
+        var rootid = this.options.oldRoot;
+        var ref = OutlineNodeModel.getById(this.options.referenceID);
+        assert(ref.views[rootid], "Spawning line is not available in insertion");
+        var childlist = ref.views[rootid].children;
+        if (!childlist.listItems || (childlist.listItems.count === 0)) {
+            this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
+        } else {
+            this.newModelContext = childlist.listItems.obj[childlist.listItems.first()].value.getContextBefore();
+        }
+        // otherwise create new visible child
     };
     return InsertAfterAction;
 })(OutlineAction);

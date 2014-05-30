@@ -67,6 +67,16 @@ var TextAction = (function (_super) {
             // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });
     };
+    TextAction.prototype.placeCursor = function (text) {
+        if (this.options.cursor) {
+            var c = this.options.cursor;
+            if ($D.is_android) {
+                ++c[0];
+                ++c[1];
+            }
+            text.setSelection(c[0], c[1]);
+        }
+    };
     return TextAction;
 })(Action);
 //# sourceMappingURL=TextAction.js.map

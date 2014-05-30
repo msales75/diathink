@@ -60,4 +60,14 @@ class TextAction extends Action {
             // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });
     }
+    placeCursor(text:TextAreaView) {
+        if (this.options.cursor) {
+            var c = this.options.cursor;
+            if ($D.is_android) {
+                ++c[0];
+                ++c[1];
+            }
+            text.setSelection(c[0], c[1]);
+        }
+    }
 }

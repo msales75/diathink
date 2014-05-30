@@ -74,6 +74,7 @@ var OutlineNodeModel = (function (_super) {
         this.attributes.parent = null;
         this.attributes.collapsed = false;
         OutlineNodeModel.modelsById[this.cid] = this;
+        this.attributes.links = new OutlineNodeCollection;
         if (options != null) {
             if (options.text != null) {
                 this.attributes.text = options.text;
@@ -143,7 +144,8 @@ var OutlineNodeModel = (function (_super) {
     };
     OutlineNodeModel.prototype.updateLinks = function () {
         var i, o;
-        this.attributes.links = new OutlineNodeCollection;
+
+        // this.attributes.links = new OutlineNodeCollection;
         if (this.importLinks && (this.importLinks.length > 0)) {
             for (i = 0; i < this.importLinks.length; ++i) {
                 var ref = OutlineNodeModel.getById(this.importLinks[i]);

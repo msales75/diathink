@@ -4,6 +4,7 @@
 class Router {
     public dragMode:number = 0;
     public scrollMode:number = 0;
+    public swipeMode:number = 0;
     public dragStart:DragStartI = null;
     private lastClicked:number = null;
     private doubleClickFlag:boolean = false;
@@ -74,7 +75,14 @@ class Router {
     }
     testScrollStart(params:DragStartI):boolean {
         var p1 = params.pos, p0 = this.dragStart.pos;
-        if (Math.abs(p1.left-p0.left)+Math.abs(p1.top-p0.top) >= 5) {
+        if ((Math.abs(p1.top-p0.top) >= 5)&&(Math.abs(p1.top-p0.top)>Math.abs(p1.left-p0.left))) {
+            return true;
+        }
+        return false;
+    }
+    testSwipeStart(params:DragStartI):boolean {
+        var p1 = params.pos, p0 = this.dragStart.pos;
+        if ((Math.abs(p1.left-p0.left) >= 5)&&(Math.abs(p1.left-p0.left)>Math.abs(p1.top-p0.top))) {
             return true;
         }
         return false;
@@ -139,7 +147,7 @@ class Router {
         console.log("Using move = "+move);
         Router.bind(rootElement, move, function(e) {
             // console.log('Event type '+e.type);
-            if (!self.dragMode && !self.scrollMode) {return;}
+            if (!self.dragMode && !self.scrollMode && !self.swipeMode) {return;}
             var params = Router.getEventParams(e);
             if (self.dragMode===2) { // continue dragging
                 // console.log("Processing touchmove as dragMove");
@@ -148,6 +156,9 @@ class Router {
             } else if (self.scrollMode===2) { // continue scrolling
                 // console.log("Processing touchmove as scrollMove");
                 self.dragStart.view.scrollView.scrollHandler.scrollMove(params);
+                return;
+            } else if (self.swipeMode===1) {
+                View.currentPage.content.gridwrapper.grid.swipeMove(params);
                 return;
             }
             if (self.dragMode===1) { // possibly dragging
@@ -165,8 +176,13 @@ class Router {
                     console.log("Passed test to start scrolling");
                     self.scrollMode=2;
                     self.dragStart.view.scrollView.scrollHandler.scrollStart(params);
+                } else if (self.testSwipeStart(params)) {
+                    console.log("Passed test to start swiping");
+                    self.scrollMode=0;
+                    self.swipeMode=1;
+                    View.currentPage.content.gridwrapper.grid.swipeStart(params);
                 } else {
-                    console.log("Distance not great enough to start scrolling");
+                        console.log("Distance not great enough to start scrolling");
                 }
             }
             e.preventDefault();
@@ -178,7 +194,7 @@ class Router {
             var params = Router.getEventParams(e);
             var view = params.view;
             // handle click, double-click
-            if ((self.scrollMode!==2)&&(self.dragMode!==2)&&view.clickView) {
+            if ((self.scrollMode!==2)&&(self.dragMode!==2)&&(self.swipeMode===0)&&view.clickView) {
                 // console.log("Testing touch for click");
                 if (self.testClick(params)) { // if release is consistent with a click
                     // console.log("Processing click");
@@ -201,8 +217,12 @@ class Router {
             if (self.dragMode===2) {
                 self.dragger.dragStop(params);
             }
+            if (self.swipeMode===1) {
+                View.currentPage.content.gridwrapper.grid.swipeStop(params);
+            }
             self.dragMode = 0;
             self.scrollMode = 0;
+            self.swipeMode = 0;
             self.dragStart = null;
             // todo: preventDefault if we didn't click on text?
         });

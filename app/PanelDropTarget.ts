@@ -73,7 +73,11 @@ class PanelDropTarget extends DropTarget {
         if (this.usePlaceholder) { // if creating panel, change width and grid-margin
             this.slideDirection = 'right';
             if (this.prevPanel === grid.listItems.last()) {
-                this.slideDirection = 'left';
+                if (grid.listItems.count===grid.numCols) {
+                    this.slideDirection = 'left';
+                } else {
+                    this.slideDirection = 'none';
+                }
             }
             this.maxWidth = grid.itemWidth;
             this.containerWidth = grid.numCols*this.maxWidth;
@@ -85,14 +89,14 @@ class PanelDropTarget extends DropTarget {
                 opacity: frac
             });
         }
-        if (this.usePlaceholder) {
+        if (this.usePlaceholder && (this.slideDirection!=='none')) {
             var grid=View.currentPage.content.gridwrapper.grid;
             var w:number = Math.round(frac*this.maxWidth);
             // $(this.placeholderElem).css('width',String(w)+'px');
             if (this.slideDirection==='left') {
                 grid.layout.width = this.containerWidth+w;
                 grid.layout.left = -w;
-            } else {
+            } else if (this.slideDirection==='right') {
                 grid.layout.width=this.containerWidth+w;
             }
             grid.setPosition();

@@ -39,6 +39,8 @@ class PanelView extends View {
     parentView:PanelGridView;
     breadcrumbs:BreadcrumbView;
     outline:OutlineScrollView;
+    inserter:InsertionView;
+    deletebutton:PanelDeleteView;
     value:OutlineNodeModel;
     parentPanel:PanelView;
     childPanel:PanelView;
@@ -54,8 +56,10 @@ class PanelView extends View {
     init() {
         this.childViewTypes = {
             breadcrumbs: BreadcrumbView,
-            outline: OutlineScrollView
-        }
+            inserter: InsertionView,
+            outline: OutlineScrollView,
+            deletebutton:PanelDeleteView
+        };
         assert(PanelView.panelsById[this.id]===undefined, "Multiple panels with same ID");
         PanelView.panelsById[this.id] = this;
     }
@@ -79,6 +83,9 @@ class PanelView extends View {
             var l = this.outline.saveLayout();
             this.outline.layoutDown();
             this.outline.updateDiffs(l);
+            var l2 = this.inserter.saveLayout();
+            this.inserter.layout.top = this.breadcrumbs.layout.height + Math.round(0.5*View.fontSize);
+            this.inserter.updateDiffs(l2);
         }
     }
 

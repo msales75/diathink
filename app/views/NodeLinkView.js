@@ -69,6 +69,22 @@ var NodeLinkView = (function (_super) {
             });
         }
     };
+    NodeLinkView.prototype.onDoubleClick = function (params) {
+        // delete link, possibly closing other panel
+        // check if next-panel is a child
+        var panel = this.panelView;
+        if (panel.childPanel != null) {
+            ActionManager.simpleSchedule(View.focusedView, function () {
+                return {
+                    actionType: PanelCreateAction,
+                    delete: true,
+                    activeID: panel.childPanel.value.cid,
+                    prevPanel: panel.id,
+                    focus: false
+                };
+            });
+        }
+    };
     return NodeLinkView;
 })(View);
 //# sourceMappingURL=NodeLinkView.js.map

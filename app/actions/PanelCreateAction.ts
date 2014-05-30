@@ -11,23 +11,36 @@ class PanelCreateAction extends AnimatedAction {
     runinit2() {
         var o:ActionOptions = this.options,
             r:RuntimeOptions = this.runtime;
-        if (this.options.undo) {
+        var reverse:boolean = ((this.options.undo && !this.options.delete)||
+                    (!this.options.undo && this.options.delete));
+
+        if (this.options.delete && !this.options.undo && !this.options.redo) {
+            this.newPanel = this.options.panelID;
+            this.options.prevPanel = View.currentPage.content.gridwrapper.grid.listItems.prev[this.newPanel];
+            this.options.isSubpanel = ((<PanelView>View.get(this.newPanel)).parentPanel!=null);
+        }
+        if (reverse) {
             this.usePostAnim = true;
-            this.dropSource = new PanelDropSource({
+            if (!this.options.speed) {this.options.speed = 60;}
+            this.dropSource = new PanelDropSource({ // fade-out before slide
                 panelID: this.newPanel,
                 useFade: true
             });
         } else {
             this.usePostAnim = false;
-            this.dropSource = new NodeDropSource({
-                activeID: this.options.activeID,
-                outlineID: this.options.oldRoot,
-                dockView: this.options.dockView,
-                useDock: true,
-                dockTextOnly: true,
-                usePlaceholder: false
-            });
-            this.dropTarget = new PanelDropTarget({
+            if (!this.options.speed) {this.options.speed = 100;}
+            if (this.options.oldRoot) { // if creation/deletion is tied to another panel
+                this.dropSource = new NodeDropSource({
+                    activeID: this.options.activeID,
+                    outlineID: this.options.oldRoot,
+                    dockView: this.options.dockView,
+                    useDock: true,
+                    dockTextOnly: true,
+                    usePlaceholder: false
+                });
+            }
+
+            this.dropTarget = new PanelDropTarget({ // no fade, just slide
                 activeID: this.options.activeID,
                 panelID: View.currentPage.content.gridwrapper.grid.getInsertLocation(this.options.prevPanel),
                 prevPanel: this.options.prevPanel,
@@ -43,18 +56,22 @@ class PanelCreateAction extends AnimatedAction {
 
     validateOldContext() {
         var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
+        var reverse:boolean = ((this.options.undo && !this.options.delete)||
+            (!this.options.undo && this.options.delete));
         if (!this.options.undo) {
             if (this.leftPanel !== panels.first()) {
                 console.log("ERROR: leftPanel is not what it should be before op");
                 debugger;
             }
-            if (panels.next[this.options.prevPanel] !== this.nextPanel) {
-                console.log("ERROR: leftPanel is not before nextPanel before op");
-                debugger;
-            }
-            if (panels.next[this.newPanel] !== undefined) {
-                console.log("ERROR: new panel is not undefined before op");
-                debugger;
+            if (!this.options.delete) {
+                if (panels.next[this.options.prevPanel] !== this.nextPanel) {
+                    console.log("ERROR: leftPanel is not before nextPanel before op");
+                    debugger;
+                }
+                if (panels.next[this.newPanel] !== undefined) {
+                    console.log("ERROR: new panel is not undefined before op");
+                    debugger;
+                }
             }
         } else {
             if (this.postLeftPanel !== panels.first()) {
@@ -67,18 +84,22 @@ class PanelCreateAction extends AnimatedAction {
     validateNewContext() {
         var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
         if (!this.postLeftPanel) {this.postLeftPanel = panels.first();}
+        var reverse:boolean = ((this.options.undo && !this.options.delete)||
+            (!this.options.undo && this.options.delete));
         if (this.options.undo) {
             if (this.leftPanel !== panels.first()) {
                 console.log("ERROR: leftPanel is not what it should be after undo");
                 debugger;
             }
-            if (panels.next[this.options.prevPanel] !== this.nextPanel) {
-                console.log("ERROR: leftPanel is not before nextPanel after undo");
-                debugger;
-            }
-            if (panels.next[this.newPanel] !== undefined) {
-                console.log("ERROR: new panel is not undefined after undo");
-                debugger;
+            if (!this.options.delete) {
+                if (panels.next[this.options.prevPanel] !== this.nextPanel) {
+                    console.log("ERROR: leftPanel is not before nextPanel after undo");
+                    debugger;
+                }
+                if (panels.next[this.newPanel] !== undefined) {
+                    console.log("ERROR: new panel is not undefined after undo");
+                    debugger;
+                }
             }
         } else {
             if (this.postLeftPanel !== panels.first()) {
@@ -163,7 +184,9 @@ class PanelCreateAction extends AnimatedAction {
             var grid:PanelGridView = View.getCurrentPage().content.gridwrapper.grid;
             var o:ActionOptions = that.options;
             var dir;
-            if (o.undo) {
+            var reverse:boolean = ((o.undo && !o.delete)||
+                (!o.undo && o.delete));
+            if (reverse) {
                 grid.slideFill('left'); // appends incoming panel from the right
                 // give insertion location to dropSource for animation
                 if (that.dropSource) {
@@ -177,6 +200,7 @@ class PanelCreateAction extends AnimatedAction {
                 }
                 dir = View.get(that.newPanel).destroy(); // removes panel, without changing positions
                 grid.value.remove(that.newPanel);
+                grid.updatePanelButtons();
             } else {
                 if (!that.newPanel) { // if id isn't chosen yet
                     that.newPanel = View.getNextId();
@@ -194,9 +218,11 @@ class PanelCreateAction extends AnimatedAction {
                 });
 
                 // eliminate drag-handle class left over from DragHandler
-                var node = that.getNodeView(that.options.activeID, that.options.oldRoot);
-                if (node) {
-                    node.removeClass('drag-hidden');
+                if (that.options.oldRoot) {
+                    var node = that.getNodeView(that.options.activeID, that.options.oldRoot);
+                    if (node) {
+                        node.removeClass('drag-hidden');
+                    }
                 }
                 // if the inserted node is right after the previous panel
 

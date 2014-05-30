@@ -33,6 +33,43 @@ var NodeView = (function (_super) {
         }
         return this;
     };
+    NodeView.prototype.getLastChild = function () {
+        var childlist = this.children.listItems;
+        if (childlist.count === 0) {
+            return this;
+        } else {
+            return NodeView.nodesById[childlist.last()].getLastChild();
+        }
+    };
+    NodeView.prototype.nextVisibleNode = function (skipchildren) {
+        if (skipchildren === undefined) {
+            skipchildren = false;
+        }
+        assert(this.parentView.listItems != null, "nextVisibleNode called on invalid node");
+        if (!skipchildren && (this.children.listItems.count > 0)) {
+            return NodeView.nodesById[this.children.listItems.first()];
+        }
+        var nid = this.parentView.listItems.next[this.id];
+        if (nid !== '') {
+            return NodeView.nodesById[nid];
+        } else if (this.parentView.nodeView != null) {
+            return this.parentView.nodeView.nextVisibleNode(true);
+        } else {
+            return null;
+        }
+    };
+
+    NodeView.prototype.prevVisibleNode = function () {
+        assert(this.parentView.listItems != null, "nextVisibleNode called on invalid node");
+        var nid = this.parentView.listItems.prev[this.id];
+        if (nid !== '') {
+            return NodeView.nodesById[nid].getLastChild();
+        } else if (this.parentView.nodeView != null) {
+            return this.parentView.nodeView;
+        } else {
+            return null;
+        }
+    };
 
     NodeView.prototype.init = function () {
         this.modelType = OutlineNodeModel;

@@ -113,7 +113,8 @@ class AnimatedAction extends Action {
 
         this.addAsync('anim', [['setupPlaceholderAnim'],['setupDockAnim']], function() {
             if (that.useAnim) {
-                var time = 200; // todo: this should vary.
+                var time = 100;
+                if (that.options.speed) {time = that.options.speed;}
                 var start = (new Date()).getTime();
                 setTimeout(function() {
                     that.animStepWrapper(function(f) {
@@ -145,7 +146,8 @@ class AnimatedAction extends Action {
         this.addAsync(['anim2'],  _.extend(['anim'],views), function() {
             if (that.usePostAnim) {
                 that.anim2setup();
-                var time = 200; // todo: this should vary.
+                var time = 100;
+                if (that.options.speed) {time = that.options.speed;}
                 var start = (new Date()).getTime();
                 setTimeout(function() {
                     that.animStepWrapper(function(f) {

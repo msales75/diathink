@@ -22,14 +22,15 @@ class HandleImageView extends ImageView {
     }
     layoutDown() {
         this.layout = {
-            top: Math.round(.18*View.fontSize),
-            left: Math.round(.15*View.fontSize),
-            width: Math.round(1.2*View.fontSize),
-            height: Math.round(1.2*View.fontSize)
+            top: Math.round(.05*View.fontSize),
+            left: Math.round(.05*View.fontSize),
+            width: Math.round(1.5*View.fontSize),
+            height: Math.round(1.5*View.fontSize)
         };
     }
     onClick(params:DragStartI) {
         var li:NodeView = this.nodeView;
+        if (!this.nodeRootView) {return;}
         var liElem = $(li.elem);
         ActionManager.schedule(
             function():SubAction {

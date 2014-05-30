@@ -75,6 +75,7 @@ class DropBox {
             panel.dropboxes = [];
             panel.dropboxes.push(new DropBoxLeft(panel));
             panel.dropboxes.push(new DropBoxRight(panel));
+            panel.dropboxes.push(new DropBoxFirst(panel));
             for (i = 0; i < panel.dropboxes.length; ++i) {
                 panel.dropboxes[i].render();
             }
@@ -521,3 +522,47 @@ class DropBoxRight extends DropBox {
     }
 }
 
+class DropBoxFirst extends DropBox {
+    view:PanelView;
+    canvas:DrawLayerView;
+
+    constructor(panel:PanelView) {
+        super(panel);
+        this.canvas = View.currentPage.drawlayer;
+        this.box = {
+            top: panel.top - this.canvas.cacheOffset.top + panel.breadcrumbs.layout.height + 5,
+            left: panel.left - this.canvas.cacheOffset.left - 1 + 5,
+            height: 0,
+            width: panel.width - 10,
+            class: 'dropborder'
+        };
+        this.hover = {
+            top: panel.top + panel.breadcrumbs.layout.height,
+            left: panel.left + 5,
+            bottom: panel.top + + panel.breadcrumbs.layout.height + 10,
+            right: panel.left + panel.width - 10
+        };
+    }
+    handleDrop(node:NodeView, helper:View) {
+        var that = this;
+        ActionManager.simpleSchedule(View.focusedView,
+            function():SubAction {
+                return {
+                    actionType: MoveIntoAction,
+                    activeID: node.value.cid,
+                    referenceID: that.view.value.cid,
+                    oldRoot: node.nodeRootView.id,
+                    newRoot: that.view.outline.alist.id,
+                    anim: 'dock',
+                    dockView: helper,
+                    focus: false
+                };
+            });
+    }
+    validateDrop(activeNode:NodeView) {
+        if (this.view.value.attributes.children.count===0) {
+            return true;
+        }
+        return false;
+    }
+}

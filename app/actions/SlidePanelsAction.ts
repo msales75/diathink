@@ -3,6 +3,7 @@ m_require("app/actions/Action.js");
 class SlidePanelsAction extends AnimatedAction {
     type = 'PanelSlide';
     oldLeftPanel:string = null;
+    startLeft:number;
     usePostAnim = true;
     // options:ActionOptions= {direction:null};
     validateOptions() {
@@ -43,9 +44,12 @@ class SlidePanelsAction extends AnimatedAction {
             ['context']
         ], function() {
             var grid = View.getCurrentPage().content.gridwrapper.grid;
+            that.startLeft = grid.layout.left;
+            console.log("Starting slide animation with startLeft = "+that.startLeft);
             if (that.getDirection() === 'right') { // increase grid-width and margin-left
                 grid.layout.width = grid.itemWidth * (grid.numCols + 1);
-                grid.layout.left = -grid.itemWidth;
+                grid.layout.left = that.startLeft-grid.itemWidth; // OK
+                console.log("Anim-right setup modifies left = "+grid.layout.left);
                 grid.setPosition();
                 var firstPanel = View.get(grid.listItems.first());
                 firstPanel.layout.left = grid.itemWidth;
@@ -95,8 +99,10 @@ class SlidePanelsAction extends AnimatedAction {
     anim2Step(frac:number) {
         var grid = View.getCurrentPage().content.gridwrapper.grid;
         if (this.getDirection() === 'right') {
-            var w = grid.itemWidth - Math.round(frac*grid.itemWidth);
+            var w = grid.itemWidth-this.startLeft -
+                Math.round(frac*(grid.itemWidth-this.startLeft));
             grid.layout.left = -w;
+            console.log("Anim-right step setting left to "+grid.layout.left);
             $(grid.elem).css({
                 left: '-'+String(w)+'px'
             });
@@ -106,8 +112,9 @@ class SlidePanelsAction extends AnimatedAction {
                 grid.updatePanelButtons();
             }
         } else {
-            var w = Math.round(frac*grid.itemWidth);
+            var w = -this.startLeft + Math.round(frac*(grid.itemWidth+this.startLeft));
             grid.layout.left = -w;
+            console.log("Anim-left step setting left to "+grid.layout.left);
             $(grid.elem).css({
                 left: '-'+String(w)+'px'
             });

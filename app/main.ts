@@ -66,7 +66,7 @@ $(window).bind('load', function() {
         var grid:PanelGridView= View.currentPage.content.gridwrapper.grid;
         grid.updateCols();
         grid.append(new PanelView({parentView: grid, value: OutlineNodeModel.root}));
-        grid.append(new PanelView({parentView: grid, value: OutlineNodeModel.root}));
+        // grid.append(new PanelView({parentView: grid, value: OutlineNodeModel.root}));
         View.currentPage.prerender();
         setTimeout(function() { // give font time to load before rendering
             View.currentPage.render();

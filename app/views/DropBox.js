@@ -64,6 +64,7 @@ var DropBox = (function () {
             panel.dropboxes = [];
             panel.dropboxes.push(new DropBoxLeft(panel));
             panel.dropboxes.push(new DropBoxRight(panel));
+            panel.dropboxes.push(new DropBoxFirst(panel));
             for (i = 0; i < panel.dropboxes.length; ++i) {
                 panel.dropboxes[i].render();
             }
@@ -501,5 +502,48 @@ var DropBoxRight = (function (_super) {
         return true;
     };
     return DropBoxRight;
+})(DropBox);
+
+var DropBoxFirst = (function (_super) {
+    __extends(DropBoxFirst, _super);
+    function DropBoxFirst(panel) {
+        _super.call(this, panel);
+        this.canvas = View.currentPage.drawlayer;
+        this.box = {
+            top: panel.top - this.canvas.cacheOffset.top + panel.breadcrumbs.layout.height + 5,
+            left: panel.left - this.canvas.cacheOffset.left - 1 + 5,
+            height: 0,
+            width: panel.width - 10,
+            class: 'dropborder'
+        };
+        this.hover = {
+            top: panel.top + panel.breadcrumbs.layout.height,
+            left: panel.left + 5,
+            bottom: panel.top + +panel.breadcrumbs.layout.height + 10,
+            right: panel.left + panel.width - 10
+        };
+    }
+    DropBoxFirst.prototype.handleDrop = function (node, helper) {
+        var that = this;
+        ActionManager.simpleSchedule(View.focusedView, function () {
+            return {
+                actionType: MoveIntoAction,
+                activeID: node.value.cid,
+                referenceID: that.view.value.cid,
+                oldRoot: node.nodeRootView.id,
+                newRoot: that.view.outline.alist.id,
+                anim: 'dock',
+                dockView: helper,
+                focus: false
+            };
+        });
+    };
+    DropBoxFirst.prototype.validateDrop = function (activeNode) {
+        if (this.view.value.attributes.children.count === 0) {
+            return true;
+        }
+        return false;
+    };
+    return DropBoxFirst;
 })(DropBox);
 //# sourceMappingURL=DropBox.js.map

@@ -12,6 +12,7 @@
 ///<reference path="HeaderToolbarView.ts"/>
 ///<reference path="HiddenDivView.ts"/>
 ///<reference path="ImageView.ts"/>
+///<reference path="InsertionView.ts"/>
 ///<reference path="LeftSwipeButtonView.ts"/>
 ///<reference path="ListItemView.ts"/>
 ///<reference path="ListView.ts"/>
@@ -29,6 +30,7 @@
 ///<reference path="PageView.ts"/>
 ///<reference path="PanelGridView.ts"/>
 ///<reference path="PanelView.ts"/>
+///<reference path="PanelDeleteView.ts"/>
 ///<reference path="RedoButtonView.ts"/>
 ///<reference path="RightSwipeButtonView.ts"/>
 ///<reference path="ScrollSpacerView.ts"/>
@@ -116,7 +118,7 @@ class View {
     static currentPage:DiathinkView = null;
     static focusedView:NodeView = null;
     static hoveringView:NodeView = null;
-    static fontSize = 24;
+    static fontSize = 16;
 
     static escapeHtml(text) {
         return text
@@ -655,11 +657,11 @@ class View {
             if (!$D.resizeCount) {$D.resizeCount=0;}
             ++$D.resizeCount;
             if ($D.resizeCount % 2 == 0) {
-                console.log("Even count");
+               //  console.log("Even count");
             } else {
-                console.log("Odd count");
+                // console.log("Odd count");
             }
-            console.log("calling resizeUp for view "+this.id);
+            // console.log("calling resizeUp for view "+this.id);
         }
         var topView:NodeView;
         // check if this is the list containing opts.top, which halts recursion

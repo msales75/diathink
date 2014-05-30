@@ -19,6 +19,7 @@ var PanelGridView = (function (_super) {
         this.value = new LinkedList();
         this.hideList = false;
     };
+
     PanelGridView.prototype.render = function () {
         this._create({
             type: 'div',
@@ -29,13 +30,14 @@ var PanelGridView = (function (_super) {
         this.setPosition();
         return this.elem;
     };
+
     PanelGridView.prototype.updateCols = function () {
         var width = View.currentPage.layout.width;
         var oldNumCols = this.numCols;
         var id;
-        if (width < 250) {
+        if (width < 600) {
             this.numCols = 1;
-        } else if (width < 1300) {
+        } else if (width < 1200) {
             this.numCols = 2;
         } else {
             this.numCols = 3;
@@ -53,6 +55,7 @@ var PanelGridView = (function (_super) {
 
     PanelGridView.prototype.updateValue = function () {
     };
+
     PanelGridView.prototype.layoutDown = function () {
         var p = this.parentView.layout;
 
@@ -64,6 +67,7 @@ var PanelGridView = (function (_super) {
             width: p.width
         };
     };
+
     PanelGridView.prototype.getInsertLocation = function (prevPanel) {
         if (this.listItems.next[prevPanel] === '') {
             return prevPanel;
@@ -71,6 +75,7 @@ var PanelGridView = (function (_super) {
             return this.listItems.next[prevPanel];
         }
     };
+
     PanelGridView.prototype.clip = function (dir) {
         if (this.listItems.count > this.numCols) {
             if (dir === 'left') {
@@ -159,6 +164,7 @@ var PanelGridView = (function (_super) {
     PanelGridView.prototype.prepend = function (panel) {
         return this.insertAfter(null, panel);
     };
+
     PanelGridView.prototype.getSlideDirection = function (slide) {
         var isPanelToLeft = (this.listItems.first() !== this.value.first());
         var isPanelToRight = (this.listItems.last() !== this.value.last());
@@ -193,7 +199,6 @@ var PanelGridView = (function (_super) {
         // remove panel from model-list
         // don't destroy it here, just detach it
         this.listItems.remove(panel.id);
-
         if (panel.elem && panel.elem.parentNode) {
             panel.elem.parentNode.removeChild(panel.elem);
         }
@@ -247,7 +252,16 @@ var PanelGridView = (function (_super) {
         } else {
             r.css('visibility', 'hidden');
         }
+
+        // update delete-button visibility
+        if (this.elem) {
+            var i;
+            for (i in this.listItems.obj) {
+                this.listItems.obj[i].deletebutton.renderUpdate();
+            }
+        }
     };
+
     PanelGridView.prototype.positionChildren = function (v) {
         this.itemWidth = Math.floor(this.parentView.layout.width / this.numCols);
         var c = this.listItems.first();
@@ -268,6 +282,76 @@ var PanelGridView = (function (_super) {
                 }
             }
             w += child.layout.width;
+        }
+    };
+
+    PanelGridView.prototype.swipeStart = function (params) {
+        this.swipeParams = {};
+        this.swipeParams.start = params;
+    };
+
+    PanelGridView.prototype.swipeMove = function (params) {
+        // store last two moves for calculating release-speed in swipeStop
+        if (!this.swipeParams.start) {
+            return;
+        }
+        if (this.swipeParams.last) {
+            this.swipeParams.prev = this.swipeParams.last;
+        } else {
+            this.swipeParams.prev = this.swipeParams.start;
+        }
+        this.swipeParams.last = params;
+        var swipeDiff = this.getSwipeDiff(this.swipeParams.last, this.swipeParams.start);
+        if (swipeDiff > 0) {
+            if (this.value.next[''] !== this.listItems.next['']) {
+                this.layout.left = Math.round(swipeDiff);
+                this.elem.style.left = String(this.layout.left) + 'px';
+            }
+        } else if (swipeDiff < 0) {
+            if (this.value.prev[''] !== this.listItems.prev['']) {
+                this.layout.left = Math.round(swipeDiff);
+                this.elem.style.left = String(this.layout.left) + 'px';
+            }
+        }
+    };
+
+    PanelGridView.prototype.getSwipeDiff = function (p1, p2) {
+        var oldx = p2.pos.left;
+        var newx = p1.pos.left;
+        return newx - oldx;
+    };
+
+    PanelGridView.prototype.swipeStop = function (params) {
+        // if no-swipe, remove hint of motion
+        // otherwise start modified animation
+        var speed = this.getSwipeDiff(this.swipeParams.last, this.swipeParams.prev);
+        var dist = this.getSwipeDiff(this.swipeParams.last, this.swipeParams.start);
+        if ((speed > 1) && (dist > 1)) {
+            if (this.value.next[''] !== this.listItems.next['']) {
+                ActionManager.simpleSchedule(View.focusedView, function () {
+                    return {
+                        actionType: SlidePanelsAction,
+                        direction: 'right',
+                        speed: 80,
+                        focus: false
+                    };
+                });
+            }
+        } else if ((speed < -1) && (dist < -1)) {
+            if (this.value.prev[''] !== this.listItems.prev['']) {
+                ActionManager.simpleSchedule(View.focusedView, function () {
+                    return {
+                        actionType: SlidePanelsAction,
+                        direction: 'left',
+                        speed: 80,
+                        focus: false
+                    };
+                });
+            }
+        } else {
+            // restore location - animate this?
+            this.layout.left = 0;
+            this.elem.style.left = '0px';
         }
     };
 

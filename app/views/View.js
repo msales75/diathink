@@ -12,6 +12,7 @@
 ///<reference path="HeaderToolbarView.ts"/>
 ///<reference path="HiddenDivView.ts"/>
 ///<reference path="ImageView.ts"/>
+///<reference path="InsertionView.ts"/>
 ///<reference path="LeftSwipeButtonView.ts"/>
 ///<reference path="ListItemView.ts"/>
 ///<reference path="ListView.ts"/>
@@ -29,6 +30,7 @@
 ///<reference path="PageView.ts"/>
 ///<reference path="PanelGridView.ts"/>
 ///<reference path="PanelView.ts"/>
+///<reference path="PanelDeleteView.ts"/>
 ///<reference path="RedoButtonView.ts"/>
 ///<reference path="RightSwipeButtonView.ts"/>
 ///<reference path="ScrollSpacerView.ts"/>
@@ -595,11 +597,11 @@ var View = (function () {
             }
             ++$D.resizeCount;
             if ($D.resizeCount % 2 == 0) {
-                console.log("Even count");
+                //  console.log("Even count");
             } else {
-                console.log("Odd count");
+                // console.log("Odd count");
             }
-            console.log("calling resizeUp for view " + this.id);
+            // console.log("calling resizeUp for view "+this.id);
         }
         var topView;
 
@@ -773,7 +775,7 @@ var View = (function () {
     View.currentPage = null;
     View.focusedView = null;
     View.hoveringView = null;
-    View.fontSize = 24;
+    View.fontSize = 16;
     return View;
 })();
 //# sourceMappingURL=View.js.map

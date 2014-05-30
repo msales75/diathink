@@ -62,4 +62,21 @@ class NodeLinkView extends View {
                 });
         }
     }
+    onDoubleClick(params:DragStartI) {
+        // delete link, possibly closing other panel
+        // check if next-panel is a child
+        var panel = this.panelView;
+        if (panel.childPanel!=null) {
+            ActionManager.simpleSchedule(View.focusedView,
+                function():SubAction {
+                    return {
+                        actionType: PanelCreateAction,
+                        delete: true,
+                        activeID: panel.childPanel.value.cid,
+                        prevPanel: panel.id,
+                        focus: false
+                    };
+                });
+        }
+    }
 }

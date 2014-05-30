@@ -105,8 +105,11 @@ var TextAreaView = (function (_super) {
 
     TextAreaView.prototype.setValue = function (val) {
         this.value = val;
-        var htmlval = View.escapeHtml(' ' + val);
-        this.elem.value = ' ' + val;
+        if ($D.is_android) {
+            val = ' ' + val;
+        }
+        var htmlval = View.escapeHtml(val);
+        this.elem.value = val;
         this.elem.innerHTML = htmlval;
         return this;
     };
@@ -136,7 +139,7 @@ var TextAreaView = (function (_super) {
         } */
         if (this.value.length < 5) {
             if (!this.parentView.listItems || (this.parentView.listItems.count === 0)) {
-                this.layout.height = Math.round(1.25 * View.fontSize) + 2 * Math.round(.15 * View.fontSize);
+                this.layout.height = Math.round(1.25 * View.fontSize) + 2 * Math.round(.3 * View.fontSize);
                 console.log("Quickly handling short line");
                 return;
             }
@@ -161,7 +164,7 @@ var TextAreaView = (function (_super) {
         //if (this.lastFont !== currentFont) {
         this.lineHeight = Math.round(1.25 * View.fontSize);
         this.paddingX = 2 * Math.round(.18 * View.fontSize);
-        this.paddingY = 2 * Math.round(.15 * View.fontSize);
+        this.paddingY = 2 * Math.round(.3 * View.fontSize);
 
         //}
         var lineHeight = this.lineHeight;

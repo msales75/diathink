@@ -53,9 +53,12 @@ var SlidePanelsAction = (function (_super) {
             ['context']
         ], function () {
             var grid = View.getCurrentPage().content.gridwrapper.grid;
+            that.startLeft = grid.layout.left;
+            console.log("Starting slide animation with startLeft = " + that.startLeft);
             if (that.getDirection() === 'right') {
                 grid.layout.width = grid.itemWidth * (grid.numCols + 1);
-                grid.layout.left = -grid.itemWidth;
+                grid.layout.left = that.startLeft - grid.itemWidth; // OK
+                console.log("Anim-right setup modifies left = " + grid.layout.left);
                 grid.setPosition();
                 var firstPanel = View.get(grid.listItems.first());
                 firstPanel.layout.left = grid.itemWidth;
@@ -105,8 +108,9 @@ var SlidePanelsAction = (function (_super) {
     SlidePanelsAction.prototype.anim2Step = function (frac) {
         var grid = View.getCurrentPage().content.gridwrapper.grid;
         if (this.getDirection() === 'right') {
-            var w = grid.itemWidth - Math.round(frac * grid.itemWidth);
+            var w = grid.itemWidth - this.startLeft - Math.round(frac * (grid.itemWidth - this.startLeft));
             grid.layout.left = -w;
+            console.log("Anim-right step setting left to " + grid.layout.left);
             $(grid.elem).css({
                 left: '-' + String(w) + 'px'
             });
@@ -116,8 +120,9 @@ var SlidePanelsAction = (function (_super) {
                 grid.updatePanelButtons();
             }
         } else {
-            var w = Math.round(frac * grid.itemWidth);
+            var w = -this.startLeft + Math.round(frac * (grid.itemWidth + this.startLeft));
             grid.layout.left = -w;
+            console.log("Anim-left step setting left to " + grid.layout.left);
             $(grid.elem).css({
                 left: '-' + String(w) + 'px'
             });

@@ -146,6 +146,73 @@ var OutlineAction = (function (_super) {
         };
     };
 
+    OutlineAction.prototype.handleLineJoins = function () {
+        this.cursorPosition = null;
+        if (!this.options.undo && (this.runtime.rNewModelContext == null)) {
+            var line1 = this.prevVisibleNode(this.runtime.rOldModelContext);
+            if (!line1) {
+                return;
+            }
+            var line2 = OutlineNodeModel.getById(this.options.activeID).views[this.runtime.rOldRoot];
+
+            // var sel = this.options.cursor;
+            var t1 = line1.header.name.text.value + line2.header.name.text.value;
+            this.cursorPosition = line1.header.name.text.value.length;
+            line1.header.name.text.setValue(t1);
+            if ((!this.options.redo) && (line2.header.name.text.value.length > 0)) {
+                this.subactions.push({
+                    actionType: TextAction,
+                    oldRoot: this.runtime.rOldRoot,
+                    newRoot: this.runtime.rOldRoot,
+                    activeID: line1.value.cid,
+                    text: t1
+                });
+            }
+            // send message to placeCursor() on where to put cursor
+            // this should be where we do focus, checkTextChange can get this change after we focus there.
+            /*
+            if (line2.header.name.text.value.length > 0) {
+            }
+            */
+        }
+    };
+
+    OutlineAction.prototype.handleLineSplits = function () {
+        // is a line being created or destroyed
+        if (!this.options.undo && !this.options.redo && this.runtime.rOldModelContext == null) {
+            var line1 = OutlineNodeModel.getById(this.options.referenceID).views[this.runtime.rOldRoot];
+            if (!line1) {
+                return;
+            }
+            var line2 = OutlineNodeModel.getById(this.options.activeID).views[this.runtime.rOldRoot];
+
+            // either newline or undoing deletion?
+            var sel = this.options.cursor;
+            var t1, t2;
+            var text = line1.header.name.text;
+            t1 = text.value.substr(0, sel[0]);
+            t2 = text.value.substr(sel[1]);
+            text.setValue(t1);
+            line2.header.name.text.setValue(t2);
+            if (t2.length > 0) {
+                this.subactions.push({
+                    actionType: TextAction,
+                    oldRoot: this.runtime.rOldRoot,
+                    newRoot: this.runtime.rOldRoot,
+                    activeID: this.options.referenceID,
+                    text: t1
+                });
+                this.subactions.push({
+                    actionType: TextAction,
+                    oldRoot: this.runtime.rOldRoot,
+                    newRoot: this.runtime.rOldRoot,
+                    activeID: this.options.activeID,
+                    text: t2
+                });
+            }
+        }
+    };
+
     OutlineAction.prototype.runinit2 = function () {
         var o = this.options, r = this.runtime, i, ancestors;
         if (o.undo) {
@@ -160,6 +227,7 @@ var OutlineAction = (function (_super) {
         } else {
             this.focusFirst = false;
         }
+        this.handleLineJoins();
         if (this.options.anim === 'indent') {
             this.disableAnimation = true;
         }
@@ -350,10 +418,8 @@ var OutlineAction = (function (_super) {
 
             // reference is only used in newRoot, not oldRoot
             if (v.requireNew || v.requireNewReference) {
-                if (!refModel.views || !refModel.views[o.newRoot]) {
-                    console.log('ERROR: No new-view found for referenceID=' + o.referenceID);
-                    debugger;
-                }
+                assert(refModel.views, "referenceID does not have model");
+                assert(refModel.views[o.newRoot] || (refModel === View.get(o.newRoot).panelView.value), "ERROR: NO new-view found for referenceID=" + o.referenceID);
             }
             if (v.requireNewReference && o.undo) {
                 if (o.newRoot !== 'all') {
@@ -387,7 +453,7 @@ var OutlineAction = (function (_super) {
             }
         } else {
             context = this.oldModelContext;
-            if (this.type === 'InsertAfterAction') {
+            if ((this.type === 'InsertAfterAction') || (this.type === 'InsertIntoAction')) {
                 if (context !== null) {
                     console.log("ERROR: Insert action with oldModelContext not-null");
                     debugger;
@@ -403,7 +469,7 @@ var OutlineAction = (function (_super) {
         var context, o = this.options;
         if (o.undo) {
             context = this.oldModelContext;
-            if (this.type === 'InsertAfterAction') {
+            if ((this.type === 'InsertAfterAction') || (this.type === 'InsertIntoAction')) {
                 if (context !== null) {
                     console.log("ERROR: Insert action with oldModelContext not-null");
                     debugger;
@@ -459,39 +525,59 @@ var OutlineAction = (function (_super) {
         }
         */
     };
+
+    // todo: maybe should be an object for model-context
+    OutlineAction.prototype.prevVisibleNode = function (context) {
+        var newRoot, li;
+        newRoot = this.runtime.rNewRoot;
+        if (context.prev == null) {
+            // check if parent is visible
+            li = null;
+            if (context.parent != null) {
+                li = this.getNodeView(context.parent, newRoot);
+            }
+            if (!li) {
+                if (context.next == null) {
+                    return null;
+                }
+                li = this.getNodeView(context.next, newRoot);
+            }
+        } else {
+            li = this.getNodeView(context.prev, newRoot);
+            if (!li) {
+                console.log('ERROR: Missing prior view for focus');
+                debugger;
+            }
+            li = li.getLastChild();
+        }
+        return li;
+    };
+
     OutlineAction.prototype.getFocusNode = function () {
         if (this.focusFirst) {
             var newRoot, li, model, collection, rank, cursor;
             this.runtime.cursorstart = false;
-            var context = this.runtime.rOldModelContext;
-            newRoot = this.runtime.rNewRoot;
-            if (context.prev == null) {
-                // check if parent is visible
-                li = null;
-                if (context.parent != null) {
-                    li = this.getNodeView(context.parent, newRoot);
-                }
-                if (!li) {
-                    if (context.next == null) {
-                        return;
-                    }
-                    li = this.getNodeView(context.next, newRoot);
-                    this.runtime.cursorstart = true;
-                }
-            } else {
-                li = this.getNodeView(context.prev, newRoot);
-                if (!li) {
-                    console.log('ERROR: Missing prior view for focus');
-                    debugger;
-                }
+            li = this.prevVisibleNode(this.runtime.rOldModelContext);
+            if (!li) {
+                return null;
+            }
+            if (li.value.cid === this.runtime.rOldModelContext.next) {
+                this.runtime.cursorstart = true;
             }
             return li;
         } else {
             return _super.prototype.getFocusNode.call(this);
         }
     };
+
     OutlineAction.prototype.placeCursor = function (text) {
-        if (this.focusFirst) {
+        if (this.cursorPosition != null) {
+            if ($D.is_android) {
+                text.setCursor(this.cursorPosition + 1);
+            } else {
+                text.setCursor(this.cursorPosition);
+            }
+        } else if (this.focusFirst) {
             var cursor = 0;
             if (!this.runtime.cursorstart) {
                 cursor = text.getValue().length;
@@ -692,6 +778,13 @@ var OutlineAction = (function (_super) {
                     outline.panelView.breadcrumbs.updateValue();
                     outline.panelView.breadcrumbs.renderUpdate();
                 }
+            }
+
+            // check if first node was added/removed, changing insertion-icon
+            if (outline.value.count > 0) {
+                outline.panelView.inserter.hide();
+            } else {
+                outline.panelView.inserter.show();
             }
         });
     };

@@ -48,7 +48,9 @@ var PanelView = (function (_super) {
     PanelView.prototype.init = function () {
         this.childViewTypes = {
             breadcrumbs: BreadcrumbView,
-            outline: OutlineScrollView
+            inserter: InsertionView,
+            outline: OutlineScrollView,
+            deletebutton: PanelDeleteView
         };
         assert(PanelView.panelsById[this.id] === undefined, "Multiple panels with same ID");
         PanelView.panelsById[this.id] = this;
@@ -73,6 +75,9 @@ var PanelView = (function (_super) {
             var l = this.outline.saveLayout();
             this.outline.layoutDown();
             this.outline.updateDiffs(l);
+            var l2 = this.inserter.saveLayout();
+            this.inserter.layout.top = this.breadcrumbs.layout.height + Math.round(0.5 * View.fontSize);
+            this.inserter.updateDiffs(l2);
         }
     };
 

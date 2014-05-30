@@ -68,7 +68,11 @@ var PanelDropTarget = (function (_super) {
         if (this.usePlaceholder) {
             this.slideDirection = 'right';
             if (this.prevPanel === grid.listItems.last()) {
-                this.slideDirection = 'left';
+                if (grid.listItems.count === grid.numCols) {
+                    this.slideDirection = 'left';
+                } else {
+                    this.slideDirection = 'none';
+                }
             }
             this.maxWidth = grid.itemWidth;
             this.containerWidth = grid.numCols * this.maxWidth;
@@ -80,7 +84,7 @@ var PanelDropTarget = (function (_super) {
                 opacity: frac
             });
         }
-        if (this.usePlaceholder) {
+        if (this.usePlaceholder && (this.slideDirection !== 'none')) {
             var grid = View.currentPage.content.gridwrapper.grid;
             var w = Math.round(frac * this.maxWidth);
 
@@ -88,7 +92,7 @@ var PanelDropTarget = (function (_super) {
             if (this.slideDirection === 'left') {
                 grid.layout.width = this.containerWidth + w;
                 grid.layout.left = -w;
-            } else {
+            } else if (this.slideDirection === 'right') {
                 grid.layout.width = this.containerWidth + w;
             }
             grid.setPosition();

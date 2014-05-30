@@ -86,6 +86,7 @@ class OutlineNodeModel extends PModel {
         this.attributes.parent = null;
         this.attributes.collapsed= false;
         OutlineNodeModel.modelsById[this.cid] = this;
+        this.attributes.links = new OutlineNodeCollection;
         if (options!=null) {
             if (options.text != null) {
                 this.attributes.text = options.text;
@@ -150,7 +151,7 @@ class OutlineNodeModel extends PModel {
     }
     updateLinks() {
         var i:number, o:string;
-        this.attributes.links = new OutlineNodeCollection;
+        // this.attributes.links = new OutlineNodeCollection;
         if (this.importLinks && (this.importLinks.length>0)) {
             for (i=0; i<this.importLinks.length; ++i) {
                 var ref:OutlineNodeModel = OutlineNodeModel.getById(this.importLinks[i]);

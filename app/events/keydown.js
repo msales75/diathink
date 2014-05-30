@@ -45,59 +45,45 @@ $D.handleLineBackspace = function (view, subschedule) {
                 referenceID: liView.value.attributes.parent.cid,
                 oldRoot: liView.nodeRootView.id,
                 newRoot: liView.nodeRootView.id,
-                focus: true
+                focus: true,
+                cursor: [0, 0]
             };
         });
         return;
     } else {
-        var isEmpty = false;
-        if ($D.is_android) {
-            if (view.elem.value === " ") {
-                isEmpty = true;
-            }
-        } else {
-            if (view.elem.value === "") {
-                isEmpty = true;
-            }
-        }
-        if (isEmpty) {
-            if (liView.value.get('children').count === 0) {
-                if (((liView.value.attributes.links == null) || (liView.value.attributes.links.count === 0)) && ((liView.value.attributes.backLinks == null) || (liView.value.attributes.backLinks.count === 0))) {
-                    if (subschedule) {
-                        assert(view === View.focusedView.header.name.text, "");
-                        if (View.focusedView.value.get('text') !== View.focusedView.header.name.text.value) {
-                            console.log('handleLineBackspace 3, change being processed before delete');
-                        } else {
-                            // TESTED ON ANDROID
-                            console.log('handleLineBackspace 4, no text change found before delete');
-                        }
-                    }
-                    scheduleKey(subschedule, '', function () {
-                        return {
-                            actionType: DeleteAction,
-                            anim: 'delete',
-                            activeID: liView.value.cid,
-                            oldRoot: liView.nodeRootView.id,
-                            newRoot: liView.nodeRootView.id,
-                            focus: true
-                        };
-                    });
-
-                    // e.preventDefault();
-                    return;
-                } else {
-                    if (subschedule) {
-                        console.log('handleLineBackspace 5, Cannot outdent, text content has links');
+        if (liView.value.get('children').count === 0) {
+            if (((liView.value.attributes.links == null) || (liView.value.attributes.links.count === 0)) && ((liView.value.attributes.backLinks == null) || (liView.value.attributes.backLinks.count === 0))) {
+                if (subschedule) {
+                    assert(view === View.focusedView.header.name.text, "");
+                    if (View.focusedView.value.get('text') !== View.focusedView.header.name.text.value) {
+                        console.log('handleLineBackspace 3, change being processed before delete');
+                    } else {
+                        // TESTED ON ANDROID
+                        console.log('handleLineBackspace 4, no text change found before delete');
                     }
                 }
+                scheduleKey(subschedule, '', function () {
+                    return {
+                        actionType: DeleteAction,
+                        anim: 'delete',
+                        activeID: liView.value.cid,
+                        oldRoot: liView.nodeRootView.id,
+                        newRoot: liView.nodeRootView.id,
+                        focus: true,
+                        cursor: [0, 0]
+                    };
+                });
+
+                // e.preventDefault();
+                return;
             } else {
                 if (subschedule) {
-                    console.log('handleLineBackspace 6, Cannot outdent, text content has children');
+                    console.log('handleLineBackspace 5, Cannot delete, text content has links');
                 }
             }
         } else {
             if (subschedule) {
-                console.log('handleLineBackspace 7, Cannot outdent, text content is not empty');
+                console.log('handleLineBackspace 7, Cannot delete, content has children');
             }
         }
     }
@@ -122,7 +108,8 @@ function profileIndent(id) {
                 referenceID: collection.prev[liView.value.cid],
                 oldRoot: liView.nodeRootView.id,
                 newRoot: liView.nodeRootView.id,
-                focus: true
+                focus: true,
+                cursor: [0, 0]
             };
         });
     }
@@ -145,7 +132,8 @@ function profileOutdent(id) {
                 referenceID: liView.value.attributes.parent.cid,
                 oldRoot: liView.nodeRootView.id,
                 newRoot: liView.nodeRootView.id,
-                focus: true
+                focus: true,
+                cursor: [0, 0]
             };
         });
     }
@@ -162,13 +150,15 @@ function profileDelete(id) {
                         activeID: liView.value.cid,
                         oldRoot: liView.nodeRootView.id,
                         newRoot: liView.nodeRootView.id,
-                        focus: true
+                        focus: true,
+                        cursor: [0, 0]
                     };
                 });
             }
         }
     }
 }
+
 function profileCreate(id) {
     var liView = View.get(id).nodeView;
     scheduleKey(false, id, function () {
@@ -178,14 +168,24 @@ function profileCreate(id) {
             referenceID: liView.value.cid,
             oldRoot: liView.nodeRootView.id,
             newRoot: liView.nodeRootView.id,
-            focus: true
+            focus: true,
+            cursor: [0, 0]
         };
     });
 }
 $D.handleKeydown = function (view, e) {
     var id = view.id;
-    var liView, collection, sel;
+    var liView, collection, sel, pos, newNode;
     liView = view.nodeView;
+    sel = view.getSelection();
+    if ($D.is_android) {
+        if (sel[0] > 0) {
+            sel[0] = sel[0] - 1;
+        }
+        if (sel[1] > 0) {
+            sel[1] = sel[1] - 1;
+        }
+    }
     if (e.which === 9) {
         collection = liView.parentView.value;
 
@@ -200,14 +200,14 @@ $D.handleKeydown = function (view, e) {
                     referenceID: collection.prev[liView.value.cid],
                     oldRoot: liView.nodeRootView.id,
                     newRoot: liView.nodeRootView.id,
-                    focus: true
+                    focus: true,
+                    cursor: sel
                 };
             });
             e.preventDefault();
             return;
         }
     } else if ((e.which === 8) && (!$D.is_android)) {
-        sel = view.getSelection();
         var firstchar = 0;
         if ($D.is_android) {
             firstchar = 1;
@@ -225,12 +225,87 @@ $D.handleKeydown = function (view, e) {
                 referenceID: liView.value.cid,
                 oldRoot: liView.nodeRootView.id,
                 newRoot: liView.nodeRootView.id,
-                focus: true
+                focus: true,
+                cursor: sel
             };
         });
         e.preventDefault();
         // var scrollid = $('#'+id).closest('.ui-scrollview-clip').attr('id');
         // View.get(scrollid).themeUpdate();
+    } else if (e.which === 38) {
+        newNode = view.nodeView.prevVisibleNode();
+        if (newNode) {
+            pos = View.focusedView.header.name.text.getSelection()[0];
+            if ($D.is_android && (pos === 0)) {
+                pos = 1;
+            }
+            View.setFocus(newNode);
+            newNode.header.name.text.elem.focus();
+            console.log("Setting cursor to position " + pos);
+            newNode.header.name.text.setCursor(pos);
+        } else {
+            pos = 0;
+            if ($D.is_android) {
+                ++pos;
+            }
+            view.setCursor(pos);
+        }
+        e.preventDefault();
+    } else if (e.which === 40) {
+        newNode = view.nodeView.nextVisibleNode();
+        if (newNode) {
+            pos = View.focusedView.header.name.text.getSelection()[0];
+            if ($D.is_android && (pos === 0)) {
+                pos = 1;
+            }
+            View.setFocus(newNode);
+            newNode.header.name.text.elem.focus();
+            console.log("Setting cursor to position " + pos);
+            newNode.header.name.text.setCursor(pos);
+        } else {
+            pos = view.value.length;
+            if ($D.is_android) {
+                ++pos;
+            }
+            view.setCursor(pos);
+        }
+        e.preventDefault();
+    } else if (e.which === 37) {
+        pos = view.getSelection()[0];
+        if ($D.is_android && (pos > 0)) {
+            --pos;
+        }
+        if (pos === 0) {
+            newNode = view.nodeView.prevVisibleNode();
+            if (newNode) {
+                var pos = newNode.header.name.text.value.length;
+                if ($D.is_android) {
+                    ++pos;
+                }
+                View.setFocus(newNode);
+                newNode.header.name.text.elem.focus();
+                newNode.header.name.text.setCursor(pos);
+            }
+            e.preventDefault();
+        }
+    } else if (e.which === 39) {
+        pos = view.getSelection()[0];
+        if ($D.is_android && (pos > 0)) {
+            --pos;
+        }
+        if (pos === view.value.length) {
+            newNode = view.nodeView.nextVisibleNode();
+            if (newNode) {
+                var pos = 0;
+                if ($D.is_android) {
+                    ++pos;
+                }
+                View.setFocus(newNode);
+                newNode.header.name.text.elem.focus();
+                newNode.header.name.text.setCursor(pos);
+            }
+            e.preventDefault();
+        }
     }
     e.stopPropagation();
     if (e.simulated && (e.which === 8) && (!$D.is_android)) {
@@ -251,15 +326,9 @@ $D.handleKeydown = function (view, e) {
 };
 $(function () {
     $(window).on('keydown', function (e) {
-        var keyDownCodes = { 8: 8, 9: 9, 13: 13 };
-        if ($D.is_android) {
-            if ((!keyDownCodes[e.which]) && (e.which !== 0)) {
-                return true;
-            }
-        } else {
-            if (!keyDownCodes[e.which]) {
-                return true;
-            }
+        var keyDownCodes = { 8: 8, 9: 9, 13: 13, 37: 37, 38: 38, 39: 39, 40: 40 };
+        if (!keyDownCodes[e.which]) {
+            return true;
         }
 
         //console.log('Acknowledging keydown, code=' + e.which);

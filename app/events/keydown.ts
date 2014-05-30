@@ -41,18 +41,12 @@ $D.handleLineBackspace = function(view:TextAreaView, subschedule:boolean) {
                 referenceID: liView.value.attributes.parent.cid,
                 oldRoot: liView.nodeRootView.id,
                 newRoot: liView.nodeRootView.id,
-                focus: true
+                focus: true,
+                cursor: [0,0]
             };
         });
         return;
     } else { // delete or merge-lines?
-        var isEmpty = false;
-        if ($D.is_android) {
-            if (view.elem.value === " ") {isEmpty = true;}
-        } else {
-            if (view.elem.value === "") {isEmpty = true;}
-        }
-        if (isEmpty) {
             if (liView.value.get('children').count === 0) {
                 if (((liView.value.attributes.links == null) || (liView.value.attributes.links.count === 0)) &&
                     ((liView.value.attributes.backLinks == null) || (liView.value.attributes.backLinks.count === 0))) {
@@ -72,24 +66,20 @@ $D.handleLineBackspace = function(view:TextAreaView, subschedule:boolean) {
                             activeID: liView.value.cid,
                             oldRoot: liView.nodeRootView.id,
                             newRoot: liView.nodeRootView.id,
-                            focus: true
+                            focus: true,
+                            cursor: [0,0]
                         };
                     });
                     // e.preventDefault();
                     return;
                 } else {
                     if (subschedule) {
-                        console.log('handleLineBackspace 5, Cannot outdent, text content has links');
+                        console.log('handleLineBackspace 5, Cannot delete, text content has links');
                     }
                 }
-            } else {
-                if (subschedule) {
-                    console.log('handleLineBackspace 6, Cannot outdent, text content has children');
-                }
-            }
         } else {
             if (subschedule) {
-                console.log('handleLineBackspace 7, Cannot outdent, text content is not empty');
+                console.log('handleLineBackspace 7, Cannot delete, content has children');
             }
         }
     }
@@ -113,7 +103,8 @@ function profileIndent(id:string) {
                 referenceID: collection.prev[liView.value.cid],
                 oldRoot: liView.nodeRootView.id,
                 newRoot: liView.nodeRootView.id,
-                focus: true
+                focus: true,
+                cursor: [0,0]
             };
         });
     }
@@ -135,7 +126,8 @@ function profileOutdent(id:string) {
                     referenceID: liView.value.attributes.parent.cid,
                     oldRoot: liView.nodeRootView.id,
                     newRoot: liView.nodeRootView.id,
-                    focus: true
+                    focus: true,
+                    cursor: [0,0]
                 };
             });
         }
@@ -153,13 +145,15 @@ function profileDelete(id:string) {
                         activeID: liView.value.cid,
                         oldRoot: liView.nodeRootView.id,
                         newRoot: liView.nodeRootView.id,
-                        focus: true
+                        focus: true,
+                        cursor: [0,0]
                     };
                 });
             }
         }
     }
 }
+
 function profileCreate(id:string) {
     var liView:NodeView = View.get(id).nodeView;
     scheduleKey(false, id, function():SubAction {
@@ -169,14 +163,20 @@ function profileCreate(id:string) {
             referenceID: liView.value.cid,
             oldRoot: liView.nodeRootView.id,
             newRoot: liView.nodeRootView.id,
-            focus: true
+            focus: true,
+            cursor: [0,0]
         };
     });
 }
 $D.handleKeydown = function(view:TextAreaView, e) {
     var id = view.id;
-    var liView, collection, sel;
+    var liView, collection, sel, pos:number, newNode:NodeView;
     liView = view.nodeView;
+    sel = view.getSelection();
+    if ($D.is_android) {
+        if (sel[0]>0) {sel[0] = sel[0]-1;}
+        if (sel[1]>0) {sel[1] = sel[1]-1;}
+    }
     if (e.which === 9) { // tab
         collection = liView.parentView.value;
         // validate not first in list
@@ -190,14 +190,14 @@ $D.handleKeydown = function(view:TextAreaView, e) {
                     referenceID: collection.prev[liView.value.cid],
                     oldRoot: liView.nodeRootView.id,
                     newRoot: liView.nodeRootView.id,
-                    focus: true
+                    focus: true,
+                    cursor: sel
                 };
             });
             e.preventDefault();
             return;
         }
     } else if ((e.which === 8)&&(!$D.is_android)) { // backspace
-        sel = view.getSelection();
         var firstchar=0;
         if ($D.is_android) {firstchar=1;}
         if (sel && (sel[0] === sel[1]) && (sel[1] === firstchar)) {
@@ -213,12 +213,71 @@ $D.handleKeydown = function(view:TextAreaView, e) {
                 referenceID: liView.value.cid,
                 oldRoot: liView.nodeRootView.id,
                 newRoot: liView.nodeRootView.id,
-                focus: true
+                focus: true,
+                cursor: sel
             };
         });
         e.preventDefault();
         // var scrollid = $('#'+id).closest('.ui-scrollview-clip').attr('id');
         // View.get(scrollid).themeUpdate();
+    } else if (e.which === 38) { // up arrow
+        newNode = view.nodeView.prevVisibleNode();
+        if (newNode) {
+            pos = View.focusedView.header.name.text.getSelection()[0];
+            if ($D.is_android && (pos===0)) {pos=1;}
+            View.setFocus(newNode);
+            newNode.header.name.text.elem.focus();
+            console.log("Setting cursor to position "+pos);
+            newNode.header.name.text.setCursor(pos);
+        } else {
+            pos=0;
+            if ($D.is_android) {++pos;}
+            view.setCursor(pos);
+        }
+        e.preventDefault();
+    } else if (e.which === 40) { // down arrow
+        newNode = view.nodeView.nextVisibleNode();
+        if (newNode) {
+            pos = View.focusedView.header.name.text.getSelection()[0];
+            if ($D.is_android && (pos===0)) {pos=1;}
+            View.setFocus(newNode);
+            newNode.header.name.text.elem.focus();
+            console.log("Setting cursor to position "+pos);
+            newNode.header.name.text.setCursor(pos);
+        } else {
+            pos=view.value.length;
+            if ($D.is_android) {++pos;}
+            view.setCursor(pos);
+        }
+        e.preventDefault();
+    } else if (e.which === 37) { // left arrow
+        pos = view.getSelection()[0];
+        if ($D.is_android && (pos>0)) {--pos;}
+        if (pos===0) { // go to previous line
+            newNode = view.nodeView.prevVisibleNode();
+            if (newNode) {
+                var pos = newNode.header.name.text.value.length;
+                if ($D.is_android) {++pos;}
+                View.setFocus(newNode);
+                newNode.header.name.text.elem.focus();
+                newNode.header.name.text.setCursor(pos);
+            }
+            e.preventDefault();
+        }
+    } else if (e.which === 39) { // right arrow
+        pos = view.getSelection()[0];
+        if ($D.is_android && (pos>0)) {--pos;}
+        if (pos===view.value.length) { // go to next line
+            newNode = view.nodeView.nextVisibleNode();
+            if (newNode) {
+                var pos = 0;
+                if ($D.is_android) {++pos;}
+                View.setFocus(newNode);
+                newNode.header.name.text.elem.focus();
+                newNode.header.name.text.setCursor(pos);
+            }
+            e.preventDefault();
+        }
     }
     e.stopPropagation();
     if (e.simulated && (e.which === 8 ) && (!$D.is_android)) { // simulate backsapce
@@ -241,15 +300,9 @@ $D.handleKeydown = function(view:TextAreaView, e) {
 };
 $(function() {
     $(window).on('keydown', function(e:JQueryEventObjectD) {
-        var keyDownCodes = {8: 8, 9: 9, 13: 13};
-        if ($D.is_android) {
-            if ((!keyDownCodes[e.which]) && (e.which!==0)) {
-                return true;
-            }
-        } else {
-            if (!keyDownCodes[e.which]) {
-                return true;
-            }
+        var keyDownCodes = {8: 8, 9: 9, 13: 13, 37:37, 38:38, 39:39, 40:40};
+        if (!keyDownCodes[e.which]) {
+            return true;
         }
         //console.log('Acknowledging keydown, code=' + e.which);
         /*

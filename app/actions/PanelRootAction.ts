@@ -63,7 +63,7 @@ class PanelRootAction extends AnimatedAction {
                     debugger;
                 }
                 var prevAction:Action = <Action>c.actions.at(c.lastAction-1);
-                if ((prevAction.type==='CollapseAction')&&
+                if (prevAction && (prevAction.type==='CollapseAction')&&
                     (prevAction.options.activeID === that.options.activeID)) {
                     // todo: this is a bit redundant with CollapseAction
                     var activeModel= that.getModel(that.options.activeID);
@@ -97,6 +97,11 @@ class PanelRootAction extends AnimatedAction {
                         console.log('Invalid return from changeRoot');
                         debugger;
                     }
+                    if (View.get(that.options.oldRoot).value.count>0) {
+                        View.get(that.options.oldRoot).panelView.inserter.hide();
+                    } else {
+                        View.get(that.options.oldRoot).panelView.inserter.show();
+                    }
                 }
             } else {
                 if (outline.nodeRootView.id === that.options.oldRoot) {
@@ -111,6 +116,11 @@ class PanelRootAction extends AnimatedAction {
                     } else {
                         that.oldRootModel = View.get(that.options.oldRoot).panelView.value;
                         that.options.newRoot = View.get(that.options.oldRoot).panelView.changeRoot(model, null);
+                    }
+                    if (View.get(that.options.newRoot).value.count>0) {
+                        View.get(that.options.newRoot).panelView.inserter.hide();
+                    } else {
+                        View.get(that.options.newRoot).panelView.inserter.show();
                     }
                 }
             }

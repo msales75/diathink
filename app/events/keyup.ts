@@ -129,7 +129,8 @@ $(function() {
                             referenceID: collection.prev[liView.value.cid],
                             oldRoot: liView.nodeRootView.id,
                             newRoot: liView.nodeRootView.id,
-                            focus: true
+                            focus: true,
+                            cursor: [pos[0]-1,pos[1]-1]
                         };
                     });
                     return;
@@ -149,7 +150,8 @@ $(function() {
                 ActionManager.schedule(function():SubAction {
                     if (View.focusedView) {
                         var nview:TextAreaView = View.focusedView.header.name.text;
-                        if ((mesg === ' ') && (pos[0] === 1)) { // space at beginning of line
+                        var sel = nview.getSelection();
+                        if ((mesg === ' ') && (sel[0] === 1)) { // space at beginning of line
                             var liView:NodeView = View.focusedView;
                             var collection = liView.parentView.value;
                             if (View.focusedView.value.get('text') !== View.focusedView.header.name.text.value) {
@@ -165,11 +167,11 @@ $(function() {
                                     referenceID: collection.prev[liView.value.cid],
                                     oldRoot: liView.nodeRootView.id,
                                     newRoot: liView.nodeRootView.id,
-                                    focus: true
+                                    focus: true,
+                                    cursor: [0,0]
                                 };
                             });
                         } else if (mesg === '\b') {
-                            var sel = nview.getSelection();
                             if ((sel[0] !== 1) || (sel[0] !== sel[1])) {
                                 if (sel[0] === sel[1]) {
                                     nview.setValue(nview.value.substr(0, sel[0] - 1) + nview.value.substr(sel[1]));
@@ -194,7 +196,6 @@ $(function() {
                             }
                         } else {
                             // append mesg to focused view and set cursor there
-                            var sel = nview.getSelection();
                             nview.setValue(nview.value.substr(0, sel[0]) + mesg + nview.value.substr(sel[1]));
                             nview.setCursor(sel[0] + mesg.length);
                             ActionManager.schedule(

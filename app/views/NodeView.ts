@@ -34,6 +34,40 @@ class NodeView extends View {
         }
         return this;
     }
+    getLastChild():NodeView {
+        var childlist = this.children.listItems;
+        if (childlist.count===0) {return this;}
+        else {
+            return NodeView.nodesById[childlist.last()].getLastChild();
+        }
+    }
+    nextVisibleNode(skipchildren?:boolean) {
+        if (skipchildren===undefined) {skipchildren = false;}
+        assert(this.parentView.listItems !=null, "nextVisibleNode called on invalid node");
+        if (!skipchildren && (this.children.listItems.count>0)) {
+            return NodeView.nodesById[this.children.listItems.first()];
+        }
+        var nid = this.parentView.listItems.next[this.id];
+        if (nid!=='') {
+            return NodeView.nodesById[nid];
+        } else if (this.parentView.nodeView!=null) {
+            return this.parentView.nodeView.nextVisibleNode(true);
+        } else {
+            return null; // this is last in the visible list
+        }
+    }
+
+    prevVisibleNode() {
+        assert(this.parentView.listItems !=null, "nextVisibleNode called on invalid node");
+        var nid = this.parentView.listItems.prev[this.id];
+        if (nid !== '') {
+            return NodeView.nodesById[nid].getLastChild();
+        } else if (this.parentView.nodeView!=null) {
+            return this.parentView.nodeView;
+        } else {
+            return null; // this is first in the visible list
+        }
+    }
 
     init() {
         this.modelType = OutlineNodeModel;

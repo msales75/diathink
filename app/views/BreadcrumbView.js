@@ -80,8 +80,8 @@ var BreadcrumbView = (function (_super) {
             this.dirtyHeight = true;
         }
         this.layout.top = 0;
-        this.layout.left = Math.round(View.fontSize);
-        this.layout.width = p.width - Math.round(View.fontSize);
+        this.layout.left = Math.round(0.8 * View.fontSize);
+        this.layout.width = p.width - Math.round(2.8 * View.fontSize);
     };
     BreadcrumbView.prototype.layoutUp = function () {
         /*

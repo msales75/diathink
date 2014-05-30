@@ -57,7 +57,8 @@ $(window).bind('load', function () {
     var grid = View.currentPage.content.gridwrapper.grid;
     grid.updateCols();
     grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
-    grid.append(new PanelView({ parentView: grid, value: OutlineNodeModel.root }));
+
+    // grid.append(new PanelView({parentView: grid, value: OutlineNodeModel.root}));
     View.currentPage.prerender();
     setTimeout(function () {
         View.currentPage.render();
