@@ -515,8 +515,7 @@ var Action = (function (_super) {
             return;
         }
         actionlist.runningAction = j.broadcastID;
-        var action;
-        j.options.done = function () {
+        j.options.remoteDone = function (action) {
             ++actionlist.lastBroadcastID;
             actionlist.models.push(action);
             actionlist.length = actionlist.models.length;
@@ -529,14 +528,17 @@ var Action = (function (_super) {
         if (j.newModelContext) {
             j.options.newModelContext = j.newModelContext;
         }
+        j.options.actionType = Action.remoteActionTypes[j.type];
         if (j.options.undo) {
-            action = actionlist.modelsById[j.options.origID];
+            j.options.action = actionlist.modelsById[j.options.origID];
         } else if (j.options.redo) {
-            action = actionlist.modelsById[j.options.origID];
-        } else {
-            action = new Action.remoteActionTypes[j.type](j.options);
+            j.options.action = actionlist.modelsById[j.options.origID];
         }
-        action.exec(j.options);
+
+        // how do we capture the action once it's defined?
+        ActionManager.schedule(function () {
+            return j.options;
+        });
     };
 
     // To override **

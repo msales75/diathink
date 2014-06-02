@@ -98,6 +98,7 @@ class ActionManager {
             // delete options['action'];
             options.done = function() {
                 setTimeout(function() { // wait for action to wrapup before starting next one
+                    if (options.remoteDone) {options.remoteDone(options.action);}
                     that.queueComplete(f, options.action);
                 }, 0);
             };
@@ -130,9 +131,9 @@ class ActionManager {
             console.log("ERROR: queueComplete called without code");
             debugger;
         }
-        if (action && action.options.origID) {
-            return; // completed remote action, do not change local queues
-        }
+        // if (action && action.options.origID) {
+            // return; // completed remote action, do not change local queues
+        // }
         var lastQueue = this.queue.shift();
         // console.log("Removed item from queue");
         if (f !== lastQueue) {

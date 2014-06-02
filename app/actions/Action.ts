@@ -154,6 +154,9 @@ interface ActionJSON {
         focus?:boolean;
         newModelContext?:ModelContext;
         remoteID?:string;
+        action?:Action;
+        actionType?:typeof Action;
+        remoteDone?:{(action:Action)};
     }
 }
 class Action extends PModel {
@@ -609,28 +612,29 @@ class Action extends PModel {
             return;
         }
         actionlist.runningAction = j.broadcastID;
-        var action:Action;
-        j.options.done = function() {
+        j.options.remoteDone = function(action:Action) {
             ++actionlist.lastBroadcastID;
             actionlist.models.push(action);
             actionlist.length=actionlist.models.length;
             actionlist.modelsById[action.options.origID] = action;
             Action.tryNextRemote(sessionID);
-        }
+        };
 
         j.options.origID = String(j.historyRank);
         j.options.focus = false;
         if (j.newModelContext) {
             j.options.newModelContext = j.newModelContext;
         }
+        j.options.actionType = Action.remoteActionTypes[j.type];
         if (j.options.undo) {
-            action = <Action>actionlist.modelsById[j.options.origID];
+            j.options.action = <Action>actionlist.modelsById[j.options.origID];
         } else if (j.options.redo) {
-            action = <Action>actionlist.modelsById[j.options.origID];
-        } else {
-            action = new Action.remoteActionTypes[j.type](j.options);
+           j.options.action = <Action>actionlist.modelsById[j.options.origID];
         }
-        action.exec(j.options);
+        // how do we capture the action once it's defined?
+        ActionManager.schedule(function() {
+            return <SubAction>j.options;
+        });
     }
 
     // To override **

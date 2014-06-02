@@ -97,6 +97,9 @@ var ActionManager = (function () {
             // delete options['action'];
             options.done = function () {
                 setTimeout(function () {
+                    if (options.remoteDone) {
+                        options.remoteDone(options.action);
+                    }
                     that.queueComplete(f, options.action);
                 }, 0);
             };
@@ -129,9 +132,10 @@ var ActionManager = (function () {
             console.log("ERROR: queueComplete called without code");
             debugger;
         }
-        if (action && action.options.origID) {
-            return;
-        }
+
+        // if (action && action.options.origID) {
+        // return; // completed remote action, do not change local queues
+        // }
         var lastQueue = this.queue.shift();
 
         // console.log("Removed item from queue");
