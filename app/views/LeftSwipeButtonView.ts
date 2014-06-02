@@ -20,6 +20,7 @@ class LeftSwipeButtonView extends SpanView {
             function():SubAction {
                 return {
                     actionType: SlidePanelsAction,
+                    name: 'Swipe right',
                     direction: 'right',
                     focus: false
                 };

@@ -54,6 +54,7 @@ class PanelDeleteView extends ImageView {
             function():SubAction {
                 return {
                     actionType: PanelCreateAction,
+                    name: 'Remove panel',
                     activeID: panel.value.cid,
                     delete: true,
                     panelID: panel.id,

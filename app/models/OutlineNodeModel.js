@@ -1,10 +1,12 @@
-///<reference path="../views/View.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+///<reference path="../views/View.ts"/>
+///<reference path="../util/fixFontSize.ts"/>
+// fixFOntSize is for getting the JQueryStaticD interface
 m_require("app/LinkedList.js");
 
 var PModel = (function () {
@@ -69,7 +71,16 @@ var OutlineNodeModel = (function (_super) {
         _super.call(this);
         this.attributes = {};
         this.views = {};
-        this.cid = View.getNextId();
+        if (options && options.cid) {
+            this.cid = options.cid;
+            var num = Number(this.cid.substr(2));
+            if (num >= View.nextId) {
+                View.nextId = num + 1;
+            }
+        } else {
+            this.cid = View.getNextId();
+        }
+        assert(OutlineNodeModel.modelsById[this.cid] === undefined, "ERROR: Using same cid twice");
         this.attributes.deleted = false;
         this.attributes.parent = null;
         this.attributes.collapsed = false;
@@ -181,6 +192,35 @@ var OutlineNodeModel = (function (_super) {
         this.importLinks = n.links;
         this.setChildren(children);
         return this;
+    };
+    OutlineNodeModel.prototype.toJSON = function () {
+        return ($.toJSON(this._toJSON()));
+    };
+    OutlineNodeModel.prototype._toJSON = function () {
+        var links = this.attributes.links;
+        var linklist = [];
+        if (links && (links.count > 0)) {
+            var l;
+            for (l = links.first(); l !== ''; l = links.next[l]) {
+                linklist.push(links.obj[l].cid);
+            }
+        }
+        var childlist = [];
+        var children = this.attributes.children;
+        if (children && children.count > 0) {
+            var c;
+            for (c = children.first(); c !== ''; c = children.next[c]) {
+                childlist.push(children.obj[c]._toJSON());
+            }
+        }
+        return {
+            cid: this.cid,
+            text: this.attributes.text,
+            collapsed: this.attributes.collapsed,
+            deleted: this.attributes.deleted,
+            links: linklist,
+            children: childlist
+        };
     };
 
     OutlineNodeModel.prototype.getContextAt = function () {
@@ -364,7 +404,7 @@ var OutlineNodeCollection = (function (_super) {
             return;
         }
         for (i = 0; i < input.length; ++i) {
-            var m = new OutlineNodeModel();
+            var m = new OutlineNodeModel({ cid: input[i].cid });
             m._fromJSON(input[i]);
             this.append(m.cid, m);
         }

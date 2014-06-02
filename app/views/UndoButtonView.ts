@@ -7,6 +7,9 @@ class UndoButtonView extends ButtonView {
         this.isClickable = true;
     }
     onClick(params:DragStartI) {
+        if (this.isEnabled) {
+            this.start();
+        }
         ActionManager.undo();
     }
     layoutDown() {

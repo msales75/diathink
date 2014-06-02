@@ -1,5 +1,9 @@
 interface JQueryStaticD extends JQueryStatic {
     stylesheet:{(s:string):JQuery};
+    toJSON:{(obj)};
+    secureEvalJSON:{(obj)};
+    receiveMessage:{(f1, f2)};
+    postMessage:{(a,b,c)};
 }
 function fixFontSize() {
     var fontsize = Number($('body').css('font-size').replace(/px/, ''));

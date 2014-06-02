@@ -55,6 +55,7 @@ var HandleImageView = (function (_super) {
             }
             return {
                 actionType: CollapseAction,
+                name: li.isCollapsed ? 'Expand list' : 'Collapse list',
                 activeID: li.value.cid,
                 collapsed: !li.isCollapsed,
                 oldRoot: li.nodeRootView.id,
@@ -73,6 +74,7 @@ var HandleImageView = (function (_super) {
         }, function () {
             return {
                 actionType: PanelRootAction,
+                name: 'Hoist',
                 activeID: li.value.cid,
                 oldRoot: li.nodeRootView.id,
                 newRoot: 'new'

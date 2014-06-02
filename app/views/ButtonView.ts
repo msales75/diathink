@@ -2,8 +2,10 @@
 m_require("app/views/View.js");
 class ButtonView extends View {
     isEnabled = true;
+    isActive:boolean = false;
     value:string = 'theme/images/circle.png';
     elem:HTMLAnchorElement;
+    timer:number;
 
     render() {
         this._create({
@@ -21,6 +23,29 @@ class ButtonView extends View {
         */
         this.setPosition();
         return this.elem;
+    }
+    start(){
+        var self = this;
+        if (this.isActive) {
+            clearTimeout(this.timer);
+            this.removeClass('active');
+            this.timer = setTimeout(function() {
+                self.isActive=false;
+                self.start();
+            }, 20);
+        } else {
+            this.isActive = true;
+            this.addClass('active');
+            this.timer = setTimeout(function() {
+                self.isActive = false;
+                self.finish();
+            }, 200);
+        }
+    }
+    finish() {
+        this.timer = null;
+        this.isActive=false;
+        this.removeClass('active');
     }
 
     disable() {

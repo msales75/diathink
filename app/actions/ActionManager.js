@@ -100,14 +100,24 @@ var ActionManager = (function () {
                     that.queueComplete(f, options.action);
                 }, 0);
             };
+            var mesgobj = View.currentPage.header.message;
             if (options.undo) {
                 // console.log("In next(), undoing action of type "+options.actionType.name);
+                if (options.action.options.name) {
+                    mesgobj.setValue('Undo: ' + options.action.options.name, 'action');
+                }
                 options.action.undo(options);
             } else if (options.redo) {
                 // console.log("In next(), redoing action of type "+options.actionType.name);
+                if (options.action.options.name) {
+                    mesgobj.setValue('Redo: ' + options.action.options.name, 'action');
+                }
                 options.action.exec(options);
             } else {
                 // console.log("In next(), executing action of type "+options.actionType.name);
+                if (options.name) {
+                    // mesgobj.setValue(options.name, 'action');
+                }
                 options.action = options.actionType.createAndExec(options);
             }
             ActionManager.log(options.action);
@@ -118,6 +128,9 @@ var ActionManager = (function () {
         if (!f) {
             console.log("ERROR: queueComplete called without code");
             debugger;
+        }
+        if (action && action.options.origID) {
+            return;
         }
         var lastQueue = this.queue.shift();
 
@@ -152,6 +165,9 @@ var ActionManager = (function () {
     };
 
     ActionManager.log = function (action) {
+        if (action.options.origID) {
+            return;
+        }
         if (action.options.undo) {
             // console.log("Done undoing action " + action.historyRank + ': ' + action.type);
         } else if (action.options.redo) {
@@ -301,6 +317,7 @@ var ActionManager = (function () {
     ActionManager.actions = null;
     ActionManager.lastAction = null;
     ActionManager.queue = [];
+    ActionManager.remoteModels = {};
     return ActionManager;
 })();
 //# sourceMappingURL=ActionManager.js.map

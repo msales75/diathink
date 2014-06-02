@@ -49,6 +49,9 @@
         "backbone.localStorage.js",
         "jquery-1.9.1.js",
         "jquery.stylesheet.js",
+        "jquery-util.js",
+        "jquery-json.js",
+        "jquery-message.js",
         "m.js"
     ]
 }

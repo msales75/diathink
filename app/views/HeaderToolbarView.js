@@ -17,7 +17,8 @@ var HeaderToolbarView = (function (_super) {
     HeaderToolbarView.prototype.init = function () {
         this.childViewTypes = {
             title: HeaderTitleView,
-            undobuttons: UndoButtonContainerView
+            undobuttons: UndoButtonContainerView,
+            message: HeaderMessageView
         };
     };
     HeaderToolbarView.prototype.layoutDown = function () {

@@ -1,5 +1,6 @@
 ///<reference path="../views/View.ts"/>
-
+///<reference path="../util/fixFontSize.ts"/>
+// fixFOntSize is for getting the JQueryStaticD interface
 m_require("app/LinkedList.js");
 
 class PModel {
@@ -8,6 +9,7 @@ class PModel {
 }
 
 interface NodeOutlineJson {
+    cid?: string;
     text: string;
     children?: NodeOutlineJson[];
     links?: string[]
@@ -56,6 +58,7 @@ class Collection {
     }
 }
 interface ModelOptions {
+    cid?: string;
     text?: string;
     children?: OutlineNodeCollection;
 }
@@ -81,7 +84,16 @@ class OutlineNodeModel extends PModel {
 
     constructor(options?:ModelOptions) {
         super();
-        this.cid = View.getNextId();
+        if (options && options.cid) {
+            this.cid = options.cid;
+            var num = Number(this.cid.substr(2));
+            if (num>=View.nextId) {
+                View.nextId = num+1;
+            }
+        } else {
+            this.cid = View.getNextId();
+        }
+        assert(OutlineNodeModel.modelsById[this.cid]===undefined, "ERROR: Using same cid twice");
         this.attributes.deleted = false;
         this.attributes.parent = null;
         this.attributes.collapsed= false;
@@ -187,6 +199,35 @@ class OutlineNodeModel extends PModel {
         this.importLinks = n.links;
         this.setChildren(children);
         return this;
+    }
+    toJSON() {
+        return ((<JQueryStaticD>$).toJSON(this._toJSON()));
+    }
+    _toJSON():{} {
+        var links=this.attributes.links;
+        var linklist:string[] = [];
+        if (links && (links.count>0)) {
+            var l:string;
+            for (l=links.first();l!==''; l=links.next[l]) {
+                linklist.push(links.obj[l].cid);
+            }
+        }
+        var childlist:{}[] = [];
+        var children = this.attributes.children;
+        if (children && children.count>0) {
+            var c:string;
+            for (c=children.first(); c!==''; c=children.next[c]) {
+                childlist.push(children.obj[c]._toJSON());
+            }
+        }
+        return {
+            cid: this.cid,
+            text: this.attributes.text,
+            collapsed: this.attributes.collapsed,
+            deleted: this.attributes.deleted,
+            links: linklist,
+            children: childlist
+        };
     }
 
     getContextAt() {
@@ -389,7 +430,7 @@ class OutlineNodeCollection extends LinkedList<OutlineNodeModel> {
         var i:number;
         if (!input) {return;}
         for (i = 0; i < input.length; ++i) {
-            var m:OutlineNodeModel = new OutlineNodeModel();
+            var m:OutlineNodeModel = new OutlineNodeModel({cid: input[i].cid});
             m._fromJSON(input[i]);
             this.append(m.cid, m);
         }

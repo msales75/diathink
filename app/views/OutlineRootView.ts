@@ -49,12 +49,13 @@ class OutlineRootView extends ListView {
     }
     layoutDown() {
         if (this.layout==null) {this.layout = {};}
-        this.layout.top = 0;
+        this.layout.top = Math.round(View.fontSize/8)+1;
         this.layout.left = 0;
         this.layout.width = this.parentView.layout.width;
     }
     layoutUp() {
         super.layoutUp();
+        this.layout.height += Math.round(View.fontSize/8)+1;
         // todo: special hack for fixing scroll-canvas?
     }
 

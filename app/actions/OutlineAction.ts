@@ -150,7 +150,7 @@ class OutlineAction extends AnimatedAction {
             var t1:string = (<string>line1.header.name.text.value) + (<string>line2.header.name.text.value);
             this.cursorPosition = line1.header.name.text.value.length;
             line1.header.name.text.setValue(t1);
-            if ((!this.options.redo)&&(line2.header.name.text.value.length > 0)) {
+            if ((!this.options.redo)&&(line2.header.name.text.value.length > 0)&&(!this.options.origID)) {
                 this.subactions.push({
                     actionType: TextAction,
                     oldRoot: this.runtime.rOldRoot,
@@ -171,7 +171,8 @@ class OutlineAction extends AnimatedAction {
 
     handleLineSplits() {
         // is a line being created or destroyed
-        if (!this.options.undo && !this.options.redo && this.runtime.rOldModelContext == null) {
+        if (!this.options.undo && !this.options.redo && (this.runtime.rOldModelContext == null)&&(!this.options.origID)) {
+            if (!OutlineNodeModel.getById(this.options.referenceID).views) {return;}
             var line1 = OutlineNodeModel.getById(this.options.referenceID).views[this.runtime.rOldRoot];
             if (!line1) {return;} // when inserting line into empty panel
             var line2 = OutlineNodeModel.getById(this.options.activeID).views[this.runtime.rOldRoot];
@@ -436,7 +437,7 @@ class OutlineAction extends AnimatedAction {
         }
         if (o.undo) {
             context = this.newModelContext;
-            if (this.type === 'DeleteAction') {
+            if (this instanceof DeleteAction) {
                 if (context !== null) {
                     console.log("ERROR: DeleteAction undo with newModelContext-not-null");
                     debugger;
@@ -445,7 +446,7 @@ class OutlineAction extends AnimatedAction {
             }
         } else {
             context = this.oldModelContext;
-            if ((this.type === 'InsertAfterAction')||(this.type === 'InsertIntoAction')) {
+            if ((this instanceof InsertAfterAction)||(this instanceof InsertIntoAction)) {
                 if (context !== null) {
                     console.log("ERROR: Insert action with oldModelContext not-null");
                     debugger;
@@ -461,7 +462,7 @@ class OutlineAction extends AnimatedAction {
         var context, o = this.options;
         if (o.undo) {
             context = this.oldModelContext;
-            if ((this.type === 'InsertAfterAction')||(this.type === 'InsertIntoAction')) {
+            if ((this instanceof InsertAfterAction)||(this instanceof InsertIntoAction)) {
                 if (context !== null) {
                     console.log("ERROR: Insert action with oldModelContext not-null");
                     debugger;
@@ -470,7 +471,7 @@ class OutlineAction extends AnimatedAction {
             }
         } else {
             context = this.newModelContext;
-            if (this.type === 'DeleteAction') {
+            if (this instanceof DeleteAction) {
                 if (context !== null) {
                     console.log("ERROR: DeleteAction undo with newModelContext-not-null");
                     debugger;
@@ -666,7 +667,7 @@ class OutlineAction extends AnimatedAction {
             // if parent-collection is empty, reset collapsed=false
             if (oldCollection != null) {
                 if ((!that.options.undo) && (!that.options.redo) &&
-                    (oldCollection.count === 1) && (that.type !== 'CollapseAction')) {
+                    (oldCollection.count === 1) && (! (that instanceof CollapseAction)) && (!that.options.origID)) {
                     var parent = activeModel.get('parent');
                     // don't do this with a collapse action.
                     that.subactions.push({

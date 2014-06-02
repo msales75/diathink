@@ -63,10 +63,9 @@ var PanelView = (function (_super) {
     };
     PanelView.prototype.layoutDown = function () {
         var p = this.parentView.parentView.layout;
-        var w = Math.floor(Math.floor(p.width) / this.parentView.numCols);
         this.layout = {
             top: 0,
-            width: w,
+            width: this.parentView.itemWidth,
             height: p.height
         };
     };

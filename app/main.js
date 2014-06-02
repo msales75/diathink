@@ -19,40 +19,13 @@ if (nav.userAgent.match(/iPhone/i) || nav.userAgent.match(/iPad/i) || nav.userAg
     }
 }
 
-OutlineNodeModel.root = new OutlineNodeModel();
-OutlineNodeModel.root.fromJSON({
-    text: 'Home',
-    children: [
-        {
-            text: "Test 1",
-            children: [
-                {
-                    text: "Child 1 1",
-                    children: [
-                        {
-                            text: "Child 1 1 - 1",
-                            links: ["m_6"]
-                        }
-                    ] },
-                {
-                    text: "Child 1 2"
-                }
-            ] },
-        {
-            text: "Test 2",
-            links: ["m_1", "m_3"]
-        }
-    ]
-});
-
-$D.is_touch_device = 'ontouchstart' in document.documentElement;
-var is_mobile_ios = (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i));
-is_mobile_ios != null ? this.is_mobile_ios = true : this.is_mobile_ios = false;
-$D.is_android = $D.is_touch_device && (!is_mobile_ios); // good enough for now...
-$D.is_android = true; // for debugging
-
-$(window).bind('load', function () {
-    $D.router = new Router(document.body);
+function saveSnapshot() {
+    $.postMessage($.toJSON({
+        command: 'saveSnapshot',
+        mesg: OutlineNodeModel.root.toJSON()
+    }), 'http://diathink.com/', window.frames['forwardIframe']);
+}
+function createPage() {
     new DiathinkView({});
     var grid = View.currentPage.content.gridwrapper.grid;
     grid.updateCols();
@@ -78,5 +51,55 @@ $(window).bind('load', function () {
             // validate();
         }, 0);
     }, 50); // todo: don't hard-code 50ms load time for font
+}
+$D.is_touch_device = 'ontouchstart' in document.documentElement;
+var is_mobile_ios = (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i));
+is_mobile_ios != null ? this.is_mobile_ios = true : this.is_mobile_ios = false;
+$D.is_android = $D.is_touch_device && (!is_mobile_ios); // good enough for now...
+$D.is_android = true; // for debugging
+$(window).bind('load', function () {
+    $D.sessionID = ActionManager.randomString(12);
+    $.receiveMessage(function (e) {
+        var mesgObj = $.secureEvalJSON(e.data);
+        if (mesgObj.type === 'ready') {
+            // load the app
+            $.postMessage($.toJSON({
+                command: 'loadSnapshot',
+                mesg: ''
+            }), 'http://diathink.com/', window.frames['forwardIframe']);
+        } else if (mesgObj.type == "realtime") {
+            // create new action and see if it's
+            Action.remoteExec(mesgObj);
+            console.log("Processing realtime message");
+        } else if (mesgObj.type === 'save') {
+            View.currentPage.header.message.setValue('Saved', 'action');
+        } else if (mesgObj.type === 'load') {
+            // destroy prior model?
+            var i;
+            if (View.currentPage) {
+                View.currentPage.destroy();
+                View.currentPage.elem.parentNode.removeChild(View.currentPage.elem);
+                View.currentPage = undefined;
+            }
+            for (i in OutlineNodeModel.modelsById) {
+                OutlineNodeModel.modelsById[i].attributes = {};
+                delete OutlineNodeModel.modelsById[i];
+            }
+            DeadView.viewList = {};
+            OutlineNodeModel.root = new OutlineNodeModel({ cid: mesgObj.cid });
+            OutlineNodeModel.root.fromJSON(mesgObj);
+            createPage();
+        }
+    }, function (d) {
+        if ((d === 'http://diathink.com') || (d === 'http://diathink.com:8080')) {
+            return true;
+        } else {
+            assert(false, "Invalid domain is trying to send a postMessage");
+            return false;
+        }
+    });
+    $(document.body).append('<iframe ' + 'src="http://diathink.com:8080/comet.html?context=' + encodeURIComponent($.toJSON({ conversation_code: '99', fullpage_url: location.href })) + '" scrolling="no" frameborder="0" style="display:none;"></iframe>');
+    $(document.body).append('<iframe name="forwardIframe" src="http://diathink.com/forward/#' + encodeURIComponent(location.href) + '" scrolling="no" frameborder="0" style="display:none;"></iframe>');
+    $D.router = new Router(document.body);
 });
 //# sourceMappingURL=main.js.map

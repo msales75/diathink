@@ -61,6 +61,7 @@ class InsertionView extends ImageView {
             function():SubAction {
                 return {
                     actionType: InsertIntoAction,
+                    name: 'Create first line',
                     referenceID: panel.value.cid,
                     oldRoot: panel.outline.alist.id,
                     newRoot: panel.outline.alist.id,

@@ -19,6 +19,7 @@ m_require("app/actions/AnimatedAction.js");
 
 class AddLinkAction extends AnimatedAction {
     _validateOptions;
+    type='AddLinkAction';
     // newLinks:{[id:string]:string} = {};
     runinit() {
         super.runinit.call(this, arguments);
@@ -99,7 +100,9 @@ class AddLinkAction extends AnimatedAction {
         assert(linkModel!=null, "Invalid linkModel");
         assert(nodeModel!=null, "Invalid nodeModel");
         assert(linkModel!==nodeModel, "Node cannot link itself");
-        if (this.options.undo) { // must already exist in list
+        var reverse:boolean = ((this.options.undo && !this.options.delete)||
+            (!this.options.undo && this.options.delete));
+        if (reverse) { // must already exist in list
             assert(nodeModel.attributes.links.obj[linkModel.cid]===linkModel,
                 "Missing linkModel before undo");
             var outlines = OutlineRootView.outlinesById;
@@ -131,7 +134,9 @@ class AddLinkAction extends AnimatedAction {
         that.addQueue('newModelAdd', ['context'], function() {
             var node:OutlineNodeModel = OutlineNodeModel.getById(that.options.referenceID);
             var linkm = OutlineNodeModel.getById(that.options.activeID);
-            if (that.options.undo) { // remove link from model
+            var reverse:boolean = ((that.options.undo && !that.options.delete)||
+                (!that.options.undo && that.options.delete));
+            if (reverse) { // remove link from model
                 assert(node.attributes.links.obj[linkm.cid]!=null,
                     "Removing a link that doesn't exist");
                 node.attributes.links.remove(linkm.cid);
@@ -154,8 +159,9 @@ class AddLinkAction extends AnimatedAction {
             var refLineView = that.getNodeView(that.options.referenceID, outline.nodeRootView.id);
             if (refLineView != null) {
                 // update listItems, update DOM
-                if (that.options.undo) {
-                    // todo: remove the listItem and fixHeight
+                var reverse:boolean = ((that.options.undo && !that.options.delete)||
+                    (!that.options.undo && that.options.delete));
+                if (reverse) {
                     // find item in list with correct value
                     // for (o in that.newLinks)
                     var linkid:string = null;

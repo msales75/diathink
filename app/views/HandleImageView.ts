@@ -43,6 +43,7 @@ class HandleImageView extends ImageView {
                 }
                 return {
                     actionType: CollapseAction,
+                    name: li.isCollapsed?'Expand list':'Collapse list',
                     activeID: li.value.cid,
                     collapsed: !li.isCollapsed,
                     oldRoot: li.nodeRootView.id,
@@ -61,6 +62,7 @@ class HandleImageView extends ImageView {
             function():SubAction {
                 return {
                     actionType: PanelRootAction,
+                    name: 'Hoist',
                     activeID: li.value.cid,
                     oldRoot: li.nodeRootView.id,
                     newRoot: 'new'

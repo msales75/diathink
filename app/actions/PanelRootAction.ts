@@ -63,7 +63,7 @@ class PanelRootAction extends AnimatedAction {
                     debugger;
                 }
                 var prevAction:Action = <Action>c.actions.at(c.lastAction-1);
-                if (prevAction && (prevAction.type==='CollapseAction')&&
+                if (prevAction && (prevAction instanceof CollapseAction)&&
                     (prevAction.options.activeID === that.options.activeID)) {
                     // todo: this is a bit redundant with CollapseAction
                     var activeModel= that.getModel(that.options.activeID);

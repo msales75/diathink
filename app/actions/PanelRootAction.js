@@ -69,7 +69,7 @@ var PanelRootAction = (function (_super) {
             debugger;
         }
         var prevAction = c.actions.at(c.lastAction - 1);
-        if (prevAction && (prevAction.type === 'CollapseAction') && (prevAction.options.activeID === that.options.activeID)) {
+        if (prevAction && (prevAction instanceof CollapseAction) && (prevAction.options.activeID === that.options.activeID)) {
             // todo: this is a bit redundant with CollapseAction
             var activeModel = that.getModel(that.options.activeID);
             activeModel.set('collapsed', prevAction.oldCollapsed);

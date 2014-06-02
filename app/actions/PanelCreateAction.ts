@@ -6,7 +6,6 @@ class PanelCreateAction extends AnimatedAction {
     leftPanel:string;
     nextPanel:string;
     postLeftPanel:string;
-    postRightPanel:string;
     // options:ActionOptions = {activeID: null, prevPanel: null, oldRoot: null, newRoot: 'new'};
     runinit2() {
         var o:ActionOptions = this.options,

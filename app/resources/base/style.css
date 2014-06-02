@@ -85,8 +85,13 @@ li.ui-li > div > .drag-handle {
     opacity: 0.08;
     cursor: pointer;
 }
+
 .insertion-button:hover, .delete-button:hover {
     opacity:0.2;
+}
+
+.drop-mode .insertion-button {
+    visibility: hidden;
 }
 
 li.ui-li.ui-focus > div > .drag-handle {
@@ -144,7 +149,12 @@ li {
     background-color: #CCC;
 }
 
-
+.grid-right-line {
+    background-color: #CCC;
+}
+.drop-mode .grid-right-line, .drop-mode .panel-border {
+    display: none;
+}
 /* Mask other hover-effects when in drop-mode */
 .drop-mode .ui-btn-hover-c {
     border-color: transparent;
@@ -241,6 +251,21 @@ li {
     border: none;
     padding: 0;
     margin: 0;
+}
+.button.active {
+    opacity:0.65;
+}
+.message {
+    background-color: #EEE;
+    color: #AAA;
+    font-size: 16px;
+    border-radius: 5px;
+    padding: 6px;
+    text-align: center;
+    box-sizing: border-box;
+}
+.message.hover {
+    color: #CCC;
 }
 /*
 

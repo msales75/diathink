@@ -27,6 +27,7 @@ var RightSwipeButtonView = (function (_super) {
         }, function () {
             return {
                 actionType: SlidePanelsAction,
+                name: 'Swipe left',
                 direction: 'left',
                 focus: false
             };

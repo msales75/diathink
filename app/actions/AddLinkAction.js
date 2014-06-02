@@ -22,6 +22,7 @@ var AddLinkAction = (function (_super) {
     __extends(AddLinkAction, _super);
     function AddLinkAction() {
         _super.apply(this, arguments);
+        this.type = 'AddLinkAction';
     }
     // newLinks:{[id:string]:string} = {};
     AddLinkAction.prototype.runinit = function () {
@@ -102,7 +103,8 @@ var AddLinkAction = (function (_super) {
         assert(linkModel != null, "Invalid linkModel");
         assert(nodeModel != null, "Invalid nodeModel");
         assert(linkModel !== nodeModel, "Node cannot link itself");
-        if (this.options.undo) {
+        var reverse = ((this.options.undo && !this.options.delete) || (!this.options.undo && this.options.delete));
+        if (reverse) {
             assert(nodeModel.attributes.links.obj[linkModel.cid] === linkModel, "Missing linkModel before undo");
             var outlines = OutlineRootView.outlinesById;
             var o;
@@ -132,7 +134,8 @@ var AddLinkAction = (function (_super) {
         that.addQueue('newModelAdd', ['context'], function () {
             var node = OutlineNodeModel.getById(that.options.referenceID);
             var linkm = OutlineNodeModel.getById(that.options.activeID);
-            if (that.options.undo) {
+            var reverse = ((that.options.undo && !that.options.delete) || (!that.options.undo && that.options.delete));
+            if (reverse) {
                 assert(node.attributes.links.obj[linkm.cid] != null, "Removing a link that doesn't exist");
                 node.attributes.links.remove(linkm.cid);
                 linkm.attributes.backLinks.remove(node.cid);
@@ -153,8 +156,8 @@ var AddLinkAction = (function (_super) {
             var refLineView = that.getNodeView(that.options.referenceID, outline.nodeRootView.id);
             if (refLineView != null) {
                 // update listItems, update DOM
-                if (that.options.undo) {
-                    // todo: remove the listItem and fixHeight
+                var reverse = ((that.options.undo && !that.options.delete) || (!that.options.undo && that.options.delete));
+                if (reverse) {
                     // find item in list with correct value
                     // for (o in that.newLinks)
                     var linkid = null;

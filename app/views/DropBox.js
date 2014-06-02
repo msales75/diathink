@@ -272,16 +272,16 @@ var DropBoxTop = (function (_super) {
         _super.call(this, node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
-            top: node.position.top - this.canvas.cacheOffset.top,
+            top: node.position.top - Math.round(View.fontSize / 8) - this.canvas.cacheOffset.top,
             left: node.position.left - this.canvas.cacheOffset.left + $D.lineHeight,
             height: 0,
             width: node.dimensions.width - 2.5 * $D.lineHeight,
             class: 'dropborder'
         };
         this.hover = {
-            top: node.position.top - $D.lineHeight / 2,
+            top: node.position.top - Math.round(View.fontSize / 8) - $D.lineHeight / 2,
             left: node.position.left + $D.lineHeight,
-            bottom: node.position.top + ($D.lineHeight / 2),
+            bottom: node.position.top - Math.round(View.fontSize / 8) + ($D.lineHeight / 2),
             right: node.position.left + node.dimensions.width - 1.5 * $D.lineHeight
         };
     }
@@ -290,6 +290,7 @@ var DropBoxTop = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: MoveBeforeAction,
+                name: 'Drag move',
                 activeID: node.value.cid,
                 referenceID: that.view.value.cid,
                 oldRoot: node.nodeRootView.id,
@@ -311,16 +312,16 @@ var DropBoxBottom = (function (_super) {
         _super.call(this, node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
-            top: node.position.top + node.dimensions.height - this.canvas.cacheOffset.top - 1,
+            top: node.position.top + node.dimensions.height - this.canvas.cacheOffset.top - Math.round(View.fontSize / 8) - 1,
             left: node.position.left - this.canvas.cacheOffset.left + $D.lineHeight,
             height: 0,
             width: node.dimensions.width - 2.5 * $D.lineHeight,
             class: 'dropborder'
         };
         this.hover = {
-            top: node.position.top + node.dimensions.height - $D.lineHeight / 2,
+            top: node.position.top + node.dimensions.height - Math.round(View.fontSize / 8) - $D.lineHeight / 2,
             left: node.position.left + $D.lineHeight,
-            bottom: node.position.top + node.dimensions.height + ($D.lineHeight / 2),
+            bottom: node.position.top + node.dimensions.height - Math.round(View.fontSize / 8) + ($D.lineHeight / 2),
             right: node.position.left + node.dimensions.width - 1.5 * $D.lineHeight
         };
     }
@@ -329,6 +330,7 @@ var DropBoxBottom = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: MoveAfterAction,
+                name: 'Drag move',
                 activeID: node.value.cid,
                 referenceID: that.view.value.cid,
                 oldRoot: node.nodeRootView.id,
@@ -350,8 +352,8 @@ var DropBoxHandle = (function (_super) {
         _super.call(this, node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
-            top: node.position.top - this.canvas.cacheOffset.top - 1,
-            left: node.position.left - this.canvas.cacheOffset.left - 1,
+            top: node.position.top - this.canvas.cacheOffset.top,
+            left: node.position.left - this.canvas.cacheOffset.left,
             class: 'droparrow',
             image: 'theme/images/into.png'
         };
@@ -367,6 +369,7 @@ var DropBoxHandle = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: MoveIntoAction,
+                name: 'Drag move',
                 referenceID: that.view.value.cid,
                 activeID: node.value.cid,
                 oldRoot: node.nodeRootView.id,
@@ -389,8 +392,8 @@ var DropBoxLink = (function (_super) {
         _super.call(this, node);
         this.canvas = node.panelView.outline.droplayer;
         this.box = {
-            top: node.position.top - this.canvas.cacheOffset.top - 1,
-            left: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left - $D.lineHeight - 1,
+            top: node.position.top - this.canvas.cacheOffset.top + 1,
+            left: node.position.left + node.dimensions.width - this.canvas.cacheOffset.left - $D.lineHeight,
             width: $D.lineHeight,
             height: $D.lineHeight,
             class: 'droplink',
@@ -408,6 +411,7 @@ var DropBoxLink = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: AddLinkAction,
+                name: 'Add link',
                 referenceID: that.view.value.cid,
                 activeID: node.value.cid,
                 oldRoot: node.nodeRootView.id,
@@ -431,16 +435,16 @@ var DropBoxLeft = (function (_super) {
         this.canvas = View.currentPage.drawlayer;
         this.box = {
             top: panel.top - this.canvas.cacheOffset.top,
-            left: panel.left - this.canvas.cacheOffset.left - 1 - 5,
+            left: panel.left - this.canvas.cacheOffset.left,
             height: panel.height,
             width: 0,
             class: 'dropborder'
         };
         this.hover = {
             top: panel.top,
-            left: panel.left - 5 - 5,
+            left: panel.left - 3,
             bottom: panel.top + panel.height,
-            right: panel.left - 5 + 5
+            right: panel.left + 7
         };
     }
     DropBoxLeft.prototype.handleDrop = function (node, helper) {
@@ -448,6 +452,7 @@ var DropBoxLeft = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: PanelCreateAction,
+                name: 'Create panel',
                 activeID: node.value.cid,
                 prevPanel: View.getCurrentPage().content.gridwrapper.grid.listItems.prev[that.view.id],
                 oldRoot: node.nodeRootView.id,
@@ -472,16 +477,16 @@ var DropBoxRight = (function (_super) {
         this.canvas = View.currentPage.drawlayer;
         this.box = {
             top: panel.top - this.canvas.cacheOffset.top,
-            left: panel.left + panel.width - this.canvas.cacheOffset.left - 1 + 5,
+            left: panel.left + panel.width - this.canvas.cacheOffset.left + 1,
             height: panel.height,
             width: 0,
             class: 'dropborder'
         };
         this.hover = {
             top: panel.top,
-            left: panel.left + panel.width + 5 - 5,
+            left: panel.left + panel.width - 3,
             bottom: panel.top + panel.height,
-            right: panel.left + panel.width + 5 + 5
+            right: panel.left + panel.width + 7
         };
     }
     DropBoxRight.prototype.handleDrop = function (node, helper) {
@@ -489,6 +494,7 @@ var DropBoxRight = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: PanelCreateAction,
+                name: 'Create panel',
                 activeID: node.value.cid,
                 prevPanel: that.view.id,
                 oldRoot: node.nodeRootView.id,
@@ -510,17 +516,17 @@ var DropBoxFirst = (function (_super) {
         _super.call(this, panel);
         this.canvas = View.currentPage.drawlayer;
         this.box = {
-            top: panel.top - this.canvas.cacheOffset.top + panel.breadcrumbs.layout.height + 5,
-            left: panel.left - this.canvas.cacheOffset.left - 1 + 5,
+            top: panel.top - this.canvas.cacheOffset.top + panel.breadcrumbs.layout.height + Math.round(View.fontSize / 2),
+            left: panel.left - this.canvas.cacheOffset.left + Math.round(2 * View.fontSize),
             height: 0,
-            width: panel.width - 10,
+            width: panel.width - 2 * Math.round(2 * View.fontSize),
             class: 'dropborder'
         };
         this.hover = {
             top: panel.top + panel.breadcrumbs.layout.height,
-            left: panel.left + 5,
-            bottom: panel.top + +panel.breadcrumbs.layout.height + 10,
-            right: panel.left + panel.width - 10
+            left: panel.left + Math.round(2 * View.fontSize),
+            bottom: panel.top + panel.breadcrumbs.layout.height + Math.round(View.fontSize),
+            right: panel.left + panel.width - Math.round(4 * View.fontSize)
         };
     }
     DropBoxFirst.prototype.handleDrop = function (node, helper) {
@@ -528,6 +534,7 @@ var DropBoxFirst = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: MoveIntoAction,
+                name: 'Drag move',
                 activeID: node.value.cid,
                 referenceID: that.view.value.cid,
                 oldRoot: node.nodeRootView.id,

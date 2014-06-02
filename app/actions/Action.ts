@@ -55,6 +55,8 @@ interface ActionOptions {
     speed?:number;
     delete?:boolean;
     panelID?:string;
+    name?:string;
+    origID?:string;
 }
 interface SubAction extends ActionOptions {
     actionType: any;
@@ -120,6 +122,35 @@ interface RuntimeOptions {
     rNewModelContext?:ModelContext;
     cursorstart?:boolean; // whether cursor should be set to start
 }
+
+interface ActionJSON {
+    cid?:string;
+    sessionID?:string;
+    broadcastID?:number;
+    type?:string;
+    timestamp?:number;
+    historyRank?:number;
+    undone?:boolean;
+    lost?:boolean;
+    oldModelContext?:ModelContext;
+    newModelContext?:ModelContext;
+    numSubactions?:number;
+    parentActionID?:string;
+    options?:{
+        undo?:boolean;
+        redo?:boolean;
+        activeID?:string;
+        referenceID?:string;
+        anim?:string;
+        text?:string;
+        transition?:string;
+        speed?:number;
+        delete?:boolean;
+        name?:string;
+        origID?:string; // for remote actions
+        done?:{()};
+    }
+}
 class Action extends PModel {
     type:string = "Action";
     historyRank:number;
@@ -140,7 +171,17 @@ class Action extends PModel {
     useOldLinePlaceholder = true;
     useNewLinePlaceholder = true;
     focusFirst:boolean = false;
-
+    static remoteActionTypes = {
+        OutdentAction: OutdentAction,
+        MoveIntoAction: MoveIntoAction,
+        MoveBeforeAction: MoveBeforeAction,
+        MoveAfterAction: MoveAfterAction,
+        InsertIntoAction: InsertIntoAction,
+        InsertAfterAction: InsertAfterAction,
+        DeleteAction: DeleteAction,
+        AddLinkAction: AddLinkAction,
+        TextAction: TextAction
+    };
     constructor(options) {
         super();
         this.options = _.extend({}, this.options, options);
@@ -322,7 +363,7 @@ class Action extends PModel {
             this.parentAction = options.parentAction;
         }
         // if this is undo/redo op, and there are subactions, queue those immediately.
-        if (options.redo && (this.subactions.length > 0)) {
+        if (options.redo && (this.subactions.length > 0) && (!this.options.origID)) {
             nsub = this.subactions.length;
             for (i = 0; i < nsub; ++i) {
                 /*
@@ -334,7 +375,7 @@ class Action extends PModel {
                 */
                 ActionManager.subRedo();
             }
-        } else if (options.undo && (this.parentAction != null)) {
+        } else if (options.undo && (this.parentAction != null) && (!this.options.origID)) {
             nsub = this.parentAction.subactions.length;
             if (this === this.parentAction.subactions[nsub - 1].action) {
                 console.log("Last subaction in chain is calling the rest for undo");
@@ -377,6 +418,7 @@ class Action extends PModel {
                 that.contextStep();
             }
             that.validateOldContext();
+            that.broadcast();
             that.runinit2();
         });
         this.animSetup();
@@ -410,7 +452,7 @@ class Action extends PModel {
         this.addQueue('end', ['focus', 'undobuttons', 'anim', 'animCleanup'], function() {
             var i, sub;
             that.validateNewContext();
-            if (!that.options.undo && !that.options.redo) {
+            if (!that.options.undo && !that.options.redo && (!that.options.origID)) {
                 for (i = that.subactions.length - 1; i >= 0; --i) {
                     sub = that.subactions[i];
                     sub.undo = false;
@@ -489,6 +531,102 @@ class Action extends PModel {
         text.elem.focus();
         this.placeCursor(text);
     }
+    toJSON():ActionJSON {
+        var props:string[] = ['cid', 'type', 'timestamp', 'historyRank', 'undone',
+            'lost', 'oldModelContext', 'newModelContext'];
+        var opts:string[] = ['undo', 'redo', 'activeID', 'referenceID', 'anim', 'text',
+            'transition', 'speed', 'delete', 'name'];
+        if (this.parentAction) {
+            var parentActionID = this.parentAction.cid;
+        }
+        var i:number;
+        var json:ActionJSON = {};
+        for (i=0; i<props.length; ++i) {
+            json[props[i]] = this[props[i]];
+        }
+        json.options = {};
+        for (i=0; i<opts.length; ++i) {
+            json.options[opts[i]] = this.options[opts[i]];
+        }
+        json.numSubactions = this.subactions.length;
+        if (this.parentAction) {
+            json.parentActionID = this.parentAction.cid;
+        }
+        json.sessionID = $D.sessionID;
+        return json;
+    }
+    broadcast() {
+        if (!this.type || (!Action.remoteActionTypes[this.type])) {return;}
+        // if (this.parentAction!=null) {return;}
+        var json:ActionJSON = this.toJSON();
+        json.broadcastID = ActionManager.actions.getNextBroadcastID();
+        (<JQueryStaticD>$).postMessage(
+            (<JQueryStaticD>$).toJSON({
+               command: 'broadcastAction',
+               mesg: json
+            }),
+            'http://diathink.com/',
+            window.frames['forwardIframe']);
+    }
+    // todo: need some way to 'clear' broadcasts from past sessions?
+    static remoteExec(json:ActionJSON) {
+        // todo: use oldModelContext and newModelContext for validation
+        if (json.sessionID === $D.sessionID) {
+            return;
+        }
+        if (!json.type || !Action.remoteActionTypes[json.type]) {
+            assert(false, "Invalid action type in fromJSON");
+            return;
+        }
+        // assert(json.parentActionID==null, "We have an invalid subaction scheduled");
+        if (!ActionManager.remoteModels[json.sessionID]) {
+            ActionManager.remoteModels[json.sessionID] = new ActionCollection();
+        }
+        var actionlist = ActionManager.remoteModels[json.sessionID];
+        assert(json.broadcastID!=null, "Invalid broadcast ID");
+        if (json.broadcastID <= actionlist.lastBroadcastID) {
+            console.log("Got old-duplicate broadcast action");
+            return;
+        }
+        if (actionlist.queuedActions[json.broadcastID]) {
+            console.log("Got pending-duplicate broadcast action");
+            return;
+        }
+        actionlist.queuedActions[json.broadcastID] = json;
+        Action.tryNextRemote(json.sessionID); // but make sure one is not already running
+    }
+    static tryNextRemote(sessionID) {
+        var actionlist = ActionManager.remoteModels[sessionID];
+        actionlist.queuedActions[actionlist.lastBroadcastID+1];
+        var j:ActionJSON = actionlist.queuedActions[actionlist.lastBroadcastID+1];
+        if (!j) {
+            console.log("Next remote action has not been queued yet, so waiting");
+            return;
+        }
+        if (actionlist.runningAction === j.broadcastID) {
+            console.log("Cannot start running remote action again: "+ j.broadcastID);
+            return;
+        }
+        actionlist.runningAction = j.broadcastID;
+        var action:Action;
+        j.options.done = function() {
+            ++actionlist.lastBroadcastID;
+            actionlist.models.push(action);
+            actionlist.length=actionlist.models.length;
+            actionlist.modelsById[action.options.origID] = action;
+            Action.tryNextRemote(sessionID);
+        }
+
+        j.options.origID = String(j.historyRank);
+        if (j.options.undo) {
+            action = <Action>actionlist.modelsById[j.options.origID];
+        } else if (j.options.redo) {
+            action = <Action>actionlist.modelsById[j.options.origID];
+        } else {
+            action = new Action.remoteActionTypes[j.type](j.options);
+        }
+        action.exec(j.options);
+    }
 
     // To override **
     placeCursor(text:TextAreaView) {}
@@ -537,6 +675,7 @@ class Action extends PModel {
             // console.log("checkTextChange returning with TextAction");
             return {
                 actionType: TextAction,
+                name: "Text edit",
                 activeID: model.cid,
                 text: value,
                 oldRoot: view.nodeRootView.id,
@@ -590,6 +729,13 @@ class Action extends PModel {
 // commuting operations don't have to be undone/redone - optimization
 class ActionCollection extends Collection {
     model = typeof Action;
+    lastBroadcastID = 0;
+    queuedActions:{[i:string]:ActionJSON} = {};
+    runningAction:number;
+    getNextBroadcastID() {
+        ++this.lastBroadcastID;
+        return this.lastBroadcastID;
+    }
     // length:number;
     // at(k:number):Action;
     // push(a:Action):void;

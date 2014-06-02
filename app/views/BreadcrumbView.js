@@ -68,7 +68,7 @@ var BreadcrumbView = (function (_super) {
         var height = nlines * lineHeight;
 
         // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
-        this.layout.height = height;
+        this.layout.height = height + Math.round(0.3 * View.fontSize); // padding below breadcrumbs
     };
 
     BreadcrumbView.prototype.layoutDown = function () {
@@ -115,6 +115,7 @@ var BreadcrumbView = (function (_super) {
         }, function () {
             return {
                 actionType: PanelRootAction,
+                name: 'Breadcrumb click',
                 activeID: modelid,
                 oldRoot: panelview.outline.alist.nodeRootView.id,
                 newRoot: 'new',

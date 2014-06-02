@@ -17,6 +17,9 @@ var RedoButtonView = (function (_super) {
         this.isClickable = true;
     };
     RedoButtonView.prototype.onClick = function (params) {
+        if (this.isEnabled) {
+            this.start();
+        }
         ActionManager.redo();
     };
     RedoButtonView.prototype.layoutDown = function () {

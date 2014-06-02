@@ -19,6 +19,7 @@ $D.handleKeypress = function (view:TextAreaView, e) {
                     return {
                         actionType: MoveIntoAction,
                         anim: 'indent',
+                        name: 'Keyboard indent',
                         activeID: liView.value.cid,
                         referenceID: collection.prev[liView.value.cid],
                         oldRoot: liView.nodeRootView.id,

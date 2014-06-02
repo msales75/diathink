@@ -6,8 +6,10 @@
 ///<reference path="DrawLayerView.ts"/>
 ///<reference path="DropLayerView.ts"/>
 ///<reference path="GridView.ts"/>
+///<reference path="GridRightLineView.ts"/>
 ///<reference path="GridContainerView.ts"/>
 ///<reference path="HandleImageView.ts"/>
+///<reference path="HeaderMessageView.ts"/>
 ///<reference path="HeaderTitleView.ts"/>
 ///<reference path="HeaderToolbarView.ts"/>
 ///<reference path="HiddenDivView.ts"/>
@@ -378,7 +380,9 @@ class View {
 
     removeFromModel() {}
 
-    onDoubleClick(params:DragStartI) {}
+    onDoubleClick(params:DragStartI) {
+        this.onClick(params);
+    }
 
     detach(v:View, opts?:any) { // override in listviews to remove item from list
         if ((v.parentView === this) && v.elem && v.elem.parentNode) {

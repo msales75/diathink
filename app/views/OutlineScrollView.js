@@ -66,7 +66,7 @@ var OutlineScrollView = (function (_super) {
             }
             this.layout.top = this.parentView.breadcrumbs.layout.height;
             this.layout.left = Math.round(View.fontSize);
-            this.layout.width = p.width - Math.round(View.fontSize);
+            this.layout.width = p.width - Math.round(View.fontSize) - 2;
         }
     };
     OutlineScrollView.prototype.layoutUp = function () {

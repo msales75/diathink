@@ -200,16 +200,23 @@ class Router {
                     // console.log("Processing click");
                     var clickView = view.clickView;
                     var now = params.time;
+                    console.log('Processing click, testing for double-click');
                     if (self.lastClicked && (self.lastClicked > now - 500) && !self.doubleClickFlag) {
                         self.lastClicked = self.dragStart.time;
                         self.doubleClickFlag = true;
+                        console.log('Processing as double-click');
                         clickView.onDoubleClick(params);
                     } else { // single-click
                         self.lastClicked = self.dragStart.time;
                         self.doubleClickFlag = false;
+                        console.log('Processing as single-click');
                         clickView.onClick(params);
                     }
+                } else {
+                    console.log("mouseup does not quality as click");
                 }
+            } else {
+                console.log("mouseup does not quality as click-2");
             }
             if (self.scrollMode===2) {
                 self.dragStart.view.scrollView.scrollHandler.scrollStop();

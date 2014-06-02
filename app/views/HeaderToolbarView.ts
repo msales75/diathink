@@ -6,12 +6,14 @@ class HeaderToolbarView extends ToolbarView {
     // anchorLocation:any = M.TOP;
     cssClass = 'ui-header ui-bar-a ui-header-fixed slidedown';
     title:HeaderTitleView;
+    message:HeaderMessageView;
     undobuttons:UndoButtonContainerView;
 
     init() {
         this.childViewTypes = {
             title: HeaderTitleView,
-            undobuttons: UndoButtonContainerView
+            undobuttons: UndoButtonContainerView,
+            message: HeaderMessageView
         };
     }
     layoutDown() {

@@ -11,6 +11,7 @@ var ButtonView = (function (_super) {
     function ButtonView() {
         _super.apply(this, arguments);
         this.isEnabled = true;
+        this.isActive = false;
         this.value = 'theme/images/circle.png';
     }
     ButtonView.prototype.render = function () {
@@ -30,6 +31,29 @@ var ButtonView = (function (_super) {
         */
         this.setPosition();
         return this.elem;
+    };
+    ButtonView.prototype.start = function () {
+        var self = this;
+        if (this.isActive) {
+            clearTimeout(this.timer);
+            this.removeClass('active');
+            this.timer = setTimeout(function () {
+                self.isActive = false;
+                self.start();
+            }, 20);
+        } else {
+            this.isActive = true;
+            this.addClass('active');
+            this.timer = setTimeout(function () {
+                self.isActive = false;
+                self.finish();
+            }, 200);
+        }
+    };
+    ButtonView.prototype.finish = function () {
+        this.timer = null;
+        this.isActive = false;
+        this.removeClass('active');
     };
 
     ButtonView.prototype.disable = function () {

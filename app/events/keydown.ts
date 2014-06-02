@@ -37,6 +37,7 @@ $D.handleLineBackspace = function(view:TextAreaView, subschedule:boolean) {
             return {
                 actionType: OutdentAction,
                 anim: 'indent',
+                name: 'Keyboard outdent',
                 activeID: liView.value.cid,
                 referenceID: liView.value.attributes.parent.cid,
                 oldRoot: liView.nodeRootView.id,
@@ -62,6 +63,7 @@ $D.handleLineBackspace = function(view:TextAreaView, subschedule:boolean) {
                     scheduleKey(subschedule, '', function():SubAction {
                         return {
                             actionType: DeleteAction,
+                            name: 'Keyboard delete',
                             anim: 'delete',
                             activeID: liView.value.cid,
                             oldRoot: liView.nodeRootView.id,
@@ -99,6 +101,7 @@ function profileIndent(id:string) {
             return {
                 actionType: MoveIntoAction,
                 anim: 'indent',
+                name: 'Keyboard indent',
                 activeID: liView.value.cid,
                 referenceID: collection.prev[liView.value.cid],
                 oldRoot: liView.nodeRootView.id,
@@ -122,6 +125,7 @@ function profileOutdent(id:string) {
                 return {
                     actionType: OutdentAction,
                     anim: 'indent',
+                    name: 'Keyboard outdent',
                     activeID: liView.value.cid,
                     referenceID: liView.value.attributes.parent.cid,
                     oldRoot: liView.nodeRootView.id,
@@ -142,6 +146,7 @@ function profileDelete(id:string) {
                     return {
                         actionType: DeleteAction,
                         anim: 'delete',
+                        name: 'Keyboard delete',
                         activeID: liView.value.cid,
                         oldRoot: liView.nodeRootView.id,
                         newRoot: liView.nodeRootView.id,
@@ -160,6 +165,7 @@ function profileCreate(id:string) {
         return {
             actionType: InsertAfterAction,
             anim: 'create',
+            name: 'Keyboard newline',
             referenceID: liView.value.cid,
             oldRoot: liView.nodeRootView.id,
             newRoot: liView.nodeRootView.id,
@@ -185,6 +191,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
             scheduleKey(e.simulated, id, function():SubAction {
                 return {
                     actionType: MoveIntoAction,
+                    name: 'Keyboard indent',
                     anim: 'indent',
                     activeID: liView.value.cid,
                     referenceID: collection.prev[liView.value.cid],
@@ -210,6 +217,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
             return {
                 actionType: InsertAfterAction,
                 anim: 'create',
+                name: 'Keyboard newline',
                 referenceID: liView.value.cid,
                 oldRoot: liView.nodeRootView.id,
                 newRoot: liView.nodeRootView.id,

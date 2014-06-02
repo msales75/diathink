@@ -57,7 +57,7 @@ class BreadcrumbView extends View {
         var nlines = Math.round(($(hiddendiv).children('.panel-name').next().position().top / lineHeight) - 0.4) + 1;
         var height = nlines * lineHeight;
         // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
-        this.layout.height = height;
+        this.layout.height = height+Math.round(0.3*View.fontSize); // padding below breadcrumbs
     }
 
     layoutDown() {
@@ -100,6 +100,7 @@ class BreadcrumbView extends View {
             function():SubAction {
                 return {
                     actionType: PanelRootAction,
+                    name: 'Breadcrumb click',
                     activeID: modelid,
                     oldRoot: panelview.outline.alist.nodeRootView.id,
                     newRoot: 'new',

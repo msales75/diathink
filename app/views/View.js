@@ -6,8 +6,10 @@
 ///<reference path="DrawLayerView.ts"/>
 ///<reference path="DropLayerView.ts"/>
 ///<reference path="GridView.ts"/>
+///<reference path="GridRightLineView.ts"/>
 ///<reference path="GridContainerView.ts"/>
 ///<reference path="HandleImageView.ts"/>
+///<reference path="HeaderMessageView.ts"/>
 ///<reference path="HeaderTitleView.ts"/>
 ///<reference path="HeaderToolbarView.ts"/>
 ///<reference path="HiddenDivView.ts"/>
@@ -316,6 +318,7 @@ var View = (function () {
     };
 
     View.prototype.onDoubleClick = function (params) {
+        this.onClick(params);
     };
 
     View.prototype.detach = function (v, opts) {

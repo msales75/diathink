@@ -246,7 +246,7 @@ var Action = (function (_super) {
         }
 
         // if this is undo/redo op, and there are subactions, queue those immediately.
-        if (options.redo && (this.subactions.length > 0)) {
+        if (options.redo && (this.subactions.length > 0) && (!this.options.origID)) {
             nsub = this.subactions.length;
             for (i = 0; i < nsub; ++i) {
                 /*
@@ -258,7 +258,7 @@ var Action = (function (_super) {
                 */
                 ActionManager.subRedo();
             }
-        } else if (options.undo && (this.parentAction != null)) {
+        } else if (options.undo && (this.parentAction != null) && (!this.options.origID)) {
             nsub = this.parentAction.subactions.length;
             if (this === this.parentAction.subactions[nsub - 1].action) {
                 console.log("Last subaction in chain is calling the rest for undo");
@@ -303,6 +303,7 @@ var Action = (function (_super) {
                 that.contextStep();
             }
             that.validateOldContext();
+            that.broadcast();
             that.runinit2();
         });
         this.animSetup();
@@ -339,7 +340,7 @@ var Action = (function (_super) {
         this.addQueue('end', ['focus', 'undobuttons', 'anim', 'animCleanup'], function () {
             var i, sub;
             that.validateNewContext();
-            if (!that.options.undo && !that.options.redo) {
+            if (!that.options.undo && !that.options.redo && (!that.options.origID)) {
                 for (i = that.subactions.length - 1; i >= 0; --i) {
                     sub = that.subactions[i];
                     sub.undo = false;
@@ -425,6 +426,106 @@ var Action = (function (_super) {
         text.elem.focus();
         this.placeCursor(text);
     };
+    Action.prototype.toJSON = function () {
+        var props = [
+            'cid', 'type', 'timestamp', 'historyRank', 'undone',
+            'lost', 'oldModelContext', 'newModelContext'];
+        var opts = [
+            'undo', 'redo', 'activeID', 'referenceID', 'anim', 'text',
+            'transition', 'speed', 'delete', 'name'];
+        if (this.parentAction) {
+            var parentActionID = this.parentAction.cid;
+        }
+        var i;
+        var json = {};
+        for (i = 0; i < props.length; ++i) {
+            json[props[i]] = this[props[i]];
+        }
+        json.options = {};
+        for (i = 0; i < opts.length; ++i) {
+            json.options[opts[i]] = this.options[opts[i]];
+        }
+        json.numSubactions = this.subactions.length;
+        if (this.parentAction) {
+            json.parentActionID = this.parentAction.cid;
+        }
+        json.sessionID = $D.sessionID;
+        return json;
+    };
+    Action.prototype.broadcast = function () {
+        if (!this.type || (!Action.remoteActionTypes[this.type])) {
+            return;
+        }
+
+        // if (this.parentAction!=null) {return;}
+        var json = this.toJSON();
+        json.broadcastID = ActionManager.actions.getNextBroadcastID();
+        $.postMessage($.toJSON({
+            command: 'broadcastAction',
+            mesg: json
+        }), 'http://diathink.com/', window.frames['forwardIframe']);
+    };
+
+    // todo: need some way to 'clear' broadcasts from past sessions?
+    Action.remoteExec = function (json) {
+        // todo: use oldModelContext and newModelContext for validation
+        if (json.sessionID === $D.sessionID) {
+            return;
+        }
+        if (!json.type || !Action.remoteActionTypes[json.type]) {
+            assert(false, "Invalid action type in fromJSON");
+            return;
+        }
+
+        // assert(json.parentActionID==null, "We have an invalid subaction scheduled");
+        if (!ActionManager.remoteModels[json.sessionID]) {
+            ActionManager.remoteModels[json.sessionID] = new ActionCollection();
+        }
+        var actionlist = ActionManager.remoteModels[json.sessionID];
+        assert(json.broadcastID != null, "Invalid broadcast ID");
+        if (json.broadcastID <= actionlist.lastBroadcastID) {
+            console.log("Got old-duplicate broadcast action");
+            return;
+        }
+        if (actionlist.queuedActions[json.broadcastID]) {
+            console.log("Got pending-duplicate broadcast action");
+            return;
+        }
+        actionlist.queuedActions[json.broadcastID] = json;
+        Action.tryNextRemote(json.sessionID); // but make sure one is not already running
+    };
+    Action.tryNextRemote = function (sessionID) {
+        var actionlist = ActionManager.remoteModels[sessionID];
+        actionlist.queuedActions[actionlist.lastBroadcastID + 1];
+        var j = actionlist.queuedActions[actionlist.lastBroadcastID + 1];
+        if (!j) {
+            console.log("Next remote action has not been queued yet, so waiting");
+            return;
+        }
+        if (actionlist.runningAction === j.broadcastID) {
+            console.log("Cannot start running remote action again: " + j.broadcastID);
+            return;
+        }
+        actionlist.runningAction = j.broadcastID;
+        var action;
+        j.options.done = function () {
+            ++actionlist.lastBroadcastID;
+            actionlist.models.push(action);
+            actionlist.length = actionlist.models.length;
+            actionlist.modelsById[action.options.origID] = action;
+            Action.tryNextRemote(sessionID);
+        };
+
+        j.options.origID = String(j.historyRank);
+        if (j.options.undo) {
+            action = actionlist.modelsById[j.options.origID];
+        } else if (j.options.redo) {
+            action = actionlist.modelsById[j.options.origID];
+        } else {
+            action = new Action.remoteActionTypes[j.type](j.options);
+        }
+        action.exec(j.options);
+    };
 
     // To override **
     Action.prototype.placeCursor = function (text) {
@@ -491,6 +592,7 @@ var Action = (function (_super) {
             // console.log("checkTextChange returning with TextAction");
             return {
                 actionType: TextAction,
+                name: "Text edit",
                 activeID: model.cid,
                 text: value,
                 oldRoot: view.nodeRootView.id,
@@ -534,6 +636,17 @@ var Action = (function (_super) {
             }
         }
     };
+    Action.remoteActionTypes = {
+        OutdentAction: OutdentAction,
+        MoveIntoAction: MoveIntoAction,
+        MoveBeforeAction: MoveBeforeAction,
+        MoveAfterAction: MoveAfterAction,
+        InsertIntoAction: InsertIntoAction,
+        InsertAfterAction: InsertAfterAction,
+        DeleteAction: DeleteAction,
+        AddLinkAction: AddLinkAction,
+        TextAction: TextAction
+    };
     return Action;
 })(PModel);
 
@@ -544,7 +657,13 @@ var ActionCollection = (function (_super) {
     function ActionCollection() {
         _super.apply(this, arguments);
         this.model = typeof Action;
+        this.lastBroadcastID = 0;
+        this.queuedActions = {};
     }
+    ActionCollection.prototype.getNextBroadcastID = function () {
+        ++this.lastBroadcastID;
+        return this.lastBroadcastID;
+    };
     return ActionCollection;
 })(Collection);
 //# sourceMappingURL=Action.js.map

@@ -13,6 +13,9 @@ var PanelGridView = (function (_super) {
         this.cssClass = "scroll-container horizontal-grid";
     }
     PanelGridView.prototype.init = function () {
+        this.childViewTypes = {
+            gridRightLine: GridRightLineView
+        };
         this.listItemTemplate = PanelView;
         this.numCols = 2;
         this.listItems = new LinkedList();
@@ -26,7 +29,9 @@ var PanelGridView = (function (_super) {
             classes: this.cssClass,
             html: ''
         });
+        this.gridRightLine.render();
         this.insertListItems();
+        this.elem.insertBefore(this.gridRightLine.elem, null);
         this.setPosition();
         return this.elem;
     };
@@ -66,6 +71,7 @@ var PanelGridView = (function (_super) {
             left: 0,
             width: p.width
         };
+        this.itemWidth = Math.floor((this.layout.width - 2) / this.numCols);
     };
 
     PanelGridView.prototype.getInsertLocation = function (prevPanel) {
@@ -191,14 +197,16 @@ var PanelGridView = (function (_super) {
     };
 
     PanelGridView.prototype.detach = function (panel, slide) {
-        var id = panel.id;
-        var mid = panel.value.cid;
-        var filler;
-        var fPanel = null;
+        if (panel instanceof PanelView) {
+            var id = panel.id;
+            var mid = panel.value.cid;
+            var filler;
+            var fPanel = null;
 
-        // remove panel from model-list
-        // don't destroy it here, just detach it
-        this.listItems.remove(panel.id);
+            // remove panel from model-list
+            // don't destroy it here, just detach it
+            this.listItems.remove(panel.id);
+        }
         if (panel.elem && panel.elem.parentNode) {
             panel.elem.parentNode.removeChild(panel.elem);
         }
@@ -263,7 +271,7 @@ var PanelGridView = (function (_super) {
     };
 
     PanelGridView.prototype.positionChildren = function (v) {
-        this.itemWidth = Math.floor(this.parentView.layout.width / this.numCols);
+        this.itemWidth = Math.floor((this.parentView.layout.width - 2) / this.numCols);
         var c = this.listItems.first();
         var w = 0;
         if (v != null) {
@@ -282,6 +290,10 @@ var PanelGridView = (function (_super) {
                 }
             }
             w += child.layout.width;
+        }
+        this.gridRightLine.layout.left = w;
+        if (this.elem) {
+            this.gridRightLine.elem.style.left = w + 'px';
         }
     };
 
@@ -331,6 +343,7 @@ var PanelGridView = (function (_super) {
                 ActionManager.simpleSchedule(View.focusedView, function () {
                     return {
                         actionType: SlidePanelsAction,
+                        name: 'Swipe right',
                         direction: 'right',
                         speed: 80,
                         focus: false
@@ -342,6 +355,7 @@ var PanelGridView = (function (_super) {
                 ActionManager.simpleSchedule(View.focusedView, function () {
                     return {
                         actionType: SlidePanelsAction,
+                        name: 'Swipe left',
                         direction: 'left',
                         speed: 80,
                         focus: false

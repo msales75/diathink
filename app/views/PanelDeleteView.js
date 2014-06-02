@@ -65,6 +65,7 @@ var PanelDeleteView = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: PanelCreateAction,
+                name: 'Remove panel',
                 activeID: panel.value.cid,
                 delete: true,
                 panelID: panel.id,
