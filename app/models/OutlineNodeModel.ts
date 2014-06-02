@@ -86,9 +86,11 @@ class OutlineNodeModel extends PModel {
         super();
         if (options && options.cid) {
             this.cid = options.cid;
-            var num = Number(this.cid.substr(2));
-            if (num>=View.nextId) {
-                View.nextId = num+1;
+            if (this.cid.substr(0,$D.sessionID.length)===$D.sessionID) {
+                var num = Number(this.cid.substr($D.sessionID.length+1));
+                if (num>=View.nextId) {
+                    View.nextId = num+1;
+                }
             }
         } else {
             this.cid = View.getNextId();

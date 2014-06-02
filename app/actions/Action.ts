@@ -57,6 +57,8 @@ interface ActionOptions {
     panelID?:string;
     name?:string;
     origID?:string;
+    newModelContext?:ModelContext;
+    remoteID?:string;
 }
 interface SubAction extends ActionOptions {
     actionType: any;
@@ -149,6 +151,9 @@ interface ActionJSON {
         name?:string;
         origID?:string; // for remote actions
         done?:{()};
+        focus?:boolean;
+        newModelContext?:ModelContext;
+        remoteID?:string;
     }
 }
 class Action extends PModel {
@@ -171,17 +176,7 @@ class Action extends PModel {
     useOldLinePlaceholder = true;
     useNewLinePlaceholder = true;
     focusFirst:boolean = false;
-    static remoteActionTypes = {
-        OutdentAction: OutdentAction,
-        MoveIntoAction: MoveIntoAction,
-        MoveBeforeAction: MoveBeforeAction,
-        MoveAfterAction: MoveAfterAction,
-        InsertIntoAction: InsertIntoAction,
-        InsertAfterAction: InsertAfterAction,
-        DeleteAction: DeleteAction,
-        AddLinkAction: AddLinkAction,
-        TextAction: TextAction
-    };
+    static remoteActionTypes = {};
     constructor(options) {
         super();
         this.options = _.extend({}, this.options, options);
@@ -418,7 +413,6 @@ class Action extends PModel {
                 that.contextStep();
             }
             that.validateOldContext();
-            that.broadcast();
             that.runinit2();
         });
         this.animSetup();
@@ -452,6 +446,7 @@ class Action extends PModel {
         this.addQueue('end', ['focus', 'undobuttons', 'anim', 'animCleanup'], function() {
             var i, sub;
             that.validateNewContext();
+            that.broadcast();
             if (!that.options.undo && !that.options.redo && (!that.options.origID)) {
                 for (i = that.subactions.length - 1; i >= 0; --i) {
                     sub = that.subactions[i];
@@ -556,10 +551,16 @@ class Action extends PModel {
         return json;
     }
     broadcast() {
+        if (this.options.origID) {return;}
         if (!this.type || (!Action.remoteActionTypes[this.type])) {return;}
         // if (this.parentAction!=null) {return;}
         var json:ActionJSON = this.toJSON();
         json.broadcastID = ActionManager.actions.getNextBroadcastID();
+        if ((json.type==='InsertAfterAction')||(json.type==='InsertIntoAction')) {
+            assert(json.options.activeID!=null, "No activeID was created");
+            json.options.remoteID = json.options.activeID;
+            delete json.options['activeID'];
+        }
         (<JQueryStaticD>$).postMessage(
             (<JQueryStaticD>$).toJSON({
                command: 'broadcastAction',
@@ -618,6 +619,10 @@ class Action extends PModel {
         }
 
         j.options.origID = String(j.historyRank);
+        j.options.focus = false;
+        if (j.newModelContext) {
+            j.options.newModelContext = j.newModelContext;
+        }
         if (j.options.undo) {
             action = <Action>actionlist.modelsById[j.options.origID];
         } else if (j.options.redo) {

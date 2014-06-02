@@ -160,7 +160,7 @@ var View = (function () {
 
     View.getNextId = function () {
         this.nextId = this.nextId + 1;
-        return 'm_' + String(this.nextId);
+        return $D.sessionID + '_' + String(this.nextId);
     };
 
     View.get = function (id) {

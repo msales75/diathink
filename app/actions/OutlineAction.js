@@ -148,7 +148,7 @@ var OutlineAction = (function (_super) {
 
     OutlineAction.prototype.handleLineJoins = function () {
         this.cursorPosition = null;
-        if (!this.options.undo && (this.runtime.rNewModelContext == null)) {
+        if (!this.options.undo && (this.runtime.rNewModelContext == null) && (!this.options.origID)) {
             var line1 = this.prevVisibleNode(this.runtime.rOldModelContext);
             if (!line1) {
                 return;
@@ -331,7 +331,7 @@ var OutlineAction = (function (_super) {
             // new height pushes up, and reposition-children-after
             // at top level do height and moving children only
             this.dropSource = new NodeDropSource({
-                useDock: (r.rNewModelContext != null),
+                useDock: (r.rNewModelContext != null) && (!this.options.origID),
                 usePlaceholder: true,
                 activeID: this.options.activeID,
                 rNewModelContext: r.rNewModelContext,
@@ -365,22 +365,25 @@ var OutlineAction = (function (_super) {
             console.log("ERROR: Action " + this.type + " missing referenceID");
             debugger;
         }
-        if (!o.oldRoot || !o.newRoot) {
-            console.log("ERROR: Action " + this.type + " missing oldRoot or newRoot");
-            debugger;
-        }
-        if (o.oldRoot !== 'all') {
-            if (!OutlineRootView.outlinesById[o.oldRoot] && !(DeadView.viewList[o.oldRoot] instanceof DeadOutlineRoot)) {
-                console.log('ERROR: Action ' + this.type + ' has invalid oldRoot');
+        if (!o.origID) {
+            if (!o.oldRoot || !o.newRoot) {
+                console.log("ERROR: Action " + this.type + " missing oldRoot or newRoot");
                 debugger;
             }
-        }
-        if ((o.newRoot !== 'all') && (o.newRoot !== 'new')) {
-            if (!OutlineRootView.outlinesById[o.newRoot] && !(DeadView.viewList[o.newRoot] instanceof DeadOutlineRoot)) {
-                console.log('ERROR: Action ' + this.type + ' has invalid newRoot');
-                debugger;
+            if (o.oldRoot !== 'all') {
+                if (!OutlineRootView.outlinesById[o.oldRoot] && !(DeadView.viewList[o.oldRoot] instanceof DeadOutlineRoot)) {
+                    console.log('ERROR: Action ' + this.type + ' has invalid oldRoot');
+                    debugger;
+                }
+            }
+            if ((o.newRoot !== 'all') && (o.newRoot !== 'new')) {
+                if (!OutlineRootView.outlinesById[o.newRoot] && !(DeadView.viewList[o.newRoot] instanceof DeadOutlineRoot)) {
+                    console.log('ERROR: Action ' + this.type + ' has invalid newRoot');
+                    debugger;
+                }
             }
         }
+
         if (o.anim) {
         }
         if (o.activeID) {
@@ -392,19 +395,21 @@ var OutlineAction = (function (_super) {
                 console.log('ERROR: invalid activeModel for activeID=' + o.activeID);
                 debugger;
             }
-            if (v.requireOld && !o.undo) {
-                if (o.oldRoot !== 'all') {
-                    if (!activeModel.views || !activeModel.views[o.oldRoot]) {
-                        console.log('ERROR: No old-view found for activeID=' + o.activeID);
-                        debugger;
+            if (!o.origID) {
+                if (v.requireOld && !o.undo) {
+                    if (o.oldRoot !== 'all') {
+                        if (!activeModel.views || !activeModel.views[o.oldRoot]) {
+                            console.log('ERROR: No old-view found for activeID=' + o.activeID);
+                            debugger;
+                        }
                     }
                 }
-            }
-            if (v.requireNew && o.undo) {
-                if (o.newRoot !== 'all') {
-                    if (!activeModel.views || !activeModel.views[o.newRoot]) {
-                        console.log('ERROR: No new-view found for activeID=' + o.activeID);
-                        debugger;
+                if (v.requireNew && o.undo) {
+                    if (o.newRoot !== 'all') {
+                        if (!activeModel.views || !activeModel.views[o.newRoot]) {
+                            console.log('ERROR: No new-view found for activeID=' + o.activeID);
+                            debugger;
+                        }
                     }
                 }
             }
@@ -420,16 +425,18 @@ var OutlineAction = (function (_super) {
             }
 
             // reference is only used in newRoot, not oldRoot
-            if (v.requireNew || v.requireNewReference) {
-                assert(refModel.views, "referenceID does not have model");
-                assert(refModel.views[o.newRoot] || (refModel === View.get(o.newRoot).panelView.value), "ERROR: NO new-view found for referenceID=" + o.referenceID);
-            }
-            if (v.requireNewReference && o.undo) {
-                if (o.newRoot !== 'all') {
-                    if (!activeModel.views || !activeModel.views[o.newRoot]) {
-                        if (!refModel.views[o.newRoot].isCollapsed) {
-                            console.log('ERROR: Missing newRoot for activeID=' + o.activeID);
-                            debugger;
+            if (!o.origID) {
+                if (v.requireNew || v.requireNewReference) {
+                    assert(refModel.views, "referenceID does not have model");
+                    assert(refModel.views[o.newRoot] || (refModel === View.get(o.newRoot).panelView.value), "ERROR: NO new-view found for referenceID=" + o.referenceID);
+                }
+                if (v.requireNewReference && o.undo) {
+                    if (o.newRoot !== 'all') {
+                        if (!activeModel.views || !activeModel.views[o.newRoot]) {
+                            if (!refModel.views[o.newRoot].isCollapsed) {
+                                console.log('ERROR: Missing newRoot for activeID=' + o.activeID);
+                                debugger;
+                            }
                         }
                     }
                 }
@@ -829,10 +836,18 @@ var OutlineAction = (function (_super) {
         var that = this;
         this.addQueue('modelCreate', ['context'], function () {
             if (!that.options.activeID) {
-                var activeModel = new OutlineNodeModel({
-                    text: that.options.text,
-                    children: null
-                });
+                if (that.options.remoteID) {
+                    var activeModel = new OutlineNodeModel({
+                        cid: that.options.remoteID,
+                        text: that.options.text,
+                        children: null
+                    });
+                } else {
+                    var activeModel = new OutlineNodeModel({
+                        text: that.options.text,
+                        children: null
+                    });
+                }
                 that.options.activeID = activeModel.cid;
             }
         });

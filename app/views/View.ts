@@ -134,7 +134,7 @@ class View {
 
     static getNextId():string {
         this.nextId = this.nextId + 1;
-        return 'm_' + String(this.nextId);
+        return $D.sessionID+'_' + String(this.nextId);
     }
 
     static get(id:string):View {

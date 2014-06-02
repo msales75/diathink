@@ -13,6 +13,10 @@ class InsertIntoAction extends OutlineAction {
         requireNew: false
     };
     getNewContext() {
+        if (this.options.origID) {
+            this.newModelContext = this.options.newModelContext;
+            return;
+        }
         var parent = View.get(this.options.newRoot).panelView;
         assert(parent!=null, "Invalid newRoot for InsertIntoAction");
         var next:string = null;

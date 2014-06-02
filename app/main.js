@@ -58,22 +58,33 @@ is_mobile_ios != null ? this.is_mobile_ios = true : this.is_mobile_ios = false;
 $D.is_android = $D.is_touch_device && (!is_mobile_ios); // good enough for now...
 $D.is_android = true; // for debugging
 $(window).bind('load', function () {
+    Action.remoteActionTypes = {
+        OutdentAction: OutdentAction,
+        MoveIntoAction: MoveIntoAction,
+        MoveBeforeAction: MoveBeforeAction,
+        MoveAfterAction: MoveAfterAction,
+        InsertIntoAction: InsertIntoAction,
+        InsertAfterAction: InsertAfterAction,
+        DeleteAction: DeleteAction,
+        AddLinkAction: AddLinkAction,
+        TextAction: TextAction
+    };
     $D.sessionID = ActionManager.randomString(12);
     $.receiveMessage(function (e) {
         var mesgObj = $.secureEvalJSON(e.data);
-        if (mesgObj.type === 'ready') {
+        if (mesgObj.mesgtype === 'ready') {
             // load the app
             $.postMessage($.toJSON({
                 command: 'loadSnapshot',
                 mesg: ''
             }), 'http://diathink.com/', window.frames['forwardIframe']);
-        } else if (mesgObj.type == "realtime") {
+        } else if (mesgObj.mesgtype == "realtime") {
             // create new action and see if it's
-            Action.remoteExec(mesgObj);
             console.log("Processing realtime message");
-        } else if (mesgObj.type === 'save') {
+            Action.remoteExec(mesgObj);
+        } else if (mesgObj.mesgtype === 'save') {
             View.currentPage.header.message.setValue('Saved', 'action');
-        } else if (mesgObj.type === 'load') {
+        } else if (mesgObj.mesgtype === 'load') {
             // destroy prior model?
             var i;
             if (View.currentPage) {

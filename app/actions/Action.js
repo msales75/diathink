@@ -303,7 +303,6 @@ var Action = (function (_super) {
                 that.contextStep();
             }
             that.validateOldContext();
-            that.broadcast();
             that.runinit2();
         });
         this.animSetup();
@@ -340,6 +339,7 @@ var Action = (function (_super) {
         this.addQueue('end', ['focus', 'undobuttons', 'anim', 'animCleanup'], function () {
             var i, sub;
             that.validateNewContext();
+            that.broadcast();
             if (!that.options.undo && !that.options.redo && (!that.options.origID)) {
                 for (i = that.subactions.length - 1; i >= 0; --i) {
                     sub = that.subactions[i];
@@ -453,6 +453,9 @@ var Action = (function (_super) {
         return json;
     };
     Action.prototype.broadcast = function () {
+        if (this.options.origID) {
+            return;
+        }
         if (!this.type || (!Action.remoteActionTypes[this.type])) {
             return;
         }
@@ -460,6 +463,11 @@ var Action = (function (_super) {
         // if (this.parentAction!=null) {return;}
         var json = this.toJSON();
         json.broadcastID = ActionManager.actions.getNextBroadcastID();
+        if ((json.type === 'InsertAfterAction') || (json.type === 'InsertIntoAction')) {
+            assert(json.options.activeID != null, "No activeID was created");
+            json.options.remoteID = json.options.activeID;
+            delete json.options['activeID'];
+        }
         $.postMessage($.toJSON({
             command: 'broadcastAction',
             mesg: json
@@ -517,6 +525,10 @@ var Action = (function (_super) {
         };
 
         j.options.origID = String(j.historyRank);
+        j.options.focus = false;
+        if (j.newModelContext) {
+            j.options.newModelContext = j.newModelContext;
+        }
         if (j.options.undo) {
             action = actionlist.modelsById[j.options.origID];
         } else if (j.options.redo) {
@@ -636,17 +648,7 @@ var Action = (function (_super) {
             }
         }
     };
-    Action.remoteActionTypes = {
-        OutdentAction: OutdentAction,
-        MoveIntoAction: MoveIntoAction,
-        MoveBeforeAction: MoveBeforeAction,
-        MoveAfterAction: MoveAfterAction,
-        InsertIntoAction: InsertIntoAction,
-        InsertAfterAction: InsertAfterAction,
-        DeleteAction: DeleteAction,
-        AddLinkAction: AddLinkAction,
-        TextAction: TextAction
-    };
+    Action.remoteActionTypes = {};
     return Action;
 })(PModel);
 

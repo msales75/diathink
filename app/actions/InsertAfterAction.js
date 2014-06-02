@@ -23,6 +23,11 @@ var InsertAfterAction = (function (_super) {
     }
     InsertAfterAction.prototype.getNewContext = function () {
         // Handle cursor splitting/merging in OutlineAction
+        if (this.options.origID) {
+            this.newModelContext = this.options.newModelContext;
+            return;
+        }
+
         // test if children are visible
         var rootid = this.options.oldRoot;
         var ref = OutlineNodeModel.getById(this.options.referenceID);
