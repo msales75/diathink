@@ -15,12 +15,12 @@ var DropLayerView = (function (_super) {
     }
     DropLayerView.prototype.layoutDown = function () {
         var p = this.parentView.layout;
-        this.layout = {
-            top: 0,
-            left: 0,
-            width: p.width,
-            height: p.height
-        };
+        if (!this.layout) {
+            this.layout = {};
+        }
+        this.layout.top = 0;
+        this.layout.left = 0;
+        this.layout.width = p.width;
     };
     return DropLayerView;
 })(ContainerView);

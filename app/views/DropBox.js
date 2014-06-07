@@ -13,8 +13,10 @@ var DropBox = (function () {
     DropBox.prototype.validateDrop = function (activeView) {
         return true;
     };
+
     DropBox.prototype.handleDrop = function (node, helper) {
     };
+
     DropBox.removeAll = function () {
         var i, nid, pid;
         var panels = PanelView.panelsById;
@@ -36,28 +38,26 @@ var DropBox = (function () {
             panels[pid].dropboxes = [];
         }
     };
+
     DropBox.renderAll = function (dragger) {
         DropBox.dragger = dragger;
         var i, p, n, panel, node, nid;
-        console.log("Rendering all drop boxes now");
+
+        // console.log("Rendering all drop boxes now");
         DropBox.removeAll(); // todo: we need not remove/insert them every time
         $(document.body).addClass('drop-mode');
-
         $D.lineHeight = Math.round(1.5 * Number($(document.body).css('font-size').replace(/px/, '')));
         var panelParent = (View.getCurrentPage()).content.gridwrapper.grid;
         var canvas0 = View.getCurrentPage().drawlayer;
         canvas0.cacheOffset = canvas0.getOffset();
-
         var m;
         var panels = panelParent.listItems;
         for (m = panels.first(); m !== ''; m = panels.next[m]) {
             var canvas1 = panels.obj[m].outline.droplayer;
             canvas1.cacheOffset = canvas1.getOffset();
         }
-
         var panels = View.getCurrentPage().content.gridwrapper.grid.listItems;
         var pid;
-
         for (pid = panels.first(); pid !== ''; pid = panels.next[pid]) {
             panel = View.get(pid);
             panel.cachePosition();
@@ -83,6 +83,7 @@ var DropBox = (function () {
             }
         }
     };
+
     DropBox.getHoverBox = function (mousePosition, scrollStart) {
         var j, d;
 
@@ -119,7 +120,10 @@ var DropBox = (function () {
                     continue;
                 var parentPanel = node.panelView.outline;
                 var y = mousePosition.top;
-                y += parentPanel.scrollY - scrollStart[node.panelView.id];
+                y += parentPanel.scrollY;
+                if (scrollStart[node.panelView.id]) {
+                    y -= scrollStart[node.panelView.id];
+                }
                 if (((mousePosition.left >= d.hover.left) && (mousePosition.left <= d.hover.right)) && ((y >= d.hover.top) && (y <= d.hover.bottom))) {
                     //assert(this.scrollPanel && parentPanel.elem === this.scrollPanel.elem,
                     //    "ERROR: Active panel does not match item");
@@ -129,6 +133,7 @@ var DropBox = (function () {
         }
         return null;
     };
+
     DropBox.previewDropBoxes = function () {
         var i, j, d;
         var pid;
@@ -176,9 +181,11 @@ var DropBox = (function () {
     DropBox.prototype.onHover = function () {
         $(this.elem).addClass('active');
     };
+
     DropBox.prototype.onLeave = function () {
         $(this.elem).removeClass('active');
     };
+
     DropBox.prototype.render = function () {
         if (!this.valid) {
             return;
@@ -198,6 +205,11 @@ var DropBox = (function () {
 
     DropBox.prototype.validateNodeBox = function (activeNode, type) {
         var targetNode = this.view;
+        if ((type === 'link') || (type === 'handle')) {
+            if (targetNode.readOnly) {
+                return false;
+            }
+        }
 
         // cannot drop current-item on itself
         if (targetNode === activeNode) {
@@ -206,6 +218,11 @@ var DropBox = (function () {
 
         // cannot drop the current-item inside itself
         var activeModel = activeNode.value;
+        if ((type === 'top') || (type === 'bottom')) {
+            if (targetNode.value.attributes.parent.attributes.owner !== $D.userID) {
+                return false;
+            }
+        }
         var itemModel = targetNode.value;
         var model = itemModel;
         while ((model != null) && (model !== activeModel)) {
@@ -287,20 +304,37 @@ var DropBoxTop = (function (_super) {
     }
     DropBoxTop.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.simpleSchedule(View.focusedView, function () {
-            return {
-                actionType: MoveBeforeAction,
-                name: 'Drag move',
-                activeID: node.value.cid,
-                referenceID: that.view.value.cid,
-                oldRoot: node.nodeRootView.id,
-                newRoot: that.view.nodeRootView.id,
-                anim: 'dock',
-                dockView: helper,
-                focus: false
-            };
-        });
+        if (node.readOnly) {
+            ActionManager.simpleSchedule(View.focusedView, function () {
+                return {
+                    actionType: CopyBeforeAction,
+                    name: 'Drag copy',
+                    copyID: node.value.cid,
+                    referenceID: that.view.value.cid,
+                    oldRoot: null,
+                    newRoot: that.view.nodeRootView.id,
+                    anim: 'none',
+                    dockView: helper,
+                    focus: false
+                };
+            });
+        } else {
+            ActionManager.simpleSchedule(View.focusedView, function () {
+                return {
+                    actionType: MoveBeforeAction,
+                    name: 'Drag move',
+                    activeID: node.value.cid,
+                    referenceID: that.view.value.cid,
+                    oldRoot: node.nodeRootView.id,
+                    newRoot: that.view.nodeRootView.id,
+                    anim: 'dock',
+                    dockView: helper,
+                    focus: false
+                };
+            });
+        }
     };
+
     DropBoxTop.prototype.validateDrop = function (activeNode) {
         return this.validateNodeBox(activeNode, 'top');
     };
@@ -327,20 +361,37 @@ var DropBoxBottom = (function (_super) {
     }
     DropBoxBottom.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.simpleSchedule(View.focusedView, function () {
-            return {
-                actionType: MoveAfterAction,
-                name: 'Drag move',
-                activeID: node.value.cid,
-                referenceID: that.view.value.cid,
-                oldRoot: node.nodeRootView.id,
-                newRoot: that.view.nodeRootView.id,
-                anim: 'dock',
-                dockView: helper,
-                focus: false
-            };
-        });
+        if (node.readOnly) {
+            ActionManager.simpleSchedule(View.focusedView, function () {
+                return {
+                    actionType: CopyAfterAction,
+                    name: 'Drag copy',
+                    copyID: node.value.cid,
+                    referenceID: that.view.value.cid,
+                    oldRoot: null,
+                    newRoot: that.view.nodeRootView.id,
+                    anim: 'none',
+                    dockView: helper,
+                    focus: false
+                };
+            });
+        } else {
+            ActionManager.simpleSchedule(View.focusedView, function () {
+                return {
+                    actionType: MoveAfterAction,
+                    name: 'Drag move',
+                    activeID: node.value.cid,
+                    referenceID: that.view.value.cid,
+                    oldRoot: node.nodeRootView.id,
+                    newRoot: that.view.nodeRootView.id,
+                    anim: 'dock',
+                    dockView: helper,
+                    focus: false
+                };
+            });
+        }
     };
+
     DropBoxBottom.prototype.validateDrop = function (activeNode) {
         return this.validateNodeBox(activeNode, 'bottom');
     };
@@ -366,26 +417,42 @@ var DropBoxHandle = (function (_super) {
     }
     DropBoxHandle.prototype.handleDrop = function (node, helper) {
         var that = this;
-        ActionManager.simpleSchedule(View.focusedView, function () {
-            return {
-                actionType: MoveIntoAction,
-                name: 'Drag move',
-                referenceID: that.view.value.cid,
-                activeID: node.value.cid,
-                oldRoot: node.nodeRootView.id,
-                newRoot: that.view.nodeRootView.id,
-                anim: 'dock',
-                dockView: helper,
-                focus: false
-            };
-        });
+        if (node.readOnly) {
+            ActionManager.simpleSchedule(View.focusedView, function () {
+                return {
+                    actionType: CopyIntoAction,
+                    name: 'Drag copy',
+                    copyID: node.value.cid,
+                    referenceID: that.view.value.cid,
+                    oldRoot: null,
+                    newRoot: that.view.nodeRootView.id,
+                    anim: 'none',
+                    dockView: helper,
+                    focus: false
+                };
+            });
+        } else {
+            ActionManager.simpleSchedule(View.focusedView, function () {
+                return {
+                    actionType: MoveIntoAction,
+                    name: 'Drag move',
+                    referenceID: that.view.value.cid,
+                    activeID: node.value.cid,
+                    oldRoot: node.nodeRootView.id,
+                    newRoot: that.view.nodeRootView.id,
+                    anim: 'dock',
+                    dockView: helper,
+                    focus: false
+                };
+            });
+        }
     };
+
     DropBoxHandle.prototype.validateDrop = function (activeNode) {
         return this.validateNodeBox(activeNode, 'handle');
     };
     return DropBoxHandle;
 })(DropBox);
-
 var DropBoxLink = (function (_super) {
     __extends(DropBoxLink, _super);
     function DropBoxLink(node) {
@@ -422,12 +489,12 @@ var DropBoxLink = (function (_super) {
             };
         });
     };
+
     DropBoxLink.prototype.validateDrop = function (activeNode) {
         return this.validateNodeBox(activeNode, 'link');
     };
     return DropBoxLink;
 })(DropBox);
-
 var DropBoxLeft = (function (_super) {
     __extends(DropBoxLeft, _super);
     function DropBoxLeft(panel) {
@@ -446,6 +513,9 @@ var DropBoxLeft = (function (_super) {
             bottom: panel.top + panel.height,
             right: panel.left + 7
         };
+        if (panel.parentView.listItems.prev[panel.id] === '') {
+            this.hover.left = 0;
+        }
     }
     DropBoxLeft.prototype.handleDrop = function (node, helper) {
         var that = this;
@@ -462,6 +532,7 @@ var DropBoxLeft = (function (_super) {
             };
         });
     };
+
     DropBoxLeft.prototype.validateDrop = function (activeNode) {
         if (View.getCurrentPage().content.gridwrapper.grid.listItems.first() === this.view.id) {
             return true;
@@ -488,6 +559,9 @@ var DropBoxRight = (function (_super) {
             bottom: panel.top + panel.height,
             right: panel.left + panel.width + 7
         };
+        if (panel.parentView.listItems.next[panel.id] === '') {
+            this.hover.right = View.currentPage.layout.width;
+        }
     }
     DropBoxRight.prototype.handleDrop = function (node, helper) {
         var that = this;
@@ -504,12 +578,12 @@ var DropBoxRight = (function (_super) {
             };
         });
     };
+
     DropBoxRight.prototype.validateDrop = function (activeNode) {
         return true;
     };
     return DropBoxRight;
 })(DropBox);
-
 var DropBoxFirst = (function (_super) {
     __extends(DropBoxFirst, _super);
     function DropBoxFirst(panel) {
@@ -545,7 +619,12 @@ var DropBoxFirst = (function (_super) {
             };
         });
     };
+
     DropBoxFirst.prototype.validateDrop = function (activeNode) {
+        // check for readonly
+        if (this.view.value.attributes.owner !== $D.userID) {
+            return false;
+        }
         if (this.view.value.attributes.children.count === 0) {
             return true;
         }

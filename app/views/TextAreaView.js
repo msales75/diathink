@@ -68,10 +68,11 @@ var TextAreaView = (function (_super) {
         if (this.initialText) {
             this.elem.setAttribute('placeholder', this.initialText);
         }
-        if (!this.isEnabled) {
+        if (!this.isEnabled || (this.nodeView && this.nodeView.readOnly)) {
             this.elem.setAttribute('disabled', 'disabled');
         }
 
+        // $(this.header.name.text.elem).prop('readonly', true);
         // divide setPosition into two pieces while fixing height
         this.positionChildren(null); // after dimensions are set
         this.setPosition();
@@ -140,7 +141,8 @@ var TextAreaView = (function (_super) {
         if (this.value.length < 5) {
             if (!this.parentView.listItems || (this.parentView.listItems.count === 0)) {
                 this.layout.height = Math.round(1.25 * View.fontSize) + 2 * Math.round(.3 * View.fontSize);
-                console.log("Quickly handling short line");
+
+                // console.log("Quickly handling short line");
                 return;
             }
         }
@@ -249,7 +251,7 @@ var TextAreaView = (function (_super) {
     };
 
     TextAreaView.prototype.selectAllText = function () {
-        console.log("Selecting all text");
+        // console.log("Selecting all text");
         var range, selection, element = this.elem;
         if (window.getSelection) {
             selection = window.getSelection();
@@ -281,7 +283,7 @@ var TextAreaView = (function (_super) {
     };
 
     TextAreaView.prototype.setCursor = function (pos) {
-        console.log("Setting cursor/text-selection and focusing on " + this.id);
+        // console.log("Setting cursor/text-selection and focusing on "+this.id);
         this.setSelection(pos, pos);
         return this;
     };

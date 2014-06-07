@@ -89,8 +89,7 @@ li.ui-li > div > .drag-handle {
 .insertion-button:hover, .delete-button:hover {
     opacity:0.2;
 }
-
-.drop-mode .insertion-button {
+.drop-mode .delete-button, .drop-mode .insertion-button {
     visibility: hidden;
 }
 

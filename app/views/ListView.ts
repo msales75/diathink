@@ -17,7 +17,7 @@ class ListView extends View {
         this.setPosition();
         return this.elem;
     }
-    positionChildren(v:View, v2?:string) {
+    positionChildren(v:View, v2?:string, validate?:boolean) {
         var c:string = this.listItems.first();
         var end:string;
         var h = 0;
@@ -44,6 +44,7 @@ class ListView extends View {
             }
             var oldTop = child.layout.top;
             if (oldTop!==h) {
+                if (validate) {assert(false, "List item has wrong top");}
                 child.layout.top = h;
                 if (child.elem) {
                     $(child.elem).css('top', h+'px');

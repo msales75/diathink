@@ -6,12 +6,9 @@ class DropLayerView extends ContainerView {
     cssClass = 'droplayer';
     layoutDown() {
         var p:Layout = this.parentView.layout;
-        this.layout = {
-            top: 0,
-            left: 0,
-            width: p.width,
-            height: p.height
-        };
+        if (!this.layout) {this.layout = {};}
+        this.layout.top = 0;
+        this.layout.left = 0;
+        this.layout.width= p.width;
     }
-
 }

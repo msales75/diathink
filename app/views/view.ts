@@ -188,6 +188,7 @@ class View {
         if (view) {
             nView = view.nodeView;
         }
+        // if (nView.readOnly) {return;} // for now, allow focus on readonly node
         if (View.focusedView && (nView !== View.focusedView)) {
             if (View.focusedView && View.focusedView.elem && View.focusedView.elem.parentNode) {
                 View.focusedView.header.name.text.blur();
@@ -609,12 +610,13 @@ class View {
         return temp;
     }
 
-    updateDiffs(l1:Layout) {
+    updateDiffs(l1:Layout, validate?:boolean) {
         if (!l1 || !this.layout || !this.elem) {return;}
         var diffs:Layout = {};
         var k:string;
         for (k in this.layout) {
             if (this.layout[k] !== l1[k]) {
+                if (validate) {assert(Math.abs(this.layout[k]-l1[k])<=1, "Layout changed by resize for view "+this.id);}
                 $(this.elem).css(k, String(this.layout[k]) + 'px');
             }
         }
@@ -635,25 +637,25 @@ class View {
 
     layoutUp() {}
 
-    positionChildren(v:View, v2?:string) {}
+    positionChildren(v:View, v2?:string, validate?:boolean) {}
 
-    resize() {
+    resize(validate?:boolean) {
         var tempLayout:Layout = this.saveLayout();
         this.layoutDown();
         var c:string;
         for (c in this.childViewTypes) {
-            this[c].resize();
+            this[c].resize(validate);
         }
         if (this.listItems) {
             var l:string;
             var list = this.listItems;
             for (l = list.first(); l !== ''; l = list.next[l]) {
-                list.obj[l].resize();
+                list.obj[l].resize(validate);
             }
         }
-        this.positionChildren(null);
+        this.positionChildren(null, null, validate);
         this.layoutUp();
-        this.updateDiffs(tempLayout);
+        this.updateDiffs(tempLayout, validate);
     }
 
     resizeUp(opts?:{top?:string;end?:string}) {
@@ -829,6 +831,29 @@ class View {
             // Confirm that view-parent is a DOM parent
             assert($(this.elem).parents('#' + this.parentView.id).length === 1,
                 "View " + v + " does not have parent-view " + this.parentView.id);
+
+            if (this.layout.width!=null) {
+                assert(this.layout.width>=0, "Width is negative");
+            }
+            if (this.layout.height!=null) {
+                assert(this.layout.height>=0, "Height is negative");
+            }
+            if (this.layout.top != null) {
+                assert(this.layout.top>=0, "Top is outside parent top");
+            }
+            if (this.layout.left != null) {
+                assert(this.layout.left>=0, "leftis outside parent left");
+            }
+            if ((this.layout.top!=null)&&(this.layout.height!=null)&&(this.parentView.layout.height!=null)) {
+                if (! (this.parentView instanceof OutlineScrollView)) {
+                    assert(this.layout.top+this.layout.height <= this.parentView.layout.height,
+                        "Child too tall for parent");
+                }
+            }
+            if ((this.layout.left!=null)&&(this.layout.width!=null)&&(this.parentView.layout.width!=null)) {
+                assert(this.layout.left+this.layout.width <= this.parentView.layout.width,
+                    "Child too wide for parent");
+            }
         }
         assert(this.elem != null,
             "View " + v + " has no element");
@@ -841,17 +866,20 @@ class View {
         if ($(this.elem).css('display') !== 'none') {
             var offset = $(this.elem).offset();
             var offset2 = this.getOffset();
-            assert(Math.abs(offset.top - offset2.top) <= 1, "Offset tops don't match for view " + this.id);
+            if (!(this instanceof OutlineScrollView)) {
+                assert(Math.abs(offset.top - offset2.top) <= 1, "Offset tops don't match for view " + this.id);
+            }
+
             assert(Math.abs(offset.left - offset2.left) <= 1, "Offset lefts don't match for view " + this.id);
             if (this.layout.width != null) {
                 assert(Math.abs(this.layout.width - this.elem.clientWidth) <= 1, "Widths don't match for " + this.id);
             } else {
-                console.log("Notice: missing width for view " + this.id);
+                // console.log("Notice: missing width for view " + this.id);
             }
             if (this.layout.height != null) {
                 assert(Math.abs(this.layout.height - this.elem.clientHeight) <= 1, "Heights don't match for " + this.id);
             } else {
-                console.log("Notice: missing height for view " + this.id);
+                // console.log("Notice: missing height for view " + this.id);
             }
         }
     }

@@ -14,6 +14,7 @@ class NodeView extends View {
     isFirst:boolean;
     isLast:boolean;
     isLeaf:boolean;
+    readOnly:boolean;
 
     public static refreshPositions() {
         var items = NodeView.nodesById;
@@ -26,7 +27,7 @@ class NodeView extends View {
                 width: $(header.elem).outerWidth(),
                 height: $(header.elem).outerHeight()
             };
-            var p = header.getOffset();
+            var p:{top?:number;left?:number} = header.getOffset();
             item.position = {
                 left: p.left,
                 top: p.top
@@ -102,6 +103,11 @@ class NodeView extends View {
         }
         if (this.value) {
             this.value.addView(this); // register view.id in model
+            if (this.value.attributes.owner !== $D.userID) {
+                this.readOnly=true;
+            } else {
+                this.readOnly=false;
+            }
         }
         // check outline and value for collapse-status
         this.isCollapsed = this.value.get('collapsed');
@@ -142,6 +148,9 @@ class NodeView extends View {
                     addClass('expanded').removeClass('collapsed');
             }
         }
+        if (this.readOnly) {
+            this.addClass('readonly');
+        }
         this.header.handle.renderUpdate();
 
         /*
@@ -161,11 +170,11 @@ class NodeView extends View {
     layoutUp() {
         this.layout.height = this.header.layout.height + this.children.layout.height;
     }
-    positionChildren(v:View) {
+    positionChildren(v:View, v2?:string, validate?:boolean) {
         if (!v || (v===this.header)) {
             var l:Layout = this.children.saveLayout();
             this.children.layoutDown();
-            this.children.updateDiffs(l);
+            this.children.updateDiffs(l, validate);
         }
     }
 

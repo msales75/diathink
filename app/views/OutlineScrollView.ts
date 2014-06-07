@@ -69,6 +69,15 @@ class OutlineScrollView extends ScrollView {
         this.layout.height = p.height-this.parentView.breadcrumbs.layout.height;
         // todo: inner-scroll height needs to be reset in layoutUp
     }
+    positionChildren(v?:View, v2?:string, validate?:boolean) {
+        // whenever scroll-height changes, need to adjust canvas size
+        if (validate) {
+            assert(this.droplayer.layout.height === this.alist.layout.height, "Droplayer has invalid height");
+        }
+        // console.log("Setting droplayer height here to "+this.alist.layout.height);
+        this.droplayer.layout.height = this.alist.layout.height;
+        this.droplayer.elem.style.height = this.droplayer.layout.height+'px';
+    }
 
     validate() {
         super.validate();

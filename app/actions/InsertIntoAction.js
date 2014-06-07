@@ -26,17 +26,17 @@ var InsertIntoAction = (function (_super) {
             this.newModelContext = this.options.newModelContext;
             return;
         }
-        var parent = View.get(this.options.newRoot).panelView;
-        assert(parent != null, "Invalid newRoot for InsertIntoAction");
+        var parent = OutlineNodeModel.getById(this.options.referenceID);
+        assert(parent != null, "Invalid referenceID for InsertIntoAction");
         var next = null;
-        var children = parent.value.get('children');
+        var children = parent.get('children');
         if (children.count > 0) {
             next = children.first();
         }
         this.newModelContext = {
             prev: null,
             next: next,
-            parent: parent.value.cid
+            parent: parent.cid
         };
     };
     return InsertIntoAction;

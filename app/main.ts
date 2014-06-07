@@ -22,7 +22,6 @@ if (nav.userAgent.match(/iPhone/i) ||
         // show message & abort application.
     }
 }
-
 function saveSnapshot() {
     (<JQueryStaticD>$).postMessage((<JQueryStaticD>$).toJSON({
         command: 'saveSnapshot',
@@ -43,13 +42,14 @@ function createPage() {
         for (p = panels.first(); p !== ''; p = panels.next[p]) {
             (<PanelView>View.get(p)).cachePosition();
         }
-        fixFontSize();
+        // fixFontSize();
         ActionManager.refreshButtons();
         grid.updatePanelButtons();
         // grid.resize();
         // $D.keyboard = new keyboardSetup();
         // $D.keyboard.init({});
         setTimeout(function() {
+            $D.ready = 1;
             // validate();
         }, 0);
     }, 50); // todo: don't hard-code 50ms load time for font
@@ -73,6 +73,18 @@ $(window).bind('load', function() {
         AddLinkAction: AddLinkAction,
         TextAction: TextAction
     };
+    // get userID
+    var query = (<JQueryStaticD>$).parseUri(location.href).queryKey;
+    if (query && query.user) {
+        $D.userID = query.user;
+    } else {
+        $D.userID = 'mark';
+    }
+    if (query && query.listen) {
+        $D.listenRealtime = true;
+    } else {
+        $D.listenRealtime = false;
+    }
     $D.sessionID = ActionManager.randomString(12);
     (<JQueryStaticD>$).receiveMessage(
         function(e) {
@@ -85,8 +97,12 @@ $(window).bind('load', function() {
                 }), 'http://diathink.com/', window.frames['forwardIframe']);
             } else if (mesgObj.mesgtype == "realtime") {
                 // create new action and see if it's
-                console.log("Processing realtime message");
-                Action.remoteExec(mesgObj);
+                if ($D.listenRealtime) {
+                    console.log("Processing realtime message");
+                    Action.remoteExec(mesgObj);
+                } else {
+                    console.log("Ignoring realtime message");
+                }
             } else if (mesgObj.mesgtype === 'save') {
                 View.currentPage.header.message.setValue('Saved', 'action');
             } else if (mesgObj.mesgtype === 'load') {
@@ -114,10 +130,12 @@ $(window).bind('load', function() {
                 return false;
             }
         });
-    $(document.body).append('<iframe ' +
-        'src="http://diathink.com:8080/comet.html?context=' +
-        encodeURIComponent((<JQueryStaticD>$).toJSON({conversation_code: '99', fullpage_url: location.href})) +
-        '" scrolling="no" frameborder="0" style="display:none;"></iframe>');
+    if ($D.listenRealtime) {
+        $(document.body).append('<iframe ' +
+            'src="http://diathink.com:8080/comet.html?context=' +
+            encodeURIComponent((<JQueryStaticD>$).toJSON({conversation_code: '99', fullpage_url: location.href})) +
+            '" scrolling="no" frameborder="0" style="display:none;"></iframe>');
+    }
     $(document.body).append('<iframe name="forwardIframe" src="http://diathink.com/forward/#' + encodeURIComponent(location.href) +
         '" scrolling="no" frameborder="0" style="display:none;"></iframe>');
     $D.router = new Router(document.body);

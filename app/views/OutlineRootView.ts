@@ -81,9 +81,9 @@ class OutlineRootView extends ListView {
         }
     }
 
-    getData(key) {
-        if (!this.data) {return false;}
-        else if (this.data[key] == null) {return false;}
+    getData(key):boolean {
+        if (!this.data) {return null;}
+        else if (this.data[key] == null) {return null;}
         else {return this.data[key];}
     }
     validate() {

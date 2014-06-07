@@ -66,6 +66,9 @@ class CollapseAction extends Action {
             } else {
                 if (!that.options.redo) {
                     that.oldViewCollapsed[outline.id] = outline.getData(that.options.activeID);
+                    if (that.oldViewCollapsed[outline.id]==null) { // not modified in undo-history
+                        that.oldViewCollapsed[outline.id] = OutlineNodeModel.getById(that.options.activeID).attributes.collapsed;
+                    }
                 }
                 if ((that.options.oldRoot === outline.nodeRootView.id)||
                     (that.options.oldRoot==='all')) {

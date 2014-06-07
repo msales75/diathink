@@ -5,7 +5,8 @@ $D.handleKeypress = function (view:TextAreaView, e) {
     var id = view.id;
     var key = String.fromCharCode(e.charCode);
     var liView, collection, sel;
-    liView = View.get(id).parentView.parentView.parentView;
+    liView = View.get(id).nodeView;
+    if (liView.readOnly) {return;}
     if (key === ' ') {
         sel = view.getSelection();
         // check if cursor is on far left of textbox
@@ -13,7 +14,8 @@ $D.handleKeypress = function (view:TextAreaView, e) {
             // get parent-collection and rank
             collection = liView.parentView.value;
             // validate rank >0
-            if (collection.prev[liView.value.cid]!=='') { // indent the line
+            if ((collection.prev[liView.value.cid]!=='')&&
+                (OutlineNodeModel.getById(collection.prev[liView.value.cid]).attributes.owner===$D.userID)) { // indent the line
                 // make it the last child of its previous sibling
                 scheduleKey(e.simulated, id, function ():SubAction {
                     return {

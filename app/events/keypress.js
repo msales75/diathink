@@ -5,7 +5,10 @@ $D.handleKeypress = function (view, e) {
     var id = view.id;
     var key = String.fromCharCode(e.charCode);
     var liView, collection, sel;
-    liView = View.get(id).parentView.parentView.parentView;
+    liView = View.get(id).nodeView;
+    if (liView.readOnly) {
+        return;
+    }
     if (key === ' ') {
         sel = view.getSelection();
 
@@ -15,7 +18,7 @@ $D.handleKeypress = function (view, e) {
             collection = liView.parentView.value;
 
             // validate rank >0
-            if (collection.prev[liView.value.cid] !== '') {
+            if ((collection.prev[liView.value.cid] !== '') && (OutlineNodeModel.getById(collection.prev[liView.value.cid]).attributes.owner === $D.userID)) {
                 // make it the last child of its previous sibling
                 scheduleKey(e.simulated, id, function () {
                     return {

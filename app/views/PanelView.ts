@@ -71,20 +71,19 @@ class PanelView extends View {
     }
     layoutDown() {
         var p = this.parentView.parentView.layout;
-        this.layout = {
-            top: 0,
-            width: this.parentView.itemWidth,
-            height: p.height
-        };
+        if (!this.layout) {this.layout = {};}
+        this.layout.top = 0;
+        this.layout.width = this.parentView.itemWidth;
+        this.layout.height = p.height;
     }
-    positionChildren(v:View) {
+    positionChildren(v:View, v2?:string, validate?:boolean) {
         if (!v || (v===this.breadcrumbs)) {
             var l = this.outline.saveLayout();
             this.outline.layoutDown();
-            this.outline.updateDiffs(l);
+            this.outline.updateDiffs(l, validate);
             var l2 = this.inserter.saveLayout();
             this.inserter.layout.top = this.breadcrumbs.layout.height + Math.round(0.5*View.fontSize);
-            this.inserter.updateDiffs(l2);
+            this.inserter.updateDiffs(l2, validate);
         }
     }
 
@@ -151,6 +150,7 @@ class PanelView extends View {
         this.outline.alist.renderAt(c);
         this.breadcrumbs.updateValue();
         this.breadcrumbs.renderUpdate();
+        this.outline.positionChildren(); // fix droplayer height
         this.cachePosition();
         NodeView.refreshPositions();
 

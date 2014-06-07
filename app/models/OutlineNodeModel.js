@@ -17,6 +17,17 @@ var PModel = (function () {
     return PModel;
 })();
 
+function repossess(json) {
+    if (json.cid) {
+        delete json['cid'];
+    }
+    json.owner = $D.userID;
+    var i;
+    for (i = 0; i < json.children.length; ++i) {
+        repossess(json.children[i]);
+    }
+}
+
 var Collection = (function () {
     function Collection() {
         this.length = 0;
@@ -95,8 +106,14 @@ var OutlineNodeModel = (function (_super) {
                 this.attributes.text = "";
             }
             this.setChildren(options.children);
+            if (options.owner) {
+                this.attributes.owner = options.owner;
+            }
         } else {
             this.setChildren(null);
+        }
+        if (!this.attributes.owner) {
+            this.attributes.owner = $D.userID;
         }
     }
     OutlineNodeModel.getById = function (id) {
@@ -145,6 +162,13 @@ var OutlineNodeModel = (function (_super) {
         }
     };
     OutlineNodeModel.prototype.delete = function () {
+        var i;
+        var c = this.attributes.children;
+        if (c && (c.count > 0)) {
+            for (i = c.first(); i !== ''; i = c.next[i]) {
+                c.obj[i].delete();
+            }
+        }
         this.set('deleted', true);
         OutlineNodeModel.deletedById[this.cid] = this;
         delete OutlineNodeModel.modelsById[this.cid];
@@ -191,6 +215,11 @@ var OutlineNodeModel = (function (_super) {
         children = new OutlineNodeCollection();
         children._fromJSON(n.children);
         this.attributes.text = n.text;
+        this.attributes.deleted = n.deleted;
+        this.attributes.collapsed = n.collapsed;
+        if (n.owner) {
+            this.attributes.owner = n.owner;
+        }
         this.importLinks = n.links;
         this.setChildren(children);
         return this;
@@ -217,6 +246,7 @@ var OutlineNodeModel = (function (_super) {
         }
         return {
             cid: this.cid,
+            owner: this.attributes.owner,
             text: this.attributes.text,
             collapsed: this.attributes.collapsed,
             deleted: this.attributes.deleted,
@@ -308,6 +338,7 @@ var OutlineNodeModel = (function (_super) {
 
             assert(this.attributes.text != null, "The model " + m + " does not have a text attribute");
             assert(typeof this.attributes.text === 'string', "The model " + m + " has a text-attribute that is not a string");
+            assert(typeof this.attributes.owner === 'string', "The model " + m + " has an owner-attribute that is not a string");
 
             // parent matches children
             var c = this.attributes.children;

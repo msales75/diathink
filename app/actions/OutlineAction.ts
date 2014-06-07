@@ -11,6 +11,7 @@
 // todo: handle focusID in context, and validate it.
 // todo: undo-scroll (maybe focus)
 m_require("app/actions/AnimatedAction.js");
+
 class OutlineAction extends AnimatedAction {
     oldModelContext:ModelContext;
     newModelContext:ModelContext;
@@ -150,7 +151,7 @@ class OutlineAction extends AnimatedAction {
             var t1:string = (<string>line1.header.name.text.value) + (<string>line2.header.name.text.value);
             this.cursorPosition = line1.header.name.text.value.length;
             line1.header.name.text.setValue(t1);
-            if ((!this.options.redo)&&(line2.header.name.text.value.length > 0)&&(!this.options.origID)) {
+            if ((!this.options.redo) && (line2.header.name.text.value.length > 0) && (!this.options.origID)) {
                 this.subactions.push({
                     actionType: TextAction,
                     oldRoot: this.runtime.rOldRoot,
@@ -160,18 +161,17 @@ class OutlineAction extends AnimatedAction {
                 });
             }
             // send message to placeCursor() on where to put cursor
-
             // this should be where we do focus, checkTextChange can get this change after we focus there.
             /*
-            if (line2.header.name.text.value.length > 0) {
-            }
-            */
+             if (line2.header.name.text.value.length > 0) {
+             }
+             */
         }
     }
 
     handleLineSplits() {
         // is a line being created or destroyed
-        if (!this.options.undo && !this.options.redo && (this.runtime.rOldModelContext == null)&&(!this.options.origID)) {
+        if (!this.options.undo && !this.options.redo && (this.runtime.rOldModelContext == null) && (!this.options.origID)) {
             if (!OutlineNodeModel.getById(this.options.referenceID).views) {return;}
             var line1 = OutlineNodeModel.getById(this.options.referenceID).views[this.runtime.rOldRoot];
             if (!line1) {return;} // when inserting line into empty panel
@@ -356,7 +356,8 @@ class OutlineAction extends AnimatedAction {
             console.log("ERROR: Action " + this.type + " missing referenceID");
             debugger;
         }
-        if (!o.origID) {
+        /*
+        if (!o.origID && !o.copyID) {
             if (!o.oldRoot || !o.newRoot) {
                 console.log("ERROR: Action " + this.type + " missing oldRoot or newRoot");
                 debugger;
@@ -374,7 +375,7 @@ class OutlineAction extends AnimatedAction {
                 }
             }
         }
-
+        */
         if (o.anim) {}
         if (o.activeID) {
             var activeModel = OutlineNodeModel.getById(o.activeID);
@@ -385,7 +386,8 @@ class OutlineAction extends AnimatedAction {
                 console.log('ERROR: invalid activeModel for activeID=' + o.activeID);
                 debugger;
             }
-            if (!o.origID) {
+            /*
+            if (!o.origID && !o.copyID) {
                 if (v.requireOld && !o.undo) {
                     if (o.oldRoot !== 'all') {
                         if (!activeModel.views || !activeModel.views[o.oldRoot]) {
@@ -403,6 +405,7 @@ class OutlineAction extends AnimatedAction {
                     }
                 }
             }
+             */
         }
         if (o.referenceID) {
             var refModel = OutlineNodeModel.getById(o.referenceID);
@@ -414,11 +417,12 @@ class OutlineAction extends AnimatedAction {
                 debugger;
             }
             // reference is only used in newRoot, not oldRoot
+            /*
             if (!o.origID) {
                 if (v.requireNew || v.requireNewReference) {
                     assert(refModel.views, "referenceID does not have model");
                     assert(refModel.views[o.newRoot] || (refModel === View.get(o.newRoot).panelView.value),
-                        "ERROR: NO new-view found for referenceID="+ o.referenceID);
+                        "ERROR: NO new-view found for referenceID=" + o.referenceID);
                 }
                 if (v.requireNewReference && o.undo) {
                     if (o.newRoot !== 'all') {
@@ -431,6 +435,7 @@ class OutlineAction extends AnimatedAction {
                     }
                 }
             }
+            */
         }
     }
 
@@ -453,7 +458,7 @@ class OutlineAction extends AnimatedAction {
             }
         } else {
             context = this.oldModelContext;
-            if ((this instanceof InsertAfterAction)||(this instanceof InsertIntoAction)) {
+            if ((this instanceof InsertAfterAction) || (this instanceof InsertIntoAction) || (this.options.copyID)) {
                 if (context !== null) {
                     console.log("ERROR: Insert action with oldModelContext not-null");
                     debugger;
@@ -469,7 +474,7 @@ class OutlineAction extends AnimatedAction {
         var context, o = this.options;
         if (o.undo) {
             context = this.oldModelContext;
-            if ((this instanceof InsertAfterAction)||(this instanceof InsertIntoAction)) {
+            if ((this instanceof InsertAfterAction) || (this instanceof InsertIntoAction) || (this.options.copyID)) {
                 if (context !== null) {
                     console.log("ERROR: Insert action with oldModelContext not-null");
                     debugger;
@@ -569,9 +574,9 @@ class OutlineAction extends AnimatedAction {
     }
 
     placeCursor(text:TextAreaView) {
-        if (this.cursorPosition!=null) {
+        if (this.cursorPosition != null) {
             if ($D.is_android) {
-                text.setCursor(this.cursorPosition+1);
+                text.setCursor(this.cursorPosition + 1);
             } else {
                 text.setCursor(this.cursorPosition);
             }
@@ -674,7 +679,7 @@ class OutlineAction extends AnimatedAction {
             // if parent-collection is empty, reset collapsed=false
             if (oldCollection != null) {
                 if ((!that.options.undo) && (!that.options.redo) &&
-                    (oldCollection.count === 1) && (! (that instanceof CollapseAction)) && (!that.options.origID)) {
+                    (oldCollection.count === 1) && (!(that instanceof CollapseAction)) && (!that.options.origID)) {
                     var parent = activeModel.get('parent');
                     // don't do this with a collapse action.
                     that.subactions.push({
@@ -707,8 +712,10 @@ class OutlineAction extends AnimatedAction {
                 }
                 activeModel.set('parent', OutlineNodeModel.getById(newModelContext.parent));
             } else {
-                assert(activeModel.attributes.children.count === 0,
-                    "Cannot delete node with children");
+                if (! that.options.copyID) {
+                    assert(activeModel.attributes.children.count === 0,
+                        "Cannot delete node with children");
+                }
                 activeModel.delete();
             }
         });
@@ -730,7 +737,7 @@ class OutlineAction extends AnimatedAction {
             var activeNodeView = that.getNodeView(that.options.activeID, outline.id);
             // get parent listview; unless newModelContext is not in this view, then null
             newListView = that.contextParentVisible(newModelContext, outline);
-            console.log('Restoring "view" for outline ' + outline.id);
+            // console.log('Restoring "view" for outline ' + outline.id);
             if (newListView && newListView.hideList) {
                 newListView = null;
             }
@@ -748,8 +755,8 @@ class OutlineAction extends AnimatedAction {
                 if (activeNodeView == null) { // creating or undoing deletion
                     activeNodeView = new newListView.listItemTemplate({
                         parentView: newListView,
-                        value: OutlineNodeModel.getById(that.options.activeID),
-                        cssClass: 'leaf'
+                        value: OutlineNodeModel.getById(that.options.activeID)
+                        // cssClass: 'leaf'
                     });
                     activeNodeView.render();
                 } else { // detach from old location
@@ -757,6 +764,7 @@ class OutlineAction extends AnimatedAction {
                     var oldListView = that.contextParentVisible(r.rOldModelContext, outline);
                     oldListView.detach(activeNodeView);
                     activeNodeView.changeParent(newListView);
+                    activeNodeView.resize(); // adjust to parent's width
                 }
                 // insert in new location
                 if (newModelContext.prev == null) {
@@ -779,7 +787,7 @@ class OutlineAction extends AnimatedAction {
                 }
             }
             // check if first node was added/removed, changing insertion-icon
-            if (outline.value.count>0) {
+            if (outline.value.count > 0) {
                 outline.panelView.inserter.hide();
             } else {
                 outline.panelView.inserter.show();
@@ -824,17 +832,26 @@ class OutlineAction extends AnimatedAction {
         var that = this;
         this.addQueue('modelCreate', ['context'], function() {
             if (!that.options.activeID) {
-                if (that.options.remoteID) {
-                    var activeModel = new OutlineNodeModel({
-                        cid: that.options.remoteID,
-                        text: that.options.text,
-                        children: null
-                    });
+                if (that.options.copyID) {
+                    // todo: copy: create recursive copy of model (but links stay pointing to original)
+                    var json:NodeOutlineJson = OutlineNodeModel.getById(that.options.copyID)._toJSON();
+                    repossess(json);
+                    var activeModel = new OutlineNodeModel();
+                    activeModel.fromJSON(json);
                 } else {
-                    var activeModel = new OutlineNodeModel({
-                        text: that.options.text,
-                        children: null
-                    });
+                    if (that.options.remoteID) {
+                        var activeModel = new OutlineNodeModel({
+                            cid: that.options.remoteID,
+                            owner: that.options.userID,
+                            text: that.options.text,
+                            children: null
+                        });
+                    } else {
+                        var activeModel = new OutlineNodeModel({
+                            text: that.options.text,
+                            children: null
+                        });
+                    }
                 }
                 that.options.activeID = activeModel.cid;
             }

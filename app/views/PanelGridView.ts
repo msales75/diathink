@@ -38,22 +38,24 @@ class PanelGridView extends View {
         var width = View.currentPage.layout.width;
         var oldNumCols = this.numCols;
         var id:string;
-        if (width < 600) {
+        if (width < 880) {
             this.numCols = 1;
-        } else if (width < 1200) {
+        } else if (width < 1500) {
             this.numCols = 2;
         } else {
             this.numCols = 3;
         }
+        /*
         if (oldNumCols !== this.numCols) {
-            if (this.value && (this.value.count > 0)) {
+            if (this.value && (this.value.count > 1)) {
                 if (oldNumCols > this.numCols) {
-                    this.clip('right');
+                    this.clipPanel('right');
                 } else if (oldNumCols < this.numCols) {
-                    this.slideFill('left');
+                    this.fillPanel('right', true);
                 }
             }
         }
+        */
     }
 
     updateValue() {
@@ -79,23 +81,28 @@ class PanelGridView extends View {
         }
     }
 
-    clip(dir:string) {
-        if (this.listItems.count > this.numCols) {
+    // do nothing unless there are more panels than visible
+    //  then remove left-most or right-most one & fix grid-dimensions
+    clipPanel(dir:string) {
+        // if (this.layout.width >= (this.numCols+1)*this.itemWidth) {
             if (dir === 'left') {
                 var firstPanel:PanelView = <PanelView>this.listItems.obj[this.listItems.first()];
                 firstPanel.destroy();
             } else if (dir === 'right') {
                 var lastPanel:PanelView = <PanelView>this.listItems.obj[this.listItems.last()];
-                lastPanel.destroy();
+                lastPanel.destroy(); // destroy removes from listItems but not from value
             }
-        }
+        // }
         this.layout.left = 0;
-        this.layout.width = this.numCols * this.itemWidth;
+        this.layout.width = this.numCols * this.itemWidth + 2;
         this.positionChildren(null);
         this.setPosition();
     }
 
-    insertViewAfter(prevPanel:PanelView, panel:PanelView, leftPosition?:number):string {
+    // inserts panel into view after prevPanel, positioned after prevPanel's width+offsetPosition
+    // renders new panel and repositions following panels with positionChildren
+    // returns slide-direction: slide right unless new panel is on the right end of the screen, then left
+    insertViewAfter(prevPanel:PanelView, panel:PanelView, offsetPosition?:number):string {
         var id:string, previd:string; // viewid's
         // update the view-list
         id = panel.id;
@@ -118,8 +125,8 @@ class PanelGridView extends View {
                     var prevLayout:Layout = View.get(previd).layout;
                     panel.layout.left = prevLayout.left + prevLayout.width;
                 }
-                if (leftPosition) {
-                    panel.layout.left += leftPosition
+                if (offsetPosition) {
+                    panel.layout.left += offsetPosition
                 }
                 panel.render();
                 this.positionChildren(panel); // a hidden panel can preserve a gap
@@ -139,7 +146,7 @@ class PanelGridView extends View {
         return dir;
     }
 
-    insertAfter(prevPanel:PanelView, panel:PanelView, leftPosition?:number):string {
+    insertAfter(prevPanel:PanelView, panel:PanelView, offsetPosition?:number):string {
         var id:string, previd:string;
         assert(panel !== null, "No panel given to insert");
         id = panel.id;
@@ -150,6 +157,8 @@ class PanelGridView extends View {
             } else {
                 assert(this.listItems.count > 0, "value is non-empty but listItems are empty");
                 previd = this.value.prev[this.listItems.first()];
+                // console.log("In insertAfter with prevPanel=null, setting previd="+previd+
+                //    " before first visible panel "+this.listItems.first());
             }
         } else {
             previd = prevPanel.id;
@@ -157,7 +166,7 @@ class PanelGridView extends View {
                 "insertAfter has unknown previous id");
         }
         this.value.insertAfter(panel.id, true, previd);
-        return this.insertViewAfter(prevPanel, panel, leftPosition);
+        return this.insertViewAfter(prevPanel, panel, offsetPosition);
     }
 
     append(panel:PanelView):string {
@@ -168,39 +177,46 @@ class PanelGridView extends View {
         return this.insertAfter(null, panel);
     }
 
-    getSlideDirection(slide?:string):string {
+    getNewPanelSide(prefDir?:string):string {
         var isPanelToLeft:boolean = (this.listItems.first() !== this.value.first());
         var isPanelToRight:boolean = (this.listItems.last() !== this.value.last());
-        if (!isPanelToLeft) { // must slide left
-            return 'left';
-        } else if (isPanelToLeft && !isPanelToRight) { // must slide right
+        if (!isPanelToLeft) { // must add panel from right, or do nothing
             return 'right';
+        } else if (isPanelToLeft && !isPanelToRight) { // must add panel from left
+            return 'left';
         } else {
-            if (slide === 'right') {
-                return 'right';
+            if (prefDir === 'left') {
+                return 'left';
             }
-            return 'left'; // default
+            return 'right'; // default, keep leftPanel the same, add panel on right side
         }
     }
 
-    slideFill(slide:string) {
-        var direction = this.getSlideDirection();
-        if (direction === 'left') {
-            this.slideLeft();
-        } else if (direction === 'right') {
-            this.slideRight();
+    fillPanel(prefDir:string, force?:boolean) { // shows a panel to left or right if missing
+        var direction;
+        if (force) {
+            direction = prefDir;
+        } else {
+            direction = this.getNewPanelSide(prefDir);
+        }
+
+        if (direction === 'right') {
+            this.showNextRight();
+        } else if (direction === 'left') {
+            this.showPrevLeft();
         }
         return direction;
     }
 
-    detach(panel:PanelView, slide?:string) {
+    detach(panel:PanelView, slide?:string) { // detach from visible view
         if (panel instanceof PanelView) {
             var id:string = panel.id;
             var mid:string = panel.value.cid;
             var filler:string;
             var fPanel:PanelView = null;
-            // remove panel from model-list
+            // remove panel from listItems-list
             // don't destroy it here, just detach it
+            // but don't remove it from value here, it might just become invisible
             this.listItems.remove(panel.id);
         }
         if (panel.elem && panel.elem.parentNode) {
@@ -208,10 +224,11 @@ class PanelGridView extends View {
         }
     }
 
-    slideRight() {
+    showPrevLeft() {
         var leftPanel = this.listItems.obj[this.listItems.first()];
         var prev = this.value.prev[leftPanel.id];
         if (prev === '') {
+            console.log("Not showing prev-left because nothing to show");
             return; // do nothing
         } else {
             var deadPanel:DeadPanel = <DeadPanel>DeadView.viewList[prev];
@@ -221,16 +238,17 @@ class PanelGridView extends View {
         }
     }
 
-    slideLeft(leftPosition?:number) {
+    showNextRight(positionOffset?:number) {
         var rightPanel = this.listItems.obj[this.listItems.last()];
         var next = this.value.next[rightPanel.id];
         if (next === '') {
+            console.log("Not showing next-right because nothing to show");
             return; // do nothing
         } else {
             var deadPanel:DeadPanel = <DeadPanel>DeadView.viewList[next];
             assert(deadPanel instanceof DeadPanel, "Cannot find panel in graveyard");
             var newPanel:PanelView = deadPanel.resurrect();
-            this.insertViewAfter(rightPanel, newPanel, leftPosition);
+            this.insertViewAfter(rightPanel, newPanel, positionOffset);
         }
     }
 
@@ -265,7 +283,7 @@ class PanelGridView extends View {
         }
     }
 
-    positionChildren(v:View) {
+    positionChildren(v:View,v2?:string,validate?:boolean) {
         this.itemWidth = Math.floor((this.parentView.layout.width-2) / this.numCols);
         var c:string = this.listItems.first();
         var w = 0;
@@ -277,12 +295,16 @@ class PanelGridView extends View {
             var child:PanelView = <PanelView>this.listItems.obj[c];
             if (!child.layout) {child.layout = {};}
             if (child.layout.left !== w) {
+                if (validate) {assert(false, "Panel has invalid left "+child.id);}
                 child.layout.left = w;
                 if (child.elem) {
                     $(child.elem).css('left', w + 'px');
                 }
             }
             w += child.layout.width;
+        }
+        if (validate) {
+            assert(this.gridRightLine.layout.left === w, "Gridrightline has wrong left");
         }
         this.gridRightLine.layout.left = w;
         if (this.elem) {
@@ -380,6 +402,11 @@ class PanelGridView extends View {
                 assert(DeadView.viewList[p] instanceof DeadPanel,
                     "Dead panel does not exist " + p);
             }
+        }
+        assert(this.listItems.count <= this.numCols, "Cannot have more panels than columns");
+        if (this.listItems.count < this.numCols) {
+           // assert(this.listItems.count===this.value.count,
+           //     "Cannot have empty panel-slots when there are more to show");
         }
     }
 }

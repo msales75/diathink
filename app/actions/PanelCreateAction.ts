@@ -3,32 +3,47 @@ m_require("app/actions/AnimatedAction.js");
 class PanelCreateAction extends AnimatedAction {
     type = "PanelCreate";
     newPanel:string = null;
+    clipDir:string;
     leftPanel:string;
     nextPanel:string;
     postLeftPanel:string;
+    emptySlot:boolean;
     // options:ActionOptions = {activeID: null, prevPanel: null, oldRoot: null, newRoot: 'new'};
     runinit2() {
         var o:ActionOptions = this.options,
             r:RuntimeOptions = this.runtime;
-        var reverse:boolean = ((this.options.undo && !this.options.delete)||
-                    (!this.options.undo && this.options.delete));
-
+        var grid:PanelGridView = View.getCurrentPage().content.gridwrapper.grid;
+        var reverse:boolean = ((this.options.undo && !this.options.delete) ||
+            (!this.options.undo && this.options.delete));
         if (this.options.delete && !this.options.undo && !this.options.redo) {
             this.newPanel = this.options.panelID;
-            this.options.prevPanel = View.currentPage.content.gridwrapper.grid.listItems.prev[this.newPanel];
-            this.options.isSubpanel = ((<PanelView>View.get(this.newPanel)).parentPanel!=null);
+            this.options.prevPanel = grid.listItems.prev[this.newPanel];
+            this.options.isSubpanel = ((<PanelView>View.get(this.newPanel)).parentPanel != null);
         }
+        var clipDir = this.clipDir;
+        if (reverse) { // for deleting, fill-from-right iff there is something to the right
+            this.emptySlot = (grid.value.last() === grid.listItems.last());
+        } else {
+            this.emptySlot = (grid.listItems.count < grid.numCols);
+        }
+        console.log("runinit2: Starting with clipDir="+clipDir+", emptySlot="+this.emptySlot);
+        if ((clipDir==='right')&&(this.emptySlot)) {clipDir='none';}
+        if ((clipDir==='none')&&(!this.emptySlot)) {clipDir='right';}
+        console.log("Used emptySlot to temporarily update clipDir="+clipDir);
         if (reverse) {
-            this.usePostAnim = true;
-            if (!this.options.speed) {this.options.speed = 60;}
-            this.dropSource = new PanelDropSource({ // fade-out before slide
-                panelID: this.newPanel,
-                useFade: true
-            });
+            if (View.viewList[this.newPanel]) {
+                this.usePostAnim = true;
+                if (!this.options.speed) {this.options.speed = 80;} // was 60
+                this.dropSource = new PanelDropSource({ // fade-out before slide
+                    panelID: this.newPanel,
+                    useFade: true,
+                    fillDir: clipDir
+                });
+            }
         } else {
             this.usePostAnim = false;
-            if (!this.options.speed) {this.options.speed = 100;}
-            if (this.options.oldRoot) { // if creation/deletion is tied to another panel
+            if (!this.options.speed) {this.options.speed = 120;} // was 100
+            if (this.options.oldRoot && View.get(this.options.oldRoot)) { // if creation/deletion is tied to another panel
                 this.dropSource = new NodeDropSource({
                     activeID: this.options.activeID,
                     outlineID: this.options.oldRoot,
@@ -38,24 +53,63 @@ class PanelCreateAction extends AnimatedAction {
                     usePlaceholder: false
                 });
             }
-
-            this.dropTarget = new PanelDropTarget({ // no fade, just slide
-                activeID: this.options.activeID,
-                panelID: View.currentPage.content.gridwrapper.grid.getInsertLocation(this.options.prevPanel),
-                prevPanel: this.options.prevPanel,
-                usePlaceholder: true
-            });
+            if ((this.options.prevPanel === '') || View.get(this.options.prevPanel)) { // if previous panel is visible
+                var grid:PanelGridView = View.currentPage.content.gridwrapper.grid;
+                var offset:number = 0;
+                if ((clipDir === 'none') && (grid.listItems.next[this.options.prevPanel] === '')) {
+                    offset = grid.itemWidth;
+                }
+                this.dropTarget = new PanelDropTarget({ // no fade, just slide
+                    activeID: this.options.activeID,
+                    panelID: View.currentPage.content.gridwrapper.grid.getInsertLocation(this.options.prevPanel),
+                    panelOffset: offset,
+                    prevPanel: this.options.prevPanel,
+                    clipDir: clipDir,
+                    usePlaceholder: true
+                });
+            }
         }
     }
+
     contextStep() { // save old context here
-        var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
+        var grid:PanelGridView = View.getCurrentPage().content.gridwrapper.grid;
+        var panels:LinkedList<PanelView> =
+            View.getCurrentPage().content.gridwrapper.grid.listItems;
+        var panelv:LinkedList<boolean> =
+            View.getCurrentPage().content.gridwrapper.grid.value;
         this.leftPanel = panels.first();
-        this.nextPanel = panels.next[this.options.prevPanel];
+        this.nextPanel = panelv.next[this.options.prevPanel];
+        if (this.options.delete) { // panel deletion
+            if ((grid.value.last() === grid.listItems.last()&&(grid.value.first()===grid.listItems.first()))) {
+                this.clipDir = 'none';
+            } else {
+                if ((panels.first() !== grid.value.first()) && (panels.last() === grid.value.last())) {
+                    // if right is empty and left is not
+                    console.log("In panel deletion: setting clipDir=left because panels.first="+panels.first()+" and value.first="+grid.value.first());
+                    this.clipDir = 'left';
+                } else {
+                    this.clipDir = 'right';
+                }
+            }
+        } else { // panel insertion
+            if (grid.listItems.count < grid.numCols) {
+                this.clipDir = 'none';
+            } else {
+                if (this.options.prevPanel === panels.last()) {
+                    // don't clip the panel that was just added
+                    this.clipDir = 'left';
+                } else {
+                    this.clipDir = 'right';
+                }
+            }
+        }
+        console.log("contextStep, setting clipDir="+this.clipDir);
     }
 
     validateOldContext() {
         var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
-        var reverse:boolean = ((this.options.undo && !this.options.delete)||
+        var panelv:LinkedList<boolean> = View.currentPage.content.gridwrapper.grid.value;
+        var reverse:boolean = ((this.options.undo && !this.options.delete) ||
             (!this.options.undo && this.options.delete));
         if (!this.options.undo) {
             if (this.leftPanel !== panels.first()) {
@@ -63,11 +117,11 @@ class PanelCreateAction extends AnimatedAction {
                 debugger;
             }
             if (!this.options.delete) {
-                if (panels.next[this.options.prevPanel] !== this.nextPanel) {
+                if (panelv.next[this.options.prevPanel] !== this.nextPanel) {
                     console.log("ERROR: leftPanel is not before nextPanel before op");
                     debugger;
                 }
-                if (panels.next[this.newPanel] !== undefined) {
+                if (panelv.next[this.newPanel] !== undefined) {
                     console.log("ERROR: new panel is not undefined before op");
                     debugger;
                 }
@@ -82,8 +136,9 @@ class PanelCreateAction extends AnimatedAction {
 
     validateNewContext() {
         var panels:LinkedList<PanelView> = View.getCurrentPage().content.gridwrapper.grid.listItems;
+        var panelv:LinkedList<boolean> = View.currentPage.content.gridwrapper.grid.value;
         if (!this.postLeftPanel) {this.postLeftPanel = panels.first();}
-        var reverse:boolean = ((this.options.undo && !this.options.delete)||
+        var reverse:boolean = ((this.options.undo && !this.options.delete) ||
             (!this.options.undo && this.options.delete));
         if (this.options.undo) {
             if (this.leftPanel !== panels.first()) {
@@ -91,11 +146,11 @@ class PanelCreateAction extends AnimatedAction {
                 debugger;
             }
             if (!this.options.delete) {
-                if (panels.next[this.options.prevPanel] !== this.nextPanel) {
+                if (panelv.next[this.options.prevPanel] !== this.nextPanel) {
                     console.log("ERROR: leftPanel is not before nextPanel after undo");
                     debugger;
                 }
-                if (panels.next[this.newPanel] !== undefined) {
+                if (panelv.next[this.newPanel] !== undefined) {
                     console.log("ERROR: new panel is not undefined after undo");
                     debugger;
                 }
@@ -179,55 +234,93 @@ class PanelCreateAction extends AnimatedAction {
      */
     execUniqueView() {
         var that = this;
-        this.addQueue(['uniqueView'], [['anim']], function() {
+        this.addQueue(['uniqueView'], [
+            ['anim']
+        ], function() {
             var grid:PanelGridView = View.getCurrentPage().content.gridwrapper.grid;
             var o:ActionOptions = that.options;
             var dir;
-            var reverse:boolean = ((o.undo && !o.delete)||
+            var clipDir = that.clipDir;
+            if ((clipDir==='right')&&(that.emptySlot)) {clipDir='none';}
+            if ((clipDir==='none')&&(!that.emptySlot)) {clipDir='right';}
+            console.log("In execUniqueView, using original clipDir="+that.clipDir+", emptySlot="+that.emptySlot);
+            console.log("Setting temporary clipDir = "+clipDir);
+
+            var reverse:boolean = ((o.undo && !o.delete) ||
                 (!o.undo && o.delete));
             if (reverse) {
-                grid.slideFill('left'); // appends incoming panel from the right
-                // give insertion location to dropSource for animation
-                if (that.dropSource) {
-                    var nextLeft:number=null;
-                    var nextView = <PanelView>View.get(View.currentPage.content.gridwrapper.grid.listItems.next[that.newPanel]);
-                    if (nextView!=null) {
-                        nextLeft = nextView.layout.left;
+                if (View.get(that.newPanel) == null) { // delete panel off-screen
+                    grid.value.remove(that.newPanel);
+                    if (clipDir==='left') { // todo: we need to slide screen to fill-left and clip-right
+                        console.log("Showing prevleft and clipping right for invisible change");
+                        grid.showPrevLeft();
+                        grid.clipPanel('right');
                     }
-                    (<PanelDropSource>that.dropSource).nextView = nextView;
-                    (<PanelDropSource>that.dropSource).nextLeft = nextLeft;
+                } else {
+                    grid.fillPanel(clipDir, true); // shows next panel to the right if there is one, else shows next from left
+                    // TODO: if you must fill on left, then everything is offset to the right now.
+                    if ((!that.options.undo)&&(!that.options.redo)&&(clipDir==='left')) {
+                        // we need to fix prevPanel based on the one we just slid in.
+                        that.options.prevPanel = grid.value.prev[that.newPanel];
+                    }
+                    // give insertion location to dropSource for animation
+                    if (that.dropSource) {
+                        var nextLeft:number = null;
+                        var nextView = <PanelView>View.get(View.currentPage.content.gridwrapper.grid.listItems.next[that.newPanel]);
+                        if (nextView != null) {
+                            nextLeft = nextView.layout.left;
+                        }
+                        (<PanelDropSource>that.dropSource).nextView = nextView;
+                        (<PanelDropSource>that.dropSource).nextLeft = nextLeft;
+                    }
+                    View.get(that.newPanel).destroy(); // removes panel, without changing positions
+                    grid.value.remove(that.newPanel);
+                    if ((clipDir === 'none') && (grid.listItems.next[that.options.prevPanel] === '')) {
+                        grid.clipPanel('none');
+                    }
                 }
-                dir = View.get(that.newPanel).destroy(); // removes panel, without changing positions
-                grid.value.remove(that.newPanel);
                 grid.updatePanelButtons();
             } else {
-                if (!that.newPanel) { // if id isn't chosen yet
-                    that.newPanel = View.getNextId();
-                }
-                var parentPanel:PanelView = null;
-                if (o.isSubpanel) {
-                    parentPanel = <PanelView>View.get(o.prevPanel);
-                    console.log("Setting parentPanel: "+parentPanel.id)
-                }
-                new PanelView({
+                if (((that.options.prevPanel !== '') && (View.get(that.options.prevPanel) == null)) ||
+                    ((grid.listItems.next[that.options.prevPanel] === '') && (grid.listItems.count >= grid.numCols) &&
+                        (that.clipDir !== 'left'))) {
+                    // create panel off-screen
+                    console.log("Creating panel off-screen");
+                    grid.value.insertAfter(that.newPanel, true, that.options.prevPanel);
+                    if (clipDir==='left') {
+                        console.log("Showing nextRight and clipping left for invisible change");
+                        grid.showNextRight();
+                        grid.clipPanel('left');
+                    }
+                } else {
+                    if (!that.newPanel) { // if id isn't chosen yet
+                        that.newPanel = View.getNextId();
+                    }
+                    var parentPanel:PanelView = null;
+                    if (o.isSubpanel) {
+                        parentPanel = <PanelView>View.get(o.prevPanel);
+                        // console.log("Setting parentPanel: "+parentPanel.id)
+                    }
+                    new PanelView({
                         id: that.newPanel, // possibly a resurrected id
                         parentView: View.currentPage.content.gridwrapper.grid,
                         parentPanel: parentPanel,
                         value: OutlineNodeModel.getById(that.options.activeID)
-                });
-
-                // eliminate drag-handle class left over from DragHandler
-                if (that.options.oldRoot) {
-                    var node = that.getNodeView(that.options.activeID, that.options.oldRoot);
-                    if (node) {
-                        node.removeClass('drag-hidden');
+                    });
+                    // eliminate drag-handle class left over from DragHandler
+                    if (that.options.oldRoot) {
+                        var node = that.getNodeView(that.options.activeID, that.options.oldRoot);
+                        if (node) {
+                            node.removeClass('drag-hidden');
+                        }
                     }
+                    // if the inserted node is right after the previous panel
+                    // View.get(that.newPanel).removeClass('drag-hidden');
+                    console.log("Inserting "+that.newPanel+" after previous panel "+that.options.prevPanel);
+                    dir = grid.insertAfter(<PanelView>View.get(that.options.prevPanel), <PanelView>View.get(that.newPanel), 0);
+                    console.log("Post-insertion clip = "+clipDir);
+                    grid.clipPanel(clipDir); // remove extra panels
                 }
-                // if the inserted node is right after the previous panel
-
-                // View.get(that.newPanel).removeClass('drag-hidden');
-                dir = grid.insertAfter(<PanelView>View.get(that.options.prevPanel), <PanelView>View.get(that.newPanel),0);
-                grid.clip(dir); // remove extra panels
                 grid.updatePanelButtons();
                 // we only wanted newPanel for the PanelManager id, not the ViewManager.
             }

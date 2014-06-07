@@ -26,10 +26,10 @@ class NodeTextWrapperView extends View {
         this.layout.left = w;
         this.layout.width = this.parentView.layout.width-w;
     }
-    positionChildren(v:View) {
+    positionChildren(v:View, v2?:string, validate?:boolean) {
         var l:Layout = this.text.saveLayout();
         this.text.fixHeight();
-        this.text.updateDiffs(l);
+        this.text.updateDiffs(l, validate);
     }
     layoutUp() {
         this.layout.height = this.text.layout.height;

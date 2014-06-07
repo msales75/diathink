@@ -44,6 +44,9 @@ $(function () {
 
     var androidKeypress = function (view, oldVal, newVal) {
         var sel = view.getSelection();
+        if (view.nodeView.readOnly) {
+            return;
+        }
         if (newVal.substr(0, 1) !== ' ') {
             newVal = ' ' + newVal;
             view.elem.value = newVal;
@@ -55,7 +58,7 @@ $(function () {
                     ActionManager.schedule(function () {
                         if (View.focusedView) {
                             // TESTED on android, seems ok
-                            console.log('androidKeypress 1 backspace ');
+                            // console.log('androidKeypress 1 backspace ');
                             $D.handleLineBackspace(View.focusedView.header.name.text, true);
                         } else {
                             console.log('androidKeypress 2 backspace delayed keypress with nothing focused');
@@ -72,7 +75,7 @@ $(function () {
                                 console.log('androidKeypress 4, backspace text change being processed');
                             } else {
                                 // TESTED ON ANDROID
-                                console.log('androidKeypress 5, backspace no text change found');
+                                // console.log('androidKeypress 5, backspace no text change found');
                             }
                             return Action.checkTextChange(View.focusedView.header.name.text.id);
                         });
@@ -124,7 +127,7 @@ $(function () {
                 var collection = liView.parentView.value;
 
                 // validate rank >0
-                if (collection.prev[liView.value.cid] !== '') {
+                if ((collection.prev[liView.value.cid] !== '') && (OutlineNodeModel.getById(collection.prev[liView.value.cid]).attributes.owner === $D.userID)) {
                     // make it the last child of its previous sibling
                     view.elem.value = ' ' + view.value; // revert text before indenting
                     scheduleKey(false, '', function () {
@@ -156,9 +159,13 @@ $(function () {
             if ((mesg !== '') && (mesg !== '\n')) {
                 ActionManager.schedule(function () {
                     if (View.focusedView) {
+                        if (View.focusedView.readOnly) {
+                            return null;
+                        }
                         var nview = View.focusedView.header.name.text;
                         var sel = nview.getSelection();
                         if ((mesg === ' ') && (sel[0] === 1)) {
+                            // todo: there is no test for indent here!!
                             var liView = View.focusedView;
                             var collection = liView.parentView.value;
                             if (View.focusedView.value.get('text') !== View.focusedView.header.name.text.value) {

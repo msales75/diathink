@@ -26,30 +26,35 @@ class PanelRootAction extends AnimatedAction {
             this.disableAnimation = true;
         } else {
             if (this.options.undo) {
-                this.dropSource = new PanelDropSource({
-                    activeID: this.oldRootModel.cid,
-                    panelID: View.get(this.options.newRoot).panelView.id
-                });
-                this.dropTarget = new NodeDropTarget({
-                    activeID:this.options.activeID,
-                    outlineID: this.options.newRoot
-                });
+                if (View.get(this.options.newRoot)) {
+                    this.dropSource = new PanelDropSource({
+                        activeID: this.oldRootModel.cid,
+                        // useFade: true, // todo: need to fix this so it doesn't permanently disappear
+                        panelID: View.get(this.options.newRoot).panelView.id
+                    });
+                    this.dropTarget = new NodeDropTarget({
+                        activeID:this.options.activeID,
+                        outlineID: this.options.newRoot
+                    });
+                }
             } else {
                 assert(this.options.dockView==null,
                     "How did we get dockElem in PanelRoot?");
-                this.dropSource = new NodeDropSource({
-                    activeID: this.options.activeID,
-                    outlineID: this.options.oldRoot,
-                    dockView:this.options.dockView,
-                    useDock:true,
-                    dockTextOnly:true,
-                    usePlaceholder:false
-                });
-                this.dropTarget = new PanelDropTarget({
-                    panelID: View.get(this.options.oldRoot).panelView.id,
-                    activeID:this.options.activeID,
-                    useFadeOut: true
-                });
+                if (View.get(this.options.oldRoot)) {
+                    this.dropSource = new NodeDropSource({
+                        activeID: this.options.activeID,
+                        outlineID: this.options.oldRoot,
+                        dockView:this.options.dockView,
+                        useDock:true,
+                        dockTextOnly:true,
+                        usePlaceholder:false
+                    });
+                    this.dropTarget = new PanelDropTarget({
+                        panelID: View.get(this.options.oldRoot).panelView.id,
+                        activeID:this.options.activeID,
+                        useFadeOut: true
+                    });
+                }
             }
         }
     }
@@ -82,7 +87,35 @@ class PanelRootAction extends AnimatedAction {
                 }
     }
     execModel() {
-        this.addQueue(['newModelAdd'], [['context']], function() {});
+        var that = this;
+        this.addQueue(['newModelAdd'], [['context']], function() {
+            // handle case when panel is not visible to user, update DeadPanel.value and .outlineID
+            if (that.options.undo) {
+                if (!OutlineRootView.outlinesById[that.options.newRoot]) {
+                    assert(DeadView.viewList[that.options.newRoot]!=null, "Outline missing dead or alive");
+                    var newOutlineID = DeadView.viewList[that.options.newRoot].parent;
+                    var oldOutlineID = DeadView.viewList[that.options.oldRoot].parent;
+                    assert(newOutlineID===oldOutlineID, "In changeroot, new and old outlines don't share same panel");
+                    var deadoutline:DeadOutlineScroll = <DeadOutlineScroll>DeadView.viewList[newOutlineID];
+                    var deadpanel:DeadPanel = <DeadPanel>DeadView.viewList[deadoutline.parent];
+                    assert(deadpanel instanceof DeadPanel, "DeadPanel not found");
+                    deadpanel.value = that.oldRootModel;
+                    deadoutline.rootID = that.options.oldRoot;
+                }
+            } else {
+                if (!OutlineRootView.outlinesById[that.options.oldRoot]) {
+                    assert(DeadView.viewList[that.options.oldRoot]!=null, "Outline missing dead or alive");
+                    var newOutlineID = DeadView.viewList[that.options.newRoot].parent;
+                    var oldOutlineID = DeadView.viewList[that.options.oldRoot].parent;
+                    assert(newOutlineID===oldOutlineID, "In changeroot, new and old outlines don't share same panel");
+                    var deadoutline:DeadOutlineScroll = <DeadOutlineScroll>DeadView.viewList[newOutlineID];
+                    var deadpanel:DeadPanel = <DeadPanel>DeadView.viewList[deadoutline.parent];
+                    assert(deadpanel instanceof DeadPanel, "DeadPanel not found");
+                    deadpanel.value = OutlineNodeModel.getById(that.options.activeID);
+                    deadoutline.rootID = that.options.newRoot;
+                }
+            }
+        });
     }
     execView(outline) {
         var that:PanelRootAction = this;

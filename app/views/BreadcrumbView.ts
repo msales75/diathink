@@ -42,7 +42,7 @@ class BreadcrumbView extends View {
         this.setPosition();
         return this.elem;
     }
-    fixHeight() {
+    fixHeight(validate?:boolean) {
         var currentWidth = this.layout.width; // elem.clientWidth;
         var currentFont = View.fontSize; // $(elem).css('font-size');
         var hiddendiv = (<DiathinkView>(View.currentPage)).hiddendiv.elem;
@@ -57,6 +57,9 @@ class BreadcrumbView extends View {
         var nlines = Math.round(($(hiddendiv).children('.panel-name').next().position().top / lineHeight) - 0.4) + 1;
         var height = nlines * lineHeight;
         // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
+        if (validate) {
+            assert(this.layout.height===height+Math.round(0.3*View.fontSize), "Breadcrumbs have invalid height");
+        }
         this.layout.height = height+Math.round(0.3*View.fontSize); // padding below breadcrumbs
     }
 
@@ -78,8 +81,8 @@ class BreadcrumbView extends View {
         }
         */
     }
-    positionChildren(v:View) {
-        this.fixHeight();
+    positionChildren(v:View, v2?:string, validate?:boolean) {
+        this.fixHeight(validate);
     }
 
     renderUpdate() {

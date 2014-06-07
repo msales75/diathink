@@ -89,9 +89,9 @@ var OutlineRootView = (function (_super) {
 
     OutlineRootView.prototype.getData = function (key) {
         if (!this.data) {
-            return false;
+            return null;
         } else if (this.data[key] == null) {
-            return false;
+            return null;
         } else {
             return this.data[key];
         }

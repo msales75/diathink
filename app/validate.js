@@ -57,6 +57,12 @@ function validate() {
     }
     assert(_.size(ActionManager.queue) === 0, "ActionManager.queue is not empty");
 
+    if (View.focusedView != null) {
+        assert(View.focusedView instanceof NodeView, "focusedView is not a nodeView");
+        assert(View.viewList[View.focusedView.id] instanceof NodeView, "focusedView is not in viewList");
+        assert(View.focusedView.elem != null, "focusedView has null elem");
+    }
+
     /*
     for (n = 1; n <= npanels; ++n) {
     assert($('#' + grid.id).children().get(n - 1),
@@ -182,6 +188,8 @@ function validate() {
             }
         });
     });
+
+    View.currentPage.resize(true); // resize-validation check
 
     // undo-buttons should be up to date
     function footprint(elem) {

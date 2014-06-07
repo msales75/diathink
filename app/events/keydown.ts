@@ -23,7 +23,8 @@ $D.handleLineBackspace = function(view:TextAreaView, subschedule:boolean) {
     var collection = liView.parentView.value;
     // if it is the last item in its collection
     if ((liView.parentView.nodeView instanceof NodeView) &&
-        (collection.next[liView.value.cid] === '')) {
+        (collection.next[liView.value.cid] === '') &&
+        (liView.parentView.nodeView.value.attributes.parent.attributes.owner===$D.userID)) {
         if (subschedule) {
             assert(view === View.focusedView.header.name.text, "");
             if (View.focusedView.value.get('text') !== View.focusedView.header.name.text.value) {
@@ -178,6 +179,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
     var id = view.id;
     var liView, collection, sel, pos:number, newNode:NodeView;
     liView = view.nodeView;
+    if (liView.readOnly) {return;}
     sel = view.getSelection();
     if ($D.is_android) {
         if (sel[0]>0) {sel[0] = sel[0]-1;}
@@ -186,7 +188,8 @@ $D.handleKeydown = function(view:TextAreaView, e) {
     if (e.which === 9) { // tab
         collection = liView.parentView.value;
         // validate not first in list
-        if (collection.prev[liView.value.cid] !== '') { // indent the line
+        if ((collection.prev[liView.value.cid] !== '')&&
+            (OutlineNodeModel.getById(collection.prev[liView.value.cid]).attributes.owner===$D.userID)) { // indent the line
             // make it the last child of its previous sibling
             scheduleKey(e.simulated, id, function():SubAction {
                 return {
@@ -212,25 +215,40 @@ $D.handleKeydown = function(view:TextAreaView, e) {
             e.preventDefault();
         }
     } else if (e.which === 13) { // enter
-        // todo: split line if in middle of text
-        scheduleKey(e.simulated, id, function():SubAction {
-            return {
-                actionType: InsertAfterAction,
-                anim: 'create',
-                name: 'Keyboard newline',
-                referenceID: liView.value.cid,
-                oldRoot: liView.nodeRootView.id,
-                newRoot: liView.nodeRootView.id,
-                focus: true,
-                cursor: sel
-            };
-        });
+        // if we own the parent
+        if (liView.value.attributes.parent.attributes.owner===$D.userID) {
+            scheduleKey(e.simulated, id, function():SubAction {
+                return {
+                    actionType: InsertAfterAction,
+                    anim: 'create',
+                    name: 'Keyboard newline',
+                    referenceID: liView.value.cid,
+                    oldRoot: liView.nodeRootView.id,
+                    newRoot: liView.nodeRootView.id,
+                    focus: true,
+                    cursor: sel
+                };
+            });
+        } else if (liView.isCollapsed===false) {
+            scheduleKey(e.simulated, id, function():SubAction {
+                return {
+                    actionType: InsertIntoAction,
+                    anim: 'create',
+                    name: 'Keyboard newline indent',
+                    referenceID: liView.value.cid,
+                    oldRoot: liView.nodeRootView.id,
+                    newRoot: liView.nodeRootView.id,
+                    focus: true,
+                    cursor: sel
+                };
+            });
+        }
         e.preventDefault();
         // var scrollid = $('#'+id).closest('.ui-scrollview-clip').attr('id');
         // View.get(scrollid).themeUpdate();
     } else if (e.which === 38) { // up arrow
         newNode = view.nodeView.prevVisibleNode();
-        if (newNode) {
+        if (newNode && (!newNode.readOnly)) {
             pos = View.focusedView.header.name.text.getSelection()[0];
             if ($D.is_android && (pos===0)) {pos=1;}
             View.setFocus(newNode);
@@ -245,7 +263,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
         e.preventDefault();
     } else if (e.which === 40) { // down arrow
         newNode = view.nodeView.nextVisibleNode();
-        if (newNode) {
+        if (newNode && (!newNode.readOnly)) {
             pos = View.focusedView.header.name.text.getSelection()[0];
             if ($D.is_android && (pos===0)) {pos=1;}
             View.setFocus(newNode);
@@ -263,7 +281,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
         if ($D.is_android && (pos>0)) {--pos;}
         if (pos===0) { // go to previous line
             newNode = view.nodeView.prevVisibleNode();
-            if (newNode) {
+            if (newNode && (!newNode.readOnly)) {
                 var pos = newNode.header.name.text.value.length;
                 if ($D.is_android) {++pos;}
                 View.setFocus(newNode);
@@ -277,7 +295,7 @@ $D.handleKeydown = function(view:TextAreaView, e) {
         if ($D.is_android && (pos>0)) {--pos;}
         if (pos===view.value.length) { // go to next line
             newNode = view.nodeView.nextVisibleNode();
-            if (newNode) {
+            if (newNode && (!newNode.readOnly)) {
                 var pos = 0;
                 if ($D.is_android) {++pos;}
                 View.setFocus(newNode);

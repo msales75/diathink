@@ -214,7 +214,9 @@ class NodeDropSource extends DropSource {
 
     createTextFromNode(node:NodeView) {
         var elem:HTMLElement = node.header.name.text.elem;
-        var offset = node.header.name.text.getOffset();
+        node.layout.top = node.elem.offsetTop;
+        node.layout.left = node.elem.offsetLeft;
+        var offset:{top?:number;left?:number} = node.header.name.text.getOffset();
         var paddingLeft = Number($(elem).css('padding-left').replace('px', ''));
         var paddingRight = Number($(elem).css('padding-right').replace('px', ''));
         var paddingTop = Number($(elem).css('padding-top').replace('px', ''));
@@ -226,9 +228,11 @@ class NodeDropSource extends DropSource {
         this.dockView = new ContainerView({parentView: View.currentPage.drawlayer});
         this.dockView.render();
         this.dockView.elem.innerHTML = node.header.name.text.elem.innerHTML;
+        //console.log("In createTextFromNode using offset.top="+offset.top+" and paddingTop="+paddingTop);
+        //console.log("In createTextFromNode using offset.left="+offset.left+" and paddingTop="+paddingLeft);
         $(this.dockView.elem).css({
             position: 'absolute',
-            'z-index': 2,
+            'z-index': 3,
             top: (offset.top + paddingTop) + 'px',
             left: (offset.left + paddingLeft) + 'px',
             width: width + 'px',
@@ -272,7 +276,7 @@ class NodeDropSource extends DropSource {
             this.dockView.renderAt({parent: View.currentPage.drawlayer.elem});
             this.dockView.themeFirst(true);
             this.dockView.themeLast(true);
-            var offset = activeLineView.getOffset();
+            var offset:{top?:number;left?:number} = activeLineView.getOffset();
             $(this.dockView.elem).css({
                 position: 'absolute',
                 left: (offset.left) + 'px',

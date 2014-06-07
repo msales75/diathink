@@ -74,6 +74,16 @@ var OutlineScrollView = (function (_super) {
         this.layout.height = p.height - this.parentView.breadcrumbs.layout.height;
         // todo: inner-scroll height needs to be reset in layoutUp
     };
+    OutlineScrollView.prototype.positionChildren = function (v, v2, validate) {
+        // whenever scroll-height changes, need to adjust canvas size
+        if (validate) {
+            assert(this.droplayer.layout.height === this.alist.layout.height, "Droplayer has invalid height");
+        }
+
+        // console.log("Setting droplayer height here to "+this.alist.layout.height);
+        this.droplayer.layout.height = this.alist.layout.height;
+        this.droplayer.elem.style.height = this.droplayer.layout.height + 'px';
+    };
 
     OutlineScrollView.prototype.validate = function () {
         _super.prototype.validate.call(this);

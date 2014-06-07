@@ -50,7 +50,7 @@ var BreadcrumbView = (function (_super) {
         this.setPosition();
         return this.elem;
     };
-    BreadcrumbView.prototype.fixHeight = function () {
+    BreadcrumbView.prototype.fixHeight = function (validate) {
         var currentWidth = this.layout.width;
         var currentFont = View.fontSize;
         var hiddendiv = (View.currentPage).hiddendiv.elem;
@@ -68,6 +68,9 @@ var BreadcrumbView = (function (_super) {
         var height = nlines * lineHeight;
 
         // console.log("Got nlines = "+nlines+'; height = '+height+'; paddingY = '+paddingY);
+        if (validate) {
+            assert(this.layout.height === height + Math.round(0.3 * View.fontSize), "Breadcrumbs have invalid height");
+        }
         this.layout.height = height + Math.round(0.3 * View.fontSize); // padding below breadcrumbs
     };
 
@@ -91,8 +94,8 @@ var BreadcrumbView = (function (_super) {
         }
         */
     };
-    BreadcrumbView.prototype.positionChildren = function (v) {
-        this.fixHeight();
+    BreadcrumbView.prototype.positionChildren = function (v, v2, validate) {
+        this.fixHeight(validate);
     };
 
     BreadcrumbView.prototype.renderUpdate = function () {

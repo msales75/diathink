@@ -216,6 +216,8 @@ var NodeDropSource = (function (_super) {
 
     NodeDropSource.prototype.createTextFromNode = function (node) {
         var elem = node.header.name.text.elem;
+        node.layout.top = node.elem.offsetTop;
+        node.layout.left = node.elem.offsetLeft;
         var offset = node.header.name.text.getOffset();
         var paddingLeft = Number($(elem).css('padding-left').replace('px', ''));
         var paddingRight = Number($(elem).css('padding-right').replace('px', ''));
@@ -228,9 +230,12 @@ var NodeDropSource = (function (_super) {
         this.dockView = new ContainerView({ parentView: View.currentPage.drawlayer });
         this.dockView.render();
         this.dockView.elem.innerHTML = node.header.name.text.elem.innerHTML;
+
+        //console.log("In createTextFromNode using offset.top="+offset.top+" and paddingTop="+paddingTop);
+        //console.log("In createTextFromNode using offset.left="+offset.left+" and paddingTop="+paddingLeft);
         $(this.dockView.elem).css({
             position: 'absolute',
-            'z-index': 2,
+            'z-index': 3,
             top: (offset.top + paddingTop) + 'px',
             left: (offset.left + paddingLeft) + 'px',
             width: width + 'px',

@@ -8,12 +8,14 @@ class HeaderToolbarView extends ToolbarView {
     title:HeaderTitleView;
     message:HeaderMessageView;
     undobuttons:UndoButtonContainerView;
+    logo:LogoImageView;
 
     init() {
         this.childViewTypes = {
             title: HeaderTitleView,
             undobuttons: UndoButtonContainerView,
-            message: HeaderMessageView
+            message: HeaderMessageView,
+            logo:LogoImageView
         };
     }
     layoutDown() {

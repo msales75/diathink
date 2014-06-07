@@ -54,7 +54,7 @@ class DropTarget {
         };
         var o = this.animOptions;
         if ((this.outlineID===this.oldOutlineID)&&(left > startX)) {
-            css.width = String(o.startWidth - (Number(left) - startX)) + 'px';
+            // css.width = String(o.startWidth - (Number(left) - startX)) + 'px';
         }
         if (o.startColor && o.endColor) {
             var color = [Math.round((1 - frac) * o.startColor[0] + frac * o.endColor[0]),

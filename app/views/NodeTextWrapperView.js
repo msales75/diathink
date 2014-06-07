@@ -32,10 +32,10 @@ var NodeTextWrapperView = (function (_super) {
         this.layout.left = w;
         this.layout.width = this.parentView.layout.width - w;
     };
-    NodeTextWrapperView.prototype.positionChildren = function (v) {
+    NodeTextWrapperView.prototype.positionChildren = function (v, v2, validate) {
         var l = this.text.saveLayout();
         this.text.fixHeight();
-        this.text.updateDiffs(l);
+        this.text.updateDiffs(l, validate);
     };
     NodeTextWrapperView.prototype.layoutUp = function () {
         this.layout.height = this.text.layout.height;

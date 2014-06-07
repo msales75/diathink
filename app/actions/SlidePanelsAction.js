@@ -12,6 +12,7 @@ var SlidePanelsAction = (function (_super) {
         _super.apply(this, arguments);
         this.type = 'PanelSlide';
         this.oldLeftPanel = null;
+        this.newLeftPanel = null;
         this.usePostAnim = true;
     }
     // options:ActionOptions= {direction:null};
@@ -23,9 +24,22 @@ var SlidePanelsAction = (function (_super) {
         }
         if (o.redo) {
             if (this.oldLeftPanel !== panels.first()) {
-                console.log("leftPanel doesn't match");
+                console.log("leftPanel isi wrong before redo slide");
                 debugger;
             }
+        } else if (o.undo) {
+            assert(this.newLeftPanel === panels.first(), "Left panel is wrong before undo slide");
+        }
+    };
+    SlidePanelsAction.prototype.validateNewContext = function () {
+        var o = this.options;
+        var panels = View.currentPage.content.gridwrapper.grid.listItems;
+        if (!o.redo && !o.undo) {
+            this.newLeftPanel = panels.first();
+        } else if (o.undo) {
+            assert(panels.first() === this.oldLeftPanel, "In Slide, leftpanel wrong after undo");
+        } else if (o.redo) {
+            assert(panels.first() === this.newLeftPanel, "In Slide, leftpanel wrong after undo");
         }
     };
 
@@ -54,11 +68,13 @@ var SlidePanelsAction = (function (_super) {
         ], function () {
             var grid = View.getCurrentPage().content.gridwrapper.grid;
             that.startLeft = grid.layout.left;
-            console.log("Starting slide animation with startLeft = " + that.startLeft);
+
+            // console.log("Starting slide animation with startLeft = "+that.startLeft);
+            grid.layout.width = grid.itemWidth * (grid.numCols + 1) + 2;
             if (that.getDirection() === 'right') {
-                grid.layout.width = grid.itemWidth * (grid.numCols + 1);
                 grid.layout.left = that.startLeft - grid.itemWidth; // OK
-                console.log("Anim-right setup modifies left = " + grid.layout.left);
+
+                // console.log("Anim-right setup modifies left = "+grid.layout.left);
                 grid.setPosition();
                 var firstPanel = View.get(grid.listItems.first());
                 firstPanel.layout.left = grid.itemWidth;
@@ -68,7 +84,6 @@ var SlidePanelsAction = (function (_super) {
                 // protect right panel from deletion
                 grid.listItems.obj[grid.listItems.last()].animating = true;
             } else {
-                grid.layout.width = grid.itemWidth * (grid.numCols + 1);
                 grid.setPosition();
                 grid.listItems.obj[grid.listItems.first()].animating = true;
             }
@@ -98,9 +113,11 @@ var SlidePanelsAction = (function (_super) {
                 }
             }
             if (dir === 'right') {
-                grid.slideRight(); // adds panel to left
+                console.log("In SlidePanels showing PrevLeft panel");
+                grid.showPrevLeft(); // adds panel to left
             } else if (dir === 'left') {
-                grid.slideLeft();
+                console.log("In SlidePanels showing NextRight panel");
+                grid.showNextRight();
             }
         });
     };
@@ -110,25 +127,32 @@ var SlidePanelsAction = (function (_super) {
         if (this.getDirection() === 'right') {
             var w = grid.itemWidth - this.startLeft - Math.round(frac * (grid.itemWidth - this.startLeft));
             grid.layout.left = -w;
-            console.log("Anim-right step setting left to " + grid.layout.left);
+
+            // console.log("Anim-right step setting left to "+grid.layout.left);
             $(grid.elem).css({
                 left: '-' + String(w) + 'px'
             });
             if (frac === 1) {
                 assert(grid.listItems.obj[grid.listItems.last()].animating, "");
-                grid.clip('right');
+                if (grid.listItems.count > grid.numCols) {
+                    console.log("In SlidePanels, clipping rightmost panel");
+                    grid.clipPanel('right');
+                } else {
+                }
                 grid.updatePanelButtons();
             }
         } else {
             var w = -this.startLeft + Math.round(frac * (grid.itemWidth + this.startLeft));
             grid.layout.left = -w;
-            console.log("Anim-left step setting left to " + grid.layout.left);
+
+            // console.log("Anim-left step setting left to "+grid.layout.left);
             $(grid.elem).css({
                 left: '-' + String(w) + 'px'
             });
             if (frac === 1) {
                 assert(grid.listItems.obj[grid.listItems.first()].animating, "");
-                grid.clip('left');
+                console.log("In SlidePanels, clipping leftmost panel");
+                grid.clipPanel('left');
                 grid.updatePanelButtons();
             }
         }

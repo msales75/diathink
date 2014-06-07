@@ -89,7 +89,7 @@ var ActionManager = (function () {
                 this.queueComplete(f, null);
                 if (this.queue.length === 0) {
                     // console.log("Validating after null action");
-                    // validate();
+                    validate();
                 }
                 return;
             }

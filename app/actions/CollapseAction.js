@@ -76,6 +76,9 @@ var CollapseAction = (function (_super) {
             } else {
                 if (!that.options.redo) {
                     that.oldViewCollapsed[outline.id] = outline.getData(that.options.activeID);
+                    if (that.oldViewCollapsed[outline.id] == null) {
+                        that.oldViewCollapsed[outline.id] = OutlineNodeModel.getById(that.options.activeID).attributes.collapsed;
+                    }
                 }
                 if ((that.options.oldRoot === outline.nodeRootView.id) || (that.options.oldRoot === 'all')) {
                     collapsed = that.options.collapsed;

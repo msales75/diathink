@@ -22,7 +22,7 @@ var ListView = (function (_super) {
         this.setPosition();
         return this.elem;
     };
-    ListView.prototype.positionChildren = function (v, v2) {
+    ListView.prototype.positionChildren = function (v, v2, validate) {
         var c = this.listItems.first();
         var end;
         var h = 0;
@@ -49,6 +49,9 @@ var ListView = (function (_super) {
             }
             var oldTop = child.layout.top;
             if (oldTop !== h) {
+                if (validate) {
+                    assert(false, "List item has wrong top");
+                }
                 child.layout.top = h;
                 if (child.elem) {
                     $(child.elem).css('top', h + 'px');

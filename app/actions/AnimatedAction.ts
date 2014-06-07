@@ -37,7 +37,7 @@ class AnimatedAction extends Action {
         var self:AnimatedAction = this;
         if (!n) {n=1;}
         var frac = ((new Date()).getTime() - start) / duration;
-        if (frac > n/3) {frac = n/3;}
+        if (frac > n/6) {frac = n/6;}
         if (frac >= 1) {
             frac = 1;
         }
@@ -113,7 +113,7 @@ class AnimatedAction extends Action {
 
         this.addAsync('anim', [['setupPlaceholderAnim'],['setupDockAnim']], function() {
             if (that.useAnim) {
-                var time = 100;
+                var time = 150; // was 1000
                 if (that.options.speed) {time = that.options.speed;}
                 var start = (new Date()).getTime();
                 setTimeout(function() {
@@ -146,7 +146,7 @@ class AnimatedAction extends Action {
         this.addAsync(['anim2'],  _.extend(['anim'],views), function() {
             if (that.usePostAnim) {
                 that.anim2setup();
-                var time = 100;
+                var time = 150; // was 100
                 if (that.options.speed) {time = that.options.speed;}
                 var start = (new Date()).getTime();
                 setTimeout(function() {

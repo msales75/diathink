@@ -346,39 +346,52 @@ var ScrollHandler = (function () {
         if (this._maxY > 0)
             this._maxY = 0;
         var dy = ey - this._lastY;
+        var dt = getCurrentTime() - this._lastMove;
         var sy = 0;
         var frac = ey / cheight;
         this._doSnapBackY = false;
-        if (frac < 0.25) {
+
+        // console.log("Examining motion with dy = "+dy+", frac = "+frac+", dt = "+dt);
+        var stop = true;
+        if (frac < 0.12) {
             if (this._sy >= 0) {
                 // follow mouse/2 pattern
                 this._doSnapBackY = true;
                 $D.log(['scroll', 'debug'], "Doing snapback over top frac=" + frac + "; sy=" + this._sy + "; ey=" + ey);
             } else if (dy <= 0) {
-                sy = 10;
-                $D.log(['scroll', 'debug'], "Scrolling up with frac=" + frac + "; velocity 10" + "; ey=" + ey);
+                stop = false;
+                sy = -30 * dy / dt;
+                if (sy > 20) {
+                    sy = 20;
+                }
+                $D.log(['scroll', 'debug'], "Scrolling up with frac=" + frac + "; dy = " + dy + "; dt = " + dt);
             }
-        } else if (frac > 0.75) {
+        } else if (frac > 0.88) {
             if (this._sy <= this._maxY) {
                 // follow mouse-2 pattern
                 this._doSnapBackY = true;
                 $D.log(['scroll', 'debug'], "Doing snapback with frac=" + frac + "; sy=" + this._sy + "; ey=" + ey);
             } else if (dy >= 0) {
-                sy = -10;
-                $D.log(['scroll', 'debug'], "Scrolling down with frac=" + frac + "; velocity -10" + "; ey=" + ey);
+                stop = false;
+                sy = -30 * dy / dt;
+                if (sy < -20) {
+                    sy = -20;
+                }
+                $D.log(['scroll', 'debug'], "Scrolling down with frac=" + frac + "; dy = " + dy + "; dt = " + dt);
             }
         } else {
             $D.log(['scroll', 'debug'], "No scroll with frac=" + frac + "; ey=" + ey);
         }
-        if (sy) {
-            $D.log(['scroll', 'debug'], "Momemtum scroll set to " + sy + "; ey=" + ey);
+        this._stopMScroll();
+        if (!stop) {
+            $D.log(['scroll', 'debug'], "Momemtum scroll set to sy= " + sy + "; ey=" + ey);
             this._startMScroll(0, sy);
             this._didDrag = true;
-            this._lastMove = getCurrentTime();
         } else {
             $D.log(['scroll', 'debug'], "Hiding scrollbars with sy=0; ey=" + ey);
             this._hideScrollBars();
         }
+        this._lastMove = getCurrentTime();
         this._lastY = ey;
         return false;
     };

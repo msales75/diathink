@@ -10,10 +10,22 @@ class PModel {
 
 interface NodeOutlineJson {
     cid?: string;
+    owner?:string;
     text: string;
     children?: NodeOutlineJson[];
-    links?: string[]
+    links?: string[];
+    collapsed?: boolean;
+    deleted?:boolean;
 }
+function repossess(json:NodeOutlineJson) {
+    if (json.cid) {delete json['cid'];}
+    json.owner = $D.userID;
+    var i:number;
+    for (i=0; i<json.children.length; ++i) {
+        repossess(json.children[i]);
+    }
+}
+
 class Collection {
     length:number = 0;
     model:any;
@@ -61,6 +73,7 @@ interface ModelOptions {
     cid?: string;
     text?: string;
     children?: OutlineNodeCollection;
+    owner?:string;
 }
 class OutlineNodeModel extends PModel {
     static root:OutlineNodeModel;
@@ -78,6 +91,7 @@ class OutlineNodeModel extends PModel {
         backLinks?: OutlineNodeCollection;
         collapsed?:boolean;
         deleted?:boolean;
+        owner?:string;
     } = {};
     views:{[i:string]:NodeView} = {};
     importLinks; // temporary
@@ -108,8 +122,14 @@ class OutlineNodeModel extends PModel {
                 this.attributes.text = "";
             }
             this.setChildren(options.children);
+            if (options.owner) {
+                this.attributes.owner = options.owner;
+            }
         } else {
             this.setChildren(null);
+        }
+        if (!this.attributes.owner) {
+            this.attributes.owner = $D.userID;
         }
     }
     setChildren(children:OutlineNodeCollection) {
@@ -152,7 +172,14 @@ class OutlineNodeModel extends PModel {
             this.views = null;
         }
     }
-    delete() {
+    delete() { // delete recursively
+        var i:string;
+        var c = this.attributes.children;
+        if (c && (c.count>0)) {
+            for (i=c.first(); i!==''; i= c.next[i]) {
+                c.obj[i].delete();
+            }
+        }
         this.set('deleted', true);
         OutlineNodeModel.deletedById[this.cid] = this;
         delete OutlineNodeModel.modelsById[this.cid];
@@ -198,6 +225,11 @@ class OutlineNodeModel extends PModel {
         children = new OutlineNodeCollection();
         children._fromJSON(n.children);
         this.attributes.text = n.text;
+        this.attributes.deleted = n.deleted;
+        this.attributes.collapsed = n.collapsed;
+        if (n.owner) {
+            this.attributes.owner = n.owner;
+        }
         this.importLinks = n.links;
         this.setChildren(children);
         return this;
@@ -205,7 +237,7 @@ class OutlineNodeModel extends PModel {
     toJSON() {
         return ((<JQueryStaticD>$).toJSON(this._toJSON()));
     }
-    _toJSON():{} {
+    _toJSON():NodeOutlineJson {
         var links=this.attributes.links;
         var linklist:string[] = [];
         if (links && (links.count>0)) {
@@ -222,8 +254,9 @@ class OutlineNodeModel extends PModel {
                 childlist.push(children.obj[c]._toJSON());
             }
         }
-        return {
+        return <NodeOutlineJson>{
             cid: this.cid,
+            owner: this.attributes.owner,
             text: this.attributes.text,
             collapsed: this.attributes.collapsed,
             deleted: this.attributes.deleted,
@@ -319,6 +352,8 @@ class OutlineNodeModel extends PModel {
                 "The model " + m + " does not have a text attribute");
             assert(typeof this.attributes.text === 'string',
                 "The model " + m + " has a text-attribute that is not a string");
+            assert(typeof this.attributes.owner === 'string',
+                "The model " + m + " has an owner-attribute that is not a string");
             // parent matches children
             var c = this.attributes.children;
             assert(c instanceof OutlineNodeCollection,

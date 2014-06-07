@@ -3,8 +3,10 @@ m_require("app/actions/Action.js");
 class SlidePanelsAction extends AnimatedAction {
     type = 'PanelSlide';
     oldLeftPanel:string = null;
+    newLeftPanel:string = null;
     startLeft:number;
     usePostAnim = true;
+    emptySlot:boolean;
     // options:ActionOptions= {direction:null};
     validateOptions() {
         var o:ActionOptions = this.options;
@@ -14,9 +16,22 @@ class SlidePanelsAction extends AnimatedAction {
         }
         if (o.redo) {
             if (this.oldLeftPanel !== panels.first()) {
-                console.log("leftPanel doesn't match");
+                console.log("leftPanel isi wrong before redo slide");
                 debugger;
             }
+        } else if (o.undo) {
+            assert(this.newLeftPanel === panels.first(), "Left panel is wrong before undo slide");
+        }
+    }
+    validateNewContext() {
+        var o:ActionOptions = this.options;
+        var panels = View.currentPage.content.gridwrapper.grid.listItems;
+        if (!o.redo && !o.undo) {
+            this.newLeftPanel = panels.first();
+        } else if (o.undo) {
+            assert(panels.first()===this.oldLeftPanel, "In Slide, leftpanel wrong after undo");
+        } else if (o.redo) {
+            assert(panels.first()===this.newLeftPanel, "In Slide, leftpanel wrong after undo");
         }
     }
 
@@ -45,11 +60,11 @@ class SlidePanelsAction extends AnimatedAction {
         ], function() {
             var grid = View.getCurrentPage().content.gridwrapper.grid;
             that.startLeft = grid.layout.left;
-            console.log("Starting slide animation with startLeft = "+that.startLeft);
+            // console.log("Starting slide animation with startLeft = "+that.startLeft);
+            grid.layout.width = grid.itemWidth * (grid.numCols + 1)+2;
             if (that.getDirection() === 'right') { // increase grid-width and margin-left
-                grid.layout.width = grid.itemWidth * (grid.numCols + 1);
                 grid.layout.left = that.startLeft-grid.itemWidth; // OK
-                console.log("Anim-right setup modifies left = "+grid.layout.left);
+                // console.log("Anim-right setup modifies left = "+grid.layout.left);
                 grid.setPosition();
                 var firstPanel = View.get(grid.listItems.first());
                 firstPanel.layout.left = grid.itemWidth;
@@ -59,7 +74,6 @@ class SlidePanelsAction extends AnimatedAction {
                 // protect right panel from deletion
                 (<PanelView>grid.listItems.obj[grid.listItems.last()]).animating = true;
             } else { // increase grid-width only
-                grid.layout.width = grid.itemWidth * (grid.numCols + 1);
                 grid.setPosition();
                 (<PanelView>grid.listItems.obj[grid.listItems.first()]).animating = true;
             }
@@ -89,9 +103,11 @@ class SlidePanelsAction extends AnimatedAction {
                 }
             }
             if (dir === 'right') {
-                grid.slideRight(); // adds panel to left
+                console.log("In SlidePanels showing PrevLeft panel");
+                grid.showPrevLeft(); // adds panel to left
             } else if (dir === 'left') {
-                grid.slideLeft();
+                console.log("In SlidePanels showing NextRight panel");
+                grid.showNextRight();
             }
         });
     }
@@ -102,25 +118,31 @@ class SlidePanelsAction extends AnimatedAction {
             var w = grid.itemWidth-this.startLeft -
                 Math.round(frac*(grid.itemWidth-this.startLeft));
             grid.layout.left = -w;
-            console.log("Anim-right step setting left to "+grid.layout.left);
+            // console.log("Anim-right step setting left to "+grid.layout.left);
             $(grid.elem).css({
                 left: '-'+String(w)+'px'
             });
             if (frac === 1) { // cleanup rightmost panel
                 assert((<PanelView>grid.listItems.obj[grid.listItems.last()]).animating, "");
-                grid.clip('right');
+                if (grid.listItems.count>grid.numCols) {
+                    console.log("In SlidePanels, clipping rightmost panel");
+                    grid.clipPanel('right');
+                } else {
+
+                }
                 grid.updatePanelButtons();
             }
         } else {
             var w = -this.startLeft + Math.round(frac*(grid.itemWidth+this.startLeft));
             grid.layout.left = -w;
-            console.log("Anim-left step setting left to "+grid.layout.left);
+            // console.log("Anim-left step setting left to "+grid.layout.left);
             $(grid.elem).css({
                 left: '-'+String(w)+'px'
             });
             if (frac === 1) { // cleanup left panels
                 assert((<PanelView>grid.listItems.obj[grid.listItems.first()]).animating, "");
-                grid.clip('left');
+                console.log("In SlidePanels, clipping leftmost panel");
+                grid.clipPanel('left');
                 grid.updatePanelButtons();
             }
         }

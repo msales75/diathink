@@ -100,7 +100,7 @@ class Router {
     constructor(private rootElement:HTMLElement) {
         var is_touch_device:boolean = 'ontouchstart' in document.documentElement;
         var press:string = is_touch_device ? 'touchstart' : 'mousedown';
-        console.log("Using press = "+press);
+        // console.log("Using press = "+press);
         var self:Router = this;
         this.dragger = new DragHandler();
         Router.bind(rootElement, press, function(e) {
@@ -110,7 +110,7 @@ class Router {
             self.scrollMode = 0;
             self.dragMode = 0;
             if (view.handleView != null) {
-                console.log("Processing touch as handle");
+                // console.log("Processing touch as handle");
                 if (View.focusedView !== view.nodeView) {
                     View.setFocus(view);
                     (<TextAreaView>View.focusedView.header.name.text.addClass('hide-selection')).selectAllText().focus();
@@ -120,31 +120,31 @@ class Router {
                 if (!View.focusedView || (view.nodeView!==View.focusedView)) {
                     // only enable scrolling if drag doesn't start from an already-focused-node
                     //   (this is important for text-selection)
-                    console.log("Processing touch as scroll of unfocused field");
+                    // console.log("Processing touch as scroll of unfocused field");
                     self.scrollMode = 1;
                 }
                 if (view.nodeView != null) { // we touched inside a line-node
-                    console.log("Processing touch as virtual-focus event");
+                    // console.log("Processing touch as virtual-focus event");
                     View.setFocus(view); // this should trigger checkTextChange- but not on handle change?
                     if (view instanceof TextAreaView) {
-                        console.log("Permitting default inside textarea");
+                        // console.log("Permitting default inside textarea");
                         // need native event to capture cursor position, even if we're not focusing
                         preventDefault = false;
                         // self.hidingFocus = view; // todo: make sure we don't need earlier delayed-focus list?
                         view.removeClass('hide-selection');
                     } else {
-                        console.log("In node but not handle or textarea, so focusing entire node");
+                        // console.log("In node but not handle or textarea, so focusing entire node");
                         (<TextAreaView>View.focusedView.header.name.text.addClass('hide-selection')).selectAllText().focus();
                     }
                 }
             }
             if (preventDefault) {
-                console.log("In touchstart preventing default");
+                // console.log("In touchstart preventing default");
                 e.preventDefault();
             }
         });
         var move = is_touch_device ? 'touchmove' : 'mousemove';
-        console.log("Using move = "+move);
+        // console.log("Using move = "+move);
         Router.bind(rootElement, move, function(e) {
             // console.log('Event type '+e.type);
             if (!self.dragMode && !self.scrollMode && !self.swipeMode) {return;}
@@ -162,35 +162,35 @@ class Router {
                 return;
             }
             if (self.dragMode===1) { // possibly dragging
-                console.log("Processing touchmove as testDragStart");
+                // console.log("Processing touchmove as testDragStart");
                 if (self.testDragStart(params)) {
-                    console.log("Passed test to start dragging");
+                    // console.log("Passed test to start dragging");
                     self.dragMode=2; // we are definitely dragging
                     self.dragger.dragStart(self.dragStart);
                 } else {
-                    console.log("Distance not great enough to start dragging");
+                    // console.log("Distance not great enough to start dragging");
                 }
             } else if (self.scrollMode===1) { // possibly scrolling
-                console.log("Processing touchmove as testScrollStart");
+                // console.log("Processing touchmove as testScrollStart");
                 if (self.testScrollStart(params)) {
-                    console.log("Passed test to start scrolling");
+                    // console.log("Passed test to start scrolling");
                     self.scrollMode=2;
                     self.dragStart.view.scrollView.scrollHandler.scrollStart(params);
                 } else if (self.testSwipeStart(params)) {
-                    console.log("Passed test to start swiping");
+                    // console.log("Passed test to start swiping");
                     self.scrollMode=0;
                     self.swipeMode=1;
                     View.currentPage.content.gridwrapper.grid.swipeStart(params);
                 } else {
-                        console.log("Distance not great enough to start scrolling");
+                        // console.log("Distance not great enough to start scrolling");
                 }
             }
             e.preventDefault();
         });
         var release = is_touch_device ? 'touchend' : 'mouseup';
-        console.log("Using release = "+release);
+        // console.log("Using release = "+release);
         Router.bind(rootElement, release, function(e) {
-            console.log("Processing touch release");
+            // console.log("Processing touch release");
             var params = Router.getEventParams(e);
             var view = params.view;
             // handle click, double-click
@@ -200,23 +200,23 @@ class Router {
                     // console.log("Processing click");
                     var clickView = view.clickView;
                     var now = params.time;
-                    console.log('Processing click, testing for double-click');
+                    // console.log('Processing click, testing for double-click');
                     if (self.lastClicked && (self.lastClicked > now - 500) && !self.doubleClickFlag) {
                         self.lastClicked = self.dragStart.time;
                         self.doubleClickFlag = true;
-                        console.log('Processing as double-click');
+                        // console.log('Processing as double-click');
                         clickView.onDoubleClick(params);
                     } else { // single-click
                         self.lastClicked = self.dragStart.time;
                         self.doubleClickFlag = false;
-                        console.log('Processing as single-click');
+                        // console.log('Processing as single-click');
                         clickView.onClick(params);
                     }
                 } else {
-                    console.log("mouseup does not quality as click");
+                    // console.log("mouseup does not quality as click");
                 }
             } else {
-                console.log("mouseup does not quality as click-2");
+                // console.log("mouseup does not quality as click-2");
             }
             if (self.scrollMode===2) {
                 self.dragStart.view.scrollView.scrollHandler.scrollStop();
@@ -232,6 +232,20 @@ class Router {
             self.swipeMode = 0;
             self.dragStart = null;
             // todo: preventDefault if we didn't click on text?
+        });
+
+        Router.bind(rootElement, 'mousewheel', function(e) {
+            // determine active scroll handler
+            if (View.focusedView) {
+                var scroller = View.focusedView.scrollView.scrollHandler;
+                var pos = scroller.getScrollPosition();
+                var delta = 4*View.fontSize*Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+                if (pos.y-delta>0) {
+                    scroller.scrollTo(-pos.x, -pos.y+delta, 0);
+                } else {
+                    scroller.scrollTo(-pos.x, 0, 0);
+                }
+            }
         });
 
         // todo: swiping and scroll-wheel

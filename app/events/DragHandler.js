@@ -17,7 +17,8 @@ var DragHandler = (function () {
         var currentView = options.view.nodeView;
         this.currentItem = currentView;
         var that = this;
-        console.log("In dragStart with item " + this.currentItem.id);
+
+        // console.log("In dragStart with item "+this.currentItem.id);
         this.panelScrollStart = {};
 
         // Correct the active textbox in case it doesn't match value.
@@ -44,7 +45,9 @@ var DragHandler = (function () {
             top: this.mousePosition.top
         };
 
-        this.currentItem.addClass('drag-hidden');
+        if (!this.currentItem.readOnly) {
+            this.currentItem.addClass('drag-hidden');
+        }
 
         //Recache the helper size
         this._cacheHelperProportions();
@@ -104,7 +107,7 @@ var DragHandler = (function () {
 
             // todo: add constraint?: for later panels, could scroll-position be different than the
             // scroll-position at mouse-start, which is where items are last updated?
-            this.scrollPanel.outline.scrollHandler.scrollWhileDragging(this.mousePosition.top - this.scrollPanel.layout.top);
+            this.scrollPanel.outline.scrollHandler.scrollWhileDragging(this.mousePosition.top - this.scrollPanel.getOffset().top);
         }
         var box = DropBox.getHoverBox(this.mousePosition, this.panelScrollStart);
 

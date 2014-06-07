@@ -46,8 +46,8 @@ var AnimatedAction = (function (_super) {
             n = 1;
         }
         var frac = ((new Date()).getTime() - start) / duration;
-        if (frac > n / 3) {
-            frac = n / 3;
+        if (frac > n / 6) {
+            frac = n / 6;
         }
         if (frac >= 1) {
             frac = 1;
@@ -121,7 +121,7 @@ var AnimatedAction = (function (_super) {
 
         this.addAsync('anim', [['setupPlaceholderAnim'], ['setupDockAnim']], function () {
             if (that.useAnim) {
-                var time = 100;
+                var time = 150;
                 if (that.options.speed) {
                     time = that.options.speed;
                 }
@@ -156,7 +156,7 @@ var AnimatedAction = (function (_super) {
         this.addAsync(['anim2'], _.extend(['anim'], views), function () {
             if (that.usePostAnim) {
                 that.anim2setup();
-                var time = 100;
+                var time = 150;
                 if (that.options.speed) {
                     time = that.options.speed;
                 }

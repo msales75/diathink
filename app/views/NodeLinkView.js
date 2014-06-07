@@ -89,6 +89,9 @@ var NodeLinkView = (function (_super) {
     NodeLinkView.prototype.onDoubleClick = function (params) {
         // delete link, possibly closing other panel
         // check if next-panel is a child
+        if (this.nodeView.readOnly) {
+            return;
+        }
         var that = this;
         var panel = this.panelView;
         ActionManager.simpleSchedule(View.focusedView, function () {

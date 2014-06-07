@@ -29,10 +29,15 @@ var InsertionView = (function (_super) {
     InsertionView.prototype.layoutUp = function () {
     };
     InsertionView.prototype.updateValue = function () {
-        if (this.panelView.value.attributes.children.count > 0) {
+        // check for readonly panel
+        if (this.panelView.value.attributes.owner !== $D.userID) {
             this.isHidden = true;
         } else {
-            this.isHidden = false;
+            if (this.panelView.value.attributes.children.count > 0) {
+                this.isHidden = true;
+            } else {
+                this.isHidden = false;
+            }
         }
     };
     InsertionView.prototype.hide = function () {
@@ -42,6 +47,9 @@ var InsertionView = (function (_super) {
         }
     };
     InsertionView.prototype.show = function () {
+        if (this.panelView.value.attributes.owner !== $D.userID) {
+            return;
+        }
         if (this.isHidden) {
             this.isHidden = false;
             this.elem.style.display = 'block';
@@ -81,7 +89,7 @@ var InsertionView = (function (_super) {
     };
     InsertionView.prototype.validate = function () {
         _super.prototype.validate.call(this);
-        if (this.panelView.value.attributes.children.count > 0) {
+        if ((this.panelView.value.attributes.children.count > 0) || (this.panelView.value.attributes.owner !== $D.userID)) {
             assert(this.isHidden === true, "isHidden is wrong for insertionview");
             assert($(this.elem).css('display') === 'none', "Wrong display for insertionview");
         } else {

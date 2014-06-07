@@ -17,17 +17,17 @@ class InsertIntoAction extends OutlineAction {
             this.newModelContext = this.options.newModelContext;
             return;
         }
-        var parent = View.get(this.options.newRoot).panelView;
-        assert(parent!=null, "Invalid newRoot for InsertIntoAction");
+        var parent:OutlineNodeModel = OutlineNodeModel.getById(this.options.referenceID);
+        assert(parent!=null, "Invalid referenceID for InsertIntoAction");
         var next:string = null;
-        var children:OutlineNodeCollection = parent.value.get('children');
+        var children:OutlineNodeCollection = parent.get('children');
         if (children.count>0) {
             next = children.first();
         }
         this.newModelContext = {
             prev: null,
             next: next,
-            parent: parent.value.cid
+            parent: parent.cid
         };
     }
     // have issue-numbers in code that are linked by diaclear (have processor interpret as hyperlink)

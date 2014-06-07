@@ -13,35 +13,97 @@ $(window).resize(function () {
     var newHeight, newWidth, newFont, changeHeight, changeWidth, changeFont;
     console.log("Processing resize event");
 
-    (function () {
-        newHeight = $(document.body).height();
-        newWidth = $(document.body).width();
-        newFont = $(document.body).css('font-size');
-        changeHeight = false;
-        changeWidth = false;
-        changeFont = false;
-        if (newHeight !== $D.lastHeight) {
-            changeHeight = true;
-        }
-        if (newWidth !== $D.lastWidth) {
-            changeWidth = true;
-        }
-        if (newFont !== $D.lastFont) {
-            changeFont = true;
-        }
-    })();
-    if (!changeHeight && !changeWidth && !changeFont) {
-        //return; // todo: horrible for performance to comment this out - need cached dimensions
-    }
-
-    // get scroll-container
-    var page = View.getCurrentPage();
-    if (!page) {
+    if (!($D.ready === 1)) {
         return;
     }
-    page.resize();
-    View.currentPage.content.gridwrapper.grid.updateCols();
+    if ($D.router.dragMode === 2) {
+        return;
+    }
 
+    /*
+    (function() { // anonymous function for profiling
+    newHeight = $(document.body).height();
+    newWidth = $(document.body).width();
+    newFont = $(document.body).css('font-size');
+    changeHeight=false;
+    changeWidth=false;
+    changeFont=false;
+    if (newHeight !== $D.lastHeight) {
+    changeHeight = true;
+    }
+    if (newWidth !== $D.lastWidth) {
+    changeWidth = true;
+    }
+    if (newFont !== $D.lastFont) {
+    changeFont = true;
+    }
+    })();
+    if (!changeHeight && !changeWidth && !changeFont) {
+    //return; // todo: horrible for performance to comment this out - need cached dimensions
+    }
+    */
+    // get scroll-container
+    ActionManager.schedule(function () {
+        var page = View.getCurrentPage();
+        if (!page) {
+            return;
+        }
+        var grid = page.content.gridwrapper.grid;
+        var oldCols = grid.numCols;
+        page.content.gridwrapper.grid.updateCols();
+        var newCols = grid.numCols;
+        grid.numCols = oldCols; // don't stick to change yet
+
+        if (newCols > oldCols) {
+            // check if empty panels would be created to the right if we preserve leftPanel
+            console.log("Change in columns from " + oldCols + " to " + newCols);
+            var p = grid.listItems.first();
+            var i;
+            for (i = 0; (i < newCols) && (p !== ''); ++i) {
+                p = grid.value.next[p];
+            }
+            if (i < newCols) {
+                // we need (newCols-i) slide actions
+                var j;
+                for (j = 0; j < newCols - i; ++j) {
+                    ActionManager.schedule(function () {
+                        if (grid.listItems.first() === grid.value.first()) {
+                            return null;
+                        }
+                        console.log("Calling Slide right for resize");
+                        return {
+                            actionType: SlidePanelsAction,
+                            name: 'Slide right for resize',
+                            direction: 'right',
+                            focus: false
+                        };
+                    });
+                }
+            }
+        }
+        ActionManager.schedule(function () {
+            grid.numCols = newCols;
+            console.log("Resizing with numCols = " + newCols);
+            if (oldCols > newCols) {
+                console.log("Clipping right panel for column-change");
+                if (grid.listItems.count > newCols) {
+                    grid.clipPanel('right');
+                }
+            } else if (oldCols < newCols) {
+                console.log("Filling right panel for column-change");
+                grid.fillPanel('right', true);
+            }
+            View.currentPage.resize();
+            if (View.focusedView != null) {
+                if (!View.viewList[View.focusedView.id]) {
+                    View.focusedView = null;
+                }
+            }
+            grid.updatePanelButtons();
+            return null;
+        });
+        return null;
+    });
     /*
     var scrollContainer = $('#'+page.content.gridwrapper.grid.id);
     if (scrollContainer.length===0) {return;}
@@ -84,10 +146,11 @@ $(window).resize(function () {
     });
     })();
     // }
-    */
+    
     $D.lastHeight = newHeight;
     $D.lastWidth = newWidth;
     $D.lastFont = newFont;
+    */
     // 10px for .scroll-container margin
     // Textarea position/size update
     // check only if the width or #panels or fontsize has changed?

@@ -26,7 +26,7 @@ $D.handleLineBackspace = function (view, subschedule) {
     var collection = liView.parentView.value;
 
     // if it is the last item in its collection
-    if ((liView.parentView.nodeView instanceof NodeView) && (collection.next[liView.value.cid] === '')) {
+    if ((liView.parentView.nodeView instanceof NodeView) && (collection.next[liView.value.cid] === '') && (liView.parentView.nodeView.value.attributes.parent.attributes.owner === $D.userID)) {
         if (subschedule) {
             assert(view === View.focusedView.header.name.text, "");
             if (View.focusedView.value.get('text') !== View.focusedView.header.name.text.value) {
@@ -183,6 +183,9 @@ $D.handleKeydown = function (view, e) {
     var id = view.id;
     var liView, collection, sel, pos, newNode;
     liView = view.nodeView;
+    if (liView.readOnly) {
+        return;
+    }
     sel = view.getSelection();
     if ($D.is_android) {
         if (sel[0] > 0) {
@@ -196,7 +199,7 @@ $D.handleKeydown = function (view, e) {
         collection = liView.parentView.value;
 
         // validate not first in list
-        if (collection.prev[liView.value.cid] !== '') {
+        if ((collection.prev[liView.value.cid] !== '') && (OutlineNodeModel.getById(collection.prev[liView.value.cid]).attributes.owner === $D.userID)) {
             // make it the last child of its previous sibling
             scheduleKey(e.simulated, id, function () {
                 return {
@@ -224,25 +227,40 @@ $D.handleKeydown = function (view, e) {
             e.preventDefault();
         }
     } else if (e.which === 13) {
-        // todo: split line if in middle of text
-        scheduleKey(e.simulated, id, function () {
-            return {
-                actionType: InsertAfterAction,
-                anim: 'create',
-                name: 'Keyboard newline',
-                referenceID: liView.value.cid,
-                oldRoot: liView.nodeRootView.id,
-                newRoot: liView.nodeRootView.id,
-                focus: true,
-                cursor: sel
-            };
-        });
+        // if we own the parent
+        if (liView.value.attributes.parent.attributes.owner === $D.userID) {
+            scheduleKey(e.simulated, id, function () {
+                return {
+                    actionType: InsertAfterAction,
+                    anim: 'create',
+                    name: 'Keyboard newline',
+                    referenceID: liView.value.cid,
+                    oldRoot: liView.nodeRootView.id,
+                    newRoot: liView.nodeRootView.id,
+                    focus: true,
+                    cursor: sel
+                };
+            });
+        } else if (liView.isCollapsed === false) {
+            scheduleKey(e.simulated, id, function () {
+                return {
+                    actionType: InsertIntoAction,
+                    anim: 'create',
+                    name: 'Keyboard newline indent',
+                    referenceID: liView.value.cid,
+                    oldRoot: liView.nodeRootView.id,
+                    newRoot: liView.nodeRootView.id,
+                    focus: true,
+                    cursor: sel
+                };
+            });
+        }
         e.preventDefault();
         // var scrollid = $('#'+id).closest('.ui-scrollview-clip').attr('id');
         // View.get(scrollid).themeUpdate();
     } else if (e.which === 38) {
         newNode = view.nodeView.prevVisibleNode();
-        if (newNode) {
+        if (newNode && (!newNode.readOnly)) {
             pos = View.focusedView.header.name.text.getSelection()[0];
             if ($D.is_android && (pos === 0)) {
                 pos = 1;
@@ -261,7 +279,7 @@ $D.handleKeydown = function (view, e) {
         e.preventDefault();
     } else if (e.which === 40) {
         newNode = view.nodeView.nextVisibleNode();
-        if (newNode) {
+        if (newNode && (!newNode.readOnly)) {
             pos = View.focusedView.header.name.text.getSelection()[0];
             if ($D.is_android && (pos === 0)) {
                 pos = 1;
@@ -285,7 +303,7 @@ $D.handleKeydown = function (view, e) {
         }
         if (pos === 0) {
             newNode = view.nodeView.prevVisibleNode();
-            if (newNode) {
+            if (newNode && (!newNode.readOnly)) {
                 var pos = newNode.header.name.text.value.length;
                 if ($D.is_android) {
                     ++pos;
@@ -303,7 +321,7 @@ $D.handleKeydown = function (view, e) {
         }
         if (pos === view.value.length) {
             newNode = view.nodeView.nextVisibleNode();
-            if (newNode) {
+            if (newNode && (!newNode.readOnly)) {
                 var pos = 0;
                 if ($D.is_android) {
                     ++pos;

@@ -3,6 +3,9 @@
 ///<reference path="ActionManager.ts"/>
 ///<reference path="AnimatedAction.ts"/>
 ///<reference path="CollapseAction.ts"/>
+///<reference path="CopyAfterAction.ts"/>
+///<reference path="CopyBeforeAction.ts"/>
+///<reference path="CopyIntoAction.ts"/>
 ///<reference path="DeleteAction.ts"/>
 ///<reference path="DockAnimAction.ts"/>
 ///<reference path="InsertAfterAction.ts"/>
@@ -59,6 +62,8 @@ interface ActionOptions {
     origID?:string;
     newModelContext?:ModelContext;
     remoteID?:string;
+    userID?:string;
+    copyID?:string;
 }
 interface SubAction extends ActionOptions {
     actionType: any;
@@ -154,6 +159,7 @@ interface ActionJSON {
         focus?:boolean;
         newModelContext?:ModelContext;
         remoteID?:string;
+        userID?:string;
         action?:Action;
         actionType?:typeof Action;
         remoteDone?:{(action:Action)};
@@ -376,7 +382,7 @@ class Action extends PModel {
         } else if (options.undo && (this.parentAction != null) && (!this.options.origID)) {
             nsub = this.parentAction.subactions.length;
             if (this === this.parentAction.subactions[nsub - 1].action) {
-                console.log("Last subaction in chain is calling the rest for undo");
+                // console.log("Last subaction in chain is calling the rest for undo");
                 for (i = nsub-2; i >= -1; --i) {
                     /*
                     rank = ActionManager.nextUndo();
@@ -450,6 +456,11 @@ class Action extends PModel {
             var i, sub;
             that.validateNewContext();
             that.broadcast();
+            if (View.focusedView!=null) {
+                if (!View.viewList[View.focusedView.id]) { // if this action deleted focusView
+                    View.focusedView = null;
+                }
+            }
             if (!that.options.undo && !that.options.redo && (!that.options.origID)) {
                 for (i = that.subactions.length - 1; i >= 0; --i) {
                     sub = that.subactions[i];
@@ -551,6 +562,7 @@ class Action extends PModel {
             json.parentActionID = this.parentAction.cid;
         }
         json.sessionID = $D.sessionID;
+        json.options.userID = $D.userID;
         return json;
     }
     broadcast() {
