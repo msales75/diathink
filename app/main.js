@@ -68,7 +68,10 @@ $(window).bind('load', function () {
         InsertAfterAction: InsertAfterAction,
         DeleteAction: DeleteAction,
         AddLinkAction: AddLinkAction,
-        TextAction: TextAction
+        TextAction: TextAction,
+        CopyAfterAction: CopyAfterAction,
+        CopyBeforeAction: CopyBeforeAction,
+        CopyIntoAction: CopyIntoAction
     };
 
     // get userID

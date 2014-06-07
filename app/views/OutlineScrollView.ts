@@ -62,11 +62,11 @@ class OutlineScrollView extends ScrollView {
             this.layout.top= this.parentView.breadcrumbs.layout.height;
             this.layout.left = Math.round(View.fontSize);
             this.layout.width = p.width-Math.round(View.fontSize)-2;
+            this.layout.height = p.height-this.parentView.breadcrumbs.layout.height;
         }
     }
     layoutUp() {
         var p:Layout = this.parentView.layout;
-        this.layout.height = p.height-this.parentView.breadcrumbs.layout.height;
         // todo: inner-scroll height needs to be reset in layoutUp
     }
     positionChildren(v?:View, v2?:string, validate?:boolean) {

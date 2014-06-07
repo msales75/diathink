@@ -833,10 +833,14 @@ class OutlineAction extends AnimatedAction {
         this.addQueue('modelCreate', ['context'], function() {
             if (!that.options.activeID) {
                 if (that.options.copyID) {
-                    // todo: copy: create recursive copy of model (but links stay pointing to original)
                     var json:NodeOutlineJson = OutlineNodeModel.getById(that.options.copyID)._toJSON();
-                    repossess(json);
-                    var activeModel = new OutlineNodeModel();
+                    if (!that.options.copyPrefix) {
+                        that.options.copyPrefix = ActionManager.randomString(10)+'_';
+                    }
+                    var uid = $D.userID;
+                    if (that.options.userID) {uid = that.options.userID;}
+                    repossess(json, uid, that.options.copyPrefix);
+                    var activeModel = new OutlineNodeModel({cid: json.cid});
                     activeModel.fromJSON(json);
                 } else {
                     if (that.options.remoteID) {
@@ -854,6 +858,14 @@ class OutlineAction extends AnimatedAction {
                     }
                 }
                 that.options.activeID = activeModel.cid;
+            } else if (that.options.redo && that.options.copyID) {
+                var json:NodeOutlineJson = OutlineNodeModel.getById(that.options.copyID)._toJSON();
+                var uid = $D.userID;
+                if (that.options.userID) {uid = that.options.userID;}
+                repossess(json, uid, that.options.copyPrefix);
+                assert(OutlineNodeModel.deletedById[json.cid]!=null, "Redoing copy not in graveyard");
+                var activeModel:OutlineNodeModel = OutlineNodeModel.deletedById[json.cid].resurrect();
+                activeModel.fromJSON(json);
             }
         });
         this.restoreContext();

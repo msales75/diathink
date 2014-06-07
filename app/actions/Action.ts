@@ -64,6 +64,7 @@ interface ActionOptions {
     remoteID?:string;
     userID?:string;
     copyID?:string;
+    copyPrefix?:string;
 }
 interface SubAction extends ActionOptions {
     actionType: any;
@@ -163,6 +164,8 @@ interface ActionJSON {
         action?:Action;
         actionType?:typeof Action;
         remoteDone?:{(action:Action)};
+        copyID?:string;
+        copyPrefix?:string;
     }
 }
 class Action extends PModel {
@@ -544,7 +547,7 @@ class Action extends PModel {
         var props:string[] = ['cid', 'type', 'timestamp', 'historyRank', 'undone',
             'lost', 'oldModelContext', 'newModelContext'];
         var opts:string[] = ['undo', 'redo', 'activeID', 'referenceID', 'anim', 'text',
-            'transition', 'speed', 'delete', 'name'];
+            'transition', 'speed', 'delete', 'name', 'copyID', 'copyPrefix'];
         if (this.parentAction) {
             var parentActionID = this.parentAction.cid;
         }
@@ -571,9 +574,11 @@ class Action extends PModel {
         // if (this.parentAction!=null) {return;}
         var json:ActionJSON = this.toJSON();
         json.broadcastID = ActionManager.actions.getNextBroadcastID();
-        if ((json.type==='InsertAfterAction')||(json.type==='InsertIntoAction')) {
+        if ((json.type==='InsertAfterAction')||(json.type==='InsertIntoAction')||
+            (json.type==='CopyIntoAction')||(json.type==='CopyAfterAction')||(json.type==='CopyBeforeAction')) {
             assert(json.options.activeID!=null, "No activeID was created");
             json.options.remoteID = json.options.activeID;
+            // todo: need remote ID's for all of the objects?
             delete json.options['activeID'];
         }
         (<JQueryStaticD>$).postMessage(

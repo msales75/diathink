@@ -439,7 +439,7 @@ var Action = (function (_super) {
             'lost', 'oldModelContext', 'newModelContext'];
         var opts = [
             'undo', 'redo', 'activeID', 'referenceID', 'anim', 'text',
-            'transition', 'speed', 'delete', 'name'];
+            'transition', 'speed', 'delete', 'name', 'copyID', 'copyPrefix'];
         if (this.parentAction) {
             var parentActionID = this.parentAction.cid;
         }
@@ -471,9 +471,11 @@ var Action = (function (_super) {
         // if (this.parentAction!=null) {return;}
         var json = this.toJSON();
         json.broadcastID = ActionManager.actions.getNextBroadcastID();
-        if ((json.type === 'InsertAfterAction') || (json.type === 'InsertIntoAction')) {
+        if ((json.type === 'InsertAfterAction') || (json.type === 'InsertIntoAction') || (json.type === 'CopyIntoAction') || (json.type === 'CopyAfterAction') || (json.type === 'CopyBeforeAction')) {
             assert(json.options.activeID != null, "No activeID was created");
             json.options.remoteID = json.options.activeID;
+
+            // todo: need remote ID's for all of the objects?
             delete json.options['activeID'];
         }
         $.postMessage($.toJSON({

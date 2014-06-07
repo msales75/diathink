@@ -67,11 +67,11 @@ var OutlineScrollView = (function (_super) {
             this.layout.top = this.parentView.breadcrumbs.layout.height;
             this.layout.left = Math.round(View.fontSize);
             this.layout.width = p.width - Math.round(View.fontSize) - 2;
+            this.layout.height = p.height - this.parentView.breadcrumbs.layout.height;
         }
     };
     OutlineScrollView.prototype.layoutUp = function () {
         var p = this.parentView.layout;
-        this.layout.height = p.height - this.parentView.breadcrumbs.layout.height;
         // todo: inner-scroll height needs to be reset in layoutUp
     };
     OutlineScrollView.prototype.positionChildren = function (v, v2, validate) {

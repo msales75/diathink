@@ -17,12 +17,12 @@ interface NodeOutlineJson {
     collapsed?: boolean;
     deleted?:boolean;
 }
-function repossess(json:NodeOutlineJson) {
-    if (json.cid) {delete json['cid'];}
-    json.owner = $D.userID;
+function repossess(json:NodeOutlineJson, userID:string, prefix:string) {
+    if (json.cid) {json.cid = prefix+json.cid;}
+    json.owner = userID;
     var i:number;
     for (i=0; i<json.children.length; ++i) {
-        repossess(json.children[i]);
+        repossess(json.children[i], userID, prefix);
     }
 }
 
@@ -179,16 +179,18 @@ class OutlineNodeModel extends PModel {
             for (i=c.first(); i!==''; i= c.next[i]) {
                 c.obj[i].delete();
             }
+            c.reset();
         }
         this.set('deleted', true);
         OutlineNodeModel.deletedById[this.cid] = this;
         delete OutlineNodeModel.modelsById[this.cid];
         this.set('parent', null);
     }
-    resurrect() {
+    resurrect():OutlineNodeModel {
         OutlineNodeModel.modelsById[this.cid] = this;
         delete OutlineNodeModel.deletedById[this.cid];
         this.set('deleted', false);
+        return this;
     }
     updateLinks() {
         var i:number, o:string;
@@ -467,7 +469,12 @@ class OutlineNodeCollection extends LinkedList<OutlineNodeModel> {
         var i:number;
         if (!input) {return;}
         for (i = 0; i < input.length; ++i) {
-            var m:OutlineNodeModel = new OutlineNodeModel({cid: input[i].cid});
+            var m:OutlineNodeModel;
+            if (input[i].cid && OutlineNodeModel.deletedById[input[i].cid]) {
+                m = OutlineNodeModel.deletedById[input[i].cid].resurrect();
+            } else {
+                m = new OutlineNodeModel({cid: input[i].cid});
+            }
             m._fromJSON(input[i]);
             this.append(m.cid, m);
         }

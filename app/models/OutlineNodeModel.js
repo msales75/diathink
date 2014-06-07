@@ -17,14 +17,14 @@ var PModel = (function () {
     return PModel;
 })();
 
-function repossess(json) {
+function repossess(json, userID, prefix) {
     if (json.cid) {
-        delete json['cid'];
+        json.cid = prefix + json.cid;
     }
-    json.owner = $D.userID;
+    json.owner = userID;
     var i;
     for (i = 0; i < json.children.length; ++i) {
-        repossess(json.children[i]);
+        repossess(json.children[i], userID, prefix);
     }
 }
 
@@ -168,6 +168,7 @@ var OutlineNodeModel = (function (_super) {
             for (i = c.first(); i !== ''; i = c.next[i]) {
                 c.obj[i].delete();
             }
+            c.reset();
         }
         this.set('deleted', true);
         OutlineNodeModel.deletedById[this.cid] = this;
@@ -178,6 +179,7 @@ var OutlineNodeModel = (function (_super) {
         OutlineNodeModel.modelsById[this.cid] = this;
         delete OutlineNodeModel.deletedById[this.cid];
         this.set('deleted', false);
+        return this;
     };
     OutlineNodeModel.prototype.updateLinks = function () {
         var i, o;
@@ -437,7 +439,12 @@ var OutlineNodeCollection = (function (_super) {
             return;
         }
         for (i = 0; i < input.length; ++i) {
-            var m = new OutlineNodeModel({ cid: input[i].cid });
+            var m;
+            if (input[i].cid && OutlineNodeModel.deletedById[input[i].cid]) {
+                m = OutlineNodeModel.deletedById[input[i].cid].resurrect();
+            } else {
+                m = new OutlineNodeModel({ cid: input[i].cid });
+            }
             m._fromJSON(input[i]);
             this.append(m.cid, m);
         }

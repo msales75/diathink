@@ -55,6 +55,16 @@ class TextAction extends Action {
                     }
                 }
             }
+            if (!activeLineView) { // fix panels which use this text in their breadcrumbs or title
+                var model:OutlineNodeModel = outline.panelView.value;
+                while (model && (model.cid !== that.options.activeID)) {
+                    model = model.get('parent');
+                }
+                if (model) {
+                    outline.panelView.breadcrumbs.updateValue();
+                    outline.panelView.breadcrumbs.renderUpdate();
+                }
+            }
 
             // satisfy additional dependencies that are never used in this actiontype
             // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;

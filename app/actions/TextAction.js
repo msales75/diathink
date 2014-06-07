@@ -63,6 +63,16 @@ var TextAction = (function (_super) {
                     }
                 }
             }
+            if (!activeLineView) {
+                var model = outline.panelView.value;
+                while (model && (model.cid !== that.options.activeID)) {
+                    model = model.get('parent');
+                }
+                if (model) {
+                    outline.panelView.breadcrumbs.updateValue();
+                    outline.panelView.breadcrumbs.renderUpdate();
+                }
+            }
             // satisfy additional dependencies that are never used in this actiontype
             // that.runtime.status.linePlaceAnim[outline.nodeRootView.id] = 2;
         });
