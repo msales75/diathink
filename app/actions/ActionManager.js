@@ -55,12 +55,20 @@ var ActionManager = (function () {
         }, f);
     };
 
-    ActionManager.schedule = function (f, f2) {
+    ActionManager.schedule = function (f, f2, f3, f4) {
         var newlength = 1;
         this.queue.push(f);
         if (f2 != null) {
             var newlength = 2;
             this.queue.push(f2);
+        }
+        if (f3 != null) {
+            var newlength = 3;
+            this.queue.push(f3);
+        }
+        if (f4 != null) {
+            var newlength = 4;
+            this.queue.push(f4);
         }
         if (this.queue.length === newlength) {
             // console.log("In schedule(), starting queue-processing because none are currently running");
@@ -89,7 +97,7 @@ var ActionManager = (function () {
                 this.queueComplete(f, null);
                 if (this.queue.length === 0) {
                     // console.log("Validating after null action");
-                    validate();
+                    // validate();
                 }
                 return;
             }
@@ -170,6 +178,9 @@ var ActionManager = (function () {
 
     ActionManager.log = function (action) {
         if (action.options.origID) {
+            return;
+        }
+        if (action.options.nolog) {
             return;
         }
         if (action.options.undo) {

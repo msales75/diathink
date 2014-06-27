@@ -6,11 +6,13 @@ class NodeHeaderView extends ContainerView {
     parentView:NodeView;
     handle:HandleImageView;
     name:NodeTextWrapperView;
+    linkcount:NodeLinkCountView;
 
     init() {
         this.childViewTypes = {
             handle: HandleImageView,
-            name: NodeTextWrapperView
+            name: NodeTextWrapperView,
+            linkcount:NodeLinkCountView
         };
     }
     layoutDown() {

@@ -261,6 +261,11 @@ $(function () {
                 }
                 view.setSelection(sel[0], sel[1]);
             }
+            if (view.nodeView instanceof ChatBoxView) {
+                view.setValueFromDOM();
+                view.resizeUp();
+                return;
+            }
             if (newValue !== oldValue) {
                 //console.log("Updating value of textarea "+view.id+" from '"+view.elem.value+
                 //    "' to '"+view.value+"' based on event-type "+ e.type);

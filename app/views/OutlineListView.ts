@@ -14,7 +14,9 @@ class OutlineListView extends ListView {
     }
     validate() {
         super.validate();
-        assert(this.nodeRootView !=  null,"TextAreaView cannot have null nodeRootView");
+        if (!(this.nodeView instanceof ChatBoxView)) {
+            assert(this.nodeRootView !=  null,"TextAreaView cannot have null nodeRootView");
+        }
     }
     layoutDown() {
         var offset = Math.round(0.8*View.fontSize);

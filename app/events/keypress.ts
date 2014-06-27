@@ -7,7 +7,7 @@ $D.handleKeypress = function (view:TextAreaView, e) {
     var liView, collection, sel;
     liView = View.get(id).nodeView;
     if (liView.readOnly) {return;}
-    if (key === ' ') {
+    if ((key === ' ')&&(!(liView instanceof ChatBoxView))) {
         sel = view.getSelection();
         // check if cursor is on far left of textbox
         if (sel && (sel[0] === 0) && (sel[1] === 0)) {

@@ -22,7 +22,9 @@ class InsertionView extends ImageView {
     }
     updateValue() {
         // check for readonly panel
-        if (this.panelView.value.attributes.owner!==$D.userID) {
+        if (this.panelView.value==null) {
+            this.isHidden = true;
+        } else if (this.panelView.value.attributes.owner!==$D.userID) {
             this.isHidden = true;
         } else {
             if (this.panelView.value.attributes.children.count>0) {
@@ -39,6 +41,9 @@ class InsertionView extends ImageView {
         }
     }
     show() {
+        if (this.panelView.value==null) {
+            return;
+        }
         if (this.panelView.value.attributes.owner!==$D.userID) {
             return; // can't show without permissions
         }
@@ -79,13 +84,14 @@ class InsertionView extends ImageView {
     }
     validate() {
         super.validate();
-        if ((this.panelView.value.attributes.children.count>0)||(this.panelView.value.attributes.owner!==$D.userID)) {
-            assert(this.isHidden===true, "isHidden is wrong for insertionview");
-            assert($(this.elem).css('display')==='none', "Wrong display for insertionview");
-        } else {
-            assert(this.isHidden===false, "isHidden is wrong for insertionview");
-            assert($(this.elem).css('display')==='block', "Wrong display for insertionview");
+        if (this.panelView.value) {
+            if ((this.panelView.value.attributes.children.count>0)||(this.panelView.value.attributes.owner!==$D.userID)) {
+                assert(this.isHidden===true, "isHidden is wrong for insertionview");
+                assert($(this.elem).css('display')==='none', "Wrong display for insertionview");
+            } else {
+                assert(this.isHidden===false, "isHidden is wrong for insertionview");
+                assert($(this.elem).css('display')==='block', "Wrong display for insertionview");
+            }
         }
-
     }
 }

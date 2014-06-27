@@ -29,8 +29,13 @@
         "<meta name=\"viewport\" content=\"initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,width=device-width\">",
         "<title>Diathink Demo</title>",
         "<link type=\"text/css\" href=\"theme/style.css\" rel=\"stylesheet\">",
-        "<script type=\"application/javascript\">var $D = $D || {};</script>"
-    ],
+        "<script type=\"application/javascript\">var $D = $D || {};</script>",
+    "<meta property=\"og:title\" content=\"DiaClear discussion: Obama's State of the Union address\"/>",
+    "<meta property=\"og:url\" content=\"http://diaclear.net/1351593553\"/>",
+    "<meta property=\"og:image\" content=\"http://diaclear.net/theme/images/diaclear-icon-t.png\"/>",
+    "<meta property=\"og:site_name\" content=\"DiaClear\"/>",
+    "<meta property=\"og:description\" content=\"This discussion was started by Mark Sales on June 15, 2014.\"/>"
+],
     "application":{
         "version":"0.0.1",
         "debugMode":true,

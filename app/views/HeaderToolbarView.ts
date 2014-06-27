@@ -7,6 +7,7 @@ class HeaderToolbarView extends ToolbarView {
     cssClass = 'ui-header ui-bar-a ui-header-fixed slidedown';
     title:HeaderTitleView;
     message:HeaderMessageView;
+    searchbutton: SearchButtonView;
     undobuttons:UndoButtonContainerView;
     logo:LogoImageView;
 
@@ -15,6 +16,7 @@ class HeaderToolbarView extends ToolbarView {
             title: HeaderTitleView,
             undobuttons: UndoButtonContainerView,
             message: HeaderMessageView,
+            searchbutton: SearchButtonView,
             logo:LogoImageView
         };
     }

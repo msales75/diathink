@@ -19,6 +19,7 @@ var HeaderToolbarView = (function (_super) {
             title: HeaderTitleView,
             undobuttons: UndoButtonContainerView,
             message: HeaderMessageView,
+            searchbutton: SearchButtonView,
             logo: LogoImageView
         };
     };

@@ -1,10 +1,13 @@
 ///<reference path="../../frameworks/m.ts"/>
 ///<reference path="BreadcrumbView.ts"/>
 ///<reference path="ButtonView.ts"/>
+///<reference path="ChatBoxView.ts"/>
 ///<reference path="ContainerView.ts"/>
 ///<reference path="DiathinkView.ts"/>
 ///<reference path="DrawLayerView.ts"/>
 ///<reference path="DropLayerView.ts"/>
+///<reference path="FacebookButtonView.ts"/>
+///<reference path="GoogleButtonView.ts"/>
 ///<reference path="GridView.ts"/>
 ///<reference path="GridRightLineView.ts"/>
 ///<reference path="GridContainerView.ts"/>
@@ -19,7 +22,10 @@
 ///<reference path="ListItemView.ts"/>
 ///<reference path="ListView.ts"/>
 ///<reference path="LoaderView.ts"/>
+///<reference path="LogoImageView.ts"/>
+///<reference path="NewRoomView.ts"/>
 ///<reference path="NodeHeaderView.ts"/>
+///<reference path="NodeLinkCountView.ts"/>
 ///<reference path="NodeTextView.ts"/>
 ///<reference path="NodeTextWrapperView.ts"/>
 ///<reference path="NodeView.ts"/>
@@ -37,9 +43,12 @@
 ///<reference path="RightSwipeButtonView.ts"/>
 ///<reference path="ScrollSpacerView.ts"/>
 ///<reference path="ScrollView.ts"/>
+///<reference path="SearchButtonView.ts"/>
+///<reference path="SocialBoxView.ts"/>
 ///<reference path="SpanView.ts"/>
 ///<reference path="TextAreaView.ts"/>
 ///<reference path="ToolbarView.ts"/>
+///<reference path="TwitterButtonView.ts"/>
 ///<reference path="UndoButtonContainerView.ts"/>
 ///<reference path="UndoButtonView.ts"/>
 ///<reference path="DropBox.ts"/>
@@ -264,6 +273,22 @@ var View = (function () {
             this.listItems.reset();
             if (!this.hideList) {
                 var models = (this.value);
+                var m;
+                for (m = models.first(); m !== ''; m = models.next[m]) {
+                    var view = new this.listItemTemplate({
+                        parentView: this,
+                        value: models.obj[m]
+                    });
+                    this.listItems.append(view.id, view);
+                }
+            }
+        } else if ((this instanceof ListView) && (this.searchList instanceof LinkedList)) {
+            if (!this.listItems) {
+                this.listItems = new LinkedList();
+            }
+            this.listItems.reset();
+            if (!this.hideList) {
+                var models = (this.searchList);
                 var m;
                 for (m = models.first(); m !== ''; m = models.next[m]) {
                     var view = new this.listItemTemplate({
@@ -754,8 +779,9 @@ var View = (function () {
             }
 
             // Confirm that view-parent is a DOM parent
-            assert($(this.elem).parents('#' + this.parentView.id).length === 1, "View " + v + " does not have parent-view " + this.parentView.id);
-
+            if (this.elem != null) {
+                assert($(this.elem).parents('#' + this.parentView.id).length === 1, "View " + v + " does not have parent-view " + this.parentView.id);
+            }
             if (this.layout.width != null) {
                 assert(this.layout.width >= 0, "Width is negative");
             }
@@ -777,27 +803,30 @@ var View = (function () {
                 assert(this.layout.left + this.layout.width <= this.parentView.layout.width, "Child too wide for parent");
             }
         }
-        assert(this.elem != null, "View " + v + " has no element");
-        assert(this.elem instanceof HTMLElement, "View " + v + " has no valid element");
-        assert(this.id === this.elem.id, "Element for view " + v + " has wrong id");
-        assert($('#' + this.elem.id).length === 1, "Element for views " + v + " not found in DOM");
-        if ($(this.elem).css('display') !== 'none') {
-            var offset = $(this.elem).offset();
-            var offset2 = this.getOffset();
-            if (!(this instanceof OutlineScrollView)) {
-                assert(Math.abs(offset.top - offset2.top) <= 1, "Offset tops don't match for view " + this.id);
-            }
-
-            assert(Math.abs(offset.left - offset2.left) <= 1, "Offset lefts don't match for view " + this.id);
-            if (this.layout.width != null) {
-                assert(Math.abs(this.layout.width - this.elem.clientWidth) <= 1, "Widths don't match for " + this.id);
-            } else {
-                // console.log("Notice: missing width for view " + this.id);
-            }
-            if (this.layout.height != null) {
-                assert(Math.abs(this.layout.height - this.elem.clientHeight) <= 1, "Heights don't match for " + this.id);
-            } else {
-                // console.log("Notice: missing height for view " + this.id);
+        if (!(this instanceof ChatBoxView)) {
+            assert(this.elem != null, "View " + v + " has no element");
+            assert(this.elem instanceof HTMLElement, "View " + v + " has no valid element");
+        }
+        if (this.elem != null) {
+            assert(this.id === this.elem.id, "Element for view " + v + " has wrong id");
+            assert($('#' + this.elem.id).length === 1, "Element for views " + v + " not found in DOM");
+            if ($(this.elem).css('display') !== 'none') {
+                var offset = $(this.elem).offset();
+                var offset2 = this.getOffset();
+                if (!(this instanceof OutlineScrollView)) {
+                    assert(Math.abs(offset.top - offset2.top) <= 1, "Offset tops don't match for view " + this.id);
+                }
+                assert(Math.abs(offset.left - offset2.left) <= 1, "Offset lefts don't match for view " + this.id);
+                if (this.layout.width != null) {
+                    assert(Math.abs(this.layout.width - this.elem.clientWidth) <= 2, "Widths don't match for " + this.id);
+                } else {
+                    // console.log("Notice: missing width for view " + this.id);
+                }
+                if (this.layout.height != null) {
+                    assert(Math.abs(this.layout.height - this.elem.clientHeight) <= 2, "Heights don't match for " + this.id);
+                } else {
+                    // console.log("Notice: missing height for view " + this.id);
+                }
             }
         }
     };

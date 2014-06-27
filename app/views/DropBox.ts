@@ -35,7 +35,7 @@ class DropBox {
         var panels = PanelView.panelsById;
         var nodes = NodeView.nodesById;
         for (nid in nodes) {
-            if (nodes[nid].nodeRootView != null) {
+            if (nodes[nid].dropboxes) {
                 var boxes = nodes[nid].dropboxes;
                 for (i = 0; i < boxes.length; ++i) {
                     boxes[i].remove();
@@ -91,6 +91,13 @@ class DropBox {
                 node.dropboxes.push(new DropBoxLink(node));
                 for (i = 0; i < node.dropboxes.length; ++i) {
                     node.dropboxes[i].render();
+                }
+            } else {
+                if ((node instanceof ChatBoxView)&&((<ChatBoxView>node).isActive)) {
+                    node.dropboxes = [];
+                    // console.log("Rendering dropbox for DropBoxChatLink");
+                    node.dropboxes.push(new DropBoxChatLink(node));
+                    node.dropboxes[0].render();
                 }
             }
         }
@@ -500,7 +507,7 @@ class DropBoxLink extends DropBox {
             function():SubAction {
                 return {
                     actionType: AddLinkAction,
-                    name: 'Add link',
+                    name: 'Add chat link',
                     referenceID: that.view.value.cid,
                     activeID: node.value.cid,
                     oldRoot: node.nodeRootView.id,
@@ -516,6 +523,53 @@ class DropBoxLink extends DropBox {
         return this.validateNodeBox(activeNode, 'link');
     }
 }
+
+class DropBoxChatLink extends DropBox {
+    view:NodeView;
+    canvas:DrawLayerView;
+
+    constructor(node:NodeView) {
+        super(node);
+        this.canvas = View.currentPage.drawlayer;
+        var pos= node.getOffset();
+        this.box = {
+            top: pos.top + 1,
+            left: pos.left + node.layout.width - $D.lineHeight,
+            width: $D.lineHeight,
+            height: $D.lineHeight,
+            class: 'dropchatlink',
+            image: 'theme/images/plus.png'
+        };
+        this.hover = {
+            top: pos.top-20,
+            left: pos.left,
+            bottom: pos.top + node.layout.height,
+            right: pos.left + node.layout.width
+        };
+    }
+
+    handleDrop(node:NodeView, helper:View) {
+        var that = this;
+        ActionManager.simpleSchedule(View.focusedView,
+            function():SubAction {
+                return {
+                    actionType: AddLinkAction,
+                    name: 'Add chat link',
+                    referenceID: that.view.value.cid,
+                    activeID: node.value.cid,
+                    anim: 'dock',
+                    nolog: true,
+                    dockView: helper,
+                    focus: true
+                };
+            });
+    }
+
+    validateDrop(activeNode:NodeView) {
+        return this.validateNodeBox(activeNode, 'link');
+    }
+}
+
 class DropBoxLeft extends DropBox {
     view:PanelView;
     canvas:DrawLayerView;
@@ -654,6 +708,9 @@ class DropBoxFirst extends DropBox {
 
     validateDrop(activeNode:NodeView) {
         // check for readonly
+        if (!this.view.value) {
+            return false;
+        }
         if (this.view.value.attributes.owner !== $D.userID) {
             return false;
         }

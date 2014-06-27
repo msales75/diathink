@@ -26,10 +26,10 @@ class PanelCreateAction extends AnimatedAction {
         } else {
             this.emptySlot = (grid.listItems.count < grid.numCols);
         }
-        console.log("runinit2: Starting with clipDir="+clipDir+", emptySlot="+this.emptySlot);
+        // console.log("runinit2: Starting with clipDir="+clipDir+", emptySlot="+this.emptySlot);
         if ((clipDir==='right')&&(this.emptySlot)) {clipDir='none';}
         if ((clipDir==='none')&&(!this.emptySlot)) {clipDir='right';}
-        console.log("Used emptySlot to temporarily update clipDir="+clipDir);
+        // console.log("Used emptySlot to temporarily update clipDir="+clipDir);
         if (reverse) {
             if (View.viewList[this.newPanel]) {
                 this.usePostAnim = true;
@@ -70,6 +70,21 @@ class PanelCreateAction extends AnimatedAction {
             }
         }
     }
+    focus() {
+        if (this.options.focusID) {
+            // look for focusID in the new panel
+            var root:string = (<PanelView>View.get(this.newPanel)).outline.alist.id;
+            var node:NodeView = OutlineNodeModel.getById(this.options.focusID).views[root];
+            if (node) {
+                View.setFocus(node);
+                var text:TextAreaView = node.header.name.text;
+                text.elem.focus();
+                // scroll it to the top
+                var scroll = node.getOffset().top - node.nodeRootView.getOffset().top;
+                node.scrollView.scrollHandler.scrollTo(0,scroll, 100);
+            }
+        }
+    }
 
     contextStep() { // save old context here
         var grid:PanelGridView = View.getCurrentPage().content.gridwrapper.grid;
@@ -85,7 +100,7 @@ class PanelCreateAction extends AnimatedAction {
             } else {
                 if ((panels.first() !== grid.value.first()) && (panels.last() === grid.value.last())) {
                     // if right is empty and left is not
-                    console.log("In panel deletion: setting clipDir=left because panels.first="+panels.first()+" and value.first="+grid.value.first());
+                    // console.log("In panel deletion: setting clipDir=left because panels.first="+panels.first()+" and value.first="+grid.value.first());
                     this.clipDir = 'left';
                 } else {
                     this.clipDir = 'right';
@@ -103,7 +118,7 @@ class PanelCreateAction extends AnimatedAction {
                 }
             }
         }
-        console.log("contextStep, setting clipDir="+this.clipDir);
+        // console.log("contextStep, setting clipDir="+this.clipDir);
     }
 
     validateOldContext() {
@@ -243,8 +258,8 @@ class PanelCreateAction extends AnimatedAction {
             var clipDir = that.clipDir;
             if ((clipDir==='right')&&(that.emptySlot)) {clipDir='none';}
             if ((clipDir==='none')&&(!that.emptySlot)) {clipDir='right';}
-            console.log("In execUniqueView, using original clipDir="+that.clipDir+", emptySlot="+that.emptySlot);
-            console.log("Setting temporary clipDir = "+clipDir);
+            // console.log("In execUniqueView, using original clipDir="+that.clipDir+", emptySlot="+that.emptySlot);
+            // console.log("Setting temporary clipDir = "+clipDir);
 
             var reverse:boolean = ((o.undo && !o.delete) ||
                 (!o.undo && o.delete));
@@ -252,7 +267,7 @@ class PanelCreateAction extends AnimatedAction {
                 if (View.get(that.newPanel) == null) { // delete panel off-screen
                     grid.value.remove(that.newPanel);
                     if (clipDir==='left') { // todo: we need to slide screen to fill-left and clip-right
-                        console.log("Showing prevleft and clipping right for invisible change");
+                        // console.log("Showing prevleft and clipping right for invisible change");
                         grid.showPrevLeft();
                         grid.clipPanel('right');
                     }
@@ -285,10 +300,10 @@ class PanelCreateAction extends AnimatedAction {
                     ((grid.listItems.next[that.options.prevPanel] === '') && (grid.listItems.count >= grid.numCols) &&
                         (that.clipDir !== 'left'))) {
                     // create panel off-screen
-                    console.log("Creating panel off-screen");
+                    // console.log("Creating panel off-screen");
                     grid.value.insertAfter(that.newPanel, true, that.options.prevPanel);
                     if (clipDir==='left') {
-                        console.log("Showing nextRight and clipping left for invisible change");
+                        // console.log("Showing nextRight and clipping left for invisible change");
                         grid.showNextRight();
                         grid.clipPanel('left');
                     }
@@ -301,12 +316,23 @@ class PanelCreateAction extends AnimatedAction {
                         parentPanel = <PanelView>View.get(o.prevPanel);
                         // console.log("Setting parentPanel: "+parentPanel.id)
                     }
-                    new PanelView({
-                        id: that.newPanel, // possibly a resurrected id
-                        parentView: View.currentPage.content.gridwrapper.grid,
-                        parentPanel: parentPanel,
-                        value: OutlineNodeModel.getById(that.options.activeID)
-                    });
+                    if (that.options.activeID==='search') {
+                        new PanelView({
+                            id: that.newPanel, // possibly a resurrected id
+                            parentView: View.currentPage.content.gridwrapper.grid,
+                            parentPanel: parentPanel,
+                            value: null,
+                            searchList: that.options.searchList
+                        });
+                    } else {
+                        new PanelView({
+                            id: that.newPanel, // possibly a resurrected id
+                            parentView: View.currentPage.content.gridwrapper.grid,
+                            parentPanel: parentPanel,
+                            value: OutlineNodeModel.getById(that.options.activeID)
+                        });
+                    }
+
                     // eliminate drag-handle class left over from DragHandler
                     if (that.options.oldRoot) {
                         var node = that.getNodeView(that.options.activeID, that.options.oldRoot);
@@ -316,9 +342,9 @@ class PanelCreateAction extends AnimatedAction {
                     }
                     // if the inserted node is right after the previous panel
                     // View.get(that.newPanel).removeClass('drag-hidden');
-                    console.log("Inserting "+that.newPanel+" after previous panel "+that.options.prevPanel);
+                    // console.log("Inserting "+that.newPanel+" after previous panel "+that.options.prevPanel);
                     dir = grid.insertAfter(<PanelView>View.get(that.options.prevPanel), <PanelView>View.get(that.newPanel), 0);
-                    console.log("Post-insertion clip = "+clipDir);
+                    // console.log("Post-insertion clip = "+clipDir);
                     grid.clipPanel(clipDir); // remove extra panels
                 }
                 grid.updatePanelButtons();

@@ -6,7 +6,6 @@ var __extends = this.__extends || function (d, b) {
 };
 ///<reference path="View.ts"/>
 m_require("app/views/View.js");
-
 var NodeView = (function (_super) {
     __extends(NodeView, _super);
     function NodeView() {
@@ -33,6 +32,7 @@ var NodeView = (function (_super) {
         }
         return this;
     };
+
     NodeView.prototype.getLastChild = function () {
         var childlist = this.children.listItems;
         if (childlist.count === 0) {
@@ -41,6 +41,7 @@ var NodeView = (function (_super) {
             return NodeView.nodesById[childlist.last()].getLastChild();
         }
     };
+
     NodeView.prototype.nextVisibleNode = function (skipchildren) {
         if (skipchildren === undefined) {
             skipchildren = false;
@@ -79,6 +80,7 @@ var NodeView = (function (_super) {
         };
         NodeView.nodesById[this.id] = this;
     };
+
     NodeView.prototype.destroy = function (opts) {
         delete NodeView.nodesById[this.id];
         var boxes = this.dropboxes;
@@ -89,9 +91,9 @@ var NodeView = (function (_super) {
             }
         }
         this.dropboxes = [];
-
         _super.prototype.destroy.call(this, opts);
     };
+
     NodeView.prototype.removeFromModel = function () {
         if (this.nodeRootView) {
             this.value.clearView(this.nodeRootView); // remove view from model-outline
@@ -110,13 +112,20 @@ var NodeView = (function (_super) {
                 this.readOnly = false;
             }
         }
+        this.isBreadcrumb = false;
+        if (this.parentView.searchList != null) {
+            this.readOnly = true;
+            this.isBreadcrumb = true;
+        }
 
         // check outline and value for collapse-status
-        this.isCollapsed = this.value.get('collapsed');
-        var outline = OutlineRootView.outlinesById[this.nodeRootView.id];
-        var collapseTest = this.nodeRootView.getData(this.value.cid);
-        if (collapseTest != null) {
-            this.isCollapsed = collapseTest;
+        if (this.value) {
+            this.isCollapsed = this.value.get('collapsed');
+            var outline = OutlineRootView.outlinesById[this.nodeRootView.id];
+            var collapseTest = this.nodeRootView.getData(this.value.cid);
+            if (collapseTest != null) {
+                this.isCollapsed = collapseTest;
+            }
         }
     };
 
@@ -125,15 +134,20 @@ var NodeView = (function (_super) {
             type: 'li',
             classes: 'ui-li ui-li-static ui-btn-up-c ' + this.cssClass
         });
+        if (this.panelView && this.panelView.browseChat) {
+            this.isCollapsed = true;
+        }
 
         // todo: make list-children rendering contingent on collapsed-value
         this.renderChildViews();
         this.positionChildren(null);
         this.setPosition();
+        while (this.value && this.value.attributes.backLinks && (this.value.attributes.backLinks.count > this.header.linkcount.numLinks)) {
+            this.header.linkcount.addLink();
+        }
         for (var name in this.childViewTypes) {
             this.elem.appendChild((this[name]).elem);
         }
-
         if (this.isCollapsed) {
             this.isLeaf = false;
             this.addClass('branch').removeClass('leaf').addClass('collapsed').removeClass('expanded');
@@ -158,9 +172,9 @@ var NodeView = (function (_super) {
         }
         */
         this.layoutUp(); // don't call setPosition for nodes, they are set by list-parent
-
         return this.elem;
     };
+
     NodeView.prototype.layoutDown = function () {
         if (!this.layout) {
             this.layout = {};
@@ -168,20 +182,27 @@ var NodeView = (function (_super) {
         this.layout.width = this.parentView.layout.width;
         this.layout.left = 0;
     };
+
     NodeView.prototype.layoutUp = function () {
         this.layout.height = this.header.layout.height + this.children.layout.height;
     };
+
     NodeView.prototype.positionChildren = function (v, v2, validate) {
         if (!v || (v === this.header)) {
-            var l = this.children.saveLayout();
-            this.children.layoutDown();
-            this.children.updateDiffs(l, validate);
+            if (this.children) {
+                var l = this.children.saveLayout();
+                this.children.layoutDown();
+                this.children.updateDiffs(l, validate);
+            }
         }
     };
 
     NodeView.prototype.setCollapsed = function (collapsed) {
         if (this.isLeaf) {
             collapsed = false;
+        }
+        if (this.panelView && this.panelView.browseChat) {
+            collapsed = true;
         }
         if (collapsed === this.isCollapsed) {
             return;
@@ -222,6 +243,7 @@ var NodeView = (function (_super) {
             this.removeClass('ui-last-child');
         }
     };
+
     NodeView.prototype.themeLeaf = function (leaf) {
         if (leaf === this.isLeaf) {
             return;
@@ -234,6 +256,7 @@ var NodeView = (function (_super) {
         }
         this.header.handle.renderUpdate();
     };
+
     NodeView.prototype.validate = function () {
         _super.prototype.validate.call(this);
         var views = View.viewList;
@@ -242,35 +265,38 @@ var NodeView = (function (_super) {
         var models = OutlineNodeModel.modelsById;
         var v = this.id;
         var foundit = false;
-
         assert(views[this.id] === this, "Node " + this.id + " not in list");
         assert(this.nodeView === this, "NodeView does not identify itself as nodeView");
         assert(this.parentView.nodeView !== this, "NodeView parent cannot refer to inner nodeView");
-        assert(this.nodeRootView != null, "NodeView cannot have null nodeRootView");
-        assert(this.value instanceof OutlineNodeModel, "NodeView  " + v + " value is not a model");
-        assert(models[this.value.cid].attributes.children === this.children.value, "NodeView " + v + " has value-children different than children-value");
-        assert(this.parentView instanceof ListView, "View " + v + " has type NodeView but parentView is not a ListView");
-        assert(this.parentView.value instanceof OutlineNodeCollection, "NodeView " + v + " parent view does not have value OutlineNodeCollection");
-        assert(this.parentView.value.obj[this.value.cid] === models[this.value.cid], "NodeView " + v + " parent view's collection does not include item's model ID " + this.value.cid);
-        assert(this.value.views[this.nodeRootView.id] === this, "View " + v + " has a model without corresponding view under nodeRootView " + this.nodeRootView.id);
-
-        if (this.value.attributes.parent != OutlineNodeModel.root) {
-            if (outlines[this.parentView.id] != null) {
-            } else {
-                assert(this.parentView.nodeView != null, "NodeView " + v + " does not have a valid parent's parent though it is not the outline-root");
-                assert(this.parentView.nodeView instanceof NodeView, "NodeView " + v + " does not have a parent's parent that is also a NodeView, nor is it the outline-root");
-                assert(models[this.parentView.nodeView.value.cid] === this.value.attributes.parent, "NodeView " + v + " has a parent NodeView with model id " + this.parentView.nodeView.value.cid + " which does not match model-parent");
-            }
-        } else {
-            assert(outlines[this.parentView.id] != null, "View " + v + " has root-model but is not an outline root");
+        if (!(this instanceof ChatBoxView)) {
+            assert(this.nodeRootView != null, "NodeView cannot have null nodeRootView");
         }
-
-        if (this.isCollapsed) {
-            assert($(this.elem).hasClass('collapsed'), "List item " + this.id + " does not have collapsed class");
-            assert(!$(this.elem).hasClass('expanded'), "List item " + this.id + " has expanded class");
-        } else {
-            assert(!$(this.elem).hasClass('collapsed'), "List item " + this.id + " has collapsed class");
-            assert($(this.elem).hasClass('expanded'), "List item " + this.id + " does not have collapsed class");
+        assert(this.value instanceof OutlineNodeModel, "NodeView  " + v + " value is not a model");
+        if (this.children) {
+            assert(models[this.value.cid].attributes.children === this.children.value, "NodeView " + v + " has value-children different than children-value");
+        }
+        if (!(this instanceof ChatBoxView)) {
+            assert(this.parentView instanceof ListView, "View " + v + " has type NodeView but parentView is not a ListView");
+            assert(this.parentView.value instanceof OutlineNodeCollection, "NodeView " + v + " parent view does not have value OutlineNodeCollection");
+            assert(this.parentView.value.obj[this.value.cid] === models[this.value.cid], "NodeView " + v + " parent view's collection does not include item's model ID " + this.value.cid);
+            assert(this.value.views[this.nodeRootView.id] === this, "View " + v + " has a model without corresponding view under nodeRootView " + this.nodeRootView.id);
+            if (this.value.attributes.parent != OutlineNodeModel.root) {
+                if (outlines[this.parentView.id] != null) {
+                } else {
+                    assert(this.parentView.nodeView != null, "NodeView " + v + " does not have a valid parent's parent though it is not the outline-root");
+                    assert(this.parentView.nodeView instanceof NodeView, "NodeView " + v + " does not have a parent's parent that is also a NodeView, nor is it the outline-root");
+                    assert(models[this.parentView.nodeView.value.cid] === this.value.attributes.parent, "NodeView " + v + " has a parent NodeView with model id " + this.parentView.nodeView.value.cid + " which does not match model-parent");
+                }
+            } else {
+                assert(outlines[this.parentView.id] != null, "View " + v + " has root-model but is not an outline root");
+            }
+            if (this.isCollapsed) {
+                assert($(this.elem).hasClass('collapsed'), "List item " + this.id + " does not have collapsed class");
+                assert(!$(this.elem).hasClass('expanded'), "List item " + this.id + " has expanded class");
+            } else {
+                assert(!$(this.elem).hasClass('collapsed'), "List item " + this.id + " has collapsed class");
+                assert($(this.elem).hasClass('expanded'), "List item " + this.id + " does not have collapsed class");
+            }
         }
     };
     NodeView.nodesById = {};

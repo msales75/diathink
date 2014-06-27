@@ -23,8 +23,8 @@ class DeadOutlineRoot extends DeadView {
     }
     validate() {
         super.validate();
-        assert(this.value instanceof OutlineNodeCollection,
-            "DeadOutline "+this.id+" does not have a valid value");
+            assert(this.value instanceof OutlineNodeCollection,
+                "DeadOutline "+this.id+" does not have a valid value");
     }
 }
 class OutlineRootView extends ListView {
@@ -44,7 +44,12 @@ class OutlineRootView extends ListView {
         if (this.panelView!=null) { // if we are not detached from a panel
             assert(this.parentView.parentView instanceof PanelView,
                 "Invalid location for root list");
-            this.value = this.panelView.value.get('children');
+            if (this.panelView.value) {
+                this.value = this.panelView.value.get('children');
+            } else if (this.panelView.searchList) {
+                this.value = null;
+                this.searchList = this.panelView.searchList;
+            }
         }
     }
     layoutDown() {
@@ -103,8 +108,10 @@ class OutlineRootView extends ListView {
             "Outline view " + o + " does not have parent-parent-view a panel");
         assert(this.parentView.parentView.outline.alist === this,
             "Outline view " + o + " does not match parent.parent.outline.alist in a panel");
-        assert(this.value instanceof OutlineNodeCollection,
-            "OutlineRootView "+o+" does not have value of type OutlineNodeCollection");
+        if (!this.searchList) {
+            assert(this.value instanceof OutlineNodeCollection,
+                "OutlineRootView "+o+" does not have value of type OutlineNodeCollection");
+        }
         // todo: validate this.data[key]=val
     }
 }

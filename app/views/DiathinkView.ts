@@ -1,6 +1,41 @@
 ///<reference path="View.ts"/>
 m_require("app/views/PageView.js");
 m_require("app/views/PageView.js");
+function GetWindowWidth()
+{
+    var x = 0;
+    if (self.innerHeight)
+    {
+        x = self.innerWidth;
+    }
+    else if (document.documentElement && document.documentElement.clientHeight)
+    {
+        x = document.documentElement.clientWidth;
+    }
+    else if (document.body)
+    {
+        x = document.body.clientWidth;
+    }
+    return x;
+}
+
+function GetWindowHeight()
+{
+    var y = 0;
+    if (self.innerHeight)
+    {
+        y = self.innerHeight;
+    }
+    else if (document.documentElement && document.documentElement.clientHeight)
+    {
+        y = document.documentElement.clientHeight;
+    }
+    else if (document.body)
+    {
+        y = document.body.clientHeight;
+    }
+    return y;
+}
 class DiathinkView extends PageView {
     cssClass = 'ui-page ui-body-c ui-page-header-fixed ui-page-active ui-sortable';
     public header:HeaderToolbarView;
@@ -22,8 +57,8 @@ class DiathinkView extends PageView {
         this.layout = {
             top: 0,
             left: 0,
-            width: $(window.document.documentElement).width(),
-            height: $(window.document.documentElement).height()
+            width: GetWindowWidth(),
+            height: GetWindowHeight()
         };
     }
     validate() {

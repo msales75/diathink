@@ -65,6 +65,9 @@ interface ActionOptions {
     userID?:string;
     copyID?:string;
     copyPrefix?:string;
+    nolog?:boolean;
+    focusID?:string;
+    searchList?:OutlineNodeCollection;
 }
 interface SubAction extends ActionOptions {
     actionType: any;
@@ -565,12 +568,15 @@ class Action extends PModel {
             json.parentActionID = this.parentAction.cid;
         }
         json.sessionID = $D.sessionID;
-        json.options.userID = $D.userID;
+        if (!json.options.userID) {
+            json.options.userID = $D.userID;
+        }
         return json;
     }
     broadcast() {
         if (this.options.origID) {return;}
         if (!this.type || (!Action.remoteActionTypes[this.type])) {return;}
+
         // if (this.parentAction!=null) {return;}
         var json:ActionJSON = this.toJSON();
         json.broadcastID = ActionManager.actions.getNextBroadcastID();
@@ -581,6 +587,16 @@ class Action extends PModel {
             // todo: need remote ID's for all of the objects?
             delete json.options['activeID'];
         }
+        if (json.options.copyID==='chatbox') {
+            json.options.copyID='remotebox';
+        }
+        if (json.options.referenceID==='chatbox') {
+            json.options.referenceID='remotebox';
+        }
+        if (json.options.activeID==='chatbox') {
+            json.options.activeID='remotebox';
+        }
+
         (<JQueryStaticD>$).postMessage(
             (<JQueryStaticD>$).toJSON({
                command: 'broadcastAction',
@@ -690,22 +706,41 @@ class Action extends PModel {
         if (!View.focusedView) {
             return null; // view was deleted since being edited
         }
+        if (View.focusedView.readOnly) {
+            return null;
+        }
+        var nolog = false;
+        if (View.focusedView instanceof ChatBoxView) {
+            nolog = true;
+        }
         var view:NodeView = View.focusedView;
         id = view.header.name.text.id;
         var value = view.header.name.text.value;
+        if (view.panelView.browseChat) {
+            value = value.replace(/\([^\)]*\) /, '');
+        }
+        if (value.match(/carbon pollution/)) {
+            View.currentPage.header.searchbutton.suggest();
+        }
+
         // console.log('checkTextChange: id = '+id);
         var model = view.value;
         if (model.get('text') !== value) {
             //console.log("TextAction for id="+id+"; model="+
             //  model.cid+" with value="+$('#'+id).val());
             // console.log("checkTextChange returning with TextAction");
+            var rootid:string = null;
+            if (view.nodeRootView) {
+                rootid = view.nodeRootView.id;
+            }
             return {
                 actionType: TextAction,
                 name: "Text edit",
                 activeID: model.cid,
                 text: value,
-                oldRoot: view.nodeRootView.id,
-                newRoot: view.nodeRootView.id,
+                oldRoot: rootid,
+                newRoot: rootid,
+                nolog: nolog,
                 focus: false
             }
         }

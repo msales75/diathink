@@ -30,7 +30,9 @@ var InsertionView = (function (_super) {
     };
     InsertionView.prototype.updateValue = function () {
         // check for readonly panel
-        if (this.panelView.value.attributes.owner !== $D.userID) {
+        if (this.panelView.value == null) {
+            this.isHidden = true;
+        } else if (this.panelView.value.attributes.owner !== $D.userID) {
             this.isHidden = true;
         } else {
             if (this.panelView.value.attributes.children.count > 0) {
@@ -47,6 +49,9 @@ var InsertionView = (function (_super) {
         }
     };
     InsertionView.prototype.show = function () {
+        if (this.panelView.value == null) {
+            return;
+        }
         if (this.panelView.value.attributes.owner !== $D.userID) {
             return;
         }
@@ -89,12 +94,14 @@ var InsertionView = (function (_super) {
     };
     InsertionView.prototype.validate = function () {
         _super.prototype.validate.call(this);
-        if ((this.panelView.value.attributes.children.count > 0) || (this.panelView.value.attributes.owner !== $D.userID)) {
-            assert(this.isHidden === true, "isHidden is wrong for insertionview");
-            assert($(this.elem).css('display') === 'none', "Wrong display for insertionview");
-        } else {
-            assert(this.isHidden === false, "isHidden is wrong for insertionview");
-            assert($(this.elem).css('display') === 'block', "Wrong display for insertionview");
+        if (this.panelView.value) {
+            if ((this.panelView.value.attributes.children.count > 0) || (this.panelView.value.attributes.owner !== $D.userID)) {
+                assert(this.isHidden === true, "isHidden is wrong for insertionview");
+                assert($(this.elem).css('display') === 'none', "Wrong display for insertionview");
+            } else {
+                assert(this.isHidden === false, "isHidden is wrong for insertionview");
+                assert($(this.elem).css('display') === 'block', "Wrong display for insertionview");
+            }
         }
     };
     return InsertionView;

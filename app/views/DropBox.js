@@ -22,7 +22,7 @@ var DropBox = (function () {
         var panels = PanelView.panelsById;
         var nodes = NodeView.nodesById;
         for (nid in nodes) {
-            if (nodes[nid].nodeRootView != null) {
+            if (nodes[nid].dropboxes) {
                 var boxes = nodes[nid].dropboxes;
                 for (i = 0; i < boxes.length; ++i) {
                     boxes[i].remove();
@@ -79,6 +79,14 @@ var DropBox = (function () {
                 node.dropboxes.push(new DropBoxLink(node));
                 for (i = 0; i < node.dropboxes.length; ++i) {
                     node.dropboxes[i].render();
+                }
+            } else {
+                if ((node instanceof ChatBoxView) && (node.isActive)) {
+                    node.dropboxes = [];
+
+                    // console.log("Rendering dropbox for DropBoxChatLink");
+                    node.dropboxes.push(new DropBoxChatLink(node));
+                    node.dropboxes[0].render();
                 }
             }
         }
@@ -478,7 +486,7 @@ var DropBoxLink = (function (_super) {
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: AddLinkAction,
-                name: 'Add link',
+                name: 'Add chat link',
                 referenceID: that.view.value.cid,
                 activeID: node.value.cid,
                 oldRoot: node.nodeRootView.id,
@@ -495,6 +503,50 @@ var DropBoxLink = (function (_super) {
     };
     return DropBoxLink;
 })(DropBox);
+
+var DropBoxChatLink = (function (_super) {
+    __extends(DropBoxChatLink, _super);
+    function DropBoxChatLink(node) {
+        _super.call(this, node);
+        this.canvas = View.currentPage.drawlayer;
+        var pos = node.getOffset();
+        this.box = {
+            top: pos.top + 1,
+            left: pos.left + node.layout.width - $D.lineHeight,
+            width: $D.lineHeight,
+            height: $D.lineHeight,
+            class: 'dropchatlink',
+            image: 'theme/images/plus.png'
+        };
+        this.hover = {
+            top: pos.top - 20,
+            left: pos.left,
+            bottom: pos.top + node.layout.height,
+            right: pos.left + node.layout.width
+        };
+    }
+    DropBoxChatLink.prototype.handleDrop = function (node, helper) {
+        var that = this;
+        ActionManager.simpleSchedule(View.focusedView, function () {
+            return {
+                actionType: AddLinkAction,
+                name: 'Add chat link',
+                referenceID: that.view.value.cid,
+                activeID: node.value.cid,
+                anim: 'dock',
+                nolog: true,
+                dockView: helper,
+                focus: true
+            };
+        });
+    };
+
+    DropBoxChatLink.prototype.validateDrop = function (activeNode) {
+        return this.validateNodeBox(activeNode, 'link');
+    };
+    return DropBoxChatLink;
+})(DropBox);
+
 var DropBoxLeft = (function (_super) {
     __extends(DropBoxLeft, _super);
     function DropBoxLeft(panel) {
@@ -622,6 +674,9 @@ var DropBoxFirst = (function (_super) {
 
     DropBoxFirst.prototype.validateDrop = function (activeNode) {
         // check for readonly
+        if (!this.view.value) {
+            return false;
+        }
         if (this.view.value.attributes.owner !== $D.userID) {
             return false;
         }

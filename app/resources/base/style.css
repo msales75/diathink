@@ -201,7 +201,8 @@ li {
     width: 1.48em;
 }
 .drop-mode .droplayer > .droparrow > img,
-.drop-mode .droplayer > .droplink > img {
+.drop-mode .droplayer > .droplink > img,
+.drop-mode .dropchatlink > img {
     opacity: 0.3;
     width: 100%;
     height: 100%;
@@ -217,10 +218,15 @@ li {
     height: 1.48em;
     width: 1.48em;
 }
-.drop-mode .droplayer > .droplink.active {
+.drop-mode .droplayer > .droplink.active,
+.drop-mode .dropchatlink.active {
     opacity: 1;
 }
 
+.drop-mode .dropchatlink {
+    position: absolute;
+    opacity: 0.3;
+}
 .ui-scrollview-clip {
     overflow: hidden;
 }
@@ -528,5 +534,15 @@ div.hiddendiv > span.node-link {
     width: 40px;
     height: 40px;
     background-color: #FF0;
+}
+
+.linkcount.disabled {
+    display: none;
+}
+.linkcount > .numlinks {
+    position: absolute;
+    color: #FFF;
+    left: 7px;
+    top: 2px;
 }
 /* End of debug */

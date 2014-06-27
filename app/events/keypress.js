@@ -9,7 +9,7 @@ $D.handleKeypress = function (view, e) {
     if (liView.readOnly) {
         return;
     }
-    if (key === ' ') {
+    if ((key === ' ') && (!(liView instanceof ChatBoxView))) {
         sel = view.getSelection();
 
         // check if cursor is on far left of textbox

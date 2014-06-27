@@ -57,12 +57,20 @@ class ActionManager {
             f);
     }
 
-    static schedule(f:AnonFunction, f2?:AnonFunction) {
+    static schedule(f:AnonFunction, f2?:AnonFunction, f3?:AnonFunction, f4?:AnonFunction) {
         var newlength = 1;
         this.queue.push(f);
         if (f2 != null) {
             var newlength = 2;
             this.queue.push(f2);
+        }
+        if (f3 != null) {
+            var newlength = 3;
+            this.queue.push(f3);
+        }
+        if (f4 != null) {
+            var newlength = 4;
+            this.queue.push(f4);
         }
         if (this.queue.length === newlength) {
             // console.log("In schedule(), starting queue-processing because none are currently running");
@@ -91,7 +99,7 @@ class ActionManager {
                 this.queueComplete(f, null);
                 if (this.queue.length === 0) {
                     // console.log("Validating after null action");
-                    validate();
+                    // validate();
                 }
                 return;
             }
@@ -168,6 +176,9 @@ class ActionManager {
     static log(action:Action) {
         if (action.options.origID) {
             return; // don't log remote actions locally
+        }
+        if (action.options.nolog) {
+            return;
         }
         if (action.options.undo) {
             // console.log("Done undoing action " + action.historyRank + ': ' + action.type);

@@ -18,8 +18,14 @@ interface NodeOutlineJson {
     deleted?:boolean;
 }
 function repossess(json:NodeOutlineJson, userID:string, prefix:string) {
+    if (json.cid==='remotebox') {json.cid='chatbox';}
+    if (json.cid==='chatbox') {
+        json.owner = 'chat';
+        json.text = userID + ': '+json.text;
+    } else {
+        json.owner = userID;
+    }
     if (json.cid) {json.cid = prefix+json.cid;}
-    json.owner = userID;
     var i:number;
     for (i=0; i<json.children.length; ++i) {
         repossess(json.children[i], userID, prefix);
@@ -77,6 +83,8 @@ interface ModelOptions {
 }
 class OutlineNodeModel extends PModel {
     static root:OutlineNodeModel;
+    static chatbox:OutlineNodeModel;
+    static remotebox:OutlineNodeModel;
     static modelsById:{[i:string]:OutlineNodeModel} = {};
     static deletedById:{[i:string]:OutlineNodeModel} = {};
     static getById(id:string) {
@@ -346,7 +354,7 @@ class OutlineNodeModel extends PModel {
             assert(deleted[m] === undefined,
                 "Model "+m+" is in deleted list");
             if (this.attributes.parent == null) {
-                assert(OutlineNodeModel.root === this,
+                assert((OutlineNodeModel.root === this)||(OutlineNodeModel.chatbox===this)||(OutlineNodeModel.remotebox===this),
                     "Model "+m+" has parent=null");
             }
 
@@ -370,7 +378,7 @@ class OutlineNodeModel extends PModel {
                     "The child " + cm + " of model " + m + " does not have the matching parent-field");
             }
 
-            if (this !== OutlineNodeModel.root) { // check ancestry of non-root items
+            if ((this !== OutlineNodeModel.root)&&(this !== OutlineNodeModel.chatbox)&&(this !== OutlineNodeModel.remotebox)) { // check ancestry of non-root items
                 var p:OutlineNodeModel = this.attributes.parent;
                 assert(models[p.cid] === p,
                     "The parent of model " + m + ", " + p.cid + ", does not point to a listed model");

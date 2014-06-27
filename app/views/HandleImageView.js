@@ -16,10 +16,26 @@ var HandleImageView = (function (_super) {
     HandleImageView.prototype.init = function () {
         this.isClickable = true;
     };
+    HandleImageView.prototype.updateValue = function () {
+        if (this.panelView && this.panelView.browseChat && (this.nodeView.parentView === this.nodeRootView)) {
+            this.isDiscussion = true;
+        } else {
+            this.isDiscussion = false;
+        }
+    };
+    HandleImageView.prototype.render = function () {
+        _super.prototype.render.call(this);
+        if (this.nodeView instanceof ChatBoxView) {
+            this.elem.style.display = 'none';
+        }
+        return this.elem;
+    };
 
     HandleImageView.prototype.renderUpdate = function () {
         var node = this.nodeView;
-        if (node.isLeaf) {
+        if (this.isDiscussion) {
+            this.value = 'theme/images/plus.png';
+        } else if (node.isLeaf) {
             this.value = 'theme/images/circle.png';
         } else {
             if (node.isCollapsed) {
@@ -41,6 +57,49 @@ var HandleImageView = (function (_super) {
     HandleImageView.prototype.onClick = function (params) {
         var li = this.nodeView;
         if (!this.nodeRootView) {
+            return;
+        }
+        if (this.isDiscussion) {
+            // console.log("Discussion node clicked");
+            ActionManager.schedule(function () {
+                if (!View.focusedView) {
+                    return null;
+                }
+                return Action.checkTextChange(View.focusedView.header.name.text.id);
+            }, function () {
+                return {
+                    actionType: PanelCreateAction,
+                    name: 'Create panel',
+                    activeID: li.value.attributes.children.last(),
+                    prevPanel: li.panelView.id,
+                    oldRoot: li.nodeRootView.id,
+                    newRoot: 'new',
+                    focus: false
+                };
+            }, function () {
+                return {
+                    actionType: PanelCreateAction,
+                    name: 'Create panel',
+                    activeID: li.value.attributes.children.first(),
+                    prevPanel: li.panelView.id,
+                    oldRoot: li.nodeRootView.id,
+                    newRoot: 'new',
+                    focus: false
+                };
+            }, function () {
+                $.postMessage($.toJSON({
+                    command: 'script',
+                    mesg: {}
+                }), 'http://diathink.com/', window.frames['forwardIframe']);
+                return {
+                    actionType: PanelCreateAction,
+                    delete: true,
+                    name: 'Close rooms list',
+                    activeID: li.panelView.value.cid,
+                    panelID: li.panelView.id,
+                    focus: false
+                };
+            });
             return;
         }
         var liElem = $(li.elem);

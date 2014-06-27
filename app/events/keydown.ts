@@ -180,6 +180,59 @@ $D.handleKeydown = function(view:TextAreaView, e) {
     var liView, collection, sel, pos:number, newNode:NodeView;
     liView = view.nodeView;
     if (liView.readOnly) {return;}
+    if (liView instanceof ChatBoxView) {
+        if (e.which === 13) {
+            var chatroot:OutlineNodeModel = <OutlineNodeModel>OutlineNodeModel.getById('chatroot');
+            if (chatroot.attributes.children.count===0) {
+                scheduleKey(e.simulated, id, function():SubAction {
+                    return {
+                        actionType: InsertIntoAction,
+                        copyID: liView.value.cid,
+                        anim: 'create',
+                        name: 'Chat entry',
+                        referenceID: chatroot.cid,
+                        focus: false,
+                        nolog: true
+                    };
+                });
+            } else {
+                scheduleKey(e.simulated, id, function():SubAction {
+                    return {
+                        actionType: InsertAfterAction,
+                        copyID: liView.value.cid,
+                        anim: 'create',
+                        name: 'Chat entry',
+                        referenceID: chatroot.attributes.children.last(),
+                        focus: false,
+                        nolog:true
+                    };
+                });
+            }
+            ActionManager.schedule(function() {
+                view.setValue("");
+                OutlineNodeModel.chatbox.attributes.text = "";
+                view.nodeView.value.attributes.text = "";
+
+                var node:OutlineNodeModel = liView.value;
+                var links = liView.header.name.listItems;
+                var l:string;
+                while (links.first()!=='') {
+                    l = links.first();
+                    var linkm:OutlineNodeModel = View.get(l).value;
+                    node.attributes.links.remove(linkm.cid);
+                    linkm.attributes.backLinks.remove(node.cid);
+
+                    liView.header.name.listItems.remove(l);
+                    View.get(l).destroy();
+                    liView.header.name.text.resizeUp();
+                }
+
+                return null;
+            });
+            e.preventDefault();
+        }
+        return;
+    }
     sel = view.getSelection();
     if ($D.is_android) {
         if (sel[0]>0) {sel[0] = sel[0]-1;}

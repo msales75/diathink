@@ -6,7 +6,6 @@ var __extends = this.__extends || function (d, b) {
 };
 ///<reference path="View.ts"/>
 m_require("app/views/TextAreaView.js");
-
 var NodeTextView = (function (_super) {
     __extends(NodeTextView, _super);
     function NodeTextView() {
@@ -15,7 +14,28 @@ var NodeTextView = (function (_super) {
     }
     NodeTextView.prototype.updateValue = function () {
         // this.setValuePatterns(this.parentView.parentView.parentView.value);
-        this.value = this.nodeView.value.get('text');
+        if (this.nodeView.isBreadcrumb) {
+            this.value = this.getBreadcrumbPrefix() + this.nodeView.value.get('text');
+        } else {
+            this.value = this.nodeView.value.get('text');
+        }
+    };
+
+    NodeTextView.prototype.getBreadcrumbPrefix = function () {
+        var blist = [];
+        var crumb, model = this.nodeView.value;
+        crumb = model;
+        while (crumb != null) {
+            blist.unshift(crumb);
+            crumb = crumb.get('parent');
+        }
+        var i, html = '';
+        if (blist.length > 0) {
+            for (i = 0; i < blist.length - 1; ++i) {
+                html += blist[i].get('text') + ' > ';
+            }
+        }
+        return html;
     };
     return NodeTextView;
 })(TextAreaView);

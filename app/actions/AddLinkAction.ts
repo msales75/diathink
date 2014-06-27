@@ -93,6 +93,29 @@ class AddLinkAction extends AnimatedAction {
         });
         */
     }
+    getFocusNode():NodeView {
+        // by default, focus on activeID in newRoot
+        var newRoot;
+        if (this.options.undo) {
+            newRoot = this.options.oldRoot;
+        } else {
+            newRoot = this.options.newRoot;
+        }
+        if (this.options.referenceID==='chatbox') {
+            var o:string;
+            for (o in OutlineRootView.outlinesById) {
+                if ((<OutlineRootView>OutlineRootView.outlinesById[o]).panelView.chatbox.isActive) {
+                    // console.log("Found chatbox for AddLink getFocusNode()");
+                    return (<OutlineRootView>OutlineRootView.outlinesById[o]).panelView.chatbox;
+                }
+            }
+            // console.log("Did not find chatbox for AddLink getFocusNode()");
+            return null;
+        } else {
+            // console.log("Did not have cid=chatbox");
+            return this.getNodeView(this.options.referenceID, newRoot);
+        }
+    }
 
     validateOptions() {
         var linkModel = OutlineNodeModel.getById(this.options.activeID);
@@ -156,7 +179,14 @@ class AddLinkAction extends AnimatedAction {
     execView(outline) {
         var that = this;
         this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd'], function() {
-            var refLineView = that.getNodeView(that.options.referenceID, outline.nodeRootView.id);
+            var refLineView:NodeView;
+            // check for chatbox in this panel
+            if ((that.options.referenceID==='chatbox')&&(outline.panelView.chatbox.isActive)) {
+                refLineView = outline.panelView.chatbox;
+            } else {
+                refLineView = that.getNodeView(that.options.referenceID, outline.nodeRootView.id)
+            }
+
             if (refLineView != null) {
                 // update listItems, update DOM
                 var reverse:boolean = ((that.options.undo && !that.options.delete)||
@@ -191,11 +221,13 @@ class AddLinkAction extends AnimatedAction {
                     refLineView.header.name.text.resizeUp();
                 }
             }
+
             // remove helper-stuff when done, since we're not using animator
             if (that.options.activeID) {
                 var activeView:NodeView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
                 if (activeView && activeView.elem) {
                     $(activeView.elem).removeClass('drag-hidden');
+                    activeView.header.linkcount.addLink();
                 }
             }
             if (that.options.dockView) {

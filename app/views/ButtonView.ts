@@ -6,12 +6,19 @@ class ButtonView extends View {
     value:string = 'theme/images/circle.png';
     elem:HTMLAnchorElement;
     timer:number;
+    buttonContent:string;
 
     render() {
+        var html = '<img src="'+this.value+'" alt="'+this.value+'"/>';
+        if (this.buttonContent) {
+            html += this.buttonContent;
+        }
+        var classes = 'button';
+        if (this.cssClass) {classes += ' '+this.cssClass;}
         this._create({
             type: 'div',
-            classes: 'button',
-            html: '<img src="'+this.value+'" alt="'+this.value+'"/>'
+            classes: classes,
+            html: html
         });
         /*
         this._create({

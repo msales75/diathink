@@ -11,7 +11,6 @@ var BreadcrumbView = (function (_super) {
     function BreadcrumbView() {
         _super.apply(this, arguments);
         this.isAbsolute = false;
-        this.dirtyHeight = true;
     }
     BreadcrumbView.prototype.init = function () {
         this.isClickable = true;
@@ -28,7 +27,6 @@ var BreadcrumbView = (function (_super) {
                     crumb = crumb.get('parent');
                 }
             }
-            this.dirtyHeight = true;
         }
     };
 
@@ -40,6 +38,8 @@ var BreadcrumbView = (function (_super) {
                 html += '<a class="ui-breadcrumb-link ui-link" data-href="' + this.value[i].cid + '">' + this.value[i].get('text') + '</a><span>&gt;</span>';
             }
             html += ' <a class="panel-name">' + this.value[i].get('text') + '</a><span>&nbsp;</span>';
+        } else {
+            html = ' <a class="panel-name">Matches</a><span>&nbsp;</span>';
         }
         return html;
     };
@@ -78,9 +78,6 @@ var BreadcrumbView = (function (_super) {
         var p = this.parentView.layout;
         if (this.layout == null) {
             this.layout = {};
-        }
-        if (p.width !== this.layout.width) {
-            this.dirtyHeight = true;
         }
         this.layout.top = 0;
         this.layout.left = Math.round(0.8 * View.fontSize);

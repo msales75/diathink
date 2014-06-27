@@ -31,7 +31,7 @@ function saveSnapshot() {
 function createPage() {
     new DiathinkView({});
     var grid:PanelGridView = View.currentPage.content.gridwrapper.grid;
-    grid.updateCols();
+    // grid.updateCols();
     grid.append(new PanelView({parentView: grid, value: OutlineNodeModel.root}));
     // grid.append(new PanelView({parentView: grid, value: OutlineNodeModel.root}));
     View.currentPage.prerender();
@@ -100,11 +100,11 @@ $(window).bind('load', function() {
                 }), 'http://diathink.com/', window.frames['forwardIframe']);
             } else if (mesgObj.mesgtype == "realtime") {
                 // create new action and see if it's
-                if ($D.listenRealtime) {
+                if ($D.listenRealtime && $D.ready) {
                     console.log("Processing realtime message");
                     Action.remoteExec(mesgObj);
                 } else {
-                    console.log("Ignoring realtime message");
+                    // console.log("Ignoring realtime message");
                 }
             } else if (mesgObj.mesgtype === 'save') {
                 View.currentPage.header.message.setValue('Saved', 'action');
@@ -117,8 +117,10 @@ $(window).bind('load', function() {
                     View.currentPage = undefined;
                 }
                 for (i in OutlineNodeModel.modelsById) {
-                    OutlineNodeModel.modelsById[i].attributes = {};
-                    delete OutlineNodeModel.modelsById[i];
+                    if ((i!=='chatbox')&&(i!=='remotebox')) {
+                        OutlineNodeModel.modelsById[i].attributes = {};
+                        delete OutlineNodeModel.modelsById[i];
+                    }
                 }
                 DeadView.viewList = {};
                 OutlineNodeModel.root = new OutlineNodeModel({cid: mesgObj.cid});
@@ -142,5 +144,7 @@ $(window).bind('load', function() {
     $(document.body).append('<iframe name="forwardIframe" src="http://diathink.com/forward/#' + encodeURIComponent(location.href) +
         '" scrolling="no" frameborder="0" style="display:none;"></iframe>');
     $D.router = new Router(document.body);
+    OutlineNodeModel.chatbox = new OutlineNodeModel({cid: 'chatbox'});
+    OutlineNodeModel.remotebox = new OutlineNodeModel({cid: 'remotebox'});
 });
 

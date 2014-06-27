@@ -50,7 +50,10 @@ var PanelView = (function (_super) {
             breadcrumbs: BreadcrumbView,
             inserter: InsertionView,
             outline: OutlineScrollView,
-            deletebutton: PanelDeleteView
+            deletebutton: PanelDeleteView,
+            chatbox: ChatBoxView,
+            socialbox: SocialBoxView,
+            newroom: NewRoomView
         };
         assert(PanelView.panelsById[this.id] === undefined, "Multiple panels with same ID");
         PanelView.panelsById[this.id] = this;
@@ -59,6 +62,14 @@ var PanelView = (function (_super) {
         if (this.parentPanel != null) {
             assert(this.parentPanel instanceof PanelView, "");
             this.parentPanel.childPanel = this;
+        }
+        this.isChat = false;
+        this.browseChat = false;
+        if (this.value && this.value.attributes.text === 'Browse') {
+            this.browseChat = true;
+        }
+        if (this.value && this.value.attributes.text === 'Chat') {
+            this.isChat = true;
         }
     };
     PanelView.prototype.layoutDown = function () {
@@ -78,6 +89,9 @@ var PanelView = (function (_super) {
             var l2 = this.inserter.saveLayout();
             this.inserter.layout.top = this.breadcrumbs.layout.height + Math.round(0.5 * View.fontSize);
             this.inserter.updateDiffs(l2, validate);
+            var l3 = this.newroom.saveLayout();
+            this.newroom.layout.top = this.outline.layout.top + this.outline.alist.layout.height + 4;
+            this.newroom.updateDiffs(l3, validate);
         }
     };
 
@@ -95,7 +109,9 @@ var PanelView = (function (_super) {
         this.positionChildren(null);
         this.setPosition();
         for (var name in this.childViewTypes) {
-            this.elem.appendChild((this[name]).elem);
+            if ((this[name]).elem != null) {
+                this.elem.appendChild((this[name]).elem);
+            }
         }
         return this.elem;
     };

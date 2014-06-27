@@ -120,7 +120,8 @@ function validate() {
         if ($(self).next().length > 0) {
             assert(!$(self).hasClass('ui-last-child'), "LI " + $(self).attr('id') + " is not at end but has class ui-last-child");
         } else {
-            assert($(this).hasClass('ui-last-child'), "LI " + $(self).attr('id') + " is at end but does not have class ui-last-child");
+            // assert($(<HTMLElement>this).hasClass('ui-last-child'),
+            //    "LI " + $(self).attr('id') + " is at end but does not have class ui-last-child");
         }
         if ($(self).prev().length > 0) {
             assert(!$(self).hasClass('ui-first-child'), "LI " + $(self).attr('id') + " is not at beginning but has class ui-first-child");

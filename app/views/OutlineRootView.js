@@ -46,7 +46,12 @@ var OutlineRootView = (function (_super) {
     OutlineRootView.prototype.updateValue = function () {
         if (this.panelView != null) {
             assert(this.parentView.parentView instanceof PanelView, "Invalid location for root list");
-            this.value = this.panelView.value.get('children');
+            if (this.panelView.value) {
+                this.value = this.panelView.value.get('children');
+            } else if (this.panelView.searchList) {
+                this.value = null;
+                this.searchList = this.panelView.searchList;
+            }
         }
     };
     OutlineRootView.prototype.layoutDown = function () {
@@ -109,7 +114,9 @@ var OutlineRootView = (function (_super) {
         // for now, require all outlines to be in a panel
         assert(panels[this.parentView.parentView.id] instanceof PanelView, "Outline view " + o + " does not have parent-parent-view a panel");
         assert(this.parentView.parentView.outline.alist === this, "Outline view " + o + " does not match parent.parent.outline.alist in a panel");
-        assert(this.value instanceof OutlineNodeCollection, "OutlineRootView " + o + " does not have value of type OutlineNodeCollection");
+        if (!this.searchList) {
+            assert(this.value instanceof OutlineNodeCollection, "OutlineRootView " + o + " does not have value of type OutlineNodeCollection");
+        }
         // todo: validate this.data[key]=val
     };
     OutlineRootView.outlinesById = {};

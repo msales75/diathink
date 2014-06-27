@@ -59,6 +59,7 @@ class PanelGridView extends View {
     }
 
     updateValue() {
+        this.updateCols();
     }
 
     layoutDown() {
@@ -211,7 +212,6 @@ class PanelGridView extends View {
     detach(panel:PanelView, slide?:string) { // detach from visible view
         if (panel instanceof PanelView) {
             var id:string = panel.id;
-            var mid:string = panel.value.cid;
             var filler:string;
             var fPanel:PanelView = null;
             // remove panel from listItems-list
@@ -349,6 +349,9 @@ class PanelGridView extends View {
     swipeStop(params:DragStartI) {
         // if no-swipe, remove hint of motion
         // otherwise start modified animation
+        if (!this.swipeParams.last) {
+            this.swipeMove(params);
+        }
         var speed = this.getSwipeDiff(this.swipeParams.last, this.swipeParams.prev);
         var dist = this.getSwipeDiff(this.swipeParams.last, this.swipeParams.start);
         if ((speed > 1) && (dist > 1)) { // right

@@ -23,7 +23,9 @@ var OutlineListView = (function (_super) {
     };
     OutlineListView.prototype.validate = function () {
         _super.prototype.validate.call(this);
-        assert(this.nodeRootView != null, "TextAreaView cannot have null nodeRootView");
+        if (!(this.nodeView instanceof ChatBoxView)) {
+            assert(this.nodeRootView != null, "TextAreaView cannot have null nodeRootView");
+        }
     };
     OutlineListView.prototype.layoutDown = function () {
         var offset = Math.round(0.8 * View.fontSize);

@@ -17,7 +17,9 @@ class NodeTextWrapperView extends View {
         this.listItemTemplate = NodeLinkView;
     }
     updateValue() {
-        this.value = this.nodeView.value.attributes.links;
+        if (this.nodeView.value) {
+            this.value = this.nodeView.value.attributes.links;
+        }
     }
     layoutDown() {
         if (!this.layout) {this.layout = {};}

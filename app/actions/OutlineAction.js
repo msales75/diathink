@@ -196,6 +196,13 @@ var OutlineAction = (function (_super) {
             var text = line1.header.name.text;
             t1 = text.value.substr(0, sel[0]);
             t2 = text.value.substr(sel[1]);
+            var curspos = 0;
+            if (this.options.text) {
+                t1 = text.value;
+                t2 = this.options.text;
+                curspos = this.options.text.length;
+            }
+
             text.setValue(t1);
             line2.header.name.text.setValue(t2);
             if (t2.length > 0) {
@@ -211,7 +218,9 @@ var OutlineAction = (function (_super) {
                     oldRoot: this.runtime.rOldRoot,
                     newRoot: this.runtime.rOldRoot,
                     activeID: this.options.activeID,
-                    text: t2
+                    text: t2,
+                    focus: true,
+                    cursor: [curspos, curspos]
                 });
             }
         }
@@ -521,11 +530,13 @@ var OutlineAction = (function (_super) {
             } else {
                 assert(context.prev === collection.prev[model.cid], 'ERROR: context.prev does not match');
             }
+            /*
             if (model.cid === collection.last()) {
-                assert(context.next === null, 'ERROR: context.next is not null');
+            assert(context.next === null, 'ERROR: context.next is not null');
             } else {
-                assert(context.next === collection.next[model.cid], 'ERROR: context.next does not match');
-            }
+            assert(context.next === collection.next[model.cid],
+            'ERROR: context.next does not match');
+            } */
         }
         // todo: validate ViewContext, too.
         // todo: put text, collapsed, focus into oldModelContext and newModelContext.
@@ -799,12 +810,23 @@ var OutlineAction = (function (_super) {
                     outline.panelView.breadcrumbs.renderUpdate();
                 }
             }
+            if (that.options.copyID) {
+                // check if target is in this outline
+                var tmodel = OutlineNodeModel.getById(that.options.copyID);
+                if (tmodel.views && tmodel.views[outline.id]) {
+                    tmodel.views[outline.id].header.linkcount.addLink();
+                }
+            }
 
             // check if first node was added/removed, changing insertion-icon
-            if (outline.value.count > 0) {
-                outline.panelView.inserter.hide();
-            } else {
+            if (outline.value == null) {
                 outline.panelView.inserter.show();
+            } else {
+                if (outline.value.count > 0) {
+                    outline.panelView.inserter.hide();
+                } else {
+                    outline.panelView.inserter.show();
+                }
             }
         });
     };
@@ -855,6 +877,8 @@ var OutlineAction = (function (_super) {
                     if (that.options.userID) {
                         uid = that.options.userID;
                     }
+
+                    // console.log("Calling repossess with uid="+uid);
                     repossess(json, uid, that.options.copyPrefix);
                     var activeModel = new OutlineNodeModel({ cid: json.cid });
                     activeModel.fromJSON(json);

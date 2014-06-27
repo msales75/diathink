@@ -46,10 +46,11 @@ var TextAction = (function (_super) {
             }
             var activeLineView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
             if (activeLineView != null) {
-                activeLineView.header.name.text.setValue(text);
-
+                if (!activeLineView.panelView.browseChat) {
+                    activeLineView.header.name.text.setValue(text);
+                    activeLineView.header.name.text.resizeUp();
+                }
                 // console.log("Updating view "+activeLineView.header.name.text.id+" to value "+this.options.text);
-                activeLineView.header.name.text.resizeUp();
             }
 
             // Check this outline for links connected to this item

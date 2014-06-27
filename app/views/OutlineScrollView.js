@@ -60,18 +60,17 @@ var OutlineScrollView = (function (_super) {
     };
     OutlineScrollView.prototype.layoutDown = function () {
         var p = this.parentView.layout;
-        if (this.parentView && this.parentView.breadcrumbs && this.parentView.breadcrumbs.layout) {
-            if (!this.layout) {
-                this.layout = {};
-            }
+        if (!this.layout) {
+            this.layout = {};
+        }
+        this.layout.left = Math.round(View.fontSize);
+        this.layout.width = p.width - Math.round(View.fontSize) - 2;
+        if (this.parentView && this.parentView.breadcrumbs && this.parentView.breadcrumbs.layout && this.parentView.chatbox && this.parentView.chatbox.layout) {
             this.layout.top = this.parentView.breadcrumbs.layout.height;
-            this.layout.left = Math.round(View.fontSize);
-            this.layout.width = p.width - Math.round(View.fontSize) - 2;
-            this.layout.height = p.height - this.parentView.breadcrumbs.layout.height;
+            this.layout.height = p.height - this.parentView.breadcrumbs.layout.height - this.parentView.chatbox.layout.height;
         }
     };
     OutlineScrollView.prototype.layoutUp = function () {
-        var p = this.parentView.layout;
         // todo: inner-scroll height needs to be reset in layoutUp
     };
     OutlineScrollView.prototype.positionChildren = function (v, v2, validate) {

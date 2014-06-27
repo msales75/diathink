@@ -29,14 +29,19 @@ var InsertAfterAction = (function (_super) {
         }
 
         // test if children are visible
-        var rootid = this.options.oldRoot;
         var ref = OutlineNodeModel.getById(this.options.referenceID);
-        assert(ref.views[rootid], "Spawning line is not available in insertion");
-        var childlist = ref.views[rootid].children;
-        if (!childlist.listItems || (childlist.listItems.count === 0)) {
+        if (ref.attributes.parent.cid === 'chatroot') {
             this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
         } else {
-            this.newModelContext = childlist.listItems.obj[childlist.listItems.first()].value.getContextBefore();
+            var rootid = this.options.oldRoot;
+
+            assert(ref.views[rootid], "Spawning line is not available in insertion");
+            var childlist = ref.views[rootid].children;
+            if (!childlist.listItems || (childlist.listItems.count === 0)) {
+                this.newModelContext = OutlineNodeModel.getById(this.options.referenceID).getContextAfter();
+            } else {
+                this.newModelContext = childlist.listItems.obj[childlist.listItems.first()].value.getContextBefore();
+            }
         }
         // otherwise create new visible child
     };

@@ -15,10 +15,18 @@ var ButtonView = (function (_super) {
         this.value = 'theme/images/circle.png';
     }
     ButtonView.prototype.render = function () {
+        var html = '<img src="' + this.value + '" alt="' + this.value + '"/>';
+        if (this.buttonContent) {
+            html += this.buttonContent;
+        }
+        var classes = 'button';
+        if (this.cssClass) {
+            classes += ' ' + this.cssClass;
+        }
         this._create({
             type: 'div',
-            classes: 'button',
-            html: '<img src="' + this.value + '" alt="' + this.value + '"/>'
+            classes: classes,
+            html: html
         });
 
         /*

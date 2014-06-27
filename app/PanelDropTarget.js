@@ -133,7 +133,11 @@ var PanelDropTarget = (function (_super) {
 
         // change value of panel temporarily to render correct breadcrumbs
         var oldValue = panel.value;
-        panel.value = OutlineNodeModel.getById(this.activeID);
+        if (this.activeID === 'search') {
+            panel.value = null;
+        } else {
+            panel.value = OutlineNodeModel.getById(this.activeID);
+        }
         var newBreadcrumbs = new BreadcrumbView({
             parentView: panel
         });

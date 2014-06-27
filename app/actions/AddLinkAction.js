@@ -96,6 +96,30 @@ var AddLinkAction = (function (_super) {
         });
         */
     };
+    AddLinkAction.prototype.getFocusNode = function () {
+        // by default, focus on activeID in newRoot
+        var newRoot;
+        if (this.options.undo) {
+            newRoot = this.options.oldRoot;
+        } else {
+            newRoot = this.options.newRoot;
+        }
+        if (this.options.referenceID === 'chatbox') {
+            var o;
+            for (o in OutlineRootView.outlinesById) {
+                if (OutlineRootView.outlinesById[o].panelView.chatbox.isActive) {
+                    // console.log("Found chatbox for AddLink getFocusNode()");
+                    return OutlineRootView.outlinesById[o].panelView.chatbox;
+                }
+            }
+
+            // console.log("Did not find chatbox for AddLink getFocusNode()");
+            return null;
+        } else {
+            // console.log("Did not have cid=chatbox");
+            return this.getNodeView(this.options.referenceID, newRoot);
+        }
+    };
 
     AddLinkAction.prototype.validateOptions = function () {
         var linkModel = OutlineNodeModel.getById(this.options.activeID);
@@ -153,7 +177,15 @@ var AddLinkAction = (function (_super) {
     AddLinkAction.prototype.execView = function (outline) {
         var that = this;
         this.addQueue(['view', outline.nodeRootView.id], ['newModelAdd'], function () {
-            var refLineView = that.getNodeView(that.options.referenceID, outline.nodeRootView.id);
+            var refLineView;
+
+            // check for chatbox in this panel
+            if ((that.options.referenceID === 'chatbox') && (outline.panelView.chatbox.isActive)) {
+                refLineView = outline.panelView.chatbox;
+            } else {
+                refLineView = that.getNodeView(that.options.referenceID, outline.nodeRootView.id);
+            }
+
             if (refLineView != null) {
                 // update listItems, update DOM
                 var reverse = ((that.options.undo && !that.options.delete) || (!that.options.undo && that.options.delete));
@@ -196,6 +228,7 @@ var AddLinkAction = (function (_super) {
                 var activeView = that.getNodeView(that.options.activeID, outline.nodeRootView.id);
                 if (activeView && activeView.elem) {
                     $(activeView.elem).removeClass('drag-hidden');
+                    activeView.header.linkcount.addLink();
                 }
             }
             if (that.options.dockView) {

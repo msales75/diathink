@@ -1,10 +1,13 @@
 ///<reference path="../../frameworks/m.ts"/>
 ///<reference path="BreadcrumbView.ts"/>
 ///<reference path="ButtonView.ts"/>
+///<reference path="ChatBoxView.ts"/>
 ///<reference path="ContainerView.ts"/>
 ///<reference path="DiathinkView.ts"/>
 ///<reference path="DrawLayerView.ts"/>
 ///<reference path="DropLayerView.ts"/>
+///<reference path="FacebookButtonView.ts"/>
+///<reference path="GoogleButtonView.ts"/>
 ///<reference path="GridView.ts"/>
 ///<reference path="GridRightLineView.ts"/>
 ///<reference path="GridContainerView.ts"/>
@@ -19,7 +22,10 @@
 ///<reference path="ListItemView.ts"/>
 ///<reference path="ListView.ts"/>
 ///<reference path="LoaderView.ts"/>
+///<reference path="LogoImageView.ts"/>
+///<reference path="NewRoomView.ts"/>
 ///<reference path="NodeHeaderView.ts"/>
+///<reference path="NodeLinkCountView.ts"/>
 ///<reference path="NodeTextView.ts"/>
 ///<reference path="NodeTextWrapperView.ts"/>
 ///<reference path="NodeView.ts"/>
@@ -37,9 +43,12 @@
 ///<reference path="RightSwipeButtonView.ts"/>
 ///<reference path="ScrollSpacerView.ts"/>
 ///<reference path="ScrollView.ts"/>
+///<reference path="SearchButtonView.ts"/>
+///<reference path="SocialBoxView.ts"/>
 ///<reference path="SpanView.ts"/>
 ///<reference path="TextAreaView.ts"/>
 ///<reference path="ToolbarView.ts"/>
+///<reference path="TwitterButtonView.ts"/>
 ///<reference path="UndoButtonContainerView.ts"/>
 ///<reference path="UndoButtonView.ts"/>
 ///<reference path="DropBox.ts"/>
@@ -134,7 +143,7 @@ class View {
 
     static getNextId():string {
         this.nextId = this.nextId + 1;
-        return $D.sessionID+'_' + String(this.nextId);
+        return $D.sessionID + '_' + String(this.nextId);
     }
 
     static get(id:string):View {
@@ -207,6 +216,7 @@ class View {
     public id:string;
     public _name:string;
     public value:any = null;
+    public searchList:OutlineNodeCollection;
     public valuePattern:string;
     public layout:Layout;
     public isAbsolute:boolean = true;
@@ -238,28 +248,28 @@ class View {
     constructor(opts:{id?:string;parentView?:View; value?:any; hideList?:boolean; mesg?; childOpts?:{};parentPanel?:PanelView}) {
         var that = this;
         (function defineThisID() {
-        if ((opts == null) || (opts.id == null)) {
-            that.id = View.getNextId();
-            delete opts['id'];
-        } else { // validate it's not being used
-            assert(View.get(opts.id) == null, "Duplicate id specified in view constructor");
-            // check if we should use a resurrected view instead
-            if (DeadView.viewList[opts.id] !== undefined) { // use resurrected view
-                if (opts.parentView !== undefined) {
-                    assert(opts.parentView.id === DeadView.viewList[opts.id].parent,
-                        "Resurrection of " + opts.id + " doesn't match parent");
+            if ((opts == null) || (opts.id == null)) {
+                that.id = View.getNextId();
+                delete opts['id'];
+            } else { // validate it's not being used
+                assert(View.get(opts.id) == null, "Duplicate id specified in view constructor");
+                // check if we should use a resurrected view instead
+                if (DeadView.viewList[opts.id] !== undefined) { // use resurrected view
+                    if (opts.parentView !== undefined) {
+                        assert(opts.parentView.id === DeadView.viewList[opts.id].parent,
+                            "Resurrection of " + opts.id + " doesn't match parent");
+                    }
+                    if (opts.value !== undefined) {
+                        assert(opts.value === DeadView.viewList[opts.id].value,
+                            "Resurrection of " + opts.id + " doesn't match value");
+                    }
+                    assert(opts.childOpts === undefined,
+                        "Cannot use childOpts on a resurrected view " + opts.id);
+                    _.extend(opts, DeadView.viewList[opts.id].getOptions());
+                    delete DeadView.viewList[opts.id];
                 }
-                if (opts.value !== undefined) {
-                    assert(opts.value === DeadView.viewList[opts.id].value,
-                        "Resurrection of " + opts.id + " doesn't match value");
-                }
-                assert(opts.childOpts === undefined,
-                    "Cannot use childOpts on a resurrected view " + opts.id);
-                _.extend(opts, DeadView.viewList[opts.id].getOptions());
-                delete DeadView.viewList[opts.id];
+                that.id = opts.id;
             }
-            that.id = opts.id;
-        }
         })();
         this.init();
         (function extendAndRegister() {
@@ -332,6 +342,20 @@ class View {
             this.listItems.reset();
             if (!this.hideList) { // collapsed list
                 var models = (<LinkedList<PModel>>(this.value));
+                var m:string;
+                for (m = models.first(); m !== ''; m = models.next[m]) {
+                    var view = new this.listItemTemplate({
+                        parentView: this,
+                        value: models.obj[m]
+                    });
+                    this.listItems.append(view.id, view);
+                }
+            }
+        } else if ( (this instanceof ListView) && (this.searchList instanceof LinkedList) ) {
+            if (!this.listItems) {this.listItems = new LinkedList<View>();}
+            this.listItems.reset();
+            if (!this.hideList) { // collapsed list
+                var models = (<LinkedList<PModel>>(this.searchList));
                 var m:string;
                 for (m = models.first(); m !== ''; m = models.next[m]) {
                     var view = new this.listItemTemplate({
@@ -616,7 +640,7 @@ class View {
         var k:string;
         for (k in this.layout) {
             if (this.layout[k] !== l1[k]) {
-                if (validate) {assert(Math.abs(this.layout[k]-l1[k])<=1, "Layout changed by resize for view "+this.id);}
+                if (validate) {assert(Math.abs(this.layout[k] - l1[k]) <= 1, "Layout changed by resize for view " + this.id);}
                 $(this.elem).css(k, String(this.layout[k]) + 'px');
             }
         }
@@ -660,10 +684,10 @@ class View {
 
     resizeUp(opts?:{top?:string;end?:string}) {
         if (this instanceof NodeTextView) {
-            if (!$D.resizeCount) {$D.resizeCount=0;}
+            if (!$D.resizeCount) {$D.resizeCount = 0;}
             ++$D.resizeCount;
             if ($D.resizeCount % 2 == 0) {
-               //  console.log("Even count");
+                //  console.log("Even count");
             } else {
                 // console.log("Odd count");
             }
@@ -671,11 +695,11 @@ class View {
         }
         var topView:NodeView;
         // check if this is the list containing opts.top, which halts recursion
-        if (opts && opts.top && (this.nodeRootView!=null)) {
+        if (opts && opts.top && (this.nodeRootView != null)) {
             // assert(this.nodeRootView != null, "Cannot call resizeUP with options outside outline");
             var topView = OutlineNodeModel.getById(opts.top).views[this.nodeRootView.id];
             // topView can be null if one panel is using top/end and another has them out of scope
-            if ((topView!=null)&&(topView.parentView === this)) { // go no further, return without calling resizeUP again.
+            if ((topView != null) && (topView.parentView === this)) { // go no further, return without calling resizeUP again.
                 if (opts.end != null) {
                     var endView:NodeView = OutlineNodeModel.getById(opts.end).views[this.nodeRootView.id];
                     this.positionChildren(topView, endView.id);
@@ -695,7 +719,7 @@ class View {
             var tl = this.layout;
             //if ((tl.height!==tempLayout.height)||(tl.width!==tempLayout.width)||
             //    (tl.top!==tempLayout.top)||(tl.left!==tempLayout.left)) {
-                this.parentView.resizeUp(opts);
+            this.parentView.resizeUp(opts);
             //}
         } else {
             //console.log('resizeUp 5');
@@ -829,57 +853,61 @@ class View {
                     "View " + v + " does not match its parents clickView");
             }
             // Confirm that view-parent is a DOM parent
-            assert($(this.elem).parents('#' + this.parentView.id).length === 1,
-                "View " + v + " does not have parent-view " + this.parentView.id);
-
-            if (this.layout.width!=null) {
-                assert(this.layout.width>=0, "Width is negative");
+            if (this.elem != null) {
+                assert($(this.elem).parents('#' + this.parentView.id).length === 1,
+                    "View " + v + " does not have parent-view " + this.parentView.id);
             }
-            if (this.layout.height!=null) {
-                assert(this.layout.height>=0, "Height is negative");
+            if (this.layout.width != null) {
+                assert(this.layout.width >= 0, "Width is negative");
+            }
+            if (this.layout.height != null) {
+                assert(this.layout.height >= 0, "Height is negative");
             }
             if (this.layout.top != null) {
-                assert(this.layout.top>=0, "Top is outside parent top");
+                assert(this.layout.top >= 0, "Top is outside parent top");
             }
             if (this.layout.left != null) {
-                assert(this.layout.left>=0, "leftis outside parent left");
+                assert(this.layout.left >= 0, "leftis outside parent left");
             }
-            if ((this.layout.top!=null)&&(this.layout.height!=null)&&(this.parentView.layout.height!=null)) {
-                if (! (this.parentView instanceof OutlineScrollView)) {
-                    assert(this.layout.top+this.layout.height <= this.parentView.layout.height,
+            if ((this.layout.top != null) && (this.layout.height != null) && (this.parentView.layout.height != null)) {
+                if (!(this.parentView instanceof OutlineScrollView)) {
+                    assert(this.layout.top + this.layout.height <= this.parentView.layout.height,
                         "Child too tall for parent");
                 }
             }
-            if ((this.layout.left!=null)&&(this.layout.width!=null)&&(this.parentView.layout.width!=null)) {
-                assert(this.layout.left+this.layout.width <= this.parentView.layout.width,
+            if ((this.layout.left != null) && (this.layout.width != null) && (this.parentView.layout.width != null)) {
+                assert(this.layout.left + this.layout.width <= this.parentView.layout.width,
                     "Child too wide for parent");
             }
         }
-        assert(this.elem != null,
-            "View " + v + " has no element");
-        assert(this.elem instanceof HTMLElement,
-            "View " + v + " has no valid element");
-        assert(this.id === this.elem.id,
-            "Element for view " + v + " has wrong id");
-        assert($('#' + this.elem.id).length === 1,
-            "Element for views " + v + " not found in DOM");
-        if ($(this.elem).css('display') !== 'none') {
-            var offset = $(this.elem).offset();
-            var offset2 = this.getOffset();
-            if (!(this instanceof OutlineScrollView)) {
-                assert(Math.abs(offset.top - offset2.top) <= 1, "Offset tops don't match for view " + this.id);
-            }
-
-            assert(Math.abs(offset.left - offset2.left) <= 1, "Offset lefts don't match for view " + this.id);
-            if (this.layout.width != null) {
-                assert(Math.abs(this.layout.width - this.elem.clientWidth) <= 1, "Widths don't match for " + this.id);
-            } else {
-                // console.log("Notice: missing width for view " + this.id);
-            }
-            if (this.layout.height != null) {
-                assert(Math.abs(this.layout.height - this.elem.clientHeight) <= 1, "Heights don't match for " + this.id);
-            } else {
-                // console.log("Notice: missing height for view " + this.id);
+        if (!(this instanceof ChatBoxView)) {
+            assert(this.elem != null,
+                "View " + v + " has no element");
+            assert(this.elem instanceof HTMLElement,
+                "View " + v + " has no valid element");
+        }
+        if (this.elem != null) {
+            assert(this.id === this.elem.id,
+                "Element for view " + v + " has wrong id");
+            assert($('#' + this.elem.id).length === 1,
+                "Element for views " + v + " not found in DOM");
+            if ($(this.elem).css('display') !== 'none') {
+                var offset = $(this.elem).offset();
+                var offset2 = this.getOffset();
+                if (!(this instanceof OutlineScrollView)) {
+                    assert(Math.abs(offset.top - offset2.top) <= 1, "Offset tops don't match for view " + this.id);
+                }
+                assert(Math.abs(offset.left - offset2.left) <= 1, "Offset lefts don't match for view " + this.id);
+                if (this.layout.width != null) {
+                    assert(Math.abs(this.layout.width - this.elem.clientWidth) <= 2, "Widths don't match for " + this.id);
+                } else {
+                    // console.log("Notice: missing width for view " + this.id);
+                }
+                if (this.layout.height != null) {
+                    assert(Math.abs(this.layout.height - this.elem.clientHeight) <= 2, "Heights don't match for " + this.id);
+                } else {
+                    // console.log("Notice: missing height for view " + this.id);
+                }
             }
         }
     }

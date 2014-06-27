@@ -62,11 +62,17 @@ var PanelDeleteView = (function (_super) {
         }
         var that = this;
         var panel = this.panelView;
+        var activeID;
+        if (panel.value == null) {
+            activeID = 'search';
+        } else {
+            activeID = panel.value.cid;
+        }
         ActionManager.simpleSchedule(View.focusedView, function () {
             return {
                 actionType: PanelCreateAction,
                 name: 'Remove panel',
-                activeID: panel.value.cid,
+                activeID: activeID,
                 delete: true,
                 panelID: panel.id,
                 focus: false

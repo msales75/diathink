@@ -16,7 +16,8 @@ var NodeHeaderView = (function (_super) {
     NodeHeaderView.prototype.init = function () {
         this.childViewTypes = {
             handle: HandleImageView,
-            name: NodeTextWrapperView
+            name: NodeTextWrapperView,
+            linkcount: NodeLinkCountView
         };
     };
     NodeHeaderView.prototype.layoutDown = function () {

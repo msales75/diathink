@@ -20,7 +20,20 @@ var NodeLinkView = (function (_super) {
         if (value.match(/[a-zA-Z0-9_\-]/) == null) {
             return '[Link]';
         } else {
-            return '[' + value + ']';
+            var words = value.split(' ');
+            if (words.length < 2) {
+                return '[' + value + ']';
+            } else {
+                if (words[0].length > 7) {
+                    return '[' + words[0] + '..]';
+                } else {
+                    if (words.length > 2) {
+                        return '[' + words[0] + ' ' + words[1] + '..]';
+                    } else {
+                        return '[' + value + ']';
+                    }
+                }
+            }
         }
     };
 
@@ -76,11 +89,12 @@ var NodeLinkView = (function (_super) {
                     actionType: PanelCreateAction,
                     name: 'Open link panel',
                     isSubpanel: true,
-                    activeID: that.value.cid,
+                    activeID: that.value.attributes.parent.cid,
                     prevPanel: that.panelView.id,
                     oldRoot: that.nodeRootView.id,
                     newRoot: 'new',
-                    focus: false
+                    focus: true,
+                    focusID: that.value.cid
                 };
             });
         }

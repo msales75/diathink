@@ -61,6 +61,7 @@ var PanelGridView = (function (_super) {
     };
 
     PanelGridView.prototype.updateValue = function () {
+        this.updateCols();
     };
 
     PanelGridView.prototype.layoutDown = function () {
@@ -215,7 +216,6 @@ var PanelGridView = (function (_super) {
     PanelGridView.prototype.detach = function (panel, slide) {
         if (panel instanceof PanelView) {
             var id = panel.id;
-            var mid = panel.value.cid;
             var filler;
             var fPanel = null;
 
@@ -361,6 +361,9 @@ var PanelGridView = (function (_super) {
     PanelGridView.prototype.swipeStop = function (params) {
         // if no-swipe, remove hint of motion
         // otherwise start modified animation
+        if (!this.swipeParams.last) {
+            this.swipeMove(params);
+        }
         var speed = this.getSwipeDiff(this.swipeParams.last, this.swipeParams.prev);
         var dist = this.getSwipeDiff(this.swipeParams.last, this.swipeParams.start);
         if ((speed > 1) && (dist > 1)) {

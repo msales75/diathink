@@ -18,10 +18,18 @@ var PModel = (function () {
 })();
 
 function repossess(json, userID, prefix) {
+    if (json.cid === 'remotebox') {
+        json.cid = 'chatbox';
+    }
+    if (json.cid === 'chatbox') {
+        json.owner = 'chat';
+        json.text = userID + ': ' + json.text;
+    } else {
+        json.owner = userID;
+    }
     if (json.cid) {
         json.cid = prefix + json.cid;
     }
-    json.owner = userID;
     var i;
     for (i = 0; i < json.children.length; ++i) {
         repossess(json.children[i], userID, prefix);
@@ -335,7 +343,7 @@ var OutlineNodeModel = (function (_super) {
             assert(models[m] === this, "Model " + m + " does not have a valid cid");
             assert(deleted[m] === undefined, "Model " + m + " is in deleted list");
             if (this.attributes.parent == null) {
-                assert(OutlineNodeModel.root === this, "Model " + m + " has parent=null");
+                assert((OutlineNodeModel.root === this) || (OutlineNodeModel.chatbox === this) || (OutlineNodeModel.remotebox === this), "Model " + m + " has parent=null");
             }
 
             assert(this.attributes.text != null, "The model " + m + " does not have a text attribute");
@@ -352,7 +360,7 @@ var OutlineNodeModel = (function (_super) {
                 assert(obj.attributes.parent === this, "The child " + cm + " of model " + m + " does not have the matching parent-field");
             }
 
-            if (this !== OutlineNodeModel.root) {
+            if ((this !== OutlineNodeModel.root) && (this !== OutlineNodeModel.chatbox) && (this !== OutlineNodeModel.remotebox)) {
                 var p = this.attributes.parent;
                 assert(models[p.cid] === p, "The parent of model " + m + ", " + p.cid + ", does not point to a listed model");
                 var parents = [m];

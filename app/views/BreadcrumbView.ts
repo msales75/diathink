@@ -3,7 +3,6 @@ m_require("app/views/View.js");
 class BreadcrumbView extends View {
     isAbsolute = false;
     parentView:PanelView;
-    dirtyHeight:boolean = true;
 
     init() {
         this.isClickable = true;
@@ -20,7 +19,6 @@ class BreadcrumbView extends View {
                     crumb = crumb.get('parent');
                 }
             }
-            this.dirtyHeight = true;
         }
     }
 
@@ -32,6 +30,8 @@ class BreadcrumbView extends View {
                 html += '<a class="ui-breadcrumb-link ui-link" data-href="' + this.value[i].cid + '">' + this.value[i].get('text') + '</a><span>&gt;</span>';
             }
             html += ' <a class="panel-name">' + this.value[i].get('text') + '</a><span>&nbsp;</span>';
+        } else {
+            html = ' <a class="panel-name">Matches</a><span>&nbsp;</span>';
         }
         return html;
     }
@@ -66,9 +66,6 @@ class BreadcrumbView extends View {
     layoutDown() {
         var p:Layout = this.parentView.layout;
         if (this.layout==null) {this.layout = {};}
-        if (p.width!==this.layout.width) {
-            this.dirtyHeight = true;
-        }
         this.layout.top = 0;
         this.layout.left = Math.round(0.8*View.fontSize);
         this.layout.width = p.width-Math.round(2.8*View.fontSize);

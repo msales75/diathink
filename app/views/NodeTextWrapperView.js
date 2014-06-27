@@ -21,7 +21,9 @@ var NodeTextWrapperView = (function (_super) {
         this.listItemTemplate = NodeLinkView;
     };
     NodeTextWrapperView.prototype.updateValue = function () {
-        this.value = this.nodeView.value.attributes.links;
+        if (this.nodeView.value) {
+            this.value = this.nodeView.value.attributes.links;
+        }
     };
     NodeTextWrapperView.prototype.layoutDown = function () {
         if (!this.layout) {

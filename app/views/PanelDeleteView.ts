@@ -50,12 +50,18 @@ class PanelDeleteView extends ImageView {
         if (!this.panelView) {return;}
         var that = this;
         var panel = this.panelView;
+        var activeID;
+        if (panel.value==null) {
+            activeID = 'search';
+        } else {
+            activeID = panel.value.cid;
+        }
         ActionManager.simpleSchedule(View.focusedView,
             function():SubAction {
                 return {
                     actionType: PanelCreateAction,
                     name: 'Remove panel',
-                    activeID: panel.value.cid,
+                    activeID: activeID,
                     delete: true,
                     panelID: panel.id,
                     focus: false

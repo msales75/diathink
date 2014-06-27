@@ -71,6 +71,10 @@ var TextAreaView = (function (_super) {
         if (!this.isEnabled || (this.nodeView && this.nodeView.readOnly)) {
             this.elem.setAttribute('disabled', 'disabled');
         }
+        if (this.nodeView && (this.nodeView instanceof ChatBoxView)) {
+            this.elem.style.paddingBottom = '0px';
+            this.elem.style.border = 'solid 1px #888';
+        }
 
         // $(this.header.name.text.elem).prop('readonly', true);
         // divide setPosition into two pieces while fixing height
@@ -93,7 +97,12 @@ var TextAreaView = (function (_super) {
         }
         this.layout.top = 0;
         this.layout.left = 0;
-        this.layout.width = this.parentView.layout.width;
+        if (this.nodeView instanceof ChatBoxView) {
+            this.layout.width = this.parentView.layout.width - 30;
+            this.layout.height = Math.round(1.25 * View.fontSize) + Math.round(.3 * View.fontSize);
+        } else {
+            this.layout.width = this.parentView.layout.width;
+        }
     };
     TextAreaView.prototype.getValue = function () {
         if ($D.is_android) {
@@ -138,9 +147,25 @@ var TextAreaView = (function (_super) {
         this.parentDiv.height(this.lineHeight + this.padding);
         return;
         } */
+        // if (this.nodeView && (this.nodeView instanceof ChatBoxView)) {
+        //     this.layout.height = Math.round(1.25*View.fontSize) +
+        //         Math.round(.3*View.fontSize);
+        //     return;
+        // }
+        this.lineHeight = Math.round(1.25 * View.fontSize);
+        this.paddingX = 2 * Math.round(.18 * View.fontSize);
+        this.paddingY = 2 * Math.round(.18 * View.fontSize);
+
+        //}
+        if (this.nodeView && (this.nodeView instanceof ChatBoxView)) {
+            this.paddingY = Math.round(.3 * View.fontSize);
+        }
+        var lineHeight = this.lineHeight;
+        var paddingX = this.paddingX;
+        var paddingY = this.paddingY;
         if (this.value.length < 5) {
             if (!this.parentView.listItems || (this.parentView.listItems.count === 0)) {
-                this.layout.height = Math.round(1.25 * View.fontSize) + 2 * Math.round(.3 * View.fontSize);
+                this.layout.height = lineHeight + paddingY;
 
                 // console.log("Quickly handling short line");
                 return;
@@ -164,14 +189,6 @@ var TextAreaView = (function (_super) {
 
         // var parentdiv = this.parentView.elem;
         //if (this.lastFont !== currentFont) {
-        this.lineHeight = Math.round(1.25 * View.fontSize);
-        this.paddingX = 2 * Math.round(.18 * View.fontSize);
-        this.paddingY = 2 * Math.round(.3 * View.fontSize);
-
-        //}
-        var lineHeight = this.lineHeight;
-        var paddingX = this.paddingX;
-        var paddingY = this.paddingY;
         hiddendiv.style.width = String(currentWidth - paddingX - 1) + 'px';
 
         // console.log("Defined hiddendiv width = "+hiddendiv.style.width);
@@ -294,7 +311,9 @@ var TextAreaView = (function (_super) {
     };
     TextAreaView.prototype.validate = function () {
         _super.prototype.validate.call(this);
-        assert(this.nodeRootView != null, "TextAreaView cannot have null nodeRootView");
+        if (!(this.nodeView instanceof ChatBoxView)) {
+            assert(this.nodeRootView != null, "TextAreaView cannot have null nodeRootView");
+        }
         assert(this.parentView.parentView.parentView instanceof NodeView, "TextAreaView " + this.id + " does not appear inside a ListItem View");
         assert(this.parentView.parentView.parentView.value != null, "TextAreaView " + this.id + " parent-parent has no value");
         assert(this.value === this.parentView.parentView.parentView.value.attributes.text, "TextAreaView " + this.id + " does not match value " + this.value + " with listitem-parent");

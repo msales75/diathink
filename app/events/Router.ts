@@ -137,6 +137,12 @@ class Router {
                         (<TextAreaView>View.focusedView.header.name.text.addClass('hide-selection')).selectAllText().focus();
                     }
                 }
+            } else if (view.nodeView instanceof ChatBoxView) {
+                View.setFocus(view);
+                if (view instanceof TextAreaView) {
+                    preventDefault = false;
+                    view.removeClass('hide-selection');
+                }
             }
             if (preventDefault) {
                 // console.log("In touchstart preventing default");
@@ -237,7 +243,7 @@ class Router {
         Router.bind(rootElement, 'mousewheel', function(e) {
             // determine active scroll handler
             if (View.focusedView) {
-                var scroller = View.focusedView.scrollView.scrollHandler;
+                var scroller = View.focusedView.panelView.outline.scrollHandler;
                 var pos = scroller.getScrollPosition();
                 var delta = 4*View.fontSize*Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
                 if (pos.y-delta>0) {
