@@ -51,7 +51,7 @@ var ActionManager = (function () {
             if (!node) {
                 return null;
             }
-            return Action.checkTextChange(node.header.name.text.id);
+            return Action.checkTextChange();
         }, f);
     };
 
@@ -86,9 +86,19 @@ var ActionManager = (function () {
         }
         this.queue.splice(1, 0, f);
     };
+    ActionManager.freeze = function () {
+        this.isFrozen = true;
+    };
+    ActionManager.unfreeze = function () {
+        this.isFrozen = false;
+        this.next();
+    };
 
     ActionManager.next = function () {
         var that = this;
+        if (this.isFrozen) {
+            return;
+        }
         if (this.queue.length > 0) {
             var f = this.queue[0];
             var options = f();
@@ -245,7 +255,7 @@ var ActionManager = (function () {
             if (!View.focusedView) {
                 return null;
             }
-            return Action.checkTextChange(View.focusedView.header.name.text.id);
+            return Action.checkTextChange();
         });
         this.schedule(function () {
             var rank = ActionManager.nextUndo();
@@ -266,7 +276,7 @@ var ActionManager = (function () {
             if (!View.focusedView) {
                 return null;
             }
-            return Action.checkTextChange(View.focusedView.header.name.text.id);
+            return Action.checkTextChange();
         });
         this.schedule(function () {
             var rank = ActionManager.nextRedo();
@@ -333,6 +343,7 @@ var ActionManager = (function () {
     ActionManager.lastAction = null;
     ActionManager.queue = [];
     ActionManager.remoteModels = {};
+    ActionManager.isFrozen = false;
     return ActionManager;
 })();
 //# sourceMappingURL=ActionManager.js.map

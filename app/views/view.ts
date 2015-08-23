@@ -22,6 +22,7 @@
 ///<reference path="ListItemView.ts"/>
 ///<reference path="ListView.ts"/>
 ///<reference path="LoaderView.ts"/>
+///<reference path="LoginButtonView.ts"/>
 ///<reference path="LogoImageView.ts"/>
 ///<reference path="NewRoomView.ts"/>
 ///<reference path="NodeHeaderView.ts"/>
@@ -122,7 +123,20 @@ class DeadView {
             "DeadView " + this.id + " parent is neither dead nor alive");
     }
 }
+interface ViewOpts {
+    id?:string;
+    parentView?:View;
+    value?:any;
+    hideList?:boolean;
+    mesg?;
+    childOpts?:{};
+    parentPanel?:PanelView
+};
+
 class View {
+    // move static-stuff into ViewManager?
+    // focusedView, hoveringView, fontSize are UI-state-variables...
+    //   Separate UIState and ActionState from View and Action?
     static nextId:number = 0;
     static viewList:ViewList = {};
     static graveyard:{[i:string]:DeadView};
@@ -220,7 +234,7 @@ class View {
     public valuePattern:string;
     public layout:Layout;
     public isAbsolute:boolean = true;
-    public childOpts:{[name:string]:any} = {}; // options for children
+    public childOpts:ViewOpts = {}; // options for children
     public childViewTypes:ViewTypeList = {};
     public parentView:View = null;
     public cssClass:string = null;
@@ -245,8 +259,8 @@ class View {
     public items:string = 'models'; // eliminate
     // droppable is defined in view.dropboxes
     public dropboxes:DropBox[] = []; // places to drop objects in drag-mode
-    constructor(opts:{id?:string;parentView?:View; value?:any; hideList?:boolean; mesg?; childOpts?:{};parentPanel?:PanelView}) {
-        var that = this;
+    constructor(opts:ViewOpts) {
+        var that:View = this;
         (function defineThisID() {
             if ((opts == null) || (opts.id == null)) {
                 that.id = View.getNextId();
@@ -296,15 +310,20 @@ class View {
         (function createChildren() {
             for (var v in that.childViewTypes) {
                 if (that.childViewTypes.hasOwnProperty(v)) {
-                    var childOpts = {_name: v, parentView: that};
+                    var childOpts:ViewOpts = {_name: v, parentView: that};
                     if (that.childOpts && that.childOpts[v]) {
                         _.extend(childOpts, that.childOpts[v]);
                     }
-                    that[v] = new that.childViewTypes[v](childOpts);
+                    if (that.includeChildView(v)) {
+                        that[v] = new that.childViewTypes[v](childOpts);
+                    }
                 }
             }
         })();
         return this;
+    }
+    includeChildView(name:string):boolean {
+        return true;
     }
 
     setPosition() {
@@ -427,10 +446,10 @@ class View {
         // remove any references from model to this view
         this.removeFromModel();
         for (var v in this.childViewTypes) {
-            if (this.childViewTypes.hasOwnProperty(v)) {
+            if (this.childViewTypes.hasOwnProperty(v) && this[v]) {
                 var child:View = this[v];
                 if (child) {
-                    child.destroy();
+                    this[v].destroy();
                 }
             }
         }
@@ -444,15 +463,17 @@ class View {
         var v:string, child:View;
         for (v in this.childViewTypes) {
             if (this.childViewTypes.hasOwnProperty(v)) {
-                child = this[v];
-                assert(child != null,
-                    'There is no child view \'' + v + '\' available for (' +
-                        (this._name ? this._name + ', ' : '') + '#' + this.id +
-                        ')! It will be excluded from the child views and won\'t be rendered.');
-                if (child) {
-                    assert(child.elem === null,
-                        "Rendering item with elem not null");
-                    child.render();
+                if (this[v] != null) {
+                    child = this[v];
+                    assert(child != null,
+                        'There is no child view \'' + v + '\' available for (' +
+                            (this._name ? this._name + ', ' : '') + '#' + this.id +
+                            ')! It will be excluded from the child views and won\'t be rendered.');
+                    if (child) {
+                        assert(child.elem === null,
+                            "Rendering item with elem not null");
+                        child.render();
+                    }
                 }
             }
         }
@@ -617,7 +638,7 @@ class View {
             });
         }
         for (var v in this.childViewTypes) {
-            if (this.childViewTypes.hasOwnProperty(v)) {
+            if (this.childViewTypes.hasOwnProperty(v) && this[v]) {
                 var child:View = this[v];
                 child.setRootID(view);
             }
@@ -668,7 +689,9 @@ class View {
         this.layoutDown();
         var c:string;
         for (c in this.childViewTypes) {
-            this[c].resize(validate);
+            if (this[c]) {
+                this[c].resize(validate);
+            }
         }
         if (this.listItems) {
             var l:string;
@@ -742,7 +765,9 @@ class View {
         var cViews:{[k:string]:View} = {}, cViewsI = null;
         var k:string;
         for (k in this.childViewTypes) {
-            cViews[k] = this[k];
+            if (this[k]) {
+                cViews[k] = this[k];
+            }
         }
         if (cViews != null) {
             for (k in cViews) {
@@ -880,12 +905,10 @@ class View {
                     "Child too wide for parent");
             }
         }
-        if (!(this instanceof ChatBoxView)) {
-            assert(this.elem != null,
+        assert(this.elem != null,
                 "View " + v + " has no element");
-            assert(this.elem instanceof HTMLElement,
+        assert(this.elem instanceof HTMLElement,
                 "View " + v + " has no valid element");
-        }
         if (this.elem != null) {
             assert(this.id === this.elem.id,
                 "Element for view " + v + " has wrong id");

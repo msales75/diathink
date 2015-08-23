@@ -31,6 +31,7 @@ class ActionManager {
     static lastAction:number = null;
     static queue:AnonFunction[] = [];
     static remoteModels:{[i:string]:ActionCollection} = {};
+    static isFrozen:boolean = false;
     // need to hold args for the action here.
     static randomString(size) {
         if (!size) {
@@ -52,7 +53,7 @@ class ActionManager {
         ActionManager.schedule(
             function():SubAction {
                 if (!node) {return null;}
-                return Action.checkTextChange(node.header.name.text.id);
+                return Action.checkTextChange();
             },
             f);
     }
@@ -88,9 +89,19 @@ class ActionManager {
         }
         this.queue.splice(1, 0, f);
     }
+    static freeze() {
+        this.isFrozen = true;
+    }
+    static unfreeze() {
+        this.isFrozen = false;
+        this.next();
+    }
 
     static next() {
         var that:typeof ActionManager = this;
+        if (this.isFrozen) {
+            return;
+        }
         if (this.queue.length > 0) {
             var f:{()} = this.queue[0];
             var options = f();
@@ -228,7 +239,7 @@ class ActionManager {
     static undo() {
         this.schedule(function():SubAction {
             if (!View.focusedView) {return null;}
-            return Action.checkTextChange(View.focusedView.header.name.text.id);
+            return Action.checkTextChange();
         });
         this.schedule(function():SubAction {
             var rank:number = ActionManager.nextUndo();
@@ -245,7 +256,7 @@ class ActionManager {
     static redo() {
         this.schedule(function():SubAction {
             if (!View.focusedView) {return null;}
-            return Action.checkTextChange(View.focusedView.header.name.text.id);
+            return Action.checkTextChange();
         });
         this.schedule(function():SubAction {
             var rank = ActionManager.nextRedo();
